@@ -2,8 +2,15 @@
 
 Prototype design
 
-```bash
-meson --prefix $(pwd)/install build
-meson compile -C build
-meson install -C build
+## Dependencies
 ```
+meson
+```
+
+## Setup
+Run (from any directory):
+```bash
+install.sh               # install to ./iguana
+install.sh /tmp/iguana   # install to /tmp/iguana/
+```
+Alternatively, use `meson` for more control.

@@ -1,2 +1,6 @@
-build/*
-install/*
+# build artifacts
+/build*/
+/iguana
+/bin
+/include
+/lib
