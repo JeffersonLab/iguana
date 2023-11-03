@@ -1,17 +1,17 @@
 # pragma once
 
-// #include "iguana/Algorithm.h"
+#include "services/Algorithm.h"
 
 namespace iguana::clas12 {
 
-  class FiducialCuts /*: public Algorithm*/ {
+  class FiducialCuts : public Algorithm {
 
     public:
-      FiducialCuts() /*: Algorithm()*/ {}
+      FiducialCuts() : Algorithm() {}
       ~FiducialCuts() {}
 
-      void Start()/* override*/;
-      int Run(int a, int b)/* override*/;
-      void Stop()/* override*/;
+      void Start() override;
+      int Run(int a, int b) override;
+      void Stop() override;
   };
 }

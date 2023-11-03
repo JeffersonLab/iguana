@@ -1,6 +1,6 @@
 # pragma once
 
-// #include "iguana/Algorithm.h"
+#include "services/Algorithm.h"
 #include <unordered_map>
 #include <memory>
 
@@ -22,7 +22,7 @@ namespace iguana {
       };
 
       // TODO: make private
-      std::unordered_map<Arbiter::algo, std::shared_ptr<clas12::FiducialCuts/*Algorithm*/>> algo_map;
+      std::unordered_map<Arbiter::algo, std::shared_ptr<Algorithm>> algo_map;
 
   };
 }
