@@ -5,7 +5,7 @@
 #include <memory>
 
 // TODO: avoid listing the algos
-#include "algos/clas12/fiducial_cuts/FiducialCuts.h"
+#include "algorithms/clas12/fiducial_cuts/FiducialCuts.h"
 
 namespace iguana {
 

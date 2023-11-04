@@ -1,5 +1,5 @@
 test_exe = executable(
-  'test_exe',
+  'run',
   'main.cc',
   include_directories : project_inc,
   link_with : iguana_lib,

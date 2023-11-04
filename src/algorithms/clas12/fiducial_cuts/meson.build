@@ -7,7 +7,7 @@ algo_sources = [
 ]
 
 algo_lib = shared_library(
-  'algo_lib',
+  'IguanaAlgorithms',
   algo_sources,
   include_directories : project_inc,
   install_rpath: project_lib_rpath,

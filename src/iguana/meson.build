@@ -7,7 +7,7 @@ iguana_sources = [
 ]
 
 iguana_lib = shared_library(
-  'iguana_lib',
+  'Iguana',
   iguana_sources,
   include_directories : project_inc,
   install_rpath: project_lib_rpath,

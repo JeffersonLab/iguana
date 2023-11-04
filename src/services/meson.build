@@ -7,7 +7,7 @@ services_sources = [
 ]
 
 services_lib = shared_library(
-  'services_lib',
+  'IguanaServices',
   services_sources,
   include_directories : project_inc,
   install_rpath: project_lib_rpath,
