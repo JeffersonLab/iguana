@@ -1,5 +1,7 @@
 # pragma once
 
+#include "Logger.h"
+
 namespace iguana {
 
   class Algorithm {
@@ -11,5 +13,11 @@ namespace iguana {
       virtual void Stop() = 0;
       virtual ~Algorithm() {}
 
+    protected:
+      void StartLogger(std::string name, spdlog::level::level_enum lev=spdlog::level::info);
+      LoggerType m_log;
+
+    private:
+      std::shared_ptr<Logger> m_logger;
   };
 }
