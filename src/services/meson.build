@@ -12,13 +12,13 @@ services_lib = shared_library(
   'IguanaServices',
   services_sources,
   include_directories: project_inc,
-  dependencies:        dep_fmt,
+  dependencies:        fmt_dep,
   install_rpath:       project_lib_rpath,
   install:             true,
 )
 
-services_lib_dep = declare_dependency(
-  dependencies: dep_fmt
+services_dep = declare_dependency(
+  dependencies: fmt_dep
 )
 
 install_headers(services_headers, subdir : meson.project_name())

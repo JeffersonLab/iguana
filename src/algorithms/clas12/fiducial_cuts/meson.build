@@ -10,7 +10,7 @@ algo_lib = shared_library(
   'IguanaAlgorithms',
   algo_sources,
   include_directories: project_inc,
-  dependencies:        services_lib_dep,
+  dependencies:        services_dep,
   link_with:           services_lib,
   install_rpath:       project_lib_rpath,
   install:             true,
