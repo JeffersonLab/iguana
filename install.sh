@@ -12,7 +12,14 @@ build:        $buildDir
 installation: $installDir
 EOF
 
-[ ! -d $buildDir ] && 
-  meson setup --prefix $installDir $buildDir $sourceDir ||
-  meson configure $buildDir --prefix $installDir
-meson install -C $buildDir
+msg() { echo "[+++] $*"; }
+cmdSetup()  { msg SETUP     && meson setup --prefix $installDir $buildDir $sourceDir; }
+cmdConfig() { msg CONFIGURE && meson configure $buildDir --prefix $installDir; }
+cmdBuild()  { msg BUILD     && meson install -C $buildDir; }
+
+if [ ! -d $buildDir ]; then
+  cmdSetup
+else
+  cmdConfig || cmdSetup
+fi
+cmdBuild

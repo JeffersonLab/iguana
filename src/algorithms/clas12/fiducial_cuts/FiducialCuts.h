@@ -7,7 +7,7 @@ namespace iguana::clas12 {
   class FiducialCuts : public Algorithm {
 
     public:
-      FiducialCuts() : Algorithm() {}
+      FiducialCuts() : Algorithm("fiducial_cuts") {}
       ~FiducialCuts() {}
 
       void Start() override;

@@ -2,7 +2,8 @@
 
 namespace iguana {
 
-  Algorithm::Algorithm() {
+  Algorithm::Algorithm(std::string name) {
+    m_log = std::make_shared<Logger>(name);
   }
 
 }
