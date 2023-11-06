@@ -5,7 +5,7 @@ Prototype design
 ## Dependencies
 ```
 meson, ninja
-fmt (debian:libfmt(-dev), arch:fmt)
+fmt (debian:libfmt-dev, arch:fmt)
 ```
 
 ## Setup
