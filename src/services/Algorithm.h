@@ -14,10 +14,9 @@ namespace iguana {
       virtual ~Algorithm() {}
 
     protected:
-      void StartLogger(std::string name, spdlog::level::level_enum lev=spdlog::level::info);
-      LoggerType m_log;
+      void StartLogger(std::string name, int lev=0);
 
     private:
-      std::shared_ptr<Logger> m_logger;
+      std::shared_ptr<Logger> m_log;
   };
 }
