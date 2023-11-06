@@ -13,9 +13,9 @@ installation: $installDir
 EOF
 
 msg() { echo "[+++] $*"; }
-cmdSetup() { msg SETUP && meson setup --prefix $installDir $buildDir $sourceDir; }
+cmdSetup()  { msg SETUP     && meson setup --prefix $installDir $buildDir $sourceDir; }
 cmdConfig() { msg CONFIGURE && meson configure $buildDir --prefix $installDir; }
-cmdBuild() { msg BUILD && meson install -C $buildDir; }
+cmdBuild()  { msg BUILD     && meson install -C $buildDir; }
 
 if [ ! -d $buildDir ]; then
   cmdSetup
