@@ -1,4 +1,4 @@
-# pragma once
+#pragma once
 
 #include <fmt/format.h>
 #include <unordered_map>

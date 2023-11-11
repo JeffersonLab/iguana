@@ -9,7 +9,7 @@ SourceDir = __dir__
 options = {
   build:   "#{Dir.pwd}/build-iguana",
   install: "#{Dir.pwd}/iguana",
-  hipo:    ["#{Dir.pwd}/hipo", ENV['HIPO']].compact.join(';'),
+  hipo:    "#{Dir.pwd}/hipo",
   clean:   false,
   purge:   false,
 }
@@ -22,7 +22,7 @@ parser.on("-b", "--build [BUILD DIR]", "Directory for buildsystem", "Default: #{
 parser.separator ''
 parser.on("-i", "--install [INSTALL DIR]", "Directory for installation", "Default: #{options[:install]}")
 parser.separator ''
-parser.on("-h", "--hipo [HIPO DIR]", "Path to HIPO installation", "Default: #{options[:hipo].split(';')[0]}", "if not found, tries env var $HIPO")
+parser.on("-h", "--hipo [HIPO DIR]", "Path to HIPO installation", "Default: #{options[:hipo]}", "if not found, tries env var $HIPO")
 parser.separator 'TROUBLESHOOTING:'
 parser.on("--clean", "Remove the buildsystem at [BUILD DIR] beforehand")                 
 parser.on("--purge", "Remove the installation at [INSTALL DIR] beforehand")                 
@@ -31,6 +31,9 @@ parser.parse!(into: options)
 # print the options
 puts "SET OPTIONS:"
 options.each do |k,v| puts "#{k.to_s.rjust 15} => #{v}" end
+
+# check for HIPO installation, or fallback to $HIPO
+options[:hipo] = ENV['HIPO'] unless Dir.exists? options[:hipo]
 
 # clean and purge
 def rmDir(dir,obj='files')
@@ -60,7 +63,7 @@ end
 
 # set a build option
 def buildOpt(key,val)
-  "-D#{key}='#{val}'"
+  val.nil? ? '' : "-D#{key}='#{val}'"
 end
 
 # meson commands

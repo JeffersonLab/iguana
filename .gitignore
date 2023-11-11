@@ -7,3 +7,6 @@
 
 # dependencies
 hipo
+
+# data files
+*.hipo
