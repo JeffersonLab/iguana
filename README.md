@@ -3,14 +3,17 @@
 Prototype design
 
 ## Dependencies
-- `meson`
-- `fmt`
+
+Dependencies likely available in your package manager:
+- [`meson`](https://mesonbuild.com/)
+- [`fmt`](https://github.com/fmtlib/fmt)
   - Debian: `libfmt-dev`
   - Arch: `fmt`
-- `hipo`
-  - From: <https://github.com/gavalian/hipo>
+
+Dependencies you may need to build yourself, unless available on a Jefferson Lab computer:
+- [`hipo`](https://github.com/gavalian/hipo)
   - To make `iguana` know where to find it, do one of:
-    - use `install.rb` option `--hipo`
+    - use option `--hipo` when running `install.rb`
     - symlink `./hipo` to the installation
     - set `$HIPO` to the installation
     - use `meson` build option `-Dhipo` (or its [default](meson.options))
