@@ -111,6 +111,8 @@ jobs:
     needs: [ download_validation_files, build_iguana ]
     runs-on: ubuntu-latest
     steps:
+      - name: install dependencies
+        run: sudo apt install -y libfmt-dev
       - name: get build artifacts
         uses: actions/download-artifact@v3
         with:
