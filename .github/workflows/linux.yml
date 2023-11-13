@@ -16,6 +16,9 @@ defaults:
 
 jobs:
 
+  # build
+  #########################################################
+
   build_hipo:
     name: Build HIPO
     runs-on: ubuntu-latest
@@ -39,7 +42,7 @@ jobs:
           path: ./*.tar.gz
 
   build_iguana:
-    name: Build iguana
+    name: Build Iguana
     needs: [ build_hipo ]
     runs-on: ubuntu-latest
     steps:
@@ -69,3 +72,20 @@ jobs:
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
       - run: tree iguana
+
+  # download test data
+  #########################################################
+
+  download_test_data:
+    name: Download test data
+    runs-on: ubuntu-latest
+    steps:
+    - name: download
+      run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
+    - name: list
+      run: tar tzvf validation_files.tar.gz
+    - uses: actions/upload-artifact@v3
+      with:
+        name: validation_files
+        retention-days: 1
+        path: validation_files.tar.gz
