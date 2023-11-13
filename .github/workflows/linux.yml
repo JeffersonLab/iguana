@@ -83,28 +83,26 @@ jobs:
   # download test data
   #########################################################
 
-  download_test_data:
-    name: Download test data
+  download_validation_files:
+    name: Download validation files
     runs-on: ubuntu-latest
     steps:
       - name: download
-        run: |
-          wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
-          mv {validation_files,test_data}.tar.gz
+        run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
       - name: list
-        run: tar tzvf test_data.tar.gz
+        run: tar tzvf validation_files.tar.gz
       - uses: actions/upload-artifact@v3
         with:
-          name: test_data
+          name: validation_files
           retention-days: 1
-          path: test_data.tar.gz
+          path: validation_files.tar.gz
 
   # download test data
   #########################################################
 
   test_iguana:
     name: Test Iguana
-    needs: [ download_test_data, build_iguana ]
+    needs: [ download_validation_files, build_iguana ]
     runs-on: ubuntu-latest
     steps:
       - name: get build artifacts
@@ -114,13 +112,13 @@ jobs:
       - name: get test data
         uses: actions/download-artifact@v3
         with:
-          name: test_data
+          name: validation_files
       - name: untar artifacts
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - name: tree artifacts
         run: tree
       - name: run test
         run: |
-          test_file=$(find test_data -name "*.hipo" | head -n1)
+          test_file=$(find validation_files -name "*.hipo" | head -n1)
           echo "TEST FILE = $test_file"
           iguana/bin/run $test_file
