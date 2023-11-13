@@ -10,6 +10,7 @@ iguana_lib = shared_library(
   'Iguana',
   iguana_sources,
   include_directories: project_inc,
+  dependencies:        [ fmt_dep, hipo_dep ],
   link_with:           [ algo_lib, services_lib ],
   install:             true,
   install_dir:         project_lib_install_dir,

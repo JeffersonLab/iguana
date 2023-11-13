@@ -12,9 +12,25 @@ int main(int argc, char **argv) {
   reader.readDictionary(factory);
   factory.show();
 
+  hipo::bank particleBank(factory.getSchema("REC::Particle"));
+  hipo::event event;
+
   iguana::Arbiter arb;
-  auto algo = arb.algo_map.at(iguana::Arbiter::clas12_FiducialCuts);
+  auto algo = arb.algo_map.at(iguana::Arbiter::clas12_EventBuilderFilter);
   algo->Start();
-  fmt::print("test result: {}\n", algo->Run(3,4));
+
+  int count = 0;
+  while(reader.next()) {
+    if(count > 3) break;
+    reader.read(event);
+    event.getStructure(particleBank);
+
+    auto resultBank = algo->Run({{"REC::Particle", particleBank}});
+
+    fmt::print("BEFORE -> AFTER: {} -> {}\n", particleBank.getRows(), resultBank.at("REC::Particle").getRows());
+
+    count++;
+  }
+
   algo->Stop();
 }

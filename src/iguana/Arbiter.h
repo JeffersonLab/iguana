@@ -5,7 +5,7 @@
 #include <memory>
 
 // TODO: avoid listing the algos
-#include "algorithms/clas12/fiducial_cuts/FiducialCuts.h"
+#include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"
 
 namespace iguana {
 
@@ -18,7 +18,7 @@ namespace iguana {
       // TODO: avoid listing the algos
       // TODO: who should own the algorithm instances: Arbiter or the user?
       enum algo {
-        clas12_FiducialCuts
+        clas12_EventBuilderFilter
       };
 
       // TODO: make private

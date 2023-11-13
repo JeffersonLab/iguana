@@ -1,9 +1,9 @@
 algo_headers = [
-  'FiducialCuts.h',
+  'clas12/event_builder_filter/EventBuilderFilter.h',
 ]
 
 algo_sources = [
-  'FiducialCuts.cc',
+  'clas12/event_builder_filter/EventBuilderFilter.cc',
 ]
 
 algo_lib = shared_library(
