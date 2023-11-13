@@ -8,10 +8,10 @@ project(
 project_inc = include_directories('src')
 
 project_lib_install_dir = 'lib' # to keep it the same for different Linux distributions
-project_exe_install_dir = 'bin'
+project_bin_install_dir = 'bin'
 
 project_lib_rpath = '$ORIGIN'
-project_exe_rpath = ':'.join([
+project_bin_rpath = ':'.join([
   '$ORIGIN/../' + project_lib_install_dir,
   get_option('hipo') + '/lib'
 ])

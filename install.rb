@@ -57,7 +57,7 @@ FileUtils.mkdir_p options[:install]
 prefix = File.realpath options[:install]
 
 # print and run a command
-def exe(cmd)
+def runCommand(cmd)
   puts "[+++] #{cmd}"
   system cmd or raise "FAILED: #{cmd}"
 end
@@ -90,8 +90,8 @@ meson = {
 
 # run meson
 if Dir.exists?(options[:build])
-  exe "#{meson[:config]} || #{meson[:setup]}"
+  runCommand "#{meson[:config]} || #{meson[:setup]}"
 else
-  exe meson[:setup]
+  runCommand meson[:setup]
 end
-exe meson[:install]
+runCommand meson[:install]
