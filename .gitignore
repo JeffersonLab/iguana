@@ -4,3 +4,9 @@
 /bin
 /include
 /lib
+
+# dependencies
+hipo
+
+# data files
+*.hipo

@@ -1,4 +1,4 @@
-# pragma once
+#pragma once
 
 #include "services/Algorithm.h"
 #include <unordered_map>
