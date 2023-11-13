@@ -86,6 +86,26 @@ jobs:
       run: tar tzvf validation_files.tar.gz
     - uses: actions/upload-artifact@v3
       with:
-        name: validation_files
+        name: test_data
         retention-days: 1
-        path: validation_files.tar.gz
+        path: test_data.tar.gz
+
+  # download test data
+  #########################################################
+
+  test_iguana:
+    name: Test Iguana
+    needs: [ download_test_data, build_iguana ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: untar build
+        run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      - name: get test data
+        uses: actions/download-artifact@v3
+        with:
+          name: validation_files
+      - run: tree
