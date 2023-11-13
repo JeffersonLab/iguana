@@ -65,4 +65,7 @@ jobs:
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - name: build iguana
         run: ./install.rb --hipo hipo
+      - name: dump build log
+        if: always()
+        run: cat build-iguana/meson-logs/meson-log.txt
       - run: tree iguana
