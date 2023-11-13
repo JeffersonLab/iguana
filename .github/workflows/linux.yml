@@ -44,6 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: setup fmt
+        run: apt search fmt
       - name: setup meson
         run: python -m pip install meson ninja
       - name: summarize dependencies
