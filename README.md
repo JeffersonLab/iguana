@@ -5,8 +5,8 @@ Prototype design
 ## Dependencies
 
 Dependencies likely available in your package manager:
-- [`meson`](https://mesonbuild.com/)
-- [`fmt`](https://github.com/fmtlib/fmt)
+- [`meson`](https://mesonbuild.com/) version 1.1 or newer
+- [`fmt`](https://github.com/fmtlib/fmt) version 10 or newer
   - Debian: `libfmt-dev`
   - Arch: `fmt`
 
