@@ -29,6 +29,7 @@ jobs:
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo
           cmake --build build -j2
           cmake --install build
+      - run: tree hipo
       - name: tar
         run: tar czvf hipo{.tar.gz,}
       - uses: actions/upload-artifact@v3
@@ -39,7 +40,7 @@ jobs:
 
   build_iguana:
     name: Build iguana
-    # needs: [ build_hipo ]
+    needs: [ build_hipo ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,3 +54,12 @@ jobs:
           for dep in python ruby meson ninja ; do
             echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
           done
+      - name: get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: untar build
+        run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      - name: build iguana
+        run: ./install.rb --hipo hipo
+      - run: tree iguana
