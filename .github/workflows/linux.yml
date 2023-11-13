@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
 
-  build-hipo:
+  build_hipo:
     name: Build HIPO
     runs-on: ubuntu-latest
     steps:
@@ -33,8 +33,9 @@ jobs:
           retention-days: 1
           path: ./*.tar.gz
 
-  build-iguana:
+  build_iguana:
     name: Build iguana
+    needs: [ build_hipo ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
