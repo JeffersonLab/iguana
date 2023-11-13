@@ -39,9 +39,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # - uses: actions/setup-python@v4
-      - run: python --version
-      # - run: python -m pip install meson ninja
-      - run: meson --version
-      - run: ninja --version
-      - run: ruby --version
+      - name: setup meson
+        run: python -m pip install meson ninja
+      - name: summarize dependencies
+          echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
+          echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
+          echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
+          for dep in python ruby meson ninja ; do
+            echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
+          done
