@@ -117,8 +117,8 @@ jobs:
           name: test_data
       - name: untar artifacts
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
-      - name: tree
-        run: tree artifacts
+      - name: tree artifacts
+        run: tree
       - name: run test
         run: |
           test_file=$(find test_data -name "*.hipo" | head -n1)
