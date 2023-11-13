@@ -12,8 +12,9 @@ algo_lib = shared_library(
   include_directories: project_inc,
   dependencies:        services_dep,
   link_with:           services_lib,
-  install_rpath:       project_lib_rpath,
   install:             true,
+  install_rpath:       project_lib_rpath,
+  install_dir:         project_lib_install_dir,
 )
 
 install_headers(algo_headers, subdir : meson.project_name())

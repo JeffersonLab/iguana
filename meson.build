@@ -7,11 +7,14 @@ project(
 
 project_inc = include_directories('src')
 
+project_lib_install_dir = 'lib' # to keep it the same for different Linux distributions
+project_exe_install_dir = 'bin'
+
+project_lib_rpath = '$ORIGIN'
 project_exe_rpath = ':'.join([
-  '$ORIGIN/../lib',
+  '$ORIGIN/../' + project_lib_install_dir,
   get_option('hipo') + '/lib'
 ])
-project_lib_rpath = '$ORIGIN'
 
 fmt_dep  = dependency('fmt')
 hipo_dep = dependency('hipo4', method: 'cmake', cmake_args: '-DCMAKE_PREFIX_PATH=' + get_option('hipo'))
