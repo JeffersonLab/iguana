@@ -39,7 +39,7 @@ jobs:
         with:
           name: build
           retention-days: 1
-          path: ./*.tar.gz
+          path: hipo.tar.gz
 
   build_iguana:
     name: Build Iguana
@@ -72,11 +72,13 @@ jobs:
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
       - run: tree iguana
+      - name: tar
+        run: tar czvf iguana{.tar.gz,}
       - uses: actions/upload-artifact@v3
         with:
           name: build
           retention-days: 1
-          path: ./*.tar.gz
+          path: iguana.tar.gz
 
   # download test data
   #########################################################
@@ -93,7 +95,7 @@ jobs:
         with:
           name: test_data
           retention-days: 1
-          path: ./*.tar.gz
+          path: validation_files.tar.gz
 
   # download test data
   #########################################################
