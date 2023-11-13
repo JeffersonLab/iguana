@@ -35,7 +35,7 @@ namespace iguana {
           if(lev >= m_level) {
             auto level_name_it = m_level_names.find(lev);
             if(level_name_it == m_level_names.end()) {
-              Warn("Logger::Print called with unknown log level '{}'; printing as error instead", fmt::underlying(lev));
+              Warn("Logger::Print called with unknown log level '{}'; printing as error instead", static_cast<int>(lev)); // FIXME: static_cast -> fmt::underlying, but needs new version of fmt
               Error(msg, vals...);
             } else {
               fmt::print(
