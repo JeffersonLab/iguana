@@ -114,7 +114,9 @@ jobs:
         with:
           name: validation_files
       - name: untar artifacts
-        run: ls *.tar.gz | xargs -I{} tar xzvf {}
+        run: |
+          ls *.tar.gz | xargs -I{} tar xzvf {}
+          rm -v *.tar.gz
       - name: tree artifacts
         run: tree
       - name: run test
