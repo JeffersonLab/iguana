@@ -34,6 +34,7 @@ options.each do |k,v| puts "#{k.to_s.rjust 15} => #{v}" end
 
 # check for HIPO installation, or fallback to $HIPO
 options[:hipo] = ENV['HIPO'] unless Dir.exists? options[:hipo]
+options[:hipo] = File.realpath options[:hipo] if Dir.exists? options[:hipo]
 
 # clean and purge
 def rmDir(dir,obj='files')

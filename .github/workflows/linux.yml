@@ -1,0 +1,71 @@
+name: Linux
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+    tags: [ '*' ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  build_hipo:
+    name: Build HIPO
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout hipo
+        uses: actions/checkout@v4
+        with:
+          repository: gavalian/hipo
+      - name: build
+        run: |
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo
+          cmake --build build -j2
+          cmake --install build
+      - run: tree hipo
+      - name: tar
+        run: tar czvf hipo{.tar.gz,}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          retention-days: 1
+          path: ./*.tar.gz
+
+  build_iguana:
+    name: Build iguana
+    needs: [ build_hipo ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: setup fmt
+        run: sudo apt install -y libfmt-dev
+      - name: setup meson
+        run: python -m pip install meson ninja
+      - name: summarize dependencies
+        run: |
+          echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
+          echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
+          echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
+          for dep in python ruby meson ninja ; do
+            echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "| \`fmt\` | $(apt show libfmt-dev | grep -w Version) |" >> $GITHUB_STEP_SUMMARY
+      - name: get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: untar build
+        run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      - name: build iguana
+        run: ./install.rb --hipo hipo
+      - name: dump build log
+        if: always()
+        run: cat build-iguana/meson-logs/meson-log.txt
+      - run: tree iguana
