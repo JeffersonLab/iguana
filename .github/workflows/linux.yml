@@ -16,6 +16,9 @@ defaults:
 
 jobs:
 
+  # build
+  #########################################################
+
   build_hipo:
     name: Build HIPO
     runs-on: ubuntu-latest
@@ -36,10 +39,10 @@ jobs:
         with:
           name: build
           retention-days: 1
-          path: ./*.tar.gz
+          path: hipo.tar.gz
 
   build_iguana:
-    name: Build iguana
+    name: Build Iguana
     needs: [ build_hipo ]
     runs-on: ubuntu-latest
     steps:
@@ -68,4 +71,64 @@ jobs:
       - name: dump build log
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
+      - name: readelf iguana
+        run: |
+          for obj in $(ls iguana/bin/*) $(find iguana -name "*.so") ; do
+            echo "[+++] READELF $obj"
+            readelf -d $obj
+          done
       - run: tree iguana
+      - name: tar
+        run: tar czvf iguana{.tar.gz,}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          retention-days: 1
+          path: iguana.tar.gz
+
+  # download test data
+  #########################################################
+
+  download_validation_files:
+    name: Download validation files
+    runs-on: ubuntu-latest
+    steps:
+      - name: download
+        run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
+      - name: list
+        run: tar tzvf validation_files.tar.gz
+      - uses: actions/upload-artifact@v3
+        with:
+          name: validation_files
+          retention-days: 1
+          path: validation_files.tar.gz
+
+  # download test data
+  #########################################################
+
+  test_iguana:
+    name: Test Iguana
+    needs: [ download_validation_files, build_iguana ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: install dependencies
+        run: sudo apt install -y libfmt-dev
+      - name: get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: get test data
+        uses: actions/download-artifact@v3
+        with:
+          name: validation_files
+      - name: untar artifacts
+        run: |
+          ls *.tar.gz | xargs -I{} tar xzvf {}
+          rm -v *.tar.gz
+      - name: tree artifacts
+        run: tree
+      - name: run test
+        run: |
+          test_file=$(find validation_files -name "*.hipo" | head -n1)
+          echo "TEST FILE = $test_file"
+          iguana/bin/run $test_file
