@@ -7,6 +7,9 @@ namespace iguana::clas12 {
   }
 
   Algorithm::BankMap EventBuilderFilter::Run(Algorithm::BankMap inputBanks) {
+
+    if(MissingInputBanks(inputBanks, {"particles"})) ThrowRun();
+
     return inputBanks;
   }
 

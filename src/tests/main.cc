@@ -25,9 +25,9 @@ int main(int argc, char **argv) {
     reader.read(event);
     event.getStructure(particleBank);
 
-    auto resultBank = algo->Run({{"REC::Particle", particleBank}});
+    auto resultBank = algo->Run({{"particles", particleBank}});
 
-    fmt::print("BEFORE -> AFTER: {} -> {}\n", particleBank.getRows(), resultBank.at("REC::Particle").getRows());
+    fmt::print("BEFORE -> AFTER: {} -> {}\n", particleBank.getRows(), resultBank.at("particles").getRows());
 
     count++;
   }
