@@ -38,6 +38,17 @@ namespace iguana {
       /// @return true if `banks` is missing any keys in `keys`
       bool MissingInputBanks(BankMap banks, std::set<std::string> keys);
 
+      /// Copy a row from one bank to another, assuming their schemata are equivalent
+      /// @param srcBank the source bank
+      /// @param destBank the destination bank
+      /// @param row the row to copy from `srcBank` to `destBank`
+      void CopyBankRow(hipo::bank srcBank, hipo::bank destBank, int row);
+
+      /// Blank a row, setting all items to zero
+      /// @param bank the bank to modify
+      /// @param row the row to blank
+      void BlankRow(hipo::bank bank, int row);
+
       /// Throw a runtime exception when calling `Run`
       void ThrowRun();
 

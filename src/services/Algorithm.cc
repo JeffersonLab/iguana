@@ -19,6 +19,20 @@ namespace iguana {
     return false;
   }
 
+  void Algorithm::CopyBankRow(hipo::bank srcBank, hipo::bank destBank, int row) {
+    // TODO: check srcBank.getSchema() == destBank.getSchema()
+    for(int item = 0; item < srcBank.getSchema().getEntries(); item++) {
+      auto val = srcBank.get(item, row);
+      destBank.put(item, row, val);
+    }
+  }
+
+  void Algorithm::BlankRow(hipo::bank bank, int row) {
+    for(int item = 0; item < bank.getSchema().getEntries(); item++) {
+      bank.put(item, row, 0);
+    }
+  }
+
   void Algorithm::ThrowRun() {
     throw std::runtime_error(fmt::format("Algorithm '{}' cannot `Run`", m_name));
   }

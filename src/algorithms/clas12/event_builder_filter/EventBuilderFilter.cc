@@ -36,22 +36,22 @@ namespace iguana::clas12 {
 
     // filter the input bank for requested PDG code(s)
     int outRow = -1;
-    for(int inRow=0; inRow<inBanks.at("particles").getRows(); inRow++) {
+    for(int inRow = 0; inRow < inBanks.at("particles").getRows(); inRow++) {
       auto inPid = inBanks.at("particles").get("pid",inRow);
 
       if(m_opt.pids.contains(inPid)) {
         m_log->Debug("input PID {} -- accept", inPid);
-        if(m_opt.mode == EventBuilderFilterOptions::Modes::blank)
-          outRow = inRow;
-        else
-          outRow++;
-        outBanks.at("particles").put("pid", outRow, inPid);
+        CopyBankRow(
+            inBanks.at("particles"),
+            outBanks.at("particles"),
+            m_opt.mode == EventBuilderFilterOptions::Modes::blank ? inRow : outRow++
+            );
       }
 
       else {
         m_log->Debug("input PID {} -- reject", inPid);
         if(m_opt.mode == EventBuilderFilterOptions::blank)
-          outBanks.at("particles").put("pid", inRow, 0);
+          BlankRow(outBanks.at("particles"), inRow);
       }
 
     }
