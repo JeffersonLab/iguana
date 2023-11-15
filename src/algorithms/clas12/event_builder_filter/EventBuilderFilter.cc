@@ -17,42 +17,43 @@ namespace iguana::clas12 {
 
     // check the input banks existence
     if(MissingInputBanks(inBanks, {"particles"}))
-      ThrowRun();
+      Throw("missing input banks");
 
     // define the output schemata and banks
     BankMap outBanks = {
       { "particles", hipo::bank(inBanks.at("particles").getSchema()) }
     };
 
-    // set number of output rows
-    switch(m_opt.mode) {
-      case EventBuilderFilterOptions::Modes::blank:
-        outBanks.at("particles").setRows(inBanks.at("particles").getRows());
-        break;
-      case EventBuilderFilterOptions::Modes::compact:
-        outBanks.at("particles").setRows(inBanks.at("particles").getRows()); // FIXME
-        break;
+    // filter the input bank for requested PDG code(s)
+    std::set<int> acceptedRows;
+    for(int row = 0; row < inBanks.at("particles").getRows(); row++) {
+      auto pid    = inBanks.at("particles").get("pid", row);
+      auto accept = m_opt.pids.contains(pid);
+      if(accept) acceptedRows.insert(row);
+      m_log->Debug("input PID {} -- accept = {}", pid, accept);
     }
 
-    // filter the input bank for requested PDG code(s)
-    int outRow = -1;
-    for(int inRow = 0; inRow < inBanks.at("particles").getRows(); inRow++) {
-      auto inPid = inBanks.at("particles").get("pid",inRow);
+    // fill the output bank
+    switch(m_opt.mode) {
 
-      if(m_opt.pids.contains(inPid)) {
-        m_log->Debug("input PID {} -- accept", inPid);
-        CopyBankRow(
-            inBanks.at("particles"),
-            outBanks.at("particles"),
-            m_opt.mode == EventBuilderFilterOptions::Modes::blank ? inRow : outRow++
-            );
-      }
+      case EventBuilderFilterOptions::Modes::blank:
+        outBanks.at("particles").setRows(inBanks.at("particles").getRows());
+        for(int row = 0; row < inBanks.at("particles").getRows(); row++) {
+          if(acceptedRows.contains(row))
+            CopyBankRow(inBanks.at("particles"), row, outBanks.at("particles"), row);
+          else
+            BlankRow(outBanks.at("particles"), row);
+        }
+        break;
 
-      else {
-        m_log->Debug("input PID {} -- reject", inPid);
-        if(m_opt.mode == EventBuilderFilterOptions::blank)
-          BlankRow(outBanks.at("particles"), inRow);
-      }
+      case EventBuilderFilterOptions::Modes::compact:
+        outBanks.at("particles").setRows(acceptedRows.size());
+        for(int row = 0; auto acceptedRow : acceptedRows)
+          CopyBankRow(inBanks.at("particles"), acceptedRow, outBanks.at("particles"), row++);
+        break;
+
+      default:
+        Throw("unknown 'mode' option");
 
     }
 

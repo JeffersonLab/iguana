@@ -8,7 +8,7 @@ namespace iguana {
 
   bool Algorithm::MissingInputBanks(BankMap banks, std::set<std::string> keys) {
     for(auto key : keys) {
-      if(banks.find(key) == banks.end()) {
+      if(!banks.contains(key)) {
         m_log->Error("Algorithm '{}' is missing the input bank '{}'", m_name, key);
         m_log->Error("  => the following input banks are required by '{}':", m_name);
         for(auto k : keys)
@@ -19,11 +19,11 @@ namespace iguana {
     return false;
   }
 
-  void Algorithm::CopyBankRow(hipo::bank srcBank, hipo::bank destBank, int row) {
+  void Algorithm::CopyBankRow(hipo::bank srcBank, int srcRow, hipo::bank destBank, int destRow) {
     // TODO: check srcBank.getSchema() == destBank.getSchema()
     for(int item = 0; item < srcBank.getSchema().getEntries(); item++) {
-      auto val = srcBank.get(item, row);
-      destBank.put(item, row, val);
+      auto val = srcBank.get(item, srcRow);
+      destBank.put(item, destRow, val);
     }
   }
 
@@ -31,10 +31,6 @@ namespace iguana {
     for(int item = 0; item < bank.getSchema().getEntries(); item++) {
       bank.put(item, row, 0);
     }
-  }
-
-  void Algorithm::ThrowRun() {
-    throw std::runtime_error(fmt::format("Algorithm '{}' cannot `Run`", m_name));
   }
 
   void Algorithm::ShowBanks(BankMap banks, std::string message, Logger::Level level) {
@@ -50,6 +46,10 @@ namespace iguana {
   void Algorithm::ShowBanks(BankMap inBanks, BankMap outBanks, Logger::Level level) {
     ShowBanks(inBanks,  "===== INPUT BANKS =====",  level);
     ShowBanks(outBanks, "===== OUTPUT BANKS =====", level);
+  }
+
+  void Algorithm::Throw(std::string message) {
+    throw std::runtime_error(fmt::format("CRITICAL ERROR: {}; Algorithm '{}' stopped!", message, m_name));
   }
 
 }

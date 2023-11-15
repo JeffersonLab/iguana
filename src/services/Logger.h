@@ -25,29 +25,25 @@ namespace iguana {
       void SetLevel(Level lev);
       Level GetLevel();
 
-      template <typename... VALUES> void Trace(std::string msg, VALUES... vals) { Print(trace, msg, vals...); }
-      template <typename... VALUES> void Debug(std::string msg, VALUES... vals) { Print(debug, msg, vals...); }
-      template <typename... VALUES> void Info(std::string  msg, VALUES... vals) { Print(info,  msg, vals...); }
-      template <typename... VALUES> void Warn(std::string  msg, VALUES... vals) { Print(warn,  msg, vals...); }
-      template <typename... VALUES> void Error(std::string msg, VALUES... vals) { Print(error, msg, vals...); }
+      template <typename... VALUES> void Trace(std::string message, VALUES... vals) { Print(trace, message, vals...); }
+      template <typename... VALUES> void Debug(std::string message, VALUES... vals) { Print(debug, message, vals...); }
+      template <typename... VALUES> void Info(std::string  message, VALUES... vals) { Print(info,  message, vals...); }
+      template <typename... VALUES> void Warn(std::string  message, VALUES... vals) { Print(warn,  message, vals...); }
+      template <typename... VALUES> void Error(std::string message, VALUES... vals) { Print(error, message, vals...); }
 
       template <typename... VALUES>
-        void Print(Level lev, std::string msg, VALUES... vals) {
+        void Print(Level lev, std::string message, VALUES... vals) {
           if(lev >= m_level) {
-            auto level_name_it = m_level_names.find(lev);
-            if(level_name_it == m_level_names.end()) {
-              Warn("Logger::Print called with unknown log level '{}'; printing as error instead", static_cast<int>(lev)); // FIXME: static_cast -> fmt::underlying, but needs new version of fmt
-              Error(msg, vals...);
-            } else {
+            if(m_level_names.contains(lev)) {
+              auto prefix = fmt::format("[{}] [{}] ", m_level_names.at(lev), m_name);
               fmt::print(
                   lev >= warn ? stderr : stdout,
-                  fmt::format(
-                    "[{}] [{}] {}\n",
-                    level_name_it->second,
-                    m_name,
-                    fmt::format(msg, vals...)
-                    )
+                  fmt::runtime(prefix + message + "\n"),
+                  vals...
                   );
+            } else {
+              Warn("Logger::Print called with unknown log level '{}'; printing as error instead", static_cast<int>(lev)); // FIXME: static_cast -> fmt::underlying, but needs new version of fmt
+              Error(message, vals...);
             }
           }
         }

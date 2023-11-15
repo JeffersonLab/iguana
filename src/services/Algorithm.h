@@ -40,17 +40,15 @@ namespace iguana {
 
       /// Copy a row from one bank to another, assuming their schemata are equivalent
       /// @param srcBank the source bank
+      /// @param srcRow the row in `srcBank` to copy from
       /// @param destBank the destination bank
-      /// @param row the row to copy from `srcBank` to `destBank`
-      void CopyBankRow(hipo::bank srcBank, hipo::bank destBank, int row);
+      /// @param destRow the row in `destBank` to copy to
+      void CopyBankRow(hipo::bank srcBank, int srcRow, hipo::bank destBank, int destRow);
 
       /// Blank a row, setting all items to zero
       /// @param bank the bank to modify
       /// @param row the row to blank
       void BlankRow(hipo::bank bank, int row);
-
-      /// Throw a runtime exception when calling `Run`
-      void ThrowRun();
 
       /// Dump all banks in a BankMap
       /// @param banks the banks to show
@@ -63,6 +61,10 @@ namespace iguana {
       /// @param outBanks the output banks
       /// @param level the log level
       void ShowBanks(BankMap inBanks, BankMap outBanks, Logger::Level level=Logger::trace);
+
+      /// Stop the algorithm and throw a runtime exception
+      /// @param message the error message
+      void Throw(std::string message);
 
       /// algorithm name
       std::string m_name;
