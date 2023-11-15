@@ -2,7 +2,8 @@ project(
   'iguana',
   'cpp',
   version: '0.0.0',
-  license: 'LGPLv3'
+  license: 'LGPLv3',
+  default_options: [ 'cpp_std=c++20' ],
 )
 
 project_inc = include_directories('src')

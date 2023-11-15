@@ -23,4 +23,19 @@ namespace iguana {
     throw std::runtime_error(fmt::format("Algorithm '{}' cannot `Run`", m_name));
   }
 
+  void Algorithm::ShowBanks(BankMap banks, std::string message, Logger::Level level) {
+    if(m_log->GetLevel() <= level) {
+      m_log->Print(level, message);
+      for(auto [key,bank] : banks) {
+        m_log->Print(level, "BANK: '{}'", key);
+        bank.show();
+      }
+    }
+  }
+
+  void Algorithm::ShowBanks(BankMap inBanks, BankMap outBanks, Logger::Level level) {
+    ShowBanks(inBanks,  "===== INPUT BANKS =====",  level);
+    ShowBanks(outBanks, "===== OUTPUT BANKS =====", level);
+  }
+
 }

@@ -3,38 +3,67 @@
 namespace iguana::clas12 {
 
   void EventBuilderFilter::Start() {
-    m_log->Info("start event builder filter");
+    m_log->Debug("START {}", m_name);
+
+    // set configuration
+    m_log->SetLevel(Logger::Level::trace);
+    m_opt.mode = EventBuilderFilterOptions::Modes::blank;
+    m_opt.pids = {11, 211, -211};
   }
 
-  Algorithm::BankMap EventBuilderFilter::Run(Algorithm::BankMap inputBanks) {
+
+  Algorithm::BankMap EventBuilderFilter::Run(Algorithm::BankMap inBanks) {
+    m_log->Debug("RUN {}", m_name);
 
     // check the input banks existence
-    if(MissingInputBanks(inputBanks, {"particles"}))
+    if(MissingInputBanks(inBanks, {"particles"}))
       ThrowRun();
 
     // define the output schemata and banks
-    BankMap outputBanks = {
-      { "particles", hipo::bank(inputBanks.at("particles").getSchema(), inputBanks.at("particles").getRows()) }
+    BankMap outBanks = {
+      { "particles", hipo::bank(inBanks.at("particles").getSchema()) }
     };
 
-    // filter the input bank for requested PDG code(s)
-    int j=0;
-    for(int i=0; i<inputBanks.at("particles").getRows(); i++) {
-      auto pid = inputBanks.at("particles").get("pid",i);
-      m_log->Info("INPUT PID = {}", pid);
-      if(pid==11)
-        outputBanks.at("particles").put("pid", j++, pid);
+    // set number of output rows
+    switch(m_opt.mode) {
+      case EventBuilderFilterOptions::Modes::blank:
+        outBanks.at("particles").setRows(inBanks.at("particles").getRows());
+        break;
+      case EventBuilderFilterOptions::Modes::compact:
+        outBanks.at("particles").setRows(inBanks.at("particles").getRows()); // FIXME
+        break;
     }
 
-    // print
-    m_log->Info("SHOW OUTPUT BANKS");
-    outputBanks.at("particles").show();
+    // filter the input bank for requested PDG code(s)
+    int outRow = -1;
+    for(int inRow=0; inRow<inBanks.at("particles").getRows(); inRow++) {
+      auto inPid = inBanks.at("particles").get("pid",inRow);
 
-    return outputBanks;
+      if(m_opt.pids.contains(inPid)) {
+        m_log->Debug("input PID {} -- accept", inPid);
+        if(m_opt.mode == EventBuilderFilterOptions::Modes::blank)
+          outRow = inRow;
+        else
+          outRow++;
+        outBanks.at("particles").put("pid", outRow, inPid);
+      }
+
+      else {
+        m_log->Debug("input PID {} -- reject", inPid);
+        if(m_opt.mode == EventBuilderFilterOptions::blank)
+          outBanks.at("particles").put("pid", inRow, 0);
+      }
+
+    }
+
+    // dump the banks and return the output
+    ShowBanks(inBanks, outBanks);
+    return outBanks;
   }
 
+
   void EventBuilderFilter::Stop() {
-    m_log->Info("stop event builder filter");
+    m_log->Debug("STOP {}", m_name);
   }
 
 }

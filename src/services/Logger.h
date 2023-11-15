@@ -23,6 +23,7 @@ namespace iguana {
       ~Logger() {}
 
       void SetLevel(Level lev);
+      Level GetLevel();
 
       template <typename... VALUES> void Trace(std::string msg, VALUES... vals) { Print(trace, msg, vals...); }
       template <typename... VALUES> void Debug(std::string msg, VALUES... vals) { Print(debug, msg, vals...); }

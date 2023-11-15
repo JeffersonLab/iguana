@@ -18,4 +18,8 @@ namespace iguana {
     Debug("Logger '{}' set to '{}'", m_name, m_level_names.at(m_level));
   }
 
+  Logger::Level Logger::GetLevel() {
+    return m_level;
+  }
+
 }

@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
   reader.open(inFile.c_str());
   hipo::dictionary factory;
   reader.readDictionary(factory);
-  factory.show();
+  // factory.show();
 
   hipo::bank particleBank(factory.getSchema("REC::Particle"));
   hipo::event event;

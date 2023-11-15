@@ -23,9 +23,9 @@ namespace iguana {
       virtual void Start() = 0;
 
       /// Run an algorithm
-      /// @param inputBanks the set of input banks
+      /// @param inBanks the set of input banks
       /// @return a set of output banks
-      virtual BankMap Run(BankMap inputBanks) = 0;
+      virtual BankMap Run(BankMap inBanks) = 0;
 
       /// Finalize an algorithm after all events are processed
       virtual void Stop() = 0;
@@ -40,6 +40,18 @@ namespace iguana {
 
       /// Throw a runtime exception when calling `Run`
       void ThrowRun();
+
+      /// Dump all banks in a BankMap
+      /// @param banks the banks to show
+      /// @param message optionally print a header message
+      /// @param level the log level
+      void ShowBanks(BankMap banks, std::string message="", Logger::Level level=Logger::trace);
+
+      /// Dump all input and output banks
+      /// @param inBanks the input banks
+      /// @param outBanks the output banks
+      /// @param level the log level
+      void ShowBanks(BankMap inBanks, BankMap outBanks, Logger::Level level=Logger::trace);
 
       /// algorithm name
       std::string m_name;

@@ -4,6 +4,14 @@
 
 namespace iguana::clas12 {
 
+  class EventBuilderFilterOptions {
+    public:
+      enum Modes { blank, compact };
+      Modes mode = blank;
+      std::set<int> pids = {11, 211};
+  };
+
+
   class EventBuilderFilter : public Algorithm {
 
     public:
@@ -11,7 +19,12 @@ namespace iguana::clas12 {
       ~EventBuilderFilter() {}
 
       void Start() override;
-      Algorithm::BankMap Run(Algorithm::BankMap inputBanks) override;
+      Algorithm::BankMap Run(Algorithm::BankMap inBanks) override;
       void Stop() override;
+
+    private:
+      EventBuilderFilterOptions m_opt;
+
   };
+
 }
