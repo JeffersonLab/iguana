@@ -6,30 +6,32 @@
 
 ```mermaid
 flowchart TB
-    classDef cls fill:88ff88,color:black
+    classDef cls fill:#88ff88,color:black
 
     subgraph Inheritance 
         b[Base Class]:::cls
         d[Derived Class]:::cls
     end
-    d --|> b
+    d -.-> b
 
     subgraph Ownership
        c[Class]:::cls
        o[Object owned by Class]:::cls
     end
-    c --> o
+    c ---> o
 ```
 
 ### Iguana Design
 
 ```mermaid
-flowchart TB
-    classDef cls fill:88ff88,color:black
-    classDef algo fill:ff8888,color:black
+flowchart LR
+    classDef cls fill:#88ff88,color:black
+    classDef algo fill:#ff8888,color:black
+    classDef other fill:#88ffff,color:black
 
     subgraph iguana
         Iguana:::cls
+        bindings(language<br />bindings):::other
     end
 
     subgraph services
@@ -39,19 +41,24 @@ flowchart TB
     end
 
     subgraph algorithms
-        FiducialCuts:::algo
-        FiducialCutsConfig:::algo
-        MomentumCorrection:::algo
-        MomentumCorrectionConfig:::algo
+        subgraph fiducial cuts
+            FiducialCuts:::algo
+            FiducialCutsConfig:::algo
+        end
+        subgraph momentum corrections
+            MomentumCorrection:::algo
+            MomentumCorrectionConfig:::algo
+        end
     end
 
-    Iguana    --> Logger
-    Iguana    --> Algorithm
-    Algorithm --> Logger
-    Algorithm --> AlgorithmConfig
+    Iguana    ---> Logger
+    Iguana    ---> Algorithm
+    Iguana    -.-  bindings
+    Algorithm ---> Logger
+    Algorithm ---> AlgorithmConfig
 
-    FiducialCuts       --|> Algorithm
-    FiducialCutsConfig --|> AlgorithmConfig
-    MomentumCorrection       --|> Algorithm
-    MomentumCorrectionConfig --|> AlgorithmConfig
+    FiducialCuts       -.-> Algorithm
+    FiducialCutsConfig -.-> AlgorithmConfig
+    MomentumCorrection       -.-> Algorithm
+    MomentumCorrectionConfig -.-> AlgorithmConfig
 ```
