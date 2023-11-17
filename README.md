@@ -2,6 +2,8 @@
 
 Prototype design
 
+See [design notes](doc/design.md)
+
 ## Dependencies
 
 Dependencies likely available in your package manager:
