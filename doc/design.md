@@ -65,25 +65,35 @@ flowchart LR
 
 ## Algorithm Design
 
-Base class `Algorithm` has virtual methods:
-- `Start`: runs before any event processing
-    - configuration
-    - set up data structures
-- `Run`: runs on every event
-    - input and output are a set of banks (`std::unordered_map< std::string, hipo::bank>`)
-    - runs the algorithm for a given event's bank(s)
-    - should be thread-safe, _e.g._, no modification of instance members
-    - usage:
-        - called on every event in an event loop
-        - part of a lambda for a data frame transformation
-    - analyses that operate on bank rows rather than full banks require exposure
-      of some function that does the _primary_ action of the algorithm
-        - useful to have
-        - wide variety of function signatures, so not easy to generalize and therefore not required
-- `Stop`: runs after event processing
-    - cleanup, if needed
+### Common Methods
 
-Algorithm usage options for users:
+Base class `Algorithm` has virtual methods:
+
+#### `Start`
+- runs before any event processing
+- configuration
+- set up data structures
+
+#### `Run`
+- runs on every event
+- input and output are a set of banks (`std::unordered_map< std::string, hipo::bank>`)
+- runs the algorithm for a given event's bank(s)
+- should be thread-safe, _e.g._, no modification of instance members
+- usage:
+    - called on every event in an event loop
+    - part of a lambda for a data frame transformation
+- analyses that operate on bank rows rather than full banks require exposure
+  of some function that does the _primary_ action of the algorithm
+    - useful to have
+    - wide variety of function signatures, so not easy to generalize and therefore not required
+
+#### `Stop`
+- runs after event processing
+- cleanup, if needed
+
+
+### Usage Options for Users
+
 - Instantiate and run algorithms as they are
     - No need for `Iguana` instance
     - Algorithms do not depend on `Iguana`, just on services
@@ -94,6 +104,7 @@ Algorithm usage options for users:
       an instance of each
     - User runs the algorithms using `Iguana` "sugar"
     - Language bindings can be made available at this level
+
 
 ### Algorithm Types
 
