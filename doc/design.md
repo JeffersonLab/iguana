@@ -56,6 +56,7 @@ flowchart LR
     Iguana    -.-  bindings
     Algorithm ---> Logger
     Algorithm ---> AlgorithmConfig
+    AlgorithmConfig ---> Logger
 
     FiducialCuts       -.-> Algorithm
     FiducialCutsConfig -.-> AlgorithmConfig
