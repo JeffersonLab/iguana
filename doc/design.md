@@ -1,33 +1,14 @@
 # Design
 
-## Class Diagram
+## Graphs
 
-### Legend
-
-```mermaid
-flowchart TB
-    classDef cls fill:#88ff88,color:black
-
-    subgraph Inheritance 
-        b[Base Class]:::cls
-        d[Derived Class]:::cls
-    end
-    d -.-> b
-
-    subgraph Ownership
-       c[Class]:::cls
-       o[Object owned by Class]:::cls
-    end
-    c ---> o
-```
-
-### Iguana Design
+### Class Diagram
 
 ```mermaid
 flowchart LR
     classDef cls fill:#88ff88,color:black
     classDef algo fill:#ff8888,color:black
-    classDef other fill:#88ffff,color:black
+    classDef other fill:#ff88ff,color:black
 
     subgraph iguana
         Iguana:::cls
@@ -62,6 +43,46 @@ flowchart LR
     FiducialCutsConfig -.-> AlgorithmConfig
     MomentumCorrection       -.-> Algorithm
     MomentumCorrectionConfig -.-> AlgorithmConfig
+```
+
+#### Legend
+
+```mermaid
+flowchart TB
+    classDef cls fill:#88ff88,color:black
+
+    subgraph Inheritance 
+        b[Base Class]:::cls
+        d[Derived Class]:::cls
+    end
+    d -.-> b
+
+    subgraph Ownership
+       c[Class]:::cls
+       o[Object owned by Class]:::cls
+    end
+    c ---> o
+```
+
+### Dependency Graph
+
+```mermaid
+flowchart TB
+    classDef lib fill:#ffff88,color:black
+    classDef ext fill:#88ffff,color:black
+
+    iguana{{libIguana}}:::lib
+    algorithms{{libIguanaAlgorithms}}:::lib
+    services{{libIguanaServices}}:::lib
+
+    hipo{{libhipo4}}:::ext
+    fmt{{libfmt}}:::ext
+
+    hipo       ---> services
+    fmt        ---> services
+    services   ---> algorithms
+    algorithms ---> iguana
+    services   ---> iguana
 ```
 
 ## Algorithm Design
