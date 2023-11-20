@@ -67,6 +67,7 @@ flowchart TB
 ### Dependency Graph
 
 ```mermaid
+flowchart TB
     classDef lib fill:#ffff88,color:black
     classDef ext fill:#88ffff,color:black
 
