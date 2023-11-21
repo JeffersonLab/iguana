@@ -28,7 +28,7 @@ namespace iguana::clas12 {
     std::set<int> acceptedRows;
     for(int row = 0; row < inBanks.at("particles").getRows(); row++) {
       auto pid    = inBanks.at("particles").get("pid", row);
-      auto accept = m_opt.pids.contains(pid);
+      auto accept = m_opt.pids.find(pid) != m_opt.pids.end();
       if(accept) acceptedRows.insert(row);
       m_log->Debug("input PID {} -- accept = {}", pid, accept);
     }
@@ -37,20 +37,25 @@ namespace iguana::clas12 {
     switch(m_opt.mode) {
 
       case EventBuilderFilterOptions::Modes::blank:
-        outBanks.at("particles").setRows(inBanks.at("particles").getRows());
-        for(int row = 0; row < inBanks.at("particles").getRows(); row++) {
-          if(acceptedRows.contains(row))
-            CopyBankRow(inBanks.at("particles"), row, outBanks.at("particles"), row);
-          else
-            BlankRow(outBanks.at("particles"), row);
+        {
+          outBanks.at("particles").setRows(inBanks.at("particles").getRows());
+          for(int row = 0; row < inBanks.at("particles").getRows(); row++) {
+            if(acceptedRows.find(row) != acceptedRows.end())
+              CopyBankRow(inBanks.at("particles"), row, outBanks.at("particles"), row);
+            else
+              BlankRow(outBanks.at("particles"), row);
+          }
+          break;
         }
-        break;
 
       case EventBuilderFilterOptions::Modes::compact:
-        outBanks.at("particles").setRows(acceptedRows.size());
-        for(int row = 0; auto acceptedRow : acceptedRows)
-          CopyBankRow(inBanks.at("particles"), acceptedRow, outBanks.at("particles"), row++);
-        break;
+        {
+          outBanks.at("particles").setRows(acceptedRows.size());
+          int row = 0;
+          for(auto acceptedRow : acceptedRows)
+            CopyBankRow(inBanks.at("particles"), acceptedRow, outBanks.at("particles"), row++);
+          break;
+        }
 
       default:
         Throw("unknown 'mode' option");

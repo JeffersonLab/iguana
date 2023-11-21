@@ -34,8 +34,8 @@ namespace iguana {
       template <typename... VALUES>
         void Print(Level lev, std::string message, VALUES... vals) {
           if(lev >= m_level) {
-            if(m_level_names.contains(lev)) {
-              auto prefix = fmt::format("[{}] [{}] ", m_level_names.at(lev), m_name);
+            if(auto it{m_level_names.find(lev)}; it != m_level_names.end()) {
+              auto prefix = fmt::format("[{}] [{}] ", it->second, m_name);
               fmt::print(
                   lev >= warn ? stderr : stdout,
                   fmt::runtime(prefix + message + "\n"),
