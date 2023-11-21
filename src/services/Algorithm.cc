@@ -8,7 +8,7 @@ namespace iguana {
 
   bool Algorithm::MissingInputBanks(BankMap banks, std::set<std::string> keys) {
     for(auto key : keys) {
-      if(!banks.contains(key)) {
+      if(banks.find(key) == banks.end()) {
         m_log->Error("Algorithm '{}' is missing the input bank '{}'", m_name, key);
         m_log->Error("  => the following input banks are required by '{}':", m_name);
         for(auto k : keys)
