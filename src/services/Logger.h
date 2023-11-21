@@ -42,7 +42,7 @@ namespace iguana {
                   vals...
                   );
             } else {
-              Warn("Logger::Print called with unknown log level '{}'; printing as error instead", static_cast<int>(lev)); // FIXME: static_cast -> fmt::underlying, but needs new version of fmt
+              Warn("Logger::Print called with unknown log level '{}'; printing as error instead", fmt::underlying(lev));
               Error(message, vals...);
             }
           }
