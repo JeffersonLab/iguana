@@ -2,69 +2,62 @@
 
 namespace iguana::clas12 {
 
-  void EventBuilderFilter::Start() {
+  void EventBuilderFilter::Start(std::unordered_map<std::string, int> bankVecOrder) {
     m_log->Debug("START {}", m_name);
+
+    // check for input banks
+    try {
+      b_particle = bankVecOrder.at("REC::Particle");
+      b_calo     = bankVecOrder.at("REC::Calorimeter");
+    } catch(const std::out_of_range &o) {
+      m_log->Error("missing input banks");
+      return;
+    }
 
     // set configuration
     m_log->SetLevel(Logger::Level::trace);
-    m_opt.mode = EventBuilderFilterOptions::Modes::blank;
     m_opt.pids = {11, 211, -211};
   }
 
 
-  Algorithm::BankMap EventBuilderFilter::Run(Algorithm::BankMap inBanks) {
+  void EventBuilderFilter::Run(Algorithm::BankVec inBanks) {
     m_log->Debug("RUN {}", m_name);
 
     // check the input banks existence
-    if(MissingInputBanks(inBanks, {"particles"}))
-      Throw("missing input banks");
+    std::shared_ptr<hipo::bank> particleBank;
+    std::shared_ptr<hipo::bank> caloBank;
+    try {
+      particleBank = inBanks.at(b_particle);
+      caloBank     = inBanks.at(b_calo);
+    } catch(const std::out_of_range &o) {
+      m_log->Error("missing input banks");
+      return;
+    }
 
-    // define the output schemata and banks
-    BankMap outBanks = {
-      { "particles", std::make_shared<hipo::bank>(inBanks.at("particles")->getSchema()) }
-    };
+    // check these are the correct banks // TODO: maybe too strict
+    if(particleBank->getSchema().getName() != "REC::Particle") {
+      m_log->Error("bad particle bank");
+      return;
+    }
+    // if(caloBank->getSchema().getName() != "REC::Calorimeter") {
+    //   m_log->Error("bad calorimeter bank");
+    //   return;
+    // }
+
+    // dump the bank
+    ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // filter the input bank for requested PDG code(s)
-    std::set<int> acceptedRows;
-    for(int row = 0; row < inBanks.at("particles")->getRows(); row++) {
-      auto pid    = inBanks.at("particles")->get("pid", row);
+    for(int row = 0; row < particleBank->getRows(); row++) {
+      auto pid    = particleBank->get("pid", row);
       auto accept = m_opt.pids.find(pid) != m_opt.pids.end();
-      if(accept) acceptedRows.insert(row);
+      if(!accept)
+        BlankRow(particleBank, row);
       m_log->Debug("input PID {} -- accept = {}", pid, accept);
     }
 
-    // fill the output bank
-    switch(m_opt.mode) {
-
-      case EventBuilderFilterOptions::Modes::blank:
-        {
-          outBanks.at("particles")->setRows(inBanks.at("particles")->getRows());
-          for(int row = 0; row < inBanks.at("particles")->getRows(); row++) {
-            if(acceptedRows.find(row) != acceptedRows.end())
-              CopyBankRow(inBanks.at("particles"), row, outBanks.at("particles"), row);
-            else
-              BlankRow(outBanks.at("particles"), row);
-          }
-          break;
-        }
-
-      case EventBuilderFilterOptions::Modes::compact:
-        {
-          outBanks.at("particles")->setRows(acceptedRows.size());
-          int row = 0;
-          for(auto acceptedRow : acceptedRows)
-            CopyBankRow(inBanks.at("particles"), acceptedRow, outBanks.at("particles"), row++);
-          break;
-        }
-
-      default:
-        Throw("unknown 'mode' option");
-
-    }
-
-    // dump the banks and return the output
-    ShowBanks(inBanks, outBanks);
-    return outBanks;
+    // dump the modified bank
+    ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
 

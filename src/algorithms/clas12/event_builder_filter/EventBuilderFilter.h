@@ -6,8 +6,6 @@ namespace iguana::clas12 {
 
   class EventBuilderFilterOptions {
     public:
-      enum Modes { blank, compact };
-      Modes mode = blank;
       std::set<int> pids = {11, 211};
   };
 
@@ -15,15 +13,21 @@ namespace iguana::clas12 {
   class EventBuilderFilter : public Algorithm {
 
     public:
-      EventBuilderFilter() : Algorithm("event_builder_filter") {}
+      EventBuilderFilter() : Algorithm("event_builder_filter") {
+        m_requiredBanks = {
+          "REC::Particle",
+          "REC::Calorimeter"
+        };
+      }
       ~EventBuilderFilter() {}
 
-      void Start() override;
-      Algorithm::BankMap Run(Algorithm::BankMap inBanks) override;
+      void Start(std::unordered_map<std::string, int> bankVecOrder) override;
+      void Run(Algorithm::BankVec inBanks) override;
       void Stop() override;
 
     private:
       EventBuilderFilterOptions m_opt;
+      int b_particle, b_calo;
 
   };
 
