@@ -9,20 +9,20 @@
 
 namespace iguana {
 
-  class Arbiter {
+  class Iguana {
 
     public:
-      Arbiter();
-      ~Arbiter() {}
+      Iguana();
+      ~Iguana() {}
 
       // TODO: avoid listing the algos
-      // TODO: who should own the algorithm instances: Arbiter or the user?
+      // TODO: who should own the algorithm instances: Iguana or the user?
       enum algo {
         clas12_EventBuilderFilter
       };
 
       // TODO: make private
-      std::unordered_map<Arbiter::algo, std::shared_ptr<Algorithm>> algo_map;
+      std::unordered_map<Iguana::algo, std::shared_ptr<Algorithm>> algo_map;
 
   };
 }
