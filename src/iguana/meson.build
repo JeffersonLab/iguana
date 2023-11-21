@@ -1,9 +1,9 @@
 iguana_headers = [
-  'Arbiter.h',
+  'Iguana.h',
 ]
 
 iguana_sources = [
-  'Arbiter.cc',
+  'Iguana.cc',
 ]
 
 iguana_lib = shared_library(

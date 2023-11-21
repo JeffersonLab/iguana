@@ -1,8 +1,8 @@
-#include "Arbiter.h"
+#include "Iguana.h"
 
 namespace iguana {
 
-  Arbiter::Arbiter() {
+  Iguana::Iguana() {
     algo_map.insert({clas12_EventBuilderFilter, std::make_shared<clas12::EventBuilderFilter>()});
   }
 

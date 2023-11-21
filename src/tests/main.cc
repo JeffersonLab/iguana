@@ -1,36 +1,45 @@
-#include "iguana/Arbiter.h"
+#include "iguana/Iguana.h"
 #include <hipo4/reader.h>
 
 int main(int argc, char **argv) {
 
-  std::string inFile = "data.hipo";
-  if(argc > 1) inFile = std::string(argv[1]);
+  // parse arguments
+  int argi = 1;
+  std::string inFileName = argc > argi ? std::string(argv[argi++]) : "data.hipo";
+  int         numEvents  = argc > argi ? std::stoi(argv[argi++])   : 3;
 
-  hipo::reader reader;
-  reader.open(inFile.c_str());
-  hipo::dictionary factory;
-  reader.readDictionary(factory);
-  // factory.show();
-
-  hipo::bank particleBank(factory.getSchema("REC::Particle"));
-  hipo::event event;
-
-  iguana::Arbiter arb;
-  auto algo = arb.algo_map.at(iguana::Arbiter::clas12_EventBuilderFilter);
+  // start iguana
+  /* TODO: will be similified when we have more sugar in `iguana::Iguana`; until then we
+   * use the test algorithm directly
+   */
+  iguana::Iguana I;
+  auto algo = I.algo_map.at(iguana::Iguana::clas12_EventBuilderFilter);
   algo->Start();
 
-  int count = 0;
-  while(reader.next()) {
-    if(count > 3) break;
-    reader.read(event);
+  /////////////////////////////////////////////////////
+
+  // read input file
+  hipo::reader reader;
+  reader.open(inFileName.c_str());
+
+  // get bank schema
+  /* TODO: users should not have to do this; this is a workaround until
+   * the pattern `hipo::event::getBank("REC::Particle")` is possible
+   */
+  hipo::dictionary factory;
+  reader.readDictionary(factory);
+  hipo::bank particleBank(factory.getSchema("REC::Particle"));
+
+  // event loop
+  hipo::event event;
+  int iEvent = 0;
+  while(reader.next(event) && (iEvent++ < numEvents || numEvents == 0)) {
     event.getStructure(particleBank);
-
     auto resultBank = algo->Run({{"particles", particleBank}});
-
-    fmt::print("BEFORE -> AFTER: {} -> {}\n", particleBank.getRows(), resultBank.at("particles").getRows());
-
-    count++;
   }
 
+  /////////////////////////////////////////////////////
+
   algo->Stop();
+  return 0;
 }
