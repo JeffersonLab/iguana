@@ -21,13 +21,13 @@ namespace iguana::clas12 {
 
     // define the output schemata and banks
     BankMap outBanks = {
-      { "particles", hipo::bank(inBanks.at("particles").getSchema()) }
+      { "particles", std::make_shared<hipo::bank>(inBanks.at("particles")->getSchema()) }
     };
 
     // filter the input bank for requested PDG code(s)
     std::set<int> acceptedRows;
-    for(int row = 0; row < inBanks.at("particles").getRows(); row++) {
-      auto pid    = inBanks.at("particles").get("pid", row);
+    for(int row = 0; row < inBanks.at("particles")->getRows(); row++) {
+      auto pid    = inBanks.at("particles")->get("pid", row);
       auto accept = m_opt.pids.find(pid) != m_opt.pids.end();
       if(accept) acceptedRows.insert(row);
       m_log->Debug("input PID {} -- accept = {}", pid, accept);
@@ -38,8 +38,8 @@ namespace iguana::clas12 {
 
       case EventBuilderFilterOptions::Modes::blank:
         {
-          outBanks.at("particles").setRows(inBanks.at("particles").getRows());
-          for(int row = 0; row < inBanks.at("particles").getRows(); row++) {
+          outBanks.at("particles")->setRows(inBanks.at("particles")->getRows());
+          for(int row = 0; row < inBanks.at("particles")->getRows(); row++) {
             if(acceptedRows.find(row) != acceptedRows.end())
               CopyBankRow(inBanks.at("particles"), row, outBanks.at("particles"), row);
             else
@@ -50,7 +50,7 @@ namespace iguana::clas12 {
 
       case EventBuilderFilterOptions::Modes::compact:
         {
-          outBanks.at("particles").setRows(acceptedRows.size());
+          outBanks.at("particles")->setRows(acceptedRows.size());
           int row = 0;
           for(auto acceptedRow : acceptedRows)
             CopyBankRow(inBanks.at("particles"), acceptedRow, outBanks.at("particles"), row++);

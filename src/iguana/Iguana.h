@@ -2,7 +2,6 @@
 
 #include "services/Algorithm.h"
 #include <unordered_map>
-#include <memory>
 
 // TODO: avoid listing the algos
 #include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"

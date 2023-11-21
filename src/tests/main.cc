@@ -28,13 +28,13 @@ int main(int argc, char **argv) {
    */
   hipo::dictionary factory;
   reader.readDictionary(factory);
-  hipo::bank particleBank(factory.getSchema("REC::Particle"));
+  auto particleBank = std::make_shared<hipo::bank>(factory.getSchema("REC::Particle"));
 
   // event loop
   hipo::event event;
   int iEvent = 0;
   while(reader.next(event) && (iEvent++ < numEvents || numEvents == 0)) {
-    event.getStructure(particleBank);
+    event.getStructure(*particleBank);
     auto resultBank = algo->Run({{"particles", particleBank}});
   }
 
