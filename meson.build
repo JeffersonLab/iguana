@@ -2,7 +2,8 @@ project(
   'iguana',
   'cpp',
   version: '0.0.0',
-  license: 'LGPLv3'
+  license: 'LGPLv3',
+  default_options: [ 'cpp_std=c++20' ],
 )
 
 project_inc = include_directories('src')
@@ -20,6 +21,6 @@ fmt_dep  = dependency('fmt')
 hipo_dep = dependency('hipo4', method: 'cmake', cmake_args: '-DCMAKE_PREFIX_PATH=' + get_option('hipo'))
 
 subdir('src/services')
-subdir('src/algorithms/clas12/fiducial_cuts')
+subdir('src/algorithms')
 subdir('src/iguana')
 subdir('src/tests')
