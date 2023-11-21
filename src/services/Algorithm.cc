@@ -19,17 +19,17 @@ namespace iguana {
     return false;
   }
 
-  void Algorithm::CopyBankRow(hipo::bank srcBank, int srcRow, hipo::bank destBank, int destRow) {
-    // TODO: check srcBank.getSchema() == destBank.getSchema()
-    for(int item = 0; item < srcBank.getSchema().getEntries(); item++) {
-      auto val = srcBank.get(item, srcRow);
-      destBank.put(item, destRow, val);
+  void Algorithm::CopyBankRow(std::shared_ptr<hipo::bank> srcBank, int srcRow, std::shared_ptr<hipo::bank> destBank, int destRow) {
+    // TODO: check srcBank->getSchema() == destBank.getSchema()
+    for(int item = 0; item < srcBank->getSchema().getEntries(); item++) {
+      auto val = srcBank->get(item, srcRow);
+      destBank->put(item, destRow, val);
     }
   }
 
-  void Algorithm::BlankRow(hipo::bank bank, int row) {
-    for(int item = 0; item < bank.getSchema().getEntries(); item++) {
-      bank.put(item, row, 0);
+  void Algorithm::BlankRow(std::shared_ptr<hipo::bank> bank, int row) {
+    for(int item = 0; item < bank->getSchema().getEntries(); item++) {
+      bank->put(item, row, 0);
     }
   }
 
@@ -38,7 +38,7 @@ namespace iguana {
       m_log->Print(level, message);
       for(auto [key,bank] : banks) {
         m_log->Print(level, "BANK: '{}'", key);
-        bank.show();
+        bank->show();
       }
     }
   }

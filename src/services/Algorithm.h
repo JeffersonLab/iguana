@@ -10,7 +10,7 @@ namespace iguana {
 
     public:
 
-      using BankMap = std::unordered_map<std::string, hipo::bank>;
+      using BankMap = std::unordered_map<std::string, std::shared_ptr<hipo::bank>>;
 
       /// Algorithm base class constructor
       /// @param name the unique name for a derived class instance
@@ -43,12 +43,12 @@ namespace iguana {
       /// @param srcRow the row in `srcBank` to copy from
       /// @param destBank the destination bank
       /// @param destRow the row in `destBank` to copy to
-      void CopyBankRow(hipo::bank srcBank, int srcRow, hipo::bank destBank, int destRow);
+      void CopyBankRow(std::shared_ptr<hipo::bank> srcBank, int srcRow, std::shared_ptr<hipo::bank> destBank, int destRow);
 
       /// Blank a row, setting all items to zero
       /// @param bank the bank to modify
       /// @param row the row to blank
-      void BlankRow(hipo::bank bank, int row);
+      void BlankRow(std::shared_ptr<hipo::bank> bank, int row);
 
       /// Dump all banks in a BankMap
       /// @param banks the banks to show
