@@ -3,18 +3,26 @@
 namespace iguana::clas12 {
 
   EventBuilderFilter::EventBuilderFilter() : Algorithm("event_builder_filter") {
+
+    // define required banks
     m_requiredBanks = {
       "REC::Particle",
       "REC::Calorimeter"
     };
+
+    // set default configuration options
+    o_pids = {11, 211};
   }
 
   void EventBuilderFilter::Start(bank_index_cache_t &index_cache) {
 
-    // set configuration
+    // set logger
+    // TODO: should be done by configuration
     m_log->SetLevel(Logger::Level::trace);
     m_log->Debug("START {}", m_name);
-    m_opt.pids = {11, 211, -211};
+
+    // cache options
+    CacheOption("pids", o_pids);
 
     // cache expected bank indices
     CacheBankIndex(index_cache, b_particle, "REC::Particle");
@@ -48,7 +56,7 @@ namespace iguana::clas12 {
 
 
   bool EventBuilderFilter::Filter(int pid) {
-    return m_opt.pids.find(pid) != m_opt.pids.end();
+    return o_pids.find(pid) != o_pids.end();
   }
 
 

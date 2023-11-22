@@ -5,12 +5,6 @@
 
 namespace iguana::clas12 {
 
-  class EventBuilderFilterOptions {
-    public:
-      std::set<int> pids = {11, 211};
-  };
-
-
   class EventBuilderFilter : public Algorithm {
 
     public:
@@ -25,8 +19,12 @@ namespace iguana::clas12 {
       bool Filter(int pid);
 
     private:
-      EventBuilderFilterOptions m_opt;
+
+      /// `bank_vec_t` indices
       int b_particle, b_calo;
+
+      /// configuration options
+      std::set<int> o_pids;
 
   };
 
