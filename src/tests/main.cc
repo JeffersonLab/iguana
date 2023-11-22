@@ -1,6 +1,13 @@
 #include "iguana/Iguana.h"
 #include <hipo4/reader.h>
 
+void printParticles(std::string prefix, iguana::bank_ptr b) {
+  std::vector<int> pids;
+  for(int row=0; row<b->getRows(); row++)
+    pids.push_back(b->get("pid", row));
+  fmt::print("{}: {}\n", prefix, fmt::join(pids, ", "));
+}
+
 int main(int argc, char **argv) {
 
   // parse arguments
@@ -29,13 +36,16 @@ int main(int argc, char **argv) {
   hipo::dictionary factory;
   reader.readDictionary(factory);
   auto particleBank = std::make_shared<hipo::bank>(factory.getSchema("REC::Particle"));
+  auto caloBank     = std::make_shared<hipo::bank>(factory.getSchema("REC::Calorimeter"));  // TODO: remove when not needed (this is for testing)
 
   // event loop
   hipo::event event;
   int iEvent = 0;
   while(reader.next(event) && (iEvent++ < numEvents || numEvents == 0)) {
     event.getStructure(*particleBank);
-    auto resultBank = algo->Run({{"particles", particleBank}});
+    printParticles("PIDS BEFORE FILTER ", particleBank);
+    algo->Run({particleBank, caloBank});
+    printParticles("PIDS AFTER FILTER  ", particleBank);
   }
 
   /////////////////////////////////////////////////////

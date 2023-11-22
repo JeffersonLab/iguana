@@ -1,4 +1,5 @@
 services_headers = [
+  'TypeDefs.h',
   'Logger.h',
   'Algorithm.h',
 ]

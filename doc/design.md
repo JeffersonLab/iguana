@@ -98,7 +98,7 @@ Base class `Algorithm` has virtual methods:
 
 #### `Run`
 - runs on every event
-- input and output are a set of banks (`std::unordered_map< std::string, hipo::bank>`)
+- input and output are a set of banks
 - runs the algorithm for a given event's bank(s)
 - should be thread-safe, _e.g._, no modification of instance members
 - usage:

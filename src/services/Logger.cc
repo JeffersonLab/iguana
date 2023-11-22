@@ -22,4 +22,8 @@ namespace iguana {
     return m_level;
   }
 
+  std::string Logger::Header(std::string message, int width) {
+    return fmt::format("{:=^{}}", message, width);
+  }
+
 }

@@ -1,16 +1,13 @@
 #pragma once
 
+#include "TypeDefs.h"
 #include "Logger.h"
-#include <hipo4/bank.h>
-#include <set>
 
 namespace iguana {
 
   class Algorithm {
 
     public:
-
-      using BankMap = std::unordered_map<std::string, std::shared_ptr<hipo::bank>>;
 
       /// Algorithm base class constructor
       /// @param name the unique name for a derived class instance
@@ -19,48 +16,59 @@ namespace iguana {
       /// Algorithm base class destructor
       virtual ~Algorithm() {}
 
+      /// Initialize an algorithm before any events are processed.
+      /// The `Run` method will assume a default ordering of banks. 
+      /// Derived classes likely do not need to override this method.
+      virtual void Start();
+
       /// Initialize an algorithm before any events are processed
-      virtual void Start() = 0;
+      /// @param index_cache The `Run` method will use these indices to access banks
+      virtual void Start(bank_index_cache_t &index_cache) = 0;
 
       /// Run an algorithm
-      /// @param inBanks the set of input banks
-      /// @return a set of output banks
-      virtual BankMap Run(BankMap inBanks) = 0;
+      /// @param banks the set of banks to process
+      virtual void Run(bank_vec_t banks) = 0;
 
       /// Finalize an algorithm after all events are processed
       virtual void Stop() = 0;
 
     protected:
 
-      /// Check if `banks` contains all keys `keys`; this is useful for checking algorithm inputs are complete.
-      /// @param banks the set of (key,bank) pairs to check
-      /// @keys the required keys
-      /// @return true if `banks` is missing any keys in `keys`
-      bool MissingInputBanks(BankMap banks, std::set<std::string> keys);
+      /// Cache the index of a bank in a `bank_vec_t`; throws an exception if the bank is not found
+      /// @param index_cache the relation between bank name and `bank_vec_t` index
+      /// @param idx a reference to the `bank_vec_t` index of the bank
+      /// @param bankName the name of the bank
+      void CacheBankIndex(bank_index_cache_t index_cache, int &idx, std::string bankName);
+
+      /// Get the pointer to a bank from a `bank_vec_t`; optionally checks if the bank name matches the expectation
+      /// @param banks the `bank_vec_t` from which to get the specified bank
+      /// @param idx the index of `banks` of the specified bank
+      /// @param expectedBankName if specified, checks that the specified bank has this name
+      bank_ptr GetBank(bank_vec_t banks, int idx, std::string expectedBankName="");
 
       /// Copy a row from one bank to another, assuming their schemata are equivalent
       /// @param srcBank the source bank
       /// @param srcRow the row in `srcBank` to copy from
       /// @param destBank the destination bank
       /// @param destRow the row in `destBank` to copy to
-      void CopyBankRow(std::shared_ptr<hipo::bank> srcBank, int srcRow, std::shared_ptr<hipo::bank> destBank, int destRow);
+      void CopyBankRow(bank_ptr srcBank, int srcRow, bank_ptr destBank, int destRow);
 
       /// Blank a row, setting all items to zero
       /// @param bank the bank to modify
       /// @param row the row to blank
-      void BlankRow(std::shared_ptr<hipo::bank> bank, int row);
+      void BlankRow(bank_ptr bank, int row);
 
-      /// Dump all banks in a BankMap
+      /// Dump all banks in a `bank_vec_t`
       /// @param banks the banks to show
       /// @param message optionally print a header message
       /// @param level the log level
-      void ShowBanks(BankMap banks, std::string message="", Logger::Level level=Logger::trace);
+      void ShowBanks(bank_vec_t banks, std::string message="", Logger::Level level=Logger::trace);
 
-      /// Dump all input and output banks
-      /// @param inBanks the input banks
-      /// @param outBanks the output banks
+      /// Dump a single bank
+      /// @param bank the bank to show
+      /// @param message optionally print a header message
       /// @param level the log level
-      void ShowBanks(BankMap inBanks, BankMap outBanks, Logger::Level level=Logger::trace);
+      void ShowBank(bank_ptr bank, std::string message="", Logger::Level level=Logger::trace);
 
       /// Stop the algorithm and throw a runtime exception
       /// @param message the error message
@@ -68,6 +76,9 @@ namespace iguana {
 
       /// algorithm name
       std::string m_name;
+
+      /// list of required banks
+      std::vector<std::string> m_requiredBanks;
 
       /// Logger
       std::shared_ptr<Logger> m_log;

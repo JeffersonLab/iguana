@@ -24,6 +24,7 @@ namespace iguana {
 
       void SetLevel(Level lev);
       Level GetLevel();
+      static std::string Header(std::string message, int width=50);
 
       template <typename... VALUES> void Trace(std::string message, VALUES... vals) { Print(trace, message, vals...); }
       template <typename... VALUES> void Debug(std::string message, VALUES... vals) { Print(debug, message, vals...); }

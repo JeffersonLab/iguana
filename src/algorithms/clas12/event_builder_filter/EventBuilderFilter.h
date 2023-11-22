@@ -1,13 +1,12 @@
 #pragma once
 
 #include "services/Algorithm.h"
+#include <set>
 
 namespace iguana::clas12 {
 
   class EventBuilderFilterOptions {
     public:
-      enum Modes { blank, compact };
-      Modes mode = blank;
       std::set<int> pids = {11, 211};
   };
 
@@ -15,15 +14,16 @@ namespace iguana::clas12 {
   class EventBuilderFilter : public Algorithm {
 
     public:
-      EventBuilderFilter() : Algorithm("event_builder_filter") {}
+      EventBuilderFilter();
       ~EventBuilderFilter() {}
 
-      void Start() override;
-      Algorithm::BankMap Run(Algorithm::BankMap inBanks) override;
+      void Start(bank_index_cache_t &index_cache) override;
+      void Run(bank_vec_t banks) override;
       void Stop() override;
 
     private:
       EventBuilderFilterOptions m_opt;
+      int b_particle, b_calo;
 
   };
 
