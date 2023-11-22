@@ -19,7 +19,6 @@ namespace iguana::clas12 {
     // cache expected bank indices
     CacheBankIndex(index_cache, b_particle, "REC::Particle");
     CacheBankIndex(index_cache, b_calo,     "REC::Calorimeter");
-    m_log->Error("{} {}", b_particle, b_calo);
 
   }
 
