@@ -1,12 +1,5 @@
-#include "iguana/Iguana.h"
+#include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"
 #include <hipo4/reader.h>
-
-void printParticles(std::string prefix, iguana::bank_ptr b) {
-  std::vector<int> pids;
-  for(int row=0; row<b->getRows(); row++)
-    pids.push_back(b->get("pid", row));
-  fmt::print("{}: {}\n", prefix, fmt::join(pids, ", "));
-}
 
 int main(int argc, char **argv) {
 
@@ -15,12 +8,8 @@ int main(int argc, char **argv) {
   std::string inFileName = argc > argi ? std::string(argv[argi++]) : "data.hipo";
   int         numEvents  = argc > argi ? std::stoi(argv[argi++])   : 3;
 
-  // start iguana
-  /* TODO: will be similified when we have more sugar in `iguana::Iguana`; until then we
-   * use the test algorithm directly
-   */
-  iguana::Iguana I;
-  auto algo = I.algo_map.at(iguana::Iguana::clas12_EventBuilderFilter);
+  // start the algorithm
+  auto algo = std::make_shared<iguana::clas12::EventBuilderFilter>();
   algo->Start();
 
   /////////////////////////////////////////////////////
@@ -36,16 +25,18 @@ int main(int argc, char **argv) {
   hipo::dictionary factory;
   reader.readDictionary(factory);
   auto particleBank = std::make_shared<hipo::bank>(factory.getSchema("REC::Particle"));
-  auto caloBank     = std::make_shared<hipo::bank>(factory.getSchema("REC::Calorimeter"));  // TODO: remove when not needed (this is for testing)
 
   // event loop
   hipo::event event;
   int iEvent = 0;
   while(reader.next(event) && (iEvent++ < numEvents || numEvents == 0)) {
     event.getStructure(*particleBank);
-    printParticles("PIDS BEFORE FILTER ", particleBank);
-    algo->Run({particleBank, caloBank});
-    printParticles("PIDS AFTER FILTER  ", particleBank);
+    fmt::print("PIDS FILTERED BY algo->Filter():\n");
+    for(int row=0; row<particleBank->getRows(); row++) {
+      auto pid = particleBank->get("pid", row);
+      fmt::print("{:>10}:{}\n", pid, algo->Filter(pid) ? " -- ACCEPT" : "");
+    }
+
   }
 
   /////////////////////////////////////////////////////

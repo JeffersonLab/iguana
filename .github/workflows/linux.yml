@@ -130,5 +130,8 @@ jobs:
       - name: run test
         run: |
           test_file=$(find validation_files -name "*.hipo" | head -n1)
-          echo "TEST FILE = $test_file"
-          iguana/bin/run $test_file
+          echo "[+] TEST FILE: $test_file"
+          for exe in $(find iguana/bin -executable -type f); do
+            echo "[+] EXECUTE TEST: $exe"
+            $exe $test_file
+          done
