@@ -18,7 +18,6 @@ namespace iguana {
 
       /// Initialize an algorithm before any events are processed.
       /// The `Run` method will assume a default ordering of banks. 
-      /// Derived classes likely do not need to override this method.
       virtual void Start();
 
       /// Initialize an algorithm before any events are processed

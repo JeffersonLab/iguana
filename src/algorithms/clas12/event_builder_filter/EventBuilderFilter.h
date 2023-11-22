@@ -17,9 +17,12 @@ namespace iguana::clas12 {
       EventBuilderFilter();
       ~EventBuilderFilter() {}
 
+      void Start() override { Algorithm::Start(); }
       void Start(bank_index_cache_t &index_cache) override;
       void Run(bank_vec_t banks) override;
       void Stop() override;
+
+      bool Filter(int pid);
 
     private:
       EventBuilderFilterOptions m_opt;

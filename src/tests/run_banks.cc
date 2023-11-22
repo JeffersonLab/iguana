@@ -43,9 +43,9 @@ int main(int argc, char **argv) {
   int iEvent = 0;
   while(reader.next(event) && (iEvent++ < numEvents || numEvents == 0)) {
     event.getStructure(*particleBank);
-    printParticles("PIDS BEFORE FILTER ", particleBank);
+    printParticles("PIDS BEFORE algo->Run() ", particleBank);
     algo->Run({particleBank, caloBank});
-    printParticles("PIDS AFTER FILTER  ", particleBank);
+    printParticles("PIDS AFTER algo->Run()  ", particleBank);
   }
 
   /////////////////////////////////////////////////////

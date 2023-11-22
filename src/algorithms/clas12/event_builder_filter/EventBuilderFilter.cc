@@ -36,7 +36,7 @@ namespace iguana::clas12 {
     // filter the input bank for requested PDG code(s)
     for(int row = 0; row < particleBank->getRows(); row++) {
       auto pid    = particleBank->get("pid", row);
-      auto accept = m_opt.pids.find(pid) != m_opt.pids.end();
+      auto accept = Filter(pid);
       if(!accept)
         BlankRow(particleBank, row);
       m_log->Debug("input PID {} -- accept = {}", pid, accept);
@@ -44,6 +44,11 @@ namespace iguana::clas12 {
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+  }
+
+
+  bool EventBuilderFilter::Filter(int pid) {
+    return m_opt.pids.find(pid) != m_opt.pids.end();
   }
 
 
