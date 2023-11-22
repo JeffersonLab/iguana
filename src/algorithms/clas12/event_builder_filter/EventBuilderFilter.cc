@@ -2,47 +2,34 @@
 
 namespace iguana::clas12 {
 
-  void EventBuilderFilter::Start(std::unordered_map<std::string, int> bankVecOrder) {
-    m_log->Debug("START {}", m_name);
+  EventBuilderFilter::EventBuilderFilter() : Algorithm("event_builder_filter") {
+    m_requiredBanks = {
+      "REC::Particle",
+      "REC::Calorimeter"
+    };
+  }
 
-    // check for input banks
-    try {
-      b_particle = bankVecOrder.at("REC::Particle");
-      b_calo     = bankVecOrder.at("REC::Calorimeter");
-    } catch(const std::out_of_range &o) {
-      m_log->Error("missing input banks");
-      return;
-    }
+  void EventBuilderFilter::Start(std::unordered_map<std::string, int> bankVecIndices) {
 
     // set configuration
     m_log->SetLevel(Logger::Level::trace);
+    m_log->Debug("START {}", m_name);
     m_opt.pids = {11, 211, -211};
+
+    // cache expected bank indices
+    CacheBankIndex(bankVecIndices, b_particle, "REC::Particle");
+    CacheBankIndex(bankVecIndices, b_calo,     "REC::Calorimeter");
+    m_log->Error("{} {}", b_particle, b_calo);
+
   }
 
 
-  void EventBuilderFilter::Run(Algorithm::BankVec inBanks) {
+  void EventBuilderFilter::Run(Algorithm::BankVec banks) {
     m_log->Debug("RUN {}", m_name);
 
-    // check the input banks existence
-    std::shared_ptr<hipo::bank> particleBank;
-    std::shared_ptr<hipo::bank> caloBank;
-    try {
-      particleBank = inBanks.at(b_particle);
-      caloBank     = inBanks.at(b_calo);
-    } catch(const std::out_of_range &o) {
-      m_log->Error("missing input banks");
-      return;
-    }
-
-    // check these are the correct banks // TODO: maybe too strict
-    if(particleBank->getSchema().getName() != "REC::Particle") {
-      m_log->Error("bad particle bank");
-      return;
-    }
-    // if(caloBank->getSchema().getName() != "REC::Calorimeter") {
-    //   m_log->Error("bad calorimeter bank");
-    //   return;
-    // }
+    // get the banks
+    auto particleBank = GetBank(banks, b_particle, "REC::Particle");
+    auto caloBank     = GetBank(banks, b_calo,     "REC::Calorimeter");
 
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));

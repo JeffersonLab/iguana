@@ -1,6 +1,7 @@
 #pragma once
 
 #include "services/Algorithm.h"
+#include <set>
 
 namespace iguana::clas12 {
 
@@ -13,16 +14,11 @@ namespace iguana::clas12 {
   class EventBuilderFilter : public Algorithm {
 
     public:
-      EventBuilderFilter() : Algorithm("event_builder_filter") {
-        m_requiredBanks = {
-          "REC::Particle",
-          "REC::Calorimeter"
-        };
-      }
+      EventBuilderFilter();
       ~EventBuilderFilter() {}
 
-      void Start(std::unordered_map<std::string, int> bankVecOrder) override;
-      void Run(Algorithm::BankVec inBanks) override;
+      void Start(std::unordered_map<std::string, int> bankVecIndices) override;
+      void Run(Algorithm::BankVec banks) override;
       void Stop() override;
 
     private:

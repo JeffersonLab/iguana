@@ -2,7 +2,6 @@
 
 #include "Logger.h"
 #include <hipo4/bank.h>
-#include <set>
 #include <vector>
 
 namespace iguana {
@@ -26,17 +25,29 @@ namespace iguana {
       virtual void Start();
 
       /// Initialize an algorithm before any events are processed
-      /// @param bankVecOrder The `Run` method will use this ordering
-      virtual void Start(std::unordered_map<std::string, int> bankVecOrder) = 0;
+      /// @param bankVecIndices The `Run` method will use these indices to access banks
+      virtual void Start(std::unordered_map<std::string, int> bankVecIndices) = 0;
 
       /// Run an algorithm
-      /// @param inBanks the set of banks to process
-      virtual void Run(BankVec inBanks) = 0;
+      /// @param banks the set of banks to process
+      virtual void Run(BankVec banks) = 0;
 
       /// Finalize an algorithm after all events are processed
       virtual void Stop() = 0;
 
     protected:
+
+      /// Cache the index of a bank in a `BankVec`; throws an exception if the bank is not found
+      /// @param bankVecIndices the relation between bank name and `BankVec` index
+      /// @param idx a reference to the `BankVec` index of the bank
+      /// @param bankName the name of the bank
+      void CacheBankIndex(std::unordered_map<std::string, int> bankVecIndices, int &idx, std::string bankName);
+
+      /// Get the pointer to a bank from a `BankVec`; optionally checks if the bank name matches the expectation
+      /// @param banks the `BankVec` from which to get the specified bank
+      /// @param idx the index of `banks` of the specified bank
+      /// @param expectedBankName if specified, checks that the specified bank has this name
+      std::shared_ptr<hipo::bank> GetBank(BankVec banks, int idx, std::string expectedBankName="");
 
       /// Copy a row from one bank to another, assuming their schemata are equivalent
       /// @param srcBank the source bank
@@ -70,7 +81,7 @@ namespace iguana {
       std::string m_name;
 
       /// list of required banks
-      std::set<std::string> m_requiredBanks;
+      std::vector<std::string> m_requiredBanks;
 
       /// Logger
       std::shared_ptr<Logger> m_log;

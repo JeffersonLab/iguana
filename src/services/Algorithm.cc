@@ -10,8 +10,30 @@ namespace iguana {
     std::unordered_map<std::string, int> m;
     int i = 0;
     for(auto requiredBank : m_requiredBanks)
-      m.insert({requiredBank, i});
+      m.insert({requiredBank, i++});
     Start(m);
+  }
+
+  void Algorithm::CacheBankIndex(std::unordered_map<std::string, int> bankVecIndices, int &idx, std::string bankName) {
+    try {
+      idx = bankVecIndices.at(bankName);
+    } catch(const std::out_of_range &o) {
+      Throw(fmt::format("required input bank '{}' not found; cannot `Start` algorithm '{}'", bankName, m_name));
+    }
+    m_log->Debug("cached index of bank '{}' is {}", bankName, idx);
+  }
+
+  std::shared_ptr<hipo::bank> Algorithm::GetBank(BankVec banks, int idx, std::string expectedBankName) {
+    std::shared_ptr<hipo::bank> result;
+    try {
+      result = banks.at(idx);
+    } catch(const std::out_of_range &o) {
+      Throw(fmt::format("required input bank '{}' not found; cannot `Run` algorithm '{}'", expectedBankName, m_name));
+    }
+    if(expectedBankName != "" && result->getSchema().getName() != expectedBankName) {
+      Throw(fmt::format("expected input bank '{}' at index={}; got bank named '{}'", expectedBankName, idx, result->getSchema().getName()));
+    }
+    return result;
   }
 
   void Algorithm::CopyBankRow(std::shared_ptr<hipo::bank> srcBank, int srcRow, std::shared_ptr<hipo::bank> destBank, int destRow) {
@@ -46,7 +68,8 @@ namespace iguana {
   }
 
   void Algorithm::Throw(std::string message) {
-    throw std::runtime_error(fmt::format("CRITICAL ERROR: {}; Algorithm '{}' stopped!", message, m_name));
+    m_log->Error("CRITICAL RUNTIME ERROR!");
+    throw std::runtime_error(fmt::format("{}; Algorithm '{}' stopped!", message, m_name));
   }
 
 }
