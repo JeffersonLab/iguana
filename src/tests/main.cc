@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
   hipo::dictionary factory;
   reader.readDictionary(factory);
   auto particleBank = std::make_shared<hipo::bank>(factory.getSchema("REC::Particle"));
-  auto caloBank     = std::make_shared<hipo::bank>(factory.getSchema("REC::Calorimeter"));
+  auto caloBank     = std::make_shared<hipo::bank>(factory.getSchema("REC::Calorimeter"));  // TODO: remove when not needed (this is for testing)
 
   // event loop
   hipo::event event;
