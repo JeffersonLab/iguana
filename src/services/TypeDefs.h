@@ -23,9 +23,9 @@ namespace iguana {
     double,
     std::string,
     std::set<int>
-  >
+  >;
 
   /// data structure to hold configuration options
-  using options_t = std::unordered_map<std::string, option_value_t>
+  using options_t = std::unordered_map<std::string, option_value_t>;
 
 }

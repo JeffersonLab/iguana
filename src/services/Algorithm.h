@@ -36,6 +36,10 @@ namespace iguana {
       /// @param val the value to set
       void SetOption(std::string key, option_value_t val);
 
+      /// Print all the options and their values for this algorithm
+      /// @param level the log level
+      void PrintOptions(Logger::Level level=Logger::debug);
+
     protected:
 
       /// Cache the index of a bank in a `bank_vec_t`; throws an exception if the bank is not found
@@ -50,9 +54,9 @@ namespace iguana {
       template <typename VALUE>
         void CacheOption(std::string key, VALUE &val) {
           if(auto it{m_opt.find(key)}; it != m_opt.end())
-            val = it->second;
+            val = std::get<VALUE>(it->second);
           else
-            m_log->Warn("unknown option '{}' in SetOption", key);
+            m_log->Warn("unknown option '{}' in CacheOption", key);
         }
 
       /// Get the pointer to a bank from a `bank_vec_t`; optionally checks if the bank name matches the expectation

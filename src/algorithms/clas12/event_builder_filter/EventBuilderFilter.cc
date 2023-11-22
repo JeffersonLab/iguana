@@ -11,7 +11,7 @@ namespace iguana::clas12 {
     };
 
     // set default configuration options
-    o_pids = {11, 211};
+    SetOption("pids", std::set<int>{11, 211});
   }
 
   void EventBuilderFilter::Start(bank_index_cache_t &index_cache) {
@@ -23,6 +23,7 @@ namespace iguana::clas12 {
 
     // cache options
     CacheOption("pids", o_pids);
+    PrintOptions();
 
     // cache expected bank indices
     CacheBankIndex(index_cache, b_particle, "REC::Particle");

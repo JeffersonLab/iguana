@@ -23,7 +23,7 @@ namespace iguana {
   }
 
   std::string Logger::Header(std::string message, int width) {
-    return fmt::format("{:=^{}}", message, width);
+    return fmt::format("{:=^{}}", " " + message + " ", width);
   }
 
 }

@@ -14,6 +14,26 @@ namespace iguana {
     Start(index_cache);
   }
 
+  void Algorithm::SetOption(std::string key, option_value_t val) {
+    m_opt[key] = val;
+  }
+
+  void Algorithm::PrintOptions(Logger::Level level) {
+    if(m_log->GetLevel() <= level) {
+      m_log->Print(level, Logger::Header("CONFIGURATION OPTIONS"));
+      std::string format_str = "{:>20} = {}   [{}]";
+      for(auto [key, val] : m_opt) {
+        if      (const auto valPtr(std::get_if<int>(&val));           valPtr) m_log->Print(level, format_str, key, *valPtr,                 "int");
+        else if (const auto valPtr(std::get_if<double>(&val));        valPtr) m_log->Print(level, format_str, key, *valPtr,                 "double");
+        else if (const auto valPtr(std::get_if<std::string>(&val));   valPtr) m_log->Print(level, format_str, key, *valPtr,                 "string");
+        else if (const auto valPtr(std::get_if<std::set<int>>(&val)); valPtr) m_log->Print(level, format_str, key, fmt::join(*valPtr,", "), "set<int>");
+        else
+          m_log->Error("option '{}' type has no printer defined in PrintOptions", key);
+      }
+      m_log->Print(level, Logger::Header(""));
+    }
+  }
+
   void Algorithm::CacheBankIndex(bank_index_cache_t index_cache, int &idx, std::string bankName) {
     try {
       idx = index_cache.at(bankName);
