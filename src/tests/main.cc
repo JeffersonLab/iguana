@@ -1,6 +1,13 @@
 #include "iguana/Iguana.h"
 #include <hipo4/reader.h>
 
+void printParticles(std::string prefix, iguana::bank_ptr b) {
+  std::vector<int> pids;
+  for(int row=0; row<b->getRows(); row++)
+    pids.push_back(b->get("pid", row));
+  fmt::print("{}: {}\n", prefix, fmt::join(pids, ", "));
+}
+
 int main(int argc, char **argv) {
 
   // parse arguments
@@ -36,7 +43,9 @@ int main(int argc, char **argv) {
   int iEvent = 0;
   while(reader.next(event) && (iEvent++ < numEvents || numEvents == 0)) {
     event.getStructure(*particleBank);
+    printParticles("PIDS BEFORE FILTER ", particleBank);
     algo->Run({particleBank, caloBank});
+    printParticles("PIDS AFTER FILTER  ", particleBank);
   }
 
   /////////////////////////////////////////////////////
