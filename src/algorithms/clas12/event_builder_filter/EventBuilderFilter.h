@@ -17,8 +17,8 @@ namespace iguana::clas12 {
       EventBuilderFilter();
       ~EventBuilderFilter() {}
 
-      void Start(std::unordered_map<std::string, int> bankVecIndices) override;
-      void Run(Algorithm::BankVec banks) override;
+      void Start(bank_index_cache_t &index_cache) override;
+      void Run(bank_vec_t banks) override;
       void Stop() override;
 
     private:

@@ -9,7 +9,7 @@ namespace iguana::clas12 {
     };
   }
 
-  void EventBuilderFilter::Start(std::unordered_map<std::string, int> bankVecIndices) {
+  void EventBuilderFilter::Start(bank_index_cache_t &index_cache) {
 
     // set configuration
     m_log->SetLevel(Logger::Level::trace);
@@ -17,14 +17,14 @@ namespace iguana::clas12 {
     m_opt.pids = {11, 211, -211};
 
     // cache expected bank indices
-    CacheBankIndex(bankVecIndices, b_particle, "REC::Particle");
-    CacheBankIndex(bankVecIndices, b_calo,     "REC::Calorimeter");
+    CacheBankIndex(index_cache, b_particle, "REC::Particle");
+    CacheBankIndex(index_cache, b_calo,     "REC::Calorimeter");
     m_log->Error("{} {}", b_particle, b_calo);
 
   }
 
 
-  void EventBuilderFilter::Run(Algorithm::BankVec banks) {
+  void EventBuilderFilter::Run(bank_vec_t banks) {
     m_log->Debug("RUN {}", m_name);
 
     // get the banks
