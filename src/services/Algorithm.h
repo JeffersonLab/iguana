@@ -36,10 +36,6 @@ namespace iguana {
       /// @param val the value to set
       void SetOption(std::string key, option_value_t val);
 
-      /// Print all the options and their values for this algorithm
-      /// @param level the log level
-      void PrintOptions(Logger::Level level=Logger::debug);
-
     protected:
 
       /// Cache the index of a bank in a `bank_vec_t`; throws an exception if the bank is not found
@@ -48,15 +44,30 @@ namespace iguana {
       /// @param bankName the name of the bank
       void CacheBankIndex(bank_index_cache_t index_cache, int &idx, std::string bankName);
 
-      /// Cache an option specified by the user
+      /// Cache an option specified by the user, and define its default value
       /// @param key the name of the option
-      /// @param val reference to the value of the option
-      template <typename VALUE>
-        void CacheOption(std::string key, VALUE &val) {
-          if(auto it{m_opt.find(key)}; it != m_opt.end())
-            val = std::get<VALUE>(it->second);
-          else
-            m_log->Warn("unknown option '{}' in CacheOption", key);
+      /// @param def the default value
+      /// @param val reference to the value of the option, to be cached by `Start`
+      template <typename OPTION_TYPE>
+        void CacheOption(std::string key, OPTION_TYPE def, OPTION_TYPE &val) {
+          if(auto it{m_opt.find(key)}; it != m_opt.end()) { // cache the user's option value
+            try { // get the expected type
+              val = std::get<OPTION_TYPE>(it->second);
+            } catch(const std::bad_variant_access &ex1) {
+              try { // or try to typecast
+                val = std::visit([] (auto &&v) { return dynamic_cast<OPTION_TYPE>(v); }, it->second);
+                m_log->Warn("option '{}' set to '{}' but has the wrong type; typecasted to '{}'", key, it->second, val);
+              }
+              catch(const std::bad_cast &ex2) { // fallback to default
+                m_log->Error("option '{}' set to '{}' but has the wrong type and cannot be typecasted; using default '{}' instead", key, it->second, def);
+                val = def;
+              }
+            }
+          }
+          else { // cache the default option value
+            val = def;
+          }
+          m_log->Debug("OPTION: {:>20} = {}", key, val);
         }
 
       /// Get the pointer to a bank from a `bank_vec_t`; optionally checks if the bank name matches the expectation
