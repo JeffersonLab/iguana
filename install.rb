@@ -30,13 +30,24 @@ parser.on("--clean", "Remove the buildsystem at [BUILD DIR] beforehand")
 parser.on("--purge", "Remove the installation at [INSTALL DIR] beforehand")                 
 parser.parse!(into: options)
 
+# check for HIPO installation, or fallback to $HIPO
+options[:hipo] = ENV['HIPO'] unless Dir.exists? options[:hipo]
+
+# use realpaths for dependencies
+[ :hipo, :fmt ].each do |dep|
+  unless options[dep].nil?
+    if Dir.exists? options[dep]
+      options[dep] = File.realpath options[dep]
+    else
+      $stderr.puts "ERROR: directory '#{options[dep]}' for option '--#{dep.to_s}' does not exist"
+      exit 1
+    end
+  end
+end
+
 # print the options
 puts "SET OPTIONS:"
 options.each do |k,v| puts "#{k.to_s.rjust 15} => #{v}" end
-
-# check for HIPO installation, or fallback to $HIPO
-options[:hipo] = ENV['HIPO'] unless Dir.exists? options[:hipo]
-options[:hipo] = File.realpath options[:hipo] if Dir.exists? options[:hipo]
 
 # clean and purge
 def rmDir(dir,obj='files')
