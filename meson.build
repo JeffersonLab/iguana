@@ -26,6 +26,7 @@ fmt_dep  = dependency(
 )
 hipo_dep = dependency(
   'hipo4',
+  method: 'cmake',
   cmake_args: '-DCMAKE_PREFIX_PATH='+get_option('hipo'),
 )
 
