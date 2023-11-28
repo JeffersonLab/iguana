@@ -10,6 +10,7 @@ options = {
   build:   "#{Dir.pwd}/build-iguana",
   install: "#{Dir.pwd}/iguana",
   hipo:    "#{Dir.pwd}/hipo",
+  fmt:     nil,
   clean:   false,
   purge:   false,
 }
@@ -22,7 +23,8 @@ parser.on("-b", "--build [BUILD DIR]", "Directory for buildsystem", "Default: #{
 parser.separator ''
 parser.on("-i", "--install [INSTALL DIR]", "Directory for installation", "Default: #{options[:install]}")
 parser.separator ''
-parser.on("-h", "--hipo [HIPO DIR]", "Path to HIPO installation", "Default: #{options[:hipo]}", "if not found, tries env var $HIPO")
+parser.on("--hipo [HIPO DIR]", "Path to HIPO installation", "Default: #{options[:hipo]}", "if not found, tries env var $HIPO")
+parser.on("--fmt [FMT DIR]", "Path to fmt installation", "Default: assumes system installation" )
 parser.separator 'TROUBLESHOOTING:'
 parser.on("--clean", "Remove the buildsystem at [BUILD DIR] beforehand")                 
 parser.on("--purge", "Remove the installation at [INSTALL DIR] beforehand")                 
@@ -73,6 +75,7 @@ meson = {
     'meson setup',
     "--prefix #{prefix}",
     buildOpt('hipo', options[:hipo]),
+    buildOpt('fmt', options[:fmt]),
     options[:build],
     SourceDir,
   ],
@@ -80,6 +83,7 @@ meson = {
     'meson configure',
     "--prefix #{prefix}",
     buildOpt('hipo', options[:hipo]),
+    buildOpt('fmt', options[:fmt]),
     options[:build],
   ],
   :install => [

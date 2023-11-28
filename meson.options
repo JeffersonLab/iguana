@@ -1,1 +1,2 @@
 option('hipo', type: 'string', value: '/usr/local', description: 'HIPO installation location')
+option('fmt',  type: 'string', value: '',           description: 'fmt installation location')
