@@ -1,7 +1,9 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <fmt/color.h>
 #include <unordered_map>
+#include <functional>
 
 namespace iguana {
 
@@ -17,13 +19,16 @@ namespace iguana {
         warn,
         error
       };
-      static const Level defaultLevel = info;
+      static const Level DEFAULT_LEVEL = info;
 
-      Logger(std::string name = "log", Level lev = defaultLevel);
+      Logger(std::string name = "log", Level lev = DEFAULT_LEVEL, bool enable_style = true);
       ~Logger() {}
 
       void SetLevel(std::string lev);
       void SetLevel(Level lev);
+
+      void EnableStyle() { m_enable_style = true; }
+      void DisableStyle() { m_enable_style = false; }
 
       Level GetLevel();
       static std::string Header(std::string message, int width=50);
@@ -38,7 +43,16 @@ namespace iguana {
         void Print(Level lev, std::string message, VALUES... vals) {
           if(lev >= m_level) {
             if(auto it{m_level_names.find(lev)}; it != m_level_names.end()) {
-              auto prefix = fmt::format("[{}] [{}] ", it->second, m_name);
+              std::string prefix;
+              std::function<std::string(std::string)> style = [] (std::string s) { return fmt::format("[{}]", s); };
+              if(m_enable_style) {
+                switch(lev) {
+                  case warn:  style = [] (std::string s) { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::magenta))); }; break;
+                  case error: style = [] (std::string s) { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::red)));     }; break;
+                  default:    style = [] (std::string s) { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold)); };
+                }
+              }
+              prefix = fmt::format("{} {} ", style(it->second), style(m_name));
               fmt::print(
                   lev >= warn ? stderr : stdout,
                   fmt::runtime(prefix + message + "\n"),
@@ -55,6 +69,7 @@ namespace iguana {
       std::string m_name;
       Level m_level;
       std::unordered_map<Level,std::string> m_level_names;
+      bool m_enable_style;
 
   };
 }

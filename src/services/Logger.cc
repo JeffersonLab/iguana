@@ -2,7 +2,7 @@
 
 namespace iguana {
 
-  Logger::Logger(std::string name, Level lev) : m_name(name) {
+  Logger::Logger(std::string name, Level lev, bool enable_style) : m_name(name), m_enable_style(enable_style) {
     m_level_names = {
       { trace, "trace" },
       { debug, "debug" },

@@ -52,6 +52,9 @@ namespace iguana::clas12 {
 
 
   void EventBuilderFilter::Stop() {
+    m_log->Info("test info");
+    m_log->Warn("test warn");
+    m_log->Error("test error");
   }
 
 }

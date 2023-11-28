@@ -36,13 +36,9 @@ namespace iguana {
       /// @param val the value to set
       void SetOption(std::string key, option_value_t val);
 
-      /// Set the log level
-      /// @param level the log level name
-      void SetLogLevel(std::string level);
-
-      /// Set the log level
-      /// @param level the log level number
-      void SetLogLevel(Logger::Level level);
+      /// Get the logger
+      /// @return the logger used by this algorithm
+      std::shared_ptr<Logger> Log();
 
     protected:
 

@@ -19,12 +19,8 @@ namespace iguana {
     m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
   }
 
-  void Algorithm::SetLogLevel(std::string level) {
-    m_log->SetLevel(level);
-  }
-
-  void Algorithm::SetLogLevel(Logger::Level level) {
-    m_log->SetLevel(level);
+  std::shared_ptr<Logger> Algorithm::Log() {
+    return m_log;
   }
 
   void Algorithm::CacheBankIndex(bank_index_cache_t index_cache, int &idx, std::string bankName) {
