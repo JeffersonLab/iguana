@@ -3,16 +3,13 @@
 namespace iguana::clas12 {
 
   EventBuilderFilter::EventBuilderFilter() : Algorithm("event_builder_filter") {
+
     // define required banks
     m_requiredBanks = { "REC::Particle", "REC::Calorimeter" }; // TODO: remove calorimeter
+
   }
 
   void EventBuilderFilter::Start(bank_index_cache_t &index_cache) {
-
-    // set logger
-    // TODO: should be done by configuration and BEFORE Start(), so `SetOption()` will print the user's options
-    m_log->SetLevel(Logger::Level::trace);
-    m_log->Debug("START {}", m_name);
 
     // define options, their default values, and cache them
     CacheOption("pids", std::set<int>{11, 211}, o_pids);
@@ -27,7 +24,6 @@ namespace iguana::clas12 {
 
 
   void EventBuilderFilter::Run(bank_vec_t banks) {
-    m_log->Debug("RUN {}", m_name);
 
     // get the banks
     auto particleBank = GetBank(banks, b_particle, "REC::Particle");
@@ -56,7 +52,6 @@ namespace iguana::clas12 {
 
 
   void EventBuilderFilter::Stop() {
-    m_log->Debug("STOP {}", m_name);
   }
 
 }

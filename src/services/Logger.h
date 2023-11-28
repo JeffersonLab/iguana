@@ -22,7 +22,9 @@ namespace iguana {
       Logger(std::string name = "log", Level lev = defaultLevel);
       ~Logger() {}
 
+      void SetLevel(std::string lev);
       void SetLevel(Level lev);
+
       Level GetLevel();
       static std::string Header(std::string message, int width=50);
 

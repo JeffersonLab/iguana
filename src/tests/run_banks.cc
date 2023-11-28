@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
    */
   iguana::Iguana I;
   auto algo = I.algo_map.at(iguana::Iguana::clas12_EventBuilderFilter);
+  algo->SetLogLevel("trace");
   algo->SetOption("pids", std::set<int>{11, 211, -211});
   algo->SetOption("testInt", 3);
   algo->SetOption("testFloat", 11.0);

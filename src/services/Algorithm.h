@@ -36,6 +36,14 @@ namespace iguana {
       /// @param val the value to set
       void SetOption(std::string key, option_value_t val);
 
+      /// Set the log level
+      /// @param level the log level name
+      void SetLogLevel(std::string level);
+
+      /// Set the log level
+      /// @param level the log level number
+      void SetLogLevel(Logger::Level level);
+
     protected:
 
       /// Cache the index of a bank in a `bank_vec_t`; throws an exception if the bank is not found
