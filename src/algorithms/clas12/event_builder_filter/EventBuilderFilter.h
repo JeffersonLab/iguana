@@ -21,10 +21,12 @@ namespace iguana::clas12 {
     private:
 
       /// `bank_vec_t` indices
-      int b_particle, b_calo;
+      int b_particle, b_calo; // TODO: remove calorimeter
 
       /// configuration options
       std::set<int> o_pids;
+      int o_testInt; // TODO: remove
+      double o_testFloat; // TODO: remove
 
   };
 
