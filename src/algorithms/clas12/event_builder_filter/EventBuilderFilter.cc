@@ -10,7 +10,7 @@ namespace iguana::clas12 {
   void EventBuilderFilter::Start(bank_index_cache_t &index_cache) {
 
     // set logger
-    // TODO: should be done by configuration
+    // TODO: should be done by configuration and BEFORE Start(), so `SetOption()` will print the user's options
     m_log->SetLevel(Logger::Level::trace);
     m_log->Debug("START {}", m_name);
 
