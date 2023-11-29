@@ -12,7 +12,9 @@ project_lib_install_dir = 'lib' # to keep it the same for different Linux distri
 project_bin_install_dir = 'bin'
 
 dep_lib_rpaths = [ '$ORIGIN/../' + project_lib_install_dir ]
-dep_lib_rpaths += get_option('cmake_prefix_path') # TODO: this is for hipo4; consider instead linking against hipo4 static lib
+foreach path : get_option('cmake_prefix_path')
+  dep_lib_rpaths += path + '/lib' # TODO: this adds hipo4 libs to the rpath; consider instead linking against hipo4 static lib
+endforeach
 
 project_lib_rpath = '$ORIGIN'
 project_bin_rpath = ':'.join(dep_lib_rpaths)
