@@ -6,24 +6,33 @@ See [design notes](doc/design.md)
 
 ## Dependencies
 
-### [`meson`](https://mesonbuild.com/): Build system used by `iguana`
+### `meson`: Build system used by `iguana`
+<https://mesonbuild.com/>
 - likely available in your package manager
 - you may also install `meson` (and `ninja`) with `pip`:
 ```bash
 python -m pip install meson ninja
 ```
 
-### [`fmt`](https://github.com/fmtlib/fmt): C++ output formatting library
+### `fmt`: C++ output formatting library
+<https://github.com/fmtlib/fmt>
 - likely available in your package manager, possibly under `libfmt`
 - if you compile it yourself, include the `cmake` option `-DCMAKE_POSITION_INDEPENDENT_CODE=ON`
+- example `cmake` commands:
+```bash
+cmake -S /path/to/fmt_source_code -B build-fmt -DCMAKE_INSTALL_PREFIX=/path/to/fmt_installation -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+cmake --build build-fmt -j$(nproc)
+cmake --install build-fmt
+```
 
-### [`hipo`](https://github.com/gavalian/hipo): C++ HIPO API
+### `hipo`: C++ HIPO API
+<https://github.com/gavalian/hipo>
 - you will need to obtain and compile this yourself, or use a module on `ifarm`
 - example `cmake` commands:
 ```bash
-cmake -S /path/to/hipo_source_code -B build -DCMAKE_INSTALL_PREFIX=/path/to/hipo_installation
-cmake --build build -j$(nproc)
-cmake --install build
+cmake -S /path/to/hipo_source_code -B build-hipo -DCMAKE_INSTALL_PREFIX=/path/to/hipo_installation
+cmake --build build-hipo -j$(nproc)
+cmake --install build-hipo
 ```
 
 ## Setup
