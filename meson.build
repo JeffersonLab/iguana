@@ -4,6 +4,7 @@ project(
   version: '0.0.0',
   license: 'LGPLv3',
   default_options: [ 'cpp_std=c++17' ],
+  meson_version: '>=1.1'
 )
 
 project_inc = include_directories('src')
@@ -16,8 +17,8 @@ endforeach
 project_lib_rpath = '$ORIGIN'
 project_bin_rpath = ':'.join( dep_lib_rpaths + [ '$ORIGIN/../' + get_option('libdir') ] )
 
-hipo_dep = dependency('hipo4')
-fmt_dep  = dependency('fmt')
+hipo_dep = dependency('hipo4', version: '>=1.3')
+fmt_dep  = dependency('fmt', version: '>=9.1.0')
 
 subdir('src/services')
 subdir('src/algorithms')
