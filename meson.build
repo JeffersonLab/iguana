@@ -20,7 +20,7 @@ cmake_prefix_paths = [
 ]
 if get_option('fmt') != ''
   dep_lib_rpaths += get_option('fmt') + '/lib'
-  cmake_prefix_path += get_option('fmt')
+  cmake_prefix_paths += get_option('fmt')
 endif
 
 project_lib_rpath = '$ORIGIN'
