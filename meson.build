@@ -15,15 +15,11 @@ dep_lib_rpaths = [
 '$ORIGIN/../' + project_lib_install_dir,
   get_option('hipo') + '/lib',
 ]
-cmake_prefix_paths = [
-  get_option('hipo'),
-]
 
 project_lib_rpath = '$ORIGIN'
 project_bin_rpath = ':'.join(dep_lib_rpaths)
-cmake_prefix_path = '-DCMAKE_PREFIX_PATH=' + ';'.join(cmake_prefix_paths)
 
-hipo_dep = dependency('hipo4', method: 'cmake', cmake_args: cmake_prefix_path)
+hipo_dep = dependency('hipo4')
 fmt_dep  = dependency('fmt')
 
 subdir('src/services')

@@ -85,7 +85,7 @@ meson = {
   :setup => [
     'meson setup',
     "--prefix #{prefix}",
-    buildOpt('hipo', options[:hipo]),
+    buildOpt('cmake_prefix_path', options[:hipo]),
     buildOpt('pkg_config_path', options[:fmt] + '/lib/pkgconfig'),
     options[:build],
     SourceDir,
@@ -93,7 +93,7 @@ meson = {
   :config => [
     'meson configure',
     "--prefix #{prefix}",
-    buildOpt('hipo', options[:hipo]),
+    buildOpt('cmake_prefix_path', options[:hipo]),
     buildOpt('pkg_config_path', options[:fmt] + '/lib/pkgconfig'),
     options[:build],
   ],
