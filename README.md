@@ -7,8 +7,8 @@ See [design notes](doc/design.md)
 ## Dependencies
 
 Dependencies likely available in your package manager:
-- [`meson`](https://mesonbuild.com/) version 1.1 or newer
-- [`fmt`](https://github.com/fmtlib/fmt) version 10 or newer
+- [`meson`](https://mesonbuild.com/)
+- [`fmt`](https://github.com/fmtlib/fmt)
 
 Dependencies you may need to build yourself, unless available on a Jefferson Lab computer:
 - [`hipo`](https://github.com/gavalian/hipo)
