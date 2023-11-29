@@ -51,7 +51,7 @@ options.each do |k,v| puts "#{k.to_s.rjust 15} => #{v}" end
 
 # set dependency package paths and generate native INI file
 cmake_prefix_path = [ options[:hipo] ].compact
-pkg_config_path   = [ options[:fmt]  ].compact
+pkg_config_path   = [ options[:fmt]  ].compact.map{ |path| path += '/lib/pkgconfig' }
 def singleQuotes(arr)
   "#{arr}".gsub /"/, "'"
 end
