@@ -34,7 +34,7 @@ jobs:
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
-          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE 
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           cmake --build build -j2
           cmake --install build
       - run: tree hipo
