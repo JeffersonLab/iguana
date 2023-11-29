@@ -34,7 +34,7 @@ jobs:
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
-          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo -DBUILD_SHARED_LIBS=TRUE
           cmake --build build -j2
           cmake --install build
       - run: tree hipo
