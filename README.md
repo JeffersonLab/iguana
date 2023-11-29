@@ -27,7 +27,7 @@ cmake --install build-fmt
 
 ### `hipo`: C++ HIPO API
 <https://github.com/gavalian/hipo>
-- you will need to obtain and compile this yourself, or use a module on `ifarm`
+- use the `hipo` module on `ifarm`, or obtain and build it yourself
 - example `cmake` commands:
 ```bash
 cmake -S /path/to/hipo_source_code -B build-hipo -DCMAKE_INSTALL_PREFIX=/path/to/hipo_installation
