@@ -33,6 +33,9 @@ parser.parse!(into: options)
 # check for HIPO installation, or fallback to $HIPO
 options[:hipo] = ENV['HIPO'] unless Dir.exists? options[:hipo]
 
+# fmt has a pkg-config file
+options[:fmt] += '/lib/pkgconfig' unless options[:fmt].nil?
+
 # use realpaths for dependencies
 [ :hipo, :fmt ].each do |dep|
   unless options[dep].nil?
@@ -86,7 +89,7 @@ meson = {
     'meson setup',
     "--prefix #{prefix}",
     buildOpt('cmake_prefix_path', options[:hipo]),
-    buildOpt('pkg_config_path', options[:fmt] + '/lib/pkgconfig'),
+    buildOpt('pkg_config_path', options[:fmt]),
     options[:build],
     SourceDir,
   ],
@@ -94,7 +97,7 @@ meson = {
     'meson configure',
     "--prefix #{prefix}",
     buildOpt('cmake_prefix_path', options[:hipo]),
-    buildOpt('pkg_config_path', options[:fmt] + '/lib/pkgconfig'),
+    buildOpt('pkg_config_path', options[:fmt]),
     options[:build],
   ],
   :install => [
