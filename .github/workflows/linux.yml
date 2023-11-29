@@ -87,7 +87,7 @@ jobs:
           echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
-          for dep in python ruby meson ninja ; do
+          for dep in python meson ninja ; do
             echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
           done
           echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
@@ -99,8 +99,10 @@ jobs:
       - name: untar build
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - run: tree
-      - name: build iguana
-        run: ./install.rb --hipo hipo --fmt fmt
+      - name: configure
+        run: ./configure.py --hipo hipo --fmt fmt
+      - name: build
+        run: ./install-iguana.sh
       - name: dump build log
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt

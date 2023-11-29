@@ -12,19 +12,25 @@ Dependencies likely available in your package manager:
 
 Dependencies you may need to build yourself, unless available on a Jefferson Lab computer:
 - [`hipo`](https://github.com/gavalian/hipo)
-  - To make `iguana` know where to find it, do one of:
-    - use option `--hipo` when running `install.rb`
-    - symlink `./hipo` to the installation
-    - set `$HIPO` to the installation
-    - use `meson` build option `-Dhipo` (or its [default](meson.options))
 
 ## Setup
-Run (from any directory):
+First, configure your `iguana` build using `configure.py`:
 ```bash
-install.rb --help        # print the usage guide
-install.rb               # default: install to ./iguana
+configure.py --help
 ```
-Alternatively, use `meson` for more control.
+The `--help` option will print the usage guide.
+Unless the dependencies are installed in one of the system default locations, you will need to specify the path to each of them, _e.g._,
+```bash
+./configure.py --hipo /path/to/hipo/installation_prefix
+```
+This will generate a configuration file (`.ini`) with the build settings, along with an installation script (`install-iguana.sh`).
+Inspect both of them, and if they look correct, proceed with building and installing `iguana` by running:
+```bash
+./install-iguana.sh
+```
+
+### Note for advanced users
+If you are comfortable with `meson` and dependency resolution, there is no need to run `configure.py` or `install-iguana.sh`; you may instead run `meson` commands with your preferred options.
 
 ## Troubleshooting Notes
 
