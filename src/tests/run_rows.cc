@@ -10,6 +10,7 @@ int main(int argc, char **argv) {
 
   // start the algorithm
   auto algo = std::make_shared<iguana::clas12::EventBuilderFilter>();
+  algo->SetOption("pids", std::set<int>{11, 211, -211});
   algo->Start();
 
   /////////////////////////////////////////////////////

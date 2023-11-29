@@ -14,9 +14,13 @@ defaults:
   run:
     shell: bash
 
+env:
+  hipo_version: 94e2cfc1ab93388680ba07088d9b63b68347ba92 # before hipo::bank::get and put were removed
+  fmt_version: 9.1.0
+
 jobs:
 
-  # build
+  # dependencies
   #########################################################
 
   build_hipo:
@@ -27,9 +31,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: gavalian/hipo
+          ref: ${{ env.hipo_version }}
       - name: build
         run: |
-          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           cmake --build build -j2
           cmake --install build
       - run: tree hipo
@@ -41,14 +46,40 @@ jobs:
           retention-days: 1
           path: hipo.tar.gz
 
+  build_fmt:
+    name: Build fmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout fmt
+        uses: actions/checkout@v4
+        with:
+          repository: fmtlib/fmt
+          ref: ${{ env.fmt_version }}
+      - name: build
+        run: |
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+          cmake --build build -j2
+          cmake --install build
+      - run: tree fmt
+      - name: tar
+        run: tar czvf fmt{.tar.gz,}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          retention-days: 1
+          path: fmt.tar.gz
+
+  # build
+  #########################################################
+
   build_iguana:
     name: Build Iguana
-    needs: [ build_hipo ]
+    needs:
+      - build_hipo
+      - build_fmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: setup fmt
-        run: sudo apt install -y libfmt-dev
       - name: setup meson
         run: python -m pip install meson ninja
       - name: summarize dependencies
@@ -59,15 +90,17 @@ jobs:
           for dep in python ruby meson ninja ; do
             echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
           done
-          echo "| \`fmt\` | $(apt show libfmt-dev | grep -w Version) |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
       - name: get build artifacts
         uses: actions/download-artifact@v3
         with:
           name: build
       - name: untar build
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      - run: tree
       - name: build iguana
-        run: ./install.rb --hipo hipo
+        run: ./install.rb --hipo hipo --fmt fmt
       - name: dump build log
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
@@ -108,11 +141,11 @@ jobs:
 
   test_iguana:
     name: Test Iguana
-    needs: [ download_validation_files, build_iguana ]
+    needs: 
+      - download_validation_files
+      - build_iguana
     runs-on: ubuntu-latest
     steps:
-      - name: install dependencies
-        run: sudo apt install -y libfmt-dev
       - name: get build artifacts
         uses: actions/download-artifact@v3
         with:

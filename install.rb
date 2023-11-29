@@ -10,6 +10,7 @@ options = {
   build:   "#{Dir.pwd}/build-iguana",
   install: "#{Dir.pwd}/iguana",
   hipo:    "#{Dir.pwd}/hipo",
+  fmt:     nil,
   clean:   false,
   purge:   false,
 }
@@ -22,19 +23,31 @@ parser.on("-b", "--build [BUILD DIR]", "Directory for buildsystem", "Default: #{
 parser.separator ''
 parser.on("-i", "--install [INSTALL DIR]", "Directory for installation", "Default: #{options[:install]}")
 parser.separator ''
-parser.on("-h", "--hipo [HIPO DIR]", "Path to HIPO installation", "Default: #{options[:hipo]}", "if not found, tries env var $HIPO")
+parser.on("--hipo [HIPO DIR]", "Path to HIPO installation", "Default: #{options[:hipo]}", "if not found, tries env var $HIPO")
+parser.on("--fmt [FMT DIR]", "Path to fmt installation", "Default: assumes system installation" )
 parser.separator 'TROUBLESHOOTING:'
 parser.on("--clean", "Remove the buildsystem at [BUILD DIR] beforehand")                 
 parser.on("--purge", "Remove the installation at [INSTALL DIR] beforehand")                 
 parser.parse!(into: options)
 
+# check for HIPO installation, or fallback to $HIPO
+options[:hipo] = ENV['HIPO'] unless Dir.exists? options[:hipo]
+
+# use realpaths for dependencies
+[ :hipo, :fmt ].each do |dep|
+  unless options[dep].nil?
+    if Dir.exists? options[dep]
+      options[dep] = File.realpath options[dep]
+    else
+      $stderr.puts "ERROR: directory '#{options[dep]}' for option '--#{dep.to_s}' does not exist"
+      exit 1
+    end
+  end
+end
+
 # print the options
 puts "SET OPTIONS:"
 options.each do |k,v| puts "#{k.to_s.rjust 15} => #{v}" end
-
-# check for HIPO installation, or fallback to $HIPO
-options[:hipo] = ENV['HIPO'] unless Dir.exists? options[:hipo]
-options[:hipo] = File.realpath options[:hipo] if Dir.exists? options[:hipo]
 
 # clean and purge
 def rmDir(dir,obj='files')
@@ -56,30 +69,42 @@ end
 FileUtils.mkdir_p options[:install]
 prefix = File.realpath options[:install]
 
+# set dependency package paths
+cmake_prefix_path = [ options[:hipo] ].compact
+pkg_config_path   = [ options[:fmt]  ].compact.map{ |path| path += '/lib/pkgconfig' }
+
+# generate native INI file
+def singleQuotes(arr)
+  "#{arr}".gsub /"/, "'"
+end
+native_ini = options[:build] + '.ini'
+native_file = File.open native_ini, 'w'
+native_file.puts """[built-in options]
+; dependency paths
+cmake_prefix_path = #{singleQuotes cmake_prefix_path}
+pkg_config_path = #{singleQuotes pkg_config_path}
+; installation
+prefix = '#{prefix}'
+"""
+native_file.close
+
 # print and run a command
 def runCommand(cmd)
   puts "[+++] #{cmd}"
   system cmd or raise "FAILED: #{cmd}"
 end
 
-# set a build option
-def buildOpt(key,val)
-  val.nil? ? '' : "-D#{key}='#{val}'"
-end
-
 # meson commands
 meson = {
   :setup => [
     'meson setup',
-    "--prefix #{prefix}",
-    buildOpt('hipo', options[:hipo]),
+    "--native-file #{native_ini}",
     options[:build],
     SourceDir,
   ],
   :config => [
     'meson configure',
-    "--prefix #{prefix}",
-    buildOpt('hipo', options[:hipo]),
+    "--native-file #{native_ini}",
     options[:build],
   ],
   :install => [

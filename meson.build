@@ -8,17 +8,16 @@ project(
 
 project_inc = include_directories('src')
 
-project_lib_install_dir = 'lib' # to keep it the same for different Linux distributions
-project_bin_install_dir = 'bin'
+dep_lib_rpaths = [ ]
+foreach path : get_option('cmake_prefix_path')
+  dep_lib_rpaths += path + '/lib' # TODO: this adds hipo4 libs to the rpath; consider instead linking against hipo4 static lib
+endforeach
 
 project_lib_rpath = '$ORIGIN'
-project_bin_rpath = ':'.join([
-  '$ORIGIN/../' + project_lib_install_dir,
-  get_option('hipo') + '/lib'
-])
+project_bin_rpath = ':'.join( dep_lib_rpaths + [ '$ORIGIN/../' + get_option('libdir') ] )
 
+hipo_dep = dependency('hipo4')
 fmt_dep  = dependency('fmt')
-hipo_dep = dependency('hipo4', method: 'cmake', cmake_args: '-DCMAKE_PREFIX_PATH=' + get_option('hipo'))
 
 subdir('src/services')
 subdir('src/algorithms')

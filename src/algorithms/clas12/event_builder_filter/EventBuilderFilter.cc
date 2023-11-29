@@ -3,32 +3,31 @@
 namespace iguana::clas12 {
 
   EventBuilderFilter::EventBuilderFilter() : Algorithm("event_builder_filter") {
-    m_requiredBanks = {
-      "REC::Particle",
-      "REC::Calorimeter"
-    };
+
+    // define required banks
+    m_requiredBanks = { "REC::Particle", "REC::Calorimeter" }; // TODO: remove calorimeter
+
   }
 
   void EventBuilderFilter::Start(bank_index_cache_t &index_cache) {
 
-    // set configuration
-    m_log->SetLevel(Logger::Level::trace);
-    m_log->Debug("START {}", m_name);
-    m_opt.pids = {11, 211, -211};
+    // define options, their default values, and cache them
+    CacheOption("pids", std::set<int>{11, 211}, o_pids);
+    CacheOption("testInt", 8, o_testInt); // TODO: remove
+    CacheOption("testFloat", 7.0, o_testFloat); // TODO: remove
 
     // cache expected bank indices
     CacheBankIndex(index_cache, b_particle, "REC::Particle");
-    CacheBankIndex(index_cache, b_calo,     "REC::Calorimeter");
+    CacheBankIndex(index_cache, b_calo,     "REC::Calorimeter"); // TODO: remove
 
   }
 
 
   void EventBuilderFilter::Run(bank_vec_t banks) {
-    m_log->Debug("RUN {}", m_name);
 
     // get the banks
     auto particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto caloBank     = GetBank(banks, b_calo,     "REC::Calorimeter");
+    auto caloBank     = GetBank(banks, b_calo,     "REC::Calorimeter"); // TODO: remove
 
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
@@ -48,12 +47,14 @@ namespace iguana::clas12 {
 
 
   bool EventBuilderFilter::Filter(int pid) {
-    return m_opt.pids.find(pid) != m_opt.pids.end();
+    return o_pids.find(pid) != o_pids.end();
   }
 
 
   void EventBuilderFilter::Stop() {
-    m_log->Debug("STOP {}", m_name);
+    m_log->Info("test info");
+    m_log->Warn("test warn");
+    m_log->Error("test error");
   }
 
 }
