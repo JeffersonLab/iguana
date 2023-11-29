@@ -6,21 +6,18 @@ See [design notes](doc/design.md)
 
 ## Dependencies
 
-### [`meson`](https://mesonbuild.com/)
-Build system used by `iguana`
+### [`meson`](https://mesonbuild.com/): Build system used by `iguana`
 - likely available in your package manager
-- you may also install `meson` with `pip`:
+- you may also install `meson` (and `ninja`) with `pip`:
 ```bash
 python -m pip install meson ninja
 ```
 
-### [`fmt`](https://github.com/fmtlib/fmt)
-C++ output formatting library
+### [`fmt`](https://github.com/fmtlib/fmt): C++ output formatting library
 - likely available in your package manager, possibly under `libfmt`
 - if you compile it yourself, include the `cmake` option `-DCMAKE_POSITION_INDEPENDENT_CODE=ON`
 
-### [`hipo`](https://github.com/gavalian/hipo)
-C++ HIPO API
+### [`hipo`](https://github.com/gavalian/hipo): C++ HIPO API
 - you will need to obtain and compile this yourself, or use a module on `ifarm`
 - example `cmake` commands:
 ```bash
