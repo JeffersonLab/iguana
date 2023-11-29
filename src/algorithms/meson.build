@@ -13,7 +13,6 @@ algo_lib = shared_library(
   dependencies:        services_dep,
   link_with:           services_lib,
   install:             true,
-  install_dir:         project_lib_install_dir,
   install_rpath:       project_lib_rpath,
 )
 

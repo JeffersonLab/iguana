@@ -15,7 +15,6 @@ services_lib = shared_library(
   include_directories: project_inc,
   dependencies:        [ fmt_dep, hipo_dep ],
   install:             true,
-  install_dir:         project_lib_install_dir,
   install_rpath:       project_lib_rpath,
 )
 
