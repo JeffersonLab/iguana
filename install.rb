@@ -33,9 +33,6 @@ parser.parse!(into: options)
 # check for HIPO installation, or fallback to $HIPO
 options[:hipo] = ENV['HIPO'] unless Dir.exists? options[:hipo]
 
-# fmt has a pkg-config file
-options[:fmt] += '/lib/pkgconfig' unless options[:fmt].nil?
-
 # use realpaths for dependencies
 [ :hipo, :fmt ].each do |dep|
   unless options[dep].nil?
@@ -51,6 +48,20 @@ end
 # print the options
 puts "SET OPTIONS:"
 options.each do |k,v| puts "#{k.to_s.rjust 15} => #{v}" end
+
+# set dependency package paths and generate native INI file
+cmake_prefix_path = [ options[:hipo] ].compact
+pkg_config_path   = [ options[:fmt]  ].compact
+def singleQuotes(arr)
+  "#{arr}".gsub /"/, "'"
+end
+native_ini = options[:build] + '.ini'
+native_file = File.open native_ini, 'w'
+native_file.puts """[built-in options]
+cmake_prefix_path = #{singleQuotes cmake_prefix_path}
+pkg_config_path = #{singleQuotes pkg_config_path}
+"""
+native_file.close
 
 # clean and purge
 def rmDir(dir,obj='files')
@@ -78,26 +89,19 @@ def runCommand(cmd)
   system cmd or raise "FAILED: #{cmd}"
 end
 
-# set a build option
-def buildOpt(key,val)
-  val.nil? ? '' : "-D#{key}='#{val}'"
-end
-
 # meson commands
 meson = {
   :setup => [
     'meson setup',
     "--prefix #{prefix}",
-    buildOpt('cmake_prefix_path', options[:hipo]),
-    buildOpt('pkg_config_path', options[:fmt]),
+    "--native-file #{native_ini}",
     options[:build],
     SourceDir,
   ],
   :config => [
     'meson configure',
     "--prefix #{prefix}",
-    buildOpt('cmake_prefix_path', options[:hipo]),
-    buildOpt('pkg_config_path', options[:fmt]),
+    "--native-file #{native_ini}",
     options[:build],
   ],
   :install => [

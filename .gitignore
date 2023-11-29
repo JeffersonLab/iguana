@@ -1,9 +1,7 @@
 # build artifacts
+*.ini
 /build*/
 /iguana
-/bin
-/include
-/lib
 
 # dependencies
 hipo
