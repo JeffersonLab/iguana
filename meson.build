@@ -12,19 +12,23 @@ project_lib_install_dir = 'lib' # to keep it the same for different Linux distri
 project_bin_install_dir = 'bin'
 
 dep_lib_rpaths = [
-  get_option('hipo') + '/lib'
+'$ORIGIN/../' + project_lib_install_dir,
+  get_option('hipo') + '/lib',
+]
+cmake_prefix_paths = [
+  get_option('hipo'),
 ]
 if get_option('fmt') != ''
   dep_lib_rpaths += get_option('fmt') + '/lib'
+  cmake_prefix_path += get_option('fmt')
 endif
-project_lib_rpath = '$ORIGIN'
-project_bin_rpath = ':'.join(['$ORIGIN/../' + project_lib_install_dir] + dep_lib_rpaths)
 
-hipo_dep = dependency('hipo4', method: 'cmake', cmake_args: '-DCMAKE_PREFIX_PATH=' + get_option('hipo'))
-fmt_dep  = dependency(
-  'fmt',
-  cmake_args: get_option('fmt')!='' ? '-DCMAKE_PREFIX_PATH='+get_option('fmt') : '',
-)
+project_lib_rpath = '$ORIGIN'
+project_bin_rpath = ':'.join(dep_lib_rpaths)
+cmake_prefix_patharg = '-DCMAKE_PREFIX_PATH=' + ';'.join(cmake_prefix_paths)
+
+hipo_dep = dependency('hipo4', method: 'cmake', cmake_args: cmake_prefix_path)
+fmt_dep  = dependency('fmt', method: 'cmake', cmake_args: cmake_prefix_path)
 
 subdir('src/services')
 subdir('src/algorithms')
