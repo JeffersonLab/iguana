@@ -49,20 +49,6 @@ end
 puts "SET OPTIONS:"
 options.each do |k,v| puts "#{k.to_s.rjust 15} => #{v}" end
 
-# set dependency package paths and generate native INI file
-cmake_prefix_path = [ options[:hipo] ].compact
-pkg_config_path   = [ options[:fmt]  ].compact.map{ |path| path += '/lib/pkgconfig' }
-def singleQuotes(arr)
-  "#{arr}".gsub /"/, "'"
-end
-native_ini = options[:build] + '.ini'
-native_file = File.open native_ini, 'w'
-native_file.puts """[built-in options]
-cmake_prefix_path = #{singleQuotes cmake_prefix_path}
-pkg_config_path = #{singleQuotes pkg_config_path}
-"""
-native_file.close
-
 # clean and purge
 def rmDir(dir,obj='files')
   print "\nRemove #{obj} at #{dir} ?\n[y/N] > "
@@ -83,6 +69,25 @@ end
 FileUtils.mkdir_p options[:install]
 prefix = File.realpath options[:install]
 
+# set dependency package paths
+cmake_prefix_path = [ options[:hipo] ].compact
+pkg_config_path   = [ options[:fmt]  ].compact.map{ |path| path += '/lib/pkgconfig' }
+
+# generate native INI file
+def singleQuotes(arr)
+  "#{arr}".gsub /"/, "'"
+end
+native_ini = options[:build] + '.ini'
+native_file = File.open native_ini, 'w'
+native_file.puts """[built-in options]
+; dependency paths
+cmake_prefix_path = #{singleQuotes cmake_prefix_path}
+pkg_config_path = #{singleQuotes pkg_config_path}
+; installation
+prefix = '#{prefix}'
+"""
+native_file.close
+
 # print and run a command
 def runCommand(cmd)
   puts "[+++] #{cmd}"
@@ -93,14 +98,12 @@ end
 meson = {
   :setup => [
     'meson setup',
-    "--prefix #{prefix}",
     "--native-file #{native_ini}",
     options[:build],
     SourceDir,
   ],
   :config => [
     'meson configure',
-    "--prefix #{prefix}",
     "--native-file #{native_ini}",
     options[:build],
   ],
