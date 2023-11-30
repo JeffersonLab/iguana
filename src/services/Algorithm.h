@@ -86,13 +86,6 @@ namespace iguana {
       /// @return the modified `bank_vec_t`
       bank_ptr GetBank(bank_vec_t banks, int idx, std::string expectedBankName="");
 
-      /// Copy a row from one bank to another, assuming their schemata are equivalent
-      /// @param srcBank the source bank
-      /// @param srcRow the row in `srcBank` to copy from
-      /// @param destBank the destination bank
-      /// @param destRow the row in `destBank` to copy to
-      void CopyBankRow(bank_ptr srcBank, int srcRow, bank_ptr destBank, int destRow);
-
       /// Blank a row, setting all items to zero
       /// @param bank the bank to modify
       /// @param row the row to blank

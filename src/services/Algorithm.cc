@@ -63,14 +63,6 @@ namespace iguana {
     return result;
   }
 
-  void Algorithm::CopyBankRow(bank_ptr srcBank, int srcRow, bank_ptr destBank, int destRow) {
-    // TODO: check srcBank->getSchema() == destBank.getSchema()
-    for(int item = 0; item < srcBank->getSchema().getEntries(); item++) {
-      auto val = srcBank->get(item, srcRow);
-      destBank->put(item, destRow, val);
-    }
-  }
-
   void Algorithm::BlankRow(bank_ptr bank, int row) {
     for(int item = 0; item < bank->getSchema().getEntries(); item++) {
       bank->put(item, row, 0);
