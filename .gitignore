@@ -4,5 +4,8 @@ install-iguana.sh
 /build*/
 /iguana
 
+# doxygen artifacts
+/doc/api
+
 # data files
 *.hipo
