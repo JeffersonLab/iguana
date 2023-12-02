@@ -86,10 +86,10 @@ namespace iguana {
       /// @return the modified `bank_vec_t`
       bank_ptr GetBank(bank_vec_t banks, int idx, std::string expectedBankName="");
 
-      /// Blank a row, setting all items to zero
+      /// Mask a row, setting all items to zero
       /// @param bank the bank to modify
       /// @param row the row to blank
-      void BlankRow(bank_ptr bank, int row);
+      void MaskRow(bank_ptr bank, int row);
 
       /// Dump all banks in a `bank_vec_t`
       /// @param banks the banks to show

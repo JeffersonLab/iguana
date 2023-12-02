@@ -15,7 +15,7 @@ defaults:
     shell: bash
 
 env:
-  hipo_version: 94e2cfc1ab93388680ba07088d9b63b68347ba92 # before hipo::bank::get and put were removed
+  hipo_version: 380d54ec47086b31fe13e637329748b2df06ea84
   fmt_version: 9.1.0
 
 jobs:

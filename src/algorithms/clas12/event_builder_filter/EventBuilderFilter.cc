@@ -34,10 +34,10 @@ namespace iguana::clas12 {
 
     // filter the input bank for requested PDG code(s)
     for(int row = 0; row < particleBank->getRows(); row++) {
-      auto pid    = particleBank->get("pid", row);
+      auto pid    = particleBank->getInt("pid", row);
       auto accept = Filter(pid);
       if(!accept)
-        BlankRow(particleBank, row);
+        MaskRow(particleBank, row);
       m_log->Debug("input PID {} -- accept = {}", pid, accept);
     }
 
