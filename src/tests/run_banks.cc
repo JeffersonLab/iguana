@@ -4,7 +4,7 @@
 void printParticles(std::string prefix, iguana::bank_ptr b) {
   std::vector<int> pids;
   for(int row=0; row<b->getRows(); row++)
-    pids.push_back(b->get("pid", row));
+    pids.push_back(b->getInt("pid", row));
   fmt::print("{}: {}\n", prefix, fmt::join(pids, ", "));
 }
 

@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     event.getStructure(*particleBank);
     fmt::print("PIDS FILTERED BY algo->Filter():\n");
     for(int row=0; row<particleBank->getRows(); row++) {
-      auto pid = particleBank->get("pid", row);
+      auto pid = particleBank->getInt("pid", row);
       fmt::print("{:>10}:{}\n", pid, algo->Filter(pid) ? " -- ACCEPT" : "");
     }
 

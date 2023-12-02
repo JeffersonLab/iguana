@@ -63,10 +63,10 @@ namespace iguana {
     return result;
   }
 
-  void Algorithm::BlankRow(bank_ptr bank, int row) {
-    for(int item = 0; item < bank->getSchema().getEntries(); item++) {
-      bank->put(item, row, 0);
-    }
+  void Algorithm::MaskRow(bank_ptr bank, int row) {
+    // TODO: need https://github.com/gavalian/hipo/issues/35
+    // until then, just set the PID to -1
+    bank->putInt("pid", row, -1);
   }
 
   void Algorithm::ShowBanks(bank_vec_t banks, std::string message, Logger::Level level) {
