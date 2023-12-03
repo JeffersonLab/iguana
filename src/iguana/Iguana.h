@@ -20,7 +20,7 @@ namespace iguana {
       };
 
       // TODO: make private
-      std::unordered_map<Iguana::algo, std::shared_ptr<Algorithm>> algo_map;
+      std::unordered_map<Iguana::algo, std::unique_ptr<Algorithm>> algo_map;
 
   };
 }

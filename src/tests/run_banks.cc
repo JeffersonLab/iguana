@@ -1,10 +1,10 @@
 #include "iguana/Iguana.h"
 #include <hipo4/reader.h>
 
-void printParticles(std::string prefix, iguana::bank_ptr b) {
+void printParticles(std::string prefix, hipo::bank& b) {
   std::vector<int> pids;
-  for(int row=0; row<b->getRows(); row++)
-    pids.push_back(b->getInt("pid", row));
+  for(int row=0; row<b.getRows(); row++)
+    pids.push_back(b.getInt("pid", row));
   fmt::print("{}: {}\n", prefix, fmt::join(pids, ", "));
 }
 
@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
    * use the test algorithm directly
    */
   iguana::Iguana I;
-  auto algo = I.algo_map.at(iguana::Iguana::clas12_EventBuilderFilter);
+  auto& algo = I.algo_map.at(iguana::Iguana::clas12_EventBuilderFilter);
   algo->Log()->SetLevel("trace");
   // algo->Log()->DisableStyle();
   algo->SetOption("pids", std::set<int>{11, 211, -211});
@@ -31,26 +31,24 @@ int main(int argc, char **argv) {
   /////////////////////////////////////////////////////
 
   // read input file
-  hipo::reader reader;
-  reader.open(inFileName.c_str());
+  hipo::reader reader(inFileName.c_str());
 
-  // get bank schema
-  /* TODO: users should not have to do this; this is a workaround until
-   * the pattern `hipo::event::getBank("REC::Particle")` is possible
-   */
-  hipo::dictionary factory;
-  reader.readDictionary(factory);
-  auto particleBank = std::make_shared<hipo::bank>(factory.getSchema("REC::Particle"));
-  auto caloBank     = std::make_shared<hipo::bank>(factory.getSchema("REC::Calorimeter"));  // TODO: remove when not needed (this is for testing)
+  // set banks
+  hipo::banklist banks = reader.getBanks({
+      "REC::Particle",
+      "REC::Calorimeter"
+      });
+  enum banks_enum { // TODO: make this nicer
+    b_particle,
+    b_calo
+  };
 
   // event loop
-  hipo::event event;
   int iEvent = 0;
-  while(reader.next(event) && (iEvent++ < numEvents || numEvents == 0)) {
-    event.getStructure(*particleBank);
-    printParticles("PIDS BEFORE algo->Run() ", particleBank);
-    algo->Run({particleBank, caloBank});
-    printParticles("PIDS AFTER algo->Run()  ", particleBank);
+  while(reader.next(banks) && (iEvent++ < numEvents || numEvents == 0)) {
+    printParticles("PIDS BEFORE algo->Run() ", banks.at(b_particle));
+    algo->Run(banks);
+    printParticles("PIDS AFTER algo->Run()  ", banks.at(b_particle));
   }
 
   /////////////////////////////////////////////////////

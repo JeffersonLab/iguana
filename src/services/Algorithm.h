@@ -26,7 +26,7 @@ namespace iguana {
 
       /// Run an algorithm
       /// @param banks the set of banks to process
-      virtual void Run(bank_vec_t banks) = 0;
+      virtual void Run(hipo::banklist& banks) = 0;
 
       /// Finalize an algorithm after all events are processed
       virtual void Stop() = 0;
@@ -38,15 +38,15 @@ namespace iguana {
 
       /// Get the logger
       /// @return the logger used by this algorithm
-      std::shared_ptr<Logger> Log();
+      std::unique_ptr<Logger>& Log();
 
     protected:
 
-      /// Cache the index of a bank in a `bank_vec_t`; throws an exception if the bank is not found
-      /// @param index_cache the relation between bank name and `bank_vec_t` index
-      /// @param idx a reference to the `bank_vec_t` index of the bank
+      /// Cache the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
+      /// @param index_cache the relation between bank name and `hipo::banklist` index
+      /// @param idx a reference to the `hipo::banklist` index of the bank
       /// @param bankName the name of the bank
-      void CacheBankIndex(bank_index_cache_t index_cache, int &idx, std::string bankName);
+      void CacheBankIndex(bank_index_cache_t index_cache, int &idx, std::string bankName) noexcept(false);
 
       /// Cache an option specified by the user, and define its default value
       /// @param key the name of the option
@@ -79,33 +79,33 @@ namespace iguana {
       /// @return the string value and its type
       std::string PrintOptionValue(std::string key);
 
-      /// Get the pointer to a bank from a `bank_vec_t`; optionally checks if the bank name matches the expectation
-      /// @param banks the `bank_vec_t` from which to get the specified bank
+      /// Get the pointer to a bank from a `hipo::banklist`; optionally checks if the bank name matches the expectation
+      /// @param banks the `hipo::banklist` from which to get the specified bank
       /// @param idx the index of `banks` of the specified bank
       /// @param expectedBankName if specified, checks that the specified bank has this name
-      /// @return the modified `bank_vec_t`
-      bank_ptr GetBank(bank_vec_t banks, int idx, std::string expectedBankName="");
+      /// @return the modified `hipo::banklist`
+      hipo::bank& GetBank(hipo::banklist& banks, int idx, std::string expectedBankName="") noexcept(false);
 
       /// Mask a row, setting all items to zero
       /// @param bank the bank to modify
       /// @param row the row to blank
-      void MaskRow(bank_ptr bank, int row);
+      void MaskRow(hipo::bank& bank, int row);
 
-      /// Dump all banks in a `bank_vec_t`
+      /// Dump all banks in a `hipo::banklist`
       /// @param banks the banks to show
       /// @param message optionally print a header message
       /// @param level the log level
-      void ShowBanks(bank_vec_t banks, std::string message="", Logger::Level level=Logger::trace);
+      void ShowBanks(hipo::banklist& banks, std::string message="", Logger::Level level=Logger::trace);
 
       /// Dump a single bank
       /// @param bank the bank to show
       /// @param message optionally print a header message
       /// @param level the log level
-      void ShowBank(bank_ptr bank, std::string message="", Logger::Level level=Logger::trace);
+      void ShowBank(hipo::bank& bank, std::string message="", Logger::Level level=Logger::trace);
 
       /// Stop the algorithm and throw a runtime exception
       /// @param message the error message
-      void Throw(std::string message);
+      void Throw(std::string message) noexcept(false);
 
       /// algorithm name
       std::string m_name;
@@ -114,7 +114,7 @@ namespace iguana {
       std::vector<std::string> m_requiredBanks;
 
       /// Logger
-      std::shared_ptr<Logger> m_log;
+      std::unique_ptr<Logger> m_log;
 
       /// Configuration options
       options_t m_opt;
