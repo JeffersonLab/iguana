@@ -16,6 +16,7 @@ namespace iguana {
   void Logger::SetLevel(const std::string lev) {
     for(auto& [lev_i, lev_n] : m_level_names) {
       if(lev == lev_n) {
+        // FIXME: don't allow setting higher than info
         SetLevel(lev_i);
         return;
       }

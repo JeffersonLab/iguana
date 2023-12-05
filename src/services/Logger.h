@@ -14,7 +14,16 @@ namespace iguana {
 
     public:
 
-      // log levels
+      /// Log levels
+      /// - these are the available log levels, from lowest
+      ///   to highest:
+      ///   - `trace`
+      ///   - `debug`
+      ///   - `info`
+      ///   - `warn`
+      ///   - `error`
+      /// - all log levels that are higher than the specified
+      ///   log level (by `SetLevel(...)`) will be printed
       enum Level {
         trace,
         debug,
