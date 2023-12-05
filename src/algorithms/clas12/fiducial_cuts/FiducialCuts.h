@@ -1,3 +1,6 @@
+/// @file
+/// @brief Filter: fiducial volume cuts
+
 #pragma once
 
 #include "services/Algorithm.h"

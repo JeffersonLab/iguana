@@ -1,3 +1,6 @@
+/// @file
+/// @brief Logging service, for algorithm printouts
+
 #pragma once
 
 #include <fmt/format.h>

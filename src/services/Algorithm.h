@@ -1,3 +1,6 @@
+/// @file
+/// @brief Base class for all algorithms to inherit from
+
 #pragma once
 
 #include "TypeDefs.h"

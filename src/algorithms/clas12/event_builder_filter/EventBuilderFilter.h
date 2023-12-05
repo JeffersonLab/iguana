@@ -1,3 +1,6 @@
+/// @file
+/// @brief Filter: choose particles by Event Builder PID
+
 #pragma once
 
 #include "services/Algorithm.h"
