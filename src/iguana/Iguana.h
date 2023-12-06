@@ -1,6 +1,3 @@
-/// @file
-/// @brief Top-level class to streamline algorithm usage
-
 #pragma once
 
 #include "services/Algorithm.h"
@@ -10,7 +7,7 @@
 
 namespace iguana {
 
-  /// User-level class for running a sequence of algorithms
+  /// @brief User-level class for running a sequence of algorithms
   class Iguana {
 
     public:

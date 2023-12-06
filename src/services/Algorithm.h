@@ -1,6 +1,3 @@
-/// @file
-/// @brief Base class for all algorithms to inherit from
-
 #pragma once
 
 #include "TypeDefs.h"
@@ -8,6 +5,8 @@
 
 namespace iguana {
 
+  /// @brief Base class for all algorithms to inherit from
+  ///
   /// This is the base class for all algorithms. It provides common members, such as
   /// a logger instance and options data structure. Algorithm implementations must:
   /// - inherit from this base class

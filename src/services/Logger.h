@@ -1,6 +1,3 @@
-/// @file
-/// @brief Logging service, for algorithm printouts
-
 #pragma once
 
 #include <fmt/format.h>
@@ -10,7 +7,8 @@
 
 namespace iguana {
 
-  /// This is a simple logger service.
+  /// @brief Simple logger service
+  ///
   /// - Each algorithm instance should own a `Logger` instance.
   /// - The user may control the log level of each `Logger`, thus the log level of each algorithm
   /// - Errors and warnings print to `stderr`, whereas all other levels print to `stdout`

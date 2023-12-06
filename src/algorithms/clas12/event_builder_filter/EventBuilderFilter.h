@@ -1,6 +1,3 @@
-/// @file
-/// @brief Filter: choose particles by Event Builder PID
-
 #pragma once
 
 #include "services/Algorithm.h"
@@ -8,7 +5,7 @@
 
 namespace iguana::clas12 {
 
-  /// Filter the `REC::Particle` (or similar) bank by PID from the Event Builder
+  /// @brief Filter the `REC::Particle` (or similar) bank by PID from the Event Builder
   class EventBuilderFilter : public Algorithm {
 
     public:
