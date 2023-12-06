@@ -3,10 +3,13 @@
 
 int main(int argc, char **argv) {
 
+  /* DISABLED until `run_banks` is more stable
+
   // parse arguments
   int argi = 1;
   std::string inFileName = argc > argi ? std::string(argv[argi++]) : "data.hipo";
   int         numEvents  = argc > argi ? std::stoi(argv[argi++])   : 3;
+
 
   // start the algorithm
   auto algo = std::make_shared<iguana::clas12::EventBuilderFilter>();
@@ -20,9 +23,6 @@ int main(int argc, char **argv) {
   reader.open(inFileName.c_str());
 
   // get bank schema
-  /* TODO: users should not have to do this; this is a workaround until
-   * the pattern `hipo::event::getBank("REC::Particle")` is possible
-   */
   hipo::dictionary factory;
   reader.readDictionary(factory);
   auto particleBank = std::make_shared<hipo::bank>(factory.getSchema("REC::Particle"));
@@ -43,5 +43,6 @@ int main(int argc, char **argv) {
   /////////////////////////////////////////////////////
 
   algo->Stop();
+  */
   return 0;
 }

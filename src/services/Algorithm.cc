@@ -3,7 +3,7 @@
 namespace iguana {
 
   Algorithm::Algorithm(std::string name) : m_name(name) {
-    m_log = std::make_shared<Logger>(m_name);
+    m_log = std::make_unique<Logger>(m_name);
   }
 
   void Algorithm::Start() {
@@ -19,14 +19,14 @@ namespace iguana {
     m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
   }
 
-  std::shared_ptr<Logger> Algorithm::Log() {
+  std::unique_ptr<Logger>& Algorithm::Log() {
     return m_log;
   }
 
-  void Algorithm::CacheBankIndex(bank_index_cache_t index_cache, int &idx, std::string bankName) {
+  void Algorithm::CacheBankIndex(bank_index_cache_t index_cache, int& idx, std::string bankName) {
     try {
       idx = index_cache.at(bankName);
-    } catch(const std::out_of_range &o) {
+    } catch(const std::out_of_range& o) {
       Throw(fmt::format("required input bank '{}' not found; cannot `Start` algorithm '{}'", bankName, m_name));
     }
     m_log->Debug("cached index of bank '{}' is {}", bankName, idx);
@@ -50,39 +50,39 @@ namespace iguana {
     return "UNKNOWN";
   }
 
-  bank_ptr Algorithm::GetBank(bank_vec_t banks, int idx, std::string expectedBankName) {
-    bank_ptr result;
+  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, int idx, std::string expectedBankName) {
     try {
-      result = banks.at(idx);
-    } catch(const std::out_of_range &o) {
+      auto& result = banks.at(idx);
+      if(expectedBankName != "" && result.getSchema().getName() != expectedBankName) {
+        Throw(fmt::format("expected input bank '{}' at index={}; got bank named '{}'", expectedBankName, idx, result.getSchema().getName()));
+      }
+      return result;
+    } catch(const std::out_of_range& o) {
       Throw(fmt::format("required input bank '{}' not found; cannot `Run` algorithm '{}'", expectedBankName, m_name));
     }
-    if(expectedBankName != "" && result->getSchema().getName() != expectedBankName) {
-      Throw(fmt::format("expected input bank '{}' at index={}; got bank named '{}'", expectedBankName, idx, result->getSchema().getName()));
-    }
-    return result;
+    throw std::runtime_error("GetBank failed"); // avoid `-Wreturn-type` warning
   }
 
-  void Algorithm::MaskRow(bank_ptr bank, int row) {
+  void Algorithm::MaskRow(hipo::bank& bank, int row) {
     // TODO: need https://github.com/gavalian/hipo/issues/35
     // until then, just set the PID to -1
-    bank->putInt("pid", row, -1);
+    bank.putInt("pid", row, -1);
   }
 
-  void Algorithm::ShowBanks(bank_vec_t banks, std::string message, Logger::Level level) {
+  void Algorithm::ShowBanks(hipo::banklist& banks, std::string message, Logger::Level level) {
     if(m_log->GetLevel() <= level) {
       if(message != "")
         m_log->Print(level, message);
-      for(auto bank : banks)
-        bank->show();
+      for(auto& bank : banks)
+        bank.show();
     }
   }
 
-  void Algorithm::ShowBank(bank_ptr bank, std::string message, Logger::Level level) {
+  void Algorithm::ShowBank(hipo::bank& bank, std::string message, Logger::Level level) {
     if(m_log->GetLevel() <= level) {
       if(message != "")
         m_log->Print(level, message);
-      bank->show();
+      bank.show();
     }
   }
 

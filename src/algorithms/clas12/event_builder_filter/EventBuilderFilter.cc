@@ -9,7 +9,7 @@ namespace iguana::clas12 {
 
   }
 
-  void EventBuilderFilter::Start(bank_index_cache_t &index_cache) {
+  void EventBuilderFilter::Start(bank_index_cache_t& index_cache) {
 
     // define options, their default values, and cache them
     CacheOption("pids", std::set<int>{11, 211}, o_pids);
@@ -23,18 +23,18 @@ namespace iguana::clas12 {
   }
 
 
-  void EventBuilderFilter::Run(bank_vec_t banks) {
+  void EventBuilderFilter::Run(hipo::banklist& banks) {
 
     // get the banks
-    auto particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto caloBank     = GetBank(banks, b_calo,     "REC::Calorimeter"); // TODO: remove
+    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
+    // auto& caloBank     = GetBank(banks, b_calo,     "REC::Calorimeter"); // TODO: remove
 
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // filter the input bank for requested PDG code(s)
-    for(int row = 0; row < particleBank->getRows(); row++) {
-      auto pid    = particleBank->getInt("pid", row);
+    for(int row = 0; row < particleBank.getRows(); row++) {
+      auto pid    = particleBank.getInt("pid", row);
       auto accept = Filter(pid);
       if(!accept)
         MaskRow(particleBank, row);

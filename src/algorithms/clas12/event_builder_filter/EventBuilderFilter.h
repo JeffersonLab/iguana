@@ -12,15 +12,15 @@ namespace iguana::clas12 {
       ~EventBuilderFilter() {}
 
       void Start() override { Algorithm::Start(); }
-      void Start(bank_index_cache_t &index_cache) override;
-      void Run(bank_vec_t banks) override;
+      void Start(bank_index_cache_t& index_cache) override;
+      void Run(hipo::banklist& banks) override;
       void Stop() override;
 
       bool Filter(int pid);
 
     private:
 
-      /// `bank_vec_t` indices
+      /// `hipo::banklist` indices
       int b_particle, b_calo; // TODO: remove calorimeter
 
       /// configuration options
