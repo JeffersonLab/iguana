@@ -12,9 +12,7 @@ namespace iguana {
 
     public:
 
-      /// Constructor
       Iguana();
-      /// Destructor
       ~Iguana() {}
 
       /// Algorithm enumerator

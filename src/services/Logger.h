@@ -29,13 +29,10 @@ namespace iguana {
       /// The default log level
       static const Level DEFAULT_LEVEL = info;
 
-      /// Create a logger instance
       /// @param name the name of this logger instance, which will be include in all of its printouts
       /// @param lev the log level
       /// @param enable_style if true, certain printouts will be styled with color and emphasis
       Logger(const std::string name = "log", const Level lev = DEFAULT_LEVEL, const bool enable_style = true);
-
-      /// Destructor
       ~Logger() {}
 
       /// Set the log level to this level

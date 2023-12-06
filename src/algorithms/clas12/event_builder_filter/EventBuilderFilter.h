@@ -10,9 +10,7 @@ namespace iguana::clas12 {
 
     public:
 
-      /// Constructor
       EventBuilderFilter();
-      /// Destructor
       ~EventBuilderFilter() {}
 
       void Start() override { Algorithm::Start(); }

@@ -17,11 +17,8 @@ namespace iguana {
 
     public:
 
-      /// Algorithm base class constructor
       /// @param name the unique name for a derived class instance
       Algorithm(const std::string name);
-
-      /// Algorithm base class destructor
       virtual ~Algorithm() {}
 
       /// Initialize an algorithm before any events are processed.
