@@ -25,7 +25,7 @@ namespace iguana {
       virtual void Start();
 
       /// Initialize an algorithm before any events are processed
-      /// @param index_cache The `Algorithm::Run` method will use these indices to access banks
+      /// @param iiiindex_cache The `Algorithm::Run` method will use these indices to access banks
       virtual void Start(const bank_index_cache_t& index_cache) = 0;
 
       /// Run an algorithm for an event
