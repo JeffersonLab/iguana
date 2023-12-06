@@ -27,11 +27,15 @@ args = parser.parse_args()
 
 # set dependency paths
 cmake_prefix_path = []
-pkg_config_path = []
+cmake_deps        = []
+pkg_config_path   = []
+pkg_config_deps   = []
 if(args.hipo != SYSTEM_ASSUMPTION):
     cmake_prefix_path.append(os.path.realpath(args.hipo))
+    cmake_deps.append('hipo')
 if(args.fmt != SYSTEM_ASSUMPTION):
     pkg_config_path.append(os.path.realpath(args.fmt) + '/lib/pkgconfig')
+    pkg_config_deps.append('fmt')
 
 # return an array of strings for meson's INI parsing
 def meson_string_array(arr):
@@ -41,9 +45,12 @@ def meson_string_array(arr):
 # generate the INI file
 config = ConfigParser(allow_no_value=True)
 config.add_section('built-in options')
-config.set('built-in options', '; dependency paths')
-config.set('built-in options', 'cmake_prefix_path', meson_string_array(cmake_prefix_path))
-config.set('built-in options', 'pkg_config_path', meson_string_array(pkg_config_path))
+if(len(cmake_prefix_path) > 0):
+    config.set('built-in options', '; dependency paths for: ' + ','.join(cmake_deps))
+    config.set('built-in options', 'cmake_prefix_path', meson_string_array(cmake_prefix_path))
+if(len(pkg_config_path) > 0):
+    config.set('built-in options', '; dependency paths for: ' + ','.join(pkg_config_deps))
+    config.set('built-in options', 'pkg_config_path', meson_string_array(pkg_config_path))
 config.set('built-in options', '; installation settings')
 config.set('built-in options', 'prefix', f'\'{os.path.realpath(args.prefix)}\'')
 with open(args.ini, 'w') as fp:
