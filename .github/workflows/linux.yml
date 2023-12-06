@@ -138,7 +138,7 @@ jobs:
           retention-days: 1
           path: validation_files.tar.gz
 
-  # download test data
+  # run tests
   #########################################################
 
   test_iguana:
@@ -170,3 +170,33 @@ jobs:
             echo "[+] EXECUTE TEST: $exe"
             $exe $test_file
           done
+
+  # documentation
+  #########################################################
+
+  doc_generate:
+    if: ${{ github.head_ref == 'doxygen' || github.ref_name == 'doxygen' }} # FIXME FIXME FIXME
+    name: Generate documentation
+    runs-on: ubuntu-latest
+      - uses: actions/checkout@v4
+      - run: doxygen
+      - uses: actions/upload-pages-artifact@v2
+        with:
+          retention-days: 1
+          path: doc/api/
+
+  doc_deploy:
+    if: ${{ github.head_ref == 'doxygen' || github.ref_name == 'doxygen' }} # FIXME FIXME FIXME
+    name: Deploy documentation
+    needs: doc_generate
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: deployment
+        id: deployment
+        uses: actions/deploy-pages@v2
