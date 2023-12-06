@@ -178,6 +178,7 @@ jobs:
     if: ${{ github.head_ref == 'doxygen' || github.ref_name == 'doxygen' }} # FIXME FIXME FIXME
     name: Generate documentation
     runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v4
       - run: doxygen
       - uses: actions/upload-pages-artifact@v2
