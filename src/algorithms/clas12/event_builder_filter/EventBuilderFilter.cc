@@ -9,7 +9,7 @@ namespace iguana::clas12 {
 
   }
 
-  void EventBuilderFilter::Start(bank_index_cache_t &index_cache) {
+  void EventBuilderFilter::Start(bank_index_cache_t& index_cache) {
 
     // define options, their default values, and cache them
     CacheOption("pids", std::set<int>{11, 211}, o_pids);

@@ -23,10 +23,10 @@ namespace iguana {
     return m_log;
   }
 
-  void Algorithm::CacheBankIndex(bank_index_cache_t index_cache, int &idx, std::string bankName) {
+  void Algorithm::CacheBankIndex(bank_index_cache_t index_cache, int& idx, std::string bankName) {
     try {
       idx = index_cache.at(bankName);
-    } catch(const std::out_of_range &o) {
+    } catch(const std::out_of_range& o) {
       Throw(fmt::format("required input bank '{}' not found; cannot `Start` algorithm '{}'", bankName, m_name));
     }
     m_log->Debug("cached index of bank '{}' is {}", bankName, idx);
@@ -57,7 +57,7 @@ namespace iguana {
         Throw(fmt::format("expected input bank '{}' at index={}; got bank named '{}'", expectedBankName, idx, result.getSchema().getName()));
       }
       return result;
-    } catch(const std::out_of_range &o) {
+    } catch(const std::out_of_range& o) {
       Throw(fmt::format("required input bank '{}' not found; cannot `Run` algorithm '{}'", expectedBankName, m_name));
     }
     throw std::runtime_error("GetBank failed"); // avoid `-Wreturn-type` warning

@@ -14,7 +14,7 @@ namespace iguana {
   }
 
   void Logger::SetLevel(std::string lev) {
-    for(auto &[lev_i, lev_n] : m_level_names) {
+    for(auto& [lev_i, lev_n] : m_level_names) {
       if(lev == lev_n) {
         SetLevel(lev_i);
         return;

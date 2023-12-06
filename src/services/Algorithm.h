@@ -22,7 +22,7 @@ namespace iguana {
 
       /// Initialize an algorithm before any events are processed
       /// @param index_cache The `Run` method will use these indices to access banks
-      virtual void Start(bank_index_cache_t &index_cache) = 0;
+      virtual void Start(bank_index_cache_t& index_cache) = 0;
 
       /// Run an algorithm
       /// @param banks the set of banks to process
@@ -46,19 +46,19 @@ namespace iguana {
       /// @param index_cache the relation between bank name and `hipo::banklist` index
       /// @param idx a reference to the `hipo::banklist` index of the bank
       /// @param bankName the name of the bank
-      void CacheBankIndex(bank_index_cache_t index_cache, int &idx, std::string bankName) noexcept(false);
+      void CacheBankIndex(bank_index_cache_t index_cache, int& idx, std::string bankName) noexcept(false);
 
       /// Cache an option specified by the user, and define its default value
       /// @param key the name of the option
       /// @param def the default value
       /// @param val reference to the value of the option, to be cached by `Start`
       template <typename OPTION_TYPE>
-        void CacheOption(std::string key, OPTION_TYPE def, OPTION_TYPE &val) {
+        void CacheOption(std::string key, OPTION_TYPE def, OPTION_TYPE& val) {
           bool get_error = false;
           if(auto it{m_opt.find(key)}; it != m_opt.end()) { // cache the user's option value
             try { // get the expected type
               val = std::get<OPTION_TYPE>(it->second);
-            } catch(const std::bad_variant_access &ex1) {
+            } catch(const std::bad_variant_access& ex1) {
               m_log->Error("user option '{}' set to '{}', which is the wrong type...", key, PrintOptionValue(key));
               get_error = true;
               val = def;

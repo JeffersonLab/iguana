@@ -12,7 +12,7 @@ namespace iguana::clas12 {
       ~EventBuilderFilter() {}
 
       void Start() override { Algorithm::Start(); }
-      void Start(bank_index_cache_t &index_cache) override;
+      void Start(bank_index_cache_t& index_cache) override;
       void Run(hipo::banklist& banks) override;
       void Stop() override;
 
