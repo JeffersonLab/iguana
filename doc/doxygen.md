@@ -7,5 +7,6 @@ directory (where the main `Doxyfile` is)
 
 # Iguana API Documentation
 
-This documenation shows how to use the Iguana classes. For additional documentation, see the main README at <https://github.com/JeffersonLab/iguana/blob/main/README.md>
+This documentation shows how to use the Iguana classes.
 
+For additional documentation and examples, [see the main README](https://github.com/JeffersonLab/iguana/blob/main/README.md)

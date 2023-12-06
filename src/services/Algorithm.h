@@ -8,6 +8,12 @@
 
 namespace iguana {
 
+  /// This is the base class for all algorithms. It provides common members, such as
+  /// a logger instance and options data structure. Algorithm implementations must:
+  /// - inherit from this base class
+  /// - override the methods `Algorithm::Start`, `Algorithm::Run` and `Algorithm::Stop`
+  ///
+  /// See existing algorithms for examples.
   class Algorithm {
 
     public:
@@ -20,15 +26,14 @@ namespace iguana {
       virtual ~Algorithm() {}
 
       /// Initialize an algorithm before any events are processed.
-      /// The `Run` method will assume a default ordering of banks. 
       virtual void Start();
 
       /// Initialize an algorithm before any events are processed
-      /// @param index_cache The `Run` method will use these indices to access banks
+      /// @param index_cache The `Algorithm::Run` method will use these indices to access banks
       virtual void Start(const bank_index_cache_t& index_cache) = 0;
 
-      /// Run an algorithm
-      /// @param banks the set of banks to process
+      /// Run an algorithm for an event
+      /// @param banks the list of banks to process
       virtual void Run(hipo::banklist& banks) const = 0;
 
       /// Finalize an algorithm after all events are processed
@@ -51,10 +56,11 @@ namespace iguana {
       /// @param bankName the name of the bank
       void CacheBankIndex(const bank_index_cache_t index_cache, int& idx, const std::string bankName) const noexcept(false);
 
-      /// Cache an option specified by the user, and define its default value
+      /// Cache an option specified by the user, and define its default value. If the user-specified
+      /// option has the wrong type, an error will be printed and the default value will be used instead.
       /// @param key the name of the option
       /// @param def the default value
-      /// @param val reference to the value of the option, to be cached by `Start`
+      /// @param val reference to the value of the option, to be cached by `Algorithm::Start`
       template <typename OPTION_TYPE>
         void CacheOption(const std::string key, const OPTION_TYPE def, OPTION_TYPE& val) {
           bool get_error = false;
@@ -82,27 +88,27 @@ namespace iguana {
       /// @return the string value and its type
       std::string PrintOptionValue(const std::string key) const;
 
-      /// Get the pointer to a bank from a `hipo::banklist`; optionally checks if the bank name matches the expectation
+      /// Get the reference to a bank from a `hipo::banklist`; optionally checks if the bank name matches the expectation
       /// @param banks the `hipo::banklist` from which to get the specified bank
       /// @param idx the index of `banks` of the specified bank
       /// @param expectedBankName if specified, checks that the specified bank has this name
-      /// @return the modified `hipo::banklist`
+      /// @return a reference to the bank
       hipo::bank& GetBank(hipo::banklist& banks, const int idx, const std::string expectedBankName="") const noexcept(false);
 
       /// Mask a row, setting all items to zero
       /// @param bank the bank to modify
-      /// @param row the row to blank
+      /// @param row the row to mask
       void MaskRow(hipo::bank& bank, const int row) const;
 
       /// Dump all banks in a `hipo::banklist`
       /// @param banks the banks to show
-      /// @param message optionally print a header message
+      /// @param message if specified, print a header message
       /// @param level the log level
       void ShowBanks(hipo::banklist& banks, const std::string message="", const Logger::Level level=Logger::trace) const;
 
       /// Dump a single bank
       /// @param bank the bank to show
-      /// @param message optionally print a header message
+      /// @param message if specified, print a header message
       /// @param level the log level
       void ShowBank(hipo::bank& bank, const std::string message="", const Logger::Level level=Logger::trace) const;
 
@@ -116,7 +122,7 @@ namespace iguana {
       /// list of required banks
       std::vector<std::string> m_requiredBanks;
 
-      /// Logger
+      /// `Logger` instance for this algorithm
       std::unique_ptr<Logger> m_log;
 
       /// Configuration options
