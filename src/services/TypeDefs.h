@@ -1,3 +1,6 @@
+/// @file
+/// @brief definition of types
+
 #include <memory>
 #include <vector>
 #include <set>

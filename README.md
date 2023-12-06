@@ -3,5 +3,6 @@
 1. [Setup Guide](doc/setup.md)
 1. [Troubleshooting](doc/troubleshooting.md)
 1. [Design Notes](doc/design.md)
+1. [API documentation](https://jeffersonlab.github.io/iguana/)
 
 **NOTE**: this is still a _prototype_ design
