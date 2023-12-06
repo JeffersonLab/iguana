@@ -78,11 +78,6 @@ namespace iguana {
     }
   }
 
-  //
-  // FIXME: const protection should be applied everywhere
-  // it's possbile, to indicate immuatibility
-  //
-  //
   void Algorithm::ShowBank(hipo::bank& bank, std::string message, Logger::Level level) {
     if(m_log->GetLevel() <= level) {
       if(message != "")
