@@ -2,7 +2,7 @@
 
 namespace iguana {
 
-  Algorithm::Algorithm(std::string name) : m_name(name) {
+  Algorithm::Algorithm(const std::string name) : m_name(name) {
     m_log = std::make_unique<Logger>(m_name);
   }
 
@@ -14,7 +14,7 @@ namespace iguana {
     Start(index_cache);
   }
 
-  void Algorithm::SetOption(std::string key, option_value_t val) {
+  void Algorithm::SetOption(const std::string key, const option_value_t val) {
     m_opt[key] = val;
     m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
   }
@@ -23,7 +23,7 @@ namespace iguana {
     return m_log;
   }
 
-  void Algorithm::CacheBankIndex(bank_index_cache_t index_cache, int& idx, std::string bankName) {
+  void Algorithm::CacheBankIndex(const bank_index_cache_t index_cache, int& idx, const std::string bankName) const {
     try {
       idx = index_cache.at(bankName);
     } catch(const std::out_of_range& o) {
@@ -32,7 +32,7 @@ namespace iguana {
     m_log->Debug("cached index of bank '{}' is {}", bankName, idx);
   }
 
-  std::string Algorithm::PrintOptionValue(std::string key) {
+  std::string Algorithm::PrintOptionValue(const std::string key) const {
     if(auto it{m_opt.find(key)}; it != m_opt.end()) {
       auto val = it->second;
       std::string format_str = "{} [{}]";
@@ -50,7 +50,7 @@ namespace iguana {
     return "UNKNOWN";
   }
 
-  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, int idx, std::string expectedBankName) {
+  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const int idx, const std::string expectedBankName) const {
     try {
       auto& result = banks.at(idx);
       if(expectedBankName != "" && result.getSchema().getName() != expectedBankName) {
@@ -63,13 +63,13 @@ namespace iguana {
     throw std::runtime_error("GetBank failed"); // avoid `-Wreturn-type` warning
   }
 
-  void Algorithm::MaskRow(hipo::bank& bank, int row) {
+  void Algorithm::MaskRow(hipo::bank& bank, const int row) const {
     // TODO: need https://github.com/gavalian/hipo/issues/35
     // until then, just set the PID to -1
     bank.putInt("pid", row, -1);
   }
 
-  void Algorithm::ShowBanks(hipo::banklist& banks, std::string message, Logger::Level level) {
+  void Algorithm::ShowBanks(hipo::banklist& banks, const std::string message, const Logger::Level level) const {
     if(m_log->GetLevel() <= level) {
       if(message != "")
         m_log->Print(level, message);
@@ -78,7 +78,7 @@ namespace iguana {
     }
   }
 
-  void Algorithm::ShowBank(hipo::bank& bank, std::string message, Logger::Level level) {
+  void Algorithm::ShowBank(hipo::bank& bank, const std::string message, const Logger::Level level) const {
     if(m_log->GetLevel() <= level) {
       if(message != "")
         m_log->Print(level, message);
@@ -86,7 +86,7 @@ namespace iguana {
     }
   }
 
-  void Algorithm::Throw(std::string message) {
+  void Algorithm::Throw(const std::string message) const {
     m_log->Error("CRITICAL RUNTIME ERROR!");
     throw std::runtime_error(fmt::format("{}; Algorithm '{}' stopped!", message, m_name));
   }

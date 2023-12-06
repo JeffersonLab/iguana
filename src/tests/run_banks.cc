@@ -1,7 +1,7 @@
 #include "iguana/Iguana.h"
 #include <hipo4/reader.h>
 
-void printParticles(std::string prefix, hipo::bank& b) {
+void printParticles(const std::string prefix, hipo::bank& b) {
   std::vector<int> pids;
   for(int row=0; row<b.getRows(); row++)
     pids.push_back(b.getInt("pid", row));
@@ -12,14 +12,14 @@ int main(int argc, char **argv) {
 
   // parse arguments
   int argi = 1;
-  std::string inFileName = argc > argi ? std::string(argv[argi++]) : "data.hipo";
-  int         numEvents  = argc > argi ? std::stoi(argv[argi++])   : 3;
+  const std::string inFileName = argc > argi ? std::string(argv[argi++]) : "data.hipo";
+  const int         numEvents  = argc > argi ? std::stoi(argv[argi++])   : 1;
 
   // start iguana
   /* TODO: will be similified when we have more sugar in `iguana::Iguana`; until then we
    * use the test algorithm directly
    */
-  iguana::Iguana I;
+  const iguana::Iguana I;
   auto& algo = I.algo_map.at(iguana::Iguana::clas12_EventBuilderFilter);
   algo->Log()->SetLevel("trace");
   // algo->Log()->DisableStyle();
