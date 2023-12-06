@@ -17,32 +17,21 @@ flowchart LR
 
     subgraph services
         Algorithm:::cls
-        AlgorithmConfig:::cls
         Logger:::cls
     end
 
     subgraph algorithms
-        subgraph fiducial cuts
-            FiducialCuts:::algo
-            FiducialCutsConfig:::algo
-        end
-        subgraph momentum corrections
-            MomentumCorrection:::algo
-            MomentumCorrectionConfig:::algo
-        end
+        FiducialCuts:::algo
+        MomentumCorrection:::algo
     end
 
     Iguana    ---> Logger
     Iguana    ---> Algorithm
     Iguana    -.-  bindings
     Algorithm ---> Logger
-    Algorithm ---> AlgorithmConfig
-    AlgorithmConfig ---> Logger
 
     FiducialCuts       -.-> Algorithm
-    FiducialCutsConfig -.-> AlgorithmConfig
     MomentumCorrection       -.-> Algorithm
-    MomentumCorrectionConfig -.-> AlgorithmConfig
 ```
 
 #### Legend
