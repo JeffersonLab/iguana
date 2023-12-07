@@ -11,7 +11,7 @@ flowchart LR
     classDef other fill:#ff88ff,color:black
 
     subgraph iguana
-        Iguana:::cls
+        AlgorithmSequence:::cls
         bindings(language<br />bindings):::other
     end
 
@@ -25,9 +25,9 @@ flowchart LR
         MomentumCorrection:::algo
     end
 
-    Iguana    ---> Logger
-    Iguana    ---> Algorithm
-    Iguana    -.-  bindings
+    AlgorithmSequence    ---> Logger
+    AlgorithmSequence    ---> Algorithm
+    AlgorithmSequence    -.-  bindings
     Algorithm ---> Logger
 
     FiducialCuts       -.-> Algorithm
@@ -106,14 +106,14 @@ Base class `Algorithm` has virtual methods:
 ### Usage Options for Users
 
 - Instantiate and run algorithms as they are
-    - No need for `Iguana` instance
-    - Algorithms do not depend on `Iguana`, just on services
+    - No need for `AlgorithmSequence` instance
+    - Algorithms do not depend on `AlgorithmSequence`, just on services
     - All algorithms are available in a separate shared library
     - Drawback: language bindings are not planned at the algorithm level
-- Use `Iguana`
-    - `Iguana` will only instantiate the algorithms the user intends to use, owning
+- Use `AlgorithmSequence`
+    - `AlgorithmSequence` will only instantiate the algorithms the user intends to use, owning
       an instance of each
-    - User runs the algorithms using `Iguana` "sugar"
+    - User runs the algorithms using `AlgorithmSequence` "sugar"
     - Language bindings can be made available at this level
 
 
@@ -127,7 +127,7 @@ Base class `Algorithm` has virtual methods:
         - add a boolean item to the _end_ of the schema to store whether a row is masked
 - public `bool Cut(float...)` function
     - expose the _primary_ action of the algorithm for users that operate on bank rows
-    - not required, since difficult to generalize at the `Algorithm` (or `Iguana`) level
+    - not required, since difficult to generalize at the `Algorithm` (or `AlgorithmSequence`) level
     - similar to `chanser`'s RG-A criteria implementations
 
 #### Transformer
