@@ -9,7 +9,7 @@ namespace iguana {
 
   /// @brief Simple logger service
   ///
-  /// - Each algorithm instance should own a `Logger` instance.
+  /// - Each algorithm instance should own a `Logger` instance
   /// - The user may control the log level of each `Logger`, thus the log level of each algorithm
   /// - Errors and warnings print to `stderr`, whereas all other levels print to `stdout`
   class Logger {
@@ -43,11 +43,13 @@ namespace iguana {
       Logger(const std::string name = "log", const Level lev = DEFAULT_LEVEL, const bool enable_style = true);
       ~Logger() {}
 
-      /// Set the log level to this level. Log messages with a lower level will not be printed (see `Level`)
+      /// Set the log level to this level. Log messages with a lower level will
+      /// not be printed. See `Logger::Level` for available levels.
       /// @param lev the log level name
       void SetLevel(const std::string lev);
 
-      /// Set the log level to this level. Log messages with a lower level will not be printed (see `Level`)
+      /// Set the log level to this level. Log messages with a lower level will
+      /// not be printed. See `Logger::Level` for available levels.
       /// @param lev the log level
       void SetLevel(const Level lev);
 
