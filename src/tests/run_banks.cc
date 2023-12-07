@@ -20,7 +20,8 @@ int main(int argc, char **argv) {
    * use the test algorithm directly
    */
   const iguana::AlgorithmSequence I;
-  auto& algo = I.algo_map.at(iguana::AlgorithmSequence::clas12_EventBuilderFilter);
+  // auto& algo = I.algo_map.at(iguana::AlgorithmSequence::clas12_EventBuilderFilter);
+  auto& algo = I.algo_map.at(iguana::AlgorithmSequence::clas12_LorentzTransformer);
   algo->Log()->SetLevel("trace");
   // algo->Log()->DisableStyle();
   algo->SetOption("pids", std::set<int>{11, 211, -211});
