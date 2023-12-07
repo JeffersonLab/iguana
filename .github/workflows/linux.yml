@@ -180,7 +180,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt install -y doxygen
-      - run: doxygen doc/Doxyfile
+      - name: doxygen
+        uses: xu-cheng/texlive-action@v2
+        with:
+          scheme: small
+          run: doxygen doc/Doxyfile
       - uses: actions/upload-pages-artifact@v2
         with:
           retention-days: 1
