@@ -4,11 +4,13 @@ namespace iguana {
 
   Logger::Logger(const std::string name, const Level lev, const bool enable_style) : m_name(name), m_enable_style(enable_style) {
     m_level_names = {
-      { trace, "trace" },
-      { debug, "debug" },
-      { info,  "info"  },
-      { warn,  "warn"  },
-      { error, "error" }
+      { trace,  "trace"  },
+      { debug,  "debug"  },
+      { info,   "info"   },
+      { quiet,  "quiet"  },
+      { warn,   "warn"   },
+      { error,  "error"  },
+      { silent, "silent" }
     };
     SetLevel(lev);
   }
@@ -16,7 +18,6 @@ namespace iguana {
   void Logger::SetLevel(const std::string lev) {
     for(auto& [lev_i, lev_n] : m_level_names) {
       if(lev == lev_n) {
-        // FIXME: don't allow setting higher than info
         SetLevel(lev_i);
         return;
       }

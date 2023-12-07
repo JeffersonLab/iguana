@@ -9,21 +9,29 @@ namespace iguana {
 
   /// @brief Simple logger service
   ///
-  /// - Each algorithm instance should own a `Logger` instance.
+  /// - Each algorithm instance should own a `Logger` instance
   /// - The user may control the log level of each `Logger`, thus the log level of each algorithm
   /// - Errors and warnings print to `stderr`, whereas all other levels print to `stdout`
   class Logger {
 
     public:
 
-      /// These are the available log levels, from lowest to highest. See the following definition
-      /// for the list of them:
+      /// These are the available log levels, from lowest to highest:
+      /// - `trace`: the most verbose level, used for fine-grained printouts for each event
+      /// - `debug`: less verbose printout, expected to be less frequent than `trace`
+      /// - `info`: the least verbose printout; this is the default level
+      /// - `quiet`: use this level to only allow warnings and errors, silencing all other printouts
+      /// - `warn`: an issue that may or may not be critical
+      /// - `error`: an issue that is likely critical
+      /// - `silent`: use this level to silence **all** printouts (use it at your own risk!)
       enum Level {
         trace,
         debug,
         info,
+        quiet,
         warn,
-        error
+        error,
+        silent
       };
 
       /// The default log level
@@ -35,11 +43,13 @@ namespace iguana {
       Logger(const std::string name = "log", const Level lev = DEFAULT_LEVEL, const bool enable_style = true);
       ~Logger() {}
 
-      /// Set the log level to this level
+      /// Set the log level to this level. Log messages with a lower level will
+      /// not be printed. See `Logger::Level` for available levels.
       /// @param lev the log level name
       void SetLevel(const std::string lev);
 
-      /// Set the log level to this level
+      /// Set the log level to this level. Log messages with a lower level will
+      /// not be printed. See `Logger::Level` for available levels.
       /// @param lev the log level
       void SetLevel(const Level lev);
 
