@@ -10,7 +10,7 @@ namespace iguana::clas12 {
 
     public:
 
-      /// @param name the name of the algorithm
+      /// @see `Algorithm::Algorithm`
       EventBuilderFilter(std::string name="event_builder_filter") : Algorithm(name) {}
       ~EventBuilderFilter() {}
 
