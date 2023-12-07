@@ -68,13 +68,7 @@ with open(installScript, 'w') as fp:
     fp.write(textwrap.dedent(f'''\
     #!/bin/bash
     set -e
-
-    # setup
-    if [ ! -d {args.build} ]; then
-      meson setup --native-file {args.ini} {args.build} {sourceDir}
-    fi
-
-    # compile and install
+    meson setup --native-file {args.ini} {args.build} {sourceDir}
     meson install -C {args.build}
     '''))
 os.chmod(installScript, 0o744)
