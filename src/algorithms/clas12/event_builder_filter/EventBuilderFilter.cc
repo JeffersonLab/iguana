@@ -10,8 +10,8 @@ namespace iguana::clas12 {
     CacheOption("testFloat", 7.0, o_testFloat); // TODO: remove
 
     // cache expected bank indices
-    CacheBankIndex(banks, b_particle, "REC::Particle");
-    CacheBankIndex(banks, b_calo,     "REC::Calorimeter"); // TODO: remove
+    CacheBankIndex(banks, "REC::Particle", b_particle);
+    CacheBankIndex(banks, "REC::Calorimeter", b_calo); // TODO: remove
 
   }
 

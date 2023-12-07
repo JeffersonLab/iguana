@@ -64,16 +64,16 @@ namespace iguana {
     protected:
 
       /// Cache the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
-      /// @param banks the list of banks this algorithm will use
-      /// @param idx a reference to the `hipo::banklist` index of the bank
-      /// @param bankName the name of the bank
-      void CacheBankIndex(hipo::banklist& banks, int& idx, const std::string bankName) const noexcept(false);
+      /// @param[in] banks the list of banks this algorithm will use
+      /// @param[in] bankName the name of the bank
+      /// @param[out] idx a reference to the `hipo::banklist` index of the bank
+      void CacheBankIndex(hipo::banklist& banks, const std::string bankName, int& idx) const noexcept(false);
 
       /// Cache an option specified by the user, and define its default value. If the user-specified
       /// option has the wrong type, an error will be printed and the default value will be used instead.
-      /// @param key the name of the option
-      /// @param def the default value
-      /// @param val reference to the value of the option, to be cached by `Algorithm::Start`
+      /// @param[in] key the name of the option
+      /// @param[in] def the default value
+      /// @param[out] val reference to the value of the option, to be cached by `Algorithm::Start`
       template <typename OPTION_TYPE>
         void CacheOption(const std::string key, const OPTION_TYPE def, OPTION_TYPE& val) {
           bool get_error = false;

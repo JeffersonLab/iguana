@@ -15,7 +15,7 @@ namespace iguana {
     return m_log;
   }
 
-  void Algorithm::CacheBankIndex(hipo::banklist& banks, int& idx, const std::string bankName) const {
+  void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, int& idx) const {
     auto it = std::find_if(
         banks.begin(),
         banks.end(),
