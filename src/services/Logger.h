@@ -43,14 +43,12 @@ namespace iguana {
       Logger(const std::string name = "log", const Level lev = DEFAULT_LEVEL, const bool enable_style = true);
       ~Logger() {}
 
-      /// Set the log level to this level. Log messages with a lower level will
-      /// not be printed.
+      /// Set the log level to this level. Log messages with a lower level will not be printed.
       /// @see `Logger::Level` for available levels.
       /// @param lev the log level name
       void SetLevel(const std::string lev);
 
-      /// Set the log level to this level. Log messages with a lower level will
-      /// not be printed.
+      /// Set the log level to this level. Log messages with a lower level will not be printed.
       /// @see `Logger::Level` for available levels.
       /// @param lev the log level
       void SetLevel(const Level lev);
