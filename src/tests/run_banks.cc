@@ -1,4 +1,4 @@
-#include "iguana/Iguana.h"
+#include "iguana/AlgorithmSequence.h"
 #include <hipo4/reader.h>
 
 void printParticles(const std::string prefix, hipo::bank& b) {
@@ -16,11 +16,11 @@ int main(int argc, char **argv) {
   const int         numEvents  = argc > argi ? std::stoi(argv[argi++])   : 1;
 
   // start iguana
-  /* TODO: will be similified when we have more sugar in `iguana::Iguana`; until then we
+  /* TODO: will be similified when we have more sugar in `iguana::AlgorithmSequence`; until then we
    * use the test algorithm directly
    */
-  const iguana::Iguana I;
-  auto& algo = I.algo_map.at(iguana::Iguana::clas12_EventBuilderFilter);
+  const iguana::AlgorithmSequence I;
+  auto& algo = I.algo_map.at(iguana::AlgorithmSequence::clas12_EventBuilderFilter);
   algo->Log()->SetLevel("trace");
   // algo->Log()->DisableStyle();
   algo->SetOption("pids", std::set<int>{11, 211, -211});

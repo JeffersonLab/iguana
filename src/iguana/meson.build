@@ -1,9 +1,9 @@
 iguana_headers = [
-  'Iguana.h',
+  'AlgorithmSequence.h',
 ]
 
 iguana_sources = [
-  'Iguana.cc',
+  'AlgorithmSequence.cc',
 ]
 
 iguana_lib = shared_library(
