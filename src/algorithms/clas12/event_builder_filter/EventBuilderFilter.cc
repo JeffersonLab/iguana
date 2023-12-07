@@ -2,14 +2,7 @@
 
 namespace iguana::clas12 {
 
-  EventBuilderFilter::EventBuilderFilter() : Algorithm("event_builder_filter") {
-
-    // define required banks
-    m_requiredBanks = { "REC::Particle", "REC::Calorimeter" }; // TODO: remove calorimeter
-
-  }
-
-  void EventBuilderFilter::Start(const bank_index_cache_t& index_cache) {
+  void EventBuilderFilter::Start(hipo::banklist& banks) {
 
     // define options, their default values, and cache them
     CacheOption("pids", std::set<int>{11, 211}, o_pids);
@@ -17,8 +10,8 @@ namespace iguana::clas12 {
     CacheOption("testFloat", 7.0, o_testFloat); // TODO: remove
 
     // cache expected bank indices
-    CacheBankIndex(index_cache, b_particle, "REC::Particle");
-    CacheBankIndex(index_cache, b_calo,     "REC::Calorimeter"); // TODO: remove
+    CacheBankIndex(banks, b_particle, "REC::Particle");
+    CacheBankIndex(banks, b_calo,     "REC::Calorimeter"); // TODO: remove
 
   }
 

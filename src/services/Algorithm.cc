@@ -6,14 +6,6 @@ namespace iguana {
     m_log = std::make_unique<Logger>(m_name);
   }
 
-  void Algorithm::Start() {
-    bank_index_cache_t index_cache;
-    int i = 0;
-    for(auto requiredBank : m_requiredBanks)
-      index_cache.insert({requiredBank, i++});
-    Start(index_cache);
-  }
-
   void Algorithm::SetOption(const std::string key, const option_value_t val) {
     m_opt[key] = val;
     m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
@@ -23,12 +15,15 @@ namespace iguana {
     return m_log;
   }
 
-  void Algorithm::CacheBankIndex(const bank_index_cache_t index_cache, int& idx, const std::string bankName) const {
-    try {
-      idx = index_cache.at(bankName);
-    } catch(const std::out_of_range& o) {
+  void Algorithm::CacheBankIndex(hipo::banklist& banks, int& idx, const std::string bankName) const {
+    auto it = std::find_if(
+        banks.begin(),
+        banks.end(),
+        [&bankName] (auto& bank) { return bank.getSchema().getName() == bankName; }
+        );
+    if(it == banks.end())
       Throw(fmt::format("required input bank '{}' not found; cannot `Start` algorithm '{}'", bankName, m_name));
-    }
+    idx = std::distance(banks.begin(), it);
     m_log->Debug("cached index of bank '{}' is {}", bankName, idx);
   }
 

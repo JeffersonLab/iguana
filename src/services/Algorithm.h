@@ -1,9 +1,28 @@
 #pragma once
 
-#include "TypeDefs.h"
+#include <set>
+#include <variant>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+
+#include <hipo4/bank.h>
+
 #include "Logger.h"
 
 namespace iguana {
+
+  /// option value variant type
+  using option_value_t = std::variant<
+    int,
+    double,
+    std::string,
+    std::set<int>
+  >;
+
+  /// data structure to hold configuration options
+  using options_t = std::unordered_map<std::string, option_value_t>;
 
   /// @brief Base class for all algorithms to inherit from
   ///
@@ -21,12 +40,10 @@ namespace iguana {
       Algorithm(const std::string name);
       virtual ~Algorithm() {}
 
-      /// Initialize an algorithm before any events are processed.
-      virtual void Start();
-
       /// Initialize an algorithm before any events are processed
-      /// @param index_cache The `Algorithm::Run` method will use these indices to access banks
-      virtual void Start(const bank_index_cache_t& index_cache) = 0;
+      /// @param banks the list of banks this algorithm will use, so that `Algorithm::Run` can cache the indices
+      ///        of the banks that it needs
+      virtual void Start(hipo::banklist& banks) = 0;
 
       /// Run an algorithm for an event
       /// @param banks the list of banks to process
@@ -47,10 +64,10 @@ namespace iguana {
     protected:
 
       /// Cache the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
-      /// @param index_cache the relation between bank name and `hipo::banklist` index
+      /// @param banks the list of banks this algorithm will use
       /// @param idx a reference to the `hipo::banklist` index of the bank
       /// @param bankName the name of the bank
-      void CacheBankIndex(const bank_index_cache_t index_cache, int& idx, const std::string bankName) const noexcept(false);
+      void CacheBankIndex(hipo::banklist& banks, int& idx, const std::string bankName) const noexcept(false);
 
       /// Cache an option specified by the user, and define its default value. If the user-specified
       /// option has the wrong type, an error will be printed and the default value will be used instead.
@@ -115,13 +132,11 @@ namespace iguana {
       /// algorithm name
       const std::string m_name;
 
-      /// list of required banks
-      std::vector<std::string> m_requiredBanks;
-
       /// `Logger` instance for this algorithm
       std::unique_ptr<Logger> m_log;
 
       /// Configuration options
       options_t m_opt;
+
   };
 }
