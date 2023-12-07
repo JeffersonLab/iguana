@@ -26,7 +26,6 @@ int main(int argc, char **argv) {
   algo->SetOption("pids", std::set<int>{11, 211, -211});
   algo->SetOption("testInt", 3);
   algo->SetOption("testFloat", 11.0);
-  algo->Start();
 
   /////////////////////////////////////////////////////
 
@@ -42,6 +41,8 @@ int main(int argc, char **argv) {
     b_particle,
     b_calo
   };
+
+  algo->Start(banks);
 
   // event loop
   int iEvent = 0;

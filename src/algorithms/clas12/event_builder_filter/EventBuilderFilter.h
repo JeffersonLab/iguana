@@ -10,11 +10,11 @@ namespace iguana::clas12 {
 
     public:
 
-      EventBuilderFilter();
+      /// @see `Algorithm::Algorithm`
+      EventBuilderFilter(std::string name="event_builder_filter") : Algorithm(name) {}
       ~EventBuilderFilter() {}
 
-      void Start() override { Algorithm::Start(); }
-      void Start(const bank_index_cache_t& index_cache) override;
+      void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 

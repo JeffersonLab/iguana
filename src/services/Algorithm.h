@@ -1,9 +1,25 @@
 #pragma once
 
-#include "TypeDefs.h"
+#include <set>
+#include <variant>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+
+#include <hipo4/bank.h>
+
 #include "Logger.h"
 
 namespace iguana {
+
+  /// option value variant type
+  using option_t = std::variant<
+    int,
+    double,
+    std::string,
+    std::set<int>
+  >;
 
   /// @brief Base class for all algorithms to inherit from
   ///
@@ -21,12 +37,10 @@ namespace iguana {
       Algorithm(const std::string name);
       virtual ~Algorithm() {}
 
-      /// Initialize an algorithm before any events are processed.
-      virtual void Start();
-
       /// Initialize an algorithm before any events are processed
-      /// @param index_cache The `Algorithm::Run` method will use these indices to access banks
-      virtual void Start(const bank_index_cache_t& index_cache) = 0;
+      /// @param banks the list of banks this algorithm will use, so that `Algorithm::Run` can cache the indices
+      ///        of the banks that it needs
+      virtual void Start(hipo::banklist& banks) = 0;
 
       /// Run an algorithm for an event
       /// @param banks the list of banks to process
@@ -38,7 +52,7 @@ namespace iguana {
       /// Set an option specified by the user
       /// @param key the name of the option
       /// @param val the value to set
-      void SetOption(const std::string key, const option_value_t val);
+      void SetOption(const std::string key, const option_t val);
 
       /// Get the logger
       /// @return the logger used by this algorithm
@@ -47,16 +61,16 @@ namespace iguana {
     protected:
 
       /// Cache the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
-      /// @param index_cache the relation between bank name and `hipo::banklist` index
-      /// @param idx a reference to the `hipo::banklist` index of the bank
-      /// @param bankName the name of the bank
-      void CacheBankIndex(const bank_index_cache_t index_cache, int& idx, const std::string bankName) const noexcept(false);
+      /// @param[in] banks the list of banks this algorithm will use
+      /// @param[in] bankName the name of the bank
+      /// @param[out] idx a reference to the `hipo::banklist` index of the bank
+      void CacheBankIndex(hipo::banklist& banks, const std::string bankName, int& idx) const noexcept(false);
 
       /// Cache an option specified by the user, and define its default value. If the user-specified
       /// option has the wrong type, an error will be printed and the default value will be used instead.
-      /// @param key the name of the option
-      /// @param def the default value
-      /// @param val reference to the value of the option, to be cached by `Algorithm::Start`
+      /// @param[in] key the name of the option
+      /// @param[in] def the default value
+      /// @param[out] val reference to the value of the option, to be cached by `Algorithm::Start`
       template <typename OPTION_TYPE>
         void CacheOption(const std::string key, const OPTION_TYPE def, OPTION_TYPE& val) {
           bool get_error = false;
@@ -115,13 +129,12 @@ namespace iguana {
       /// algorithm name
       const std::string m_name;
 
-      /// list of required banks
-      std::vector<std::string> m_requiredBanks;
-
       /// `Logger` instance for this algorithm
       std::unique_ptr<Logger> m_log;
 
-      /// Configuration options
-      options_t m_opt;
+      /// data structure to hold configuration options
+      std::unordered_map<std::string, option_t> m_opt;
+
+
   };
 }
