@@ -4,6 +4,7 @@
 
 // TODO: avoid listing the algos
 #include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"
+#include "algorithms/clas12/lorentz_transformer/LorentzTransformer.h"
 
 namespace iguana {
 
@@ -19,7 +20,8 @@ namespace iguana {
       // TODO: avoid listing the algos
       // TODO: who should own the algorithm instances: AlgorithmSequence or the user?
       enum algo {
-        clas12_EventBuilderFilter
+        clas12_EventBuilderFilter,
+        clas12_LorentzTransformer
       };
 
       /// Map of algorithm enumerator to the algorithm

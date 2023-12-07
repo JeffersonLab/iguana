@@ -1,7 +1,6 @@
 #pragma once
 
 #include "services/Algorithm.h"
-#include <set>
 
 namespace iguana::clas12 {
 
