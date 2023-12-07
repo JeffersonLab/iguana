@@ -44,12 +44,14 @@ namespace iguana {
       ~Logger() {}
 
       /// Set the log level to this level. Log messages with a lower level will
-      /// not be printed. See `Logger::Level` for available levels.
+      /// not be printed.
+      /// @see `Logger::Level` for available levels.
       /// @param lev the log level name
       void SetLevel(const std::string lev);
 
       /// Set the log level to this level. Log messages with a lower level will
-      /// not be printed. See `Logger::Level` for available levels.
+      /// not be printed.
+      /// @see `Logger::Level` for available levels.
       /// @param lev the log level
       void SetLevel(const Level lev);
 
@@ -69,15 +71,15 @@ namespace iguana {
       /// @returns the header string
       static std::string Header(const std::string message, const int width=50);
 
-      /// Printout a log message at the `trace` level; see `Logger::Print` for more details
+      /// Printout a log message at the `trace` level @see `Logger::Print` for more details
       template <typename... VALUES> void Trace(const std::string message, const VALUES... vals) const { Print(trace, message, vals...); }
-      /// Printout a log message at the `debug` level; see `Logger::Print` for more details
+      /// Printout a log message at the `debug` level @see `Logger::Print` for more details
       template <typename... VALUES> void Debug(const std::string message, const VALUES... vals) const { Print(debug, message, vals...); }
-      /// Printout a log message at the `info` level; see `Logger::Print` for more details
+      /// Printout a log message at the `info` level @see `Logger::Print` for more details
       template <typename... VALUES> void Info(const std::string  message, const VALUES... vals) const { Print(info,  message, vals...); }
-      /// Printout a log message at the `warn` level; see `Logger::Print` for more details
+      /// Printout a log message at the `warn` level @see `Logger::Print` for more details
       template <typename... VALUES> void Warn(const std::string  message, const VALUES... vals) const { Print(warn,  message, vals...); }
-      /// Printout a log message at the `error` level; see `Logger::Print` for more details
+      /// Printout a log message at the `error` level @see `Logger::Print` for more details
       template <typename... VALUES> void Error(const std::string message, const VALUES... vals) const { Print(error, message, vals...); }
 
       /// Printout a log message at the specified level. The message will only print if `lev` is at least as high as the current level of
