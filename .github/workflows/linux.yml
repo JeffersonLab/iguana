@@ -179,12 +179,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt install -y doxygen
       - name: doxygen
-        uses: xu-cheng/texlive-action@v2
+        uses: mattnotmitt/doxygen-action@v1
         with:
-          scheme: small
-          run: doxygen doc/Doxyfile
+          doxyfile-path: doc/Doxyfile
+          enable-latex: true
       - uses: actions/upload-pages-artifact@v2
         with:
           retention-days: 1
