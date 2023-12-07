@@ -183,7 +183,6 @@ jobs:
         uses: mattnotmitt/doxygen-action@v1
         with:
           doxyfile-path: doc/Doxyfile
-          enable-latex: true
       - uses: actions/upload-pages-artifact@v2
         with:
           retention-days: 1
