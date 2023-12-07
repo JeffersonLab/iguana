@@ -14,15 +14,12 @@
 namespace iguana {
 
   /// option value variant type
-  using option_value_t = std::variant<
+  using option_t = std::variant<
     int,
     double,
     std::string,
     std::set<int>
   >;
-
-  /// data structure to hold configuration options
-  using options_t = std::unordered_map<std::string, option_value_t>;
 
   /// @brief Base class for all algorithms to inherit from
   ///
@@ -55,7 +52,7 @@ namespace iguana {
       /// Set an option specified by the user
       /// @param key the name of the option
       /// @param val the value to set
-      void SetOption(const std::string key, const option_value_t val);
+      void SetOption(const std::string key, const option_t val);
 
       /// Get the logger
       /// @return the logger used by this algorithm
@@ -135,8 +132,9 @@ namespace iguana {
       /// `Logger` instance for this algorithm
       std::unique_ptr<Logger> m_log;
 
-      /// Configuration options
-      options_t m_opt;
+      /// data structure to hold configuration options
+      std::unordered_map<std::string, option_t> m_opt;
+
 
   };
 }

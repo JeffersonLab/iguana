@@ -6,7 +6,7 @@ namespace iguana {
     m_log = std::make_unique<Logger>(m_name);
   }
 
-  void Algorithm::SetOption(const std::string key, const option_value_t val) {
+  void Algorithm::SetOption(const std::string key, const option_t val) {
     m_opt[key] = val;
     m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
   }
