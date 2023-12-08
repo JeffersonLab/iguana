@@ -14,10 +14,8 @@ namespace iguana {
   }
 
   algo_t& AlgorithmSequence::Get(const std::string name) {
-    if(auto it{m_algo_names.find(name)}; it != m_algo_names.end()) {
-      auto& algo = m_sequence[it->second];
-      return algo;
-    }
+    if(auto it{m_algo_names.find(name)}; it != m_algo_names.end())
+      return m_sequence[it->second];
     m_log->Error("cannot find algorithm '{}' in sequence", name);
     throw std::runtime_error("cannot Get algorithm");
   }
