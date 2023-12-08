@@ -32,7 +32,7 @@ namespace iguana::clas12 {
       /// `hipo::banklist` index for the particle bank
       int b_particle;
 
-      /// configuration options
+      /// Configuration options
       std::string o_frame;
 
       /// Lorentz transformation function

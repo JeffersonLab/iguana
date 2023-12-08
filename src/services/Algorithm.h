@@ -13,7 +13,7 @@
 
 namespace iguana {
 
-  /// option value variant type
+  /// Option value variant type
   using option_t = std::variant<
     int,
     double,
@@ -118,7 +118,7 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank& bank, const std::string message="", const Logger::Level level=Logger::trace) const;
 
-      /// data structure to hold configuration options
+      /// Data structure to hold configuration options
       std::unordered_map<std::string, option_t> m_opt;
 
   };

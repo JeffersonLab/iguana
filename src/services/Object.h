@@ -29,7 +29,7 @@ namespace iguana {
 
     protected:
 
-      /// the name of this object
+      /// The name of this object
       std::string m_name;
 
       /// `Logger` instance for this object
