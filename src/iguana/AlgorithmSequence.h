@@ -57,9 +57,6 @@ namespace iguana {
 
     private:
 
-      /// Cache the algorithm names
-      void CacheNames();
-
       /// The sequence of algorithms
       std::vector<algo_t> m_sequence;
 
