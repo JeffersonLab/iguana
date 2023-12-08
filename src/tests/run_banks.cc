@@ -19,10 +19,11 @@ int main(int argc, char **argv) {
 
   // start iguana
   iguana::AlgorithmSequence seq;
-  seq.Add({
-      std::make_unique<iguana::clas12::EventBuilderFilter>("algo1"),
-      std::make_unique<iguana::clas12::LorentzTransformer>("algo2"),
-      });
+  seq.Add(std::make_unique<iguana::clas12::EventBuilderFilter>("algo1")); // TODO: improve
+  seq.Add(std::make_unique<iguana::clas12::LorentzTransformer>("algo2"));
+
+  seq.PrintSequence();
+  
   seq.Get("algo1")->Log()->SetLevel("trace"); // TODO: improve
   seq.Get("algo2")->Log()->SetLevel("trace"); // TODO: improve
   seq.SetOption("algo1", "pids", std::set<int>{11, 211, -211});

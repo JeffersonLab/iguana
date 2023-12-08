@@ -14,6 +14,8 @@ namespace iguana {
   /// - Errors and warnings print to `stderr`, whereas all other levels print to `stdout`
   class Logger {
 
+    friend class Object;
+
     public:
 
       /// These are the available log levels, from lowest to highest:
@@ -114,7 +116,7 @@ namespace iguana {
     private:
 
       /// the name of this logger, which is included in all printouts
-      const std::string m_name;
+      std::string m_name;
 
       /// the current log level for this instance
       Level m_level;
