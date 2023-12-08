@@ -2,7 +2,6 @@
 
 #include <set>
 #include <variant>
-#include <memory>
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
@@ -10,11 +9,11 @@
 
 #include <hipo4/bank.h>
 
-#include "Logger.h"
+#include "Object.h"
 
 namespace iguana {
 
-  /// option value variant type
+  /// Option value variant type
   using option_t = std::variant<
     int,
     double,
@@ -30,12 +29,12 @@ namespace iguana {
   /// - override the methods `Algorithm::Start`, `Algorithm::Run` and `Algorithm::Stop`
   ///
   /// See existing algorithms for examples.
-  class Algorithm {
+  class Algorithm : public Object {
 
     public:
 
       /// @param name the unique name for a derived class instance
-      Algorithm(const std::string name);
+      Algorithm(const std::string name) : Object(name) {}
       virtual ~Algorithm() {}
 
       /// Initialize an algorithm before any events are processed
@@ -54,10 +53,6 @@ namespace iguana {
       /// @param key the name of the option
       /// @param val the value to set
       void SetOption(const std::string key, const option_t val);
-
-      /// Get the logger
-      /// @return the logger used by this algorithm
-      std::unique_ptr<Logger>& Log();
 
     protected:
 
@@ -123,19 +118,8 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank& bank, const std::string message="", const Logger::Level level=Logger::trace) const;
 
-      /// Stop the algorithm and throw a runtime exception
-      /// @param message the error message
-      void Throw(const std::string message) const noexcept(false);
-
-      /// algorithm name
-      const std::string m_name;
-
-      /// `Logger` instance for this algorithm
-      std::unique_ptr<Logger> m_log;
-
-      /// data structure to hold configuration options
+      /// Data structure to hold configuration options
       std::unordered_map<std::string, option_t> m_opt;
-
 
   };
 }

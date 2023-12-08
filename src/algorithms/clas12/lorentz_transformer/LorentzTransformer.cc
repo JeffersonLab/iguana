@@ -16,8 +16,10 @@ namespace iguana::clas12 {
         pz = -pz;
       };
     }
-    else
-      Throw(fmt::format("unknown frame '{}'", o_frame));
+    else {
+      m_log->Error("unknown frame '{}'", o_frame);
+      throw std::runtime_error("cannot Start LorentzTransformer algorithm");
+    }
 
   }
 

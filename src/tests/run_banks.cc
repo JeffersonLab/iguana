@@ -1,4 +1,6 @@
 #include "iguana/AlgorithmSequence.h"
+#include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"
+#include "algorithms/clas12/lorentz_transformer/LorentzTransformer.h"
 #include <hipo4/reader.h>
 
 void printParticles(const std::string prefix, hipo::bank& b) {
@@ -16,17 +18,18 @@ int main(int argc, char **argv) {
   const int         numEvents  = argc > argi ? std::stoi(argv[argi++])   : 1;
 
   // start iguana
-  /* TODO: will be similified when we have more sugar in `iguana::AlgorithmSequence`; until then we
-   * use the test algorithm directly
-   */
-  const iguana::AlgorithmSequence I;
-  // auto& algo = I.algo_map.at(iguana::AlgorithmSequence::clas12_EventBuilderFilter);
-  auto& algo = I.algo_map.at(iguana::AlgorithmSequence::clas12_LorentzTransformer);
-  algo->Log()->SetLevel("trace");
-  // algo->Log()->DisableStyle();
-  algo->SetOption("pids", std::set<int>{11, 211, -211});
-  algo->SetOption("testInt", 3);
-  algo->SetOption("testFloat", 11.0);
+  iguana::AlgorithmSequence seq;
+  seq.Add(std::make_unique<iguana::clas12::EventBuilderFilter>("algo1")); // TODO: improve
+  seq.Add(std::make_unique<iguana::clas12::LorentzTransformer>("algo2"));
+
+  seq.PrintSequence();
+  
+  seq.Get("algo1")->Log()->SetLevel("trace"); // TODO: improve
+  seq.Get("algo2")->Log()->SetLevel("trace"); // TODO: improve
+  seq.SetOption("algo1", "pids", std::set<int>{11, 211, -211});
+  seq.SetOption("algo1", "testInt", 3);
+  seq.SetOption("algo1", "testFloat", 11.0);
+  seq.SetOption("algo2", "frame", "mirror");
 
   /////////////////////////////////////////////////////
 
@@ -43,18 +46,18 @@ int main(int argc, char **argv) {
     b_calo
   };
 
-  algo->Start(banks);
+  seq.Start(banks);
 
   // event loop
   int iEvent = 0;
   while(reader.next(banks) && (iEvent++ < numEvents || numEvents == 0)) {
     printParticles("PIDS BEFORE algo->Run() ", banks.at(b_particle));
-    algo->Run(banks);
+    seq.Run(banks);
     printParticles("PIDS AFTER algo->Run()  ", banks.at(b_particle));
   }
 
   /////////////////////////////////////////////////////
 
-  algo->Stop();
+  seq.Stop();
   return 0;
 }
