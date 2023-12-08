@@ -2,31 +2,45 @@
 
 #include "services/Algorithm.h"
 
-// TODO: avoid listing the algos
-#include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"
-#include "algorithms/clas12/lorentz_transformer/LorentzTransformer.h"
-
 namespace iguana {
 
+  /// algorithm pointer type
+  using algo_t = std::unique_ptr<Algorithm>;
+
   /// @brief User-level class for running a sequence of algorithms
-  class AlgorithmSequence {
+  class AlgorithmSequence : public Object {
 
     public:
 
-      AlgorithmSequence();
+      /// @param name the name of this sequence; if specified, all algorithms
+      ///             in this sequence will be prefixed by this name
+      AlgorithmSequence(const std::string name="") : Object(name) {}
       ~AlgorithmSequence() {}
 
-      /// Algorithm enumerator
-      // TODO: avoid listing the algos
-      // TODO: who should own the algorithm instances: AlgorithmSequence or the user?
-      enum algo {
-        clas12_EventBuilderFilter,
-        clas12_LorentzTransformer
-      };
+      void Add(const algo_t& algo);
+      void Add(const std::vector<algo_t>& algos);
 
-      /// Map of algorithm enumerator to the algorithm
-      // TODO: make private
-      std::unordered_map<AlgorithmSequence::algo, std::unique_ptr<Algorithm>> algo_map;
+      /// get an algorithm by name
+      algo_t& Get(const std::string name);
+
+      void SetOption(const std::string algo, const std::string key, const option_t val);
+
+      void PrintSequence(Logger::Level level=Logger::info) const;
+
+      void Start(hipo::banklist& banks) const;
+      void Run(hipo::banklist& banks) const;
+      void Stop() const;
+
+    private:
+
+      /// Cache the algorithm names
+      void CacheNames();
+
+      /// the sequence of algorithms
+      std::vector<algo_t> m_sequence;
+
+      /// association of algorithm name to its index in the sequence
+      std::unordered_map<std::string, std::vector<algo_t>::size_type> m_algo_names;
 
   };
 }

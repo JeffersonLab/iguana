@@ -1,10 +1,12 @@
 services_headers = [
   'Logger.h',
+  'Object.h',
   'Algorithm.h',
 ]
 
 services_sources = [
   'Logger.cc',
+  'Object.cc',
   'Algorithm.cc',
 ]
 

@@ -2,17 +2,9 @@
 
 namespace iguana {
 
-  Algorithm::Algorithm(const std::string name) : m_name(name) {
-    m_log = std::make_unique<Logger>(m_name);
-  }
-
   void Algorithm::SetOption(const std::string key, const option_t val) {
     m_opt[key] = val;
     m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
-  }
-
-  std::unique_ptr<Logger>& Algorithm::Log() {
-    return m_log;
   }
 
   void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, int& idx) const {
