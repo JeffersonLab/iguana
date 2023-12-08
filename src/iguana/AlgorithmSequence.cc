@@ -3,14 +3,13 @@
 namespace iguana {
 
   void AlgorithmSequence::Add(algo_t&& algo) {
-    m_algo_names.insert({algo->GetName(), m_sequence.size()});
-    algo->SetName(m_name + "|" + algo->GetName()); // prepend sequence name to algorithm name
+    auto algoName = algo->GetName();
+    m_algo_names.insert({algoName, m_sequence.size()});
+    algo->SetName(m_name + "|" + algoName); // prepend sequence name to algorithm name
     m_sequence.push_back(std::move(algo));
     if(m_algo_names.size() < m_sequence.size()) { // check for duplicate algorithm name
-      m_log->Error("Duplicate algorithm name detected; please make sure all of your algorithms have unique names");
-      m_log->Error("Your sequence of algorithms is:");
-      PrintSequence(Logger::error);
-      throw std::runtime_error("cannot configure this sequence");
+      m_log->Error("Duplicate algorithm name '{}' detected; please make sure all of your algorithms have unique names", algoName);
+      throw std::runtime_error("cannot Add algorithm");
     }
   }
 
@@ -19,8 +18,8 @@ namespace iguana {
       auto& algo = m_sequence[it->second];
       return algo;
     }
-    else
-      throw std::runtime_error(fmt::format("cannot find algorithm '{}' in sequence", name));
+    m_log->Error("cannot find algorithm '{}' in sequence", name);
+    throw std::runtime_error("cannot Get algorithm");
   }
 
   void AlgorithmSequence::SetOption(const std::string algo, const std::string key, const option_t val) {

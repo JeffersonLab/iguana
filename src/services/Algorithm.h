@@ -118,10 +118,6 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank& bank, const std::string message="", const Logger::Level level=Logger::trace) const;
 
-      /// Stop the algorithm and throw a runtime exception
-      /// @param message the error message
-      void Throw(const std::string message) const noexcept(false);
-
       /// data structure to hold configuration options
       std::unordered_map<std::string, option_t> m_opt;
 

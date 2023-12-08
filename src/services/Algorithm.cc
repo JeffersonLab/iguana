@@ -13,8 +13,10 @@ namespace iguana {
         banks.end(),
         [&bankName] (auto& bank) { return bank.getSchema().getName() == bankName; }
         );
-    if(it == banks.end())
-      Throw(fmt::format("required input bank '{}' not found; cannot `Start` algorithm '{}'", bankName, m_name));
+    if(it == banks.end()) {
+      m_log->Error("required input bank '{}' not found; cannot `Start` algorithm '{}'", bankName, m_name);
+      throw std::runtime_error("cannot cache bank index");
+    }
     idx = std::distance(banks.begin(), it);
     m_log->Debug("cached index of bank '{}' is {}", bankName, idx);
   }
@@ -40,14 +42,14 @@ namespace iguana {
   hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const int idx, const std::string expectedBankName) const {
     try {
       auto& result = banks.at(idx);
-      if(expectedBankName != "" && result.getSchema().getName() != expectedBankName) {
-        Throw(fmt::format("expected input bank '{}' at index={}; got bank named '{}'", expectedBankName, idx, result.getSchema().getName()));
-      }
-      return result;
+      if(expectedBankName != "" && result.getSchema().getName() != expectedBankName)
+        m_log->Error("expected input bank '{}' at index={}; got bank named '{}'", expectedBankName, idx, result.getSchema().getName());
+      else
+        return result;
     } catch(const std::out_of_range& o) {
-      Throw(fmt::format("required input bank '{}' not found; cannot `Run` algorithm '{}'", expectedBankName, m_name));
+      m_log->Error("required input bank '{}' not found; cannot `Run` algorithm '{}'", expectedBankName, m_name);
     }
-    throw std::runtime_error("GetBank failed"); // avoid `-Wreturn-type` warning
+    throw std::runtime_error("GetBank failed");
   }
 
   void Algorithm::MaskRow(hipo::bank& bank, const int row) const {
@@ -71,11 +73,6 @@ namespace iguana {
         m_log->Print(level, message);
       bank.show();
     }
-  }
-
-  void Algorithm::Throw(const std::string message) const {
-    m_log->Error("CRITICAL RUNTIME ERROR!");
-    throw std::runtime_error(fmt::format("{}; Algorithm '{}' stopped!", message, m_name));
   }
 
 }
