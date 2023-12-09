@@ -49,7 +49,8 @@ namespace iguana {
       /// Finalize an algorithm after all events are processed
       virtual void Stop() = 0;
 
-      /// Set an option specified by the user
+      /// Set an option specified by the user. If the option name is `"log"`, the log level of the `Logger`
+      /// owned by this algorithm will be changed to the specified value.
       /// @param key the name of the option
       /// @param val the value to set
       void SetOption(const std::string key, const option_t val);
