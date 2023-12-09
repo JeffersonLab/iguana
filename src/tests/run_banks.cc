@@ -19,19 +19,19 @@ int main(int argc, char **argv) {
 
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
-  seq.Add(std::make_unique<iguana::clas12::EventBuilderFilter>("algo1")); // TODO: improve
-  seq.Add(std::make_unique<iguana::clas12::LorentzTransformer>("algo2"));
+  seq.Add<iguana::clas12::EventBuilderFilter>("pid_filter");
+  seq.Add<iguana::clas12::LorentzTransformer>("mirror_frame");
   seq.PrintSequence();
   
   // set log levels
-  seq.SetOption("algo1", "log", "trace");
-  seq.SetOption("algo2", "log", "trace");
+  seq.SetOption("pid_filter",   "log", "trace");
+  seq.SetOption("mirror_frame", "log", "trace");
 
   // set algorithm options
-  seq.SetOption("algo1", "pids", std::set<int>{11, 211, -211});
-  seq.SetOption("algo1", "testInt", 3);
-  seq.SetOption("algo1", "testFloat", 11.0);
-  seq.SetOption("algo2", "frame", "mirror");
+  seq.SetOption("pid_filter",   "pids",      std::set<int>{11, 211, -211});
+  seq.SetOption("pid_filter",   "testInt",   3);
+  seq.SetOption("pid_filter",   "testFloat", 11.0);
+  seq.SetOption("mirror_frame", "frame",     "mirror");
 
   // read input file
   hipo::reader reader(inFileName.c_str());
