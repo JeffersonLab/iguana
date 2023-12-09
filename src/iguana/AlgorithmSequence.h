@@ -16,10 +16,28 @@ namespace iguana {
       AlgorithmSequence(const std::string name="seq") : Object(name) {}
       ~AlgorithmSequence() {}
 
+      /// Add an algorithm to the sequence.
+      ///
+      /// **Example**
+      /// @code
+      /// Add<iguana::MyAlgorithm>("my_algorithm_name");
+      /// @endcode
+      /// @param name the name of the algorithm
+      template <class ALGORITHM>
+        void Add(const std::string name) {
+          Add(std::make_unique<ALGORITHM>(name));
+        }
+
       /// Add an algorithm to the sequence. The `AlgorithmSequence` instance will take ownership of the algorithm
       /// (if it is an `lvalue`, you will have to `std::move` it).
+      ///
+      /// **Example**
+      /// @code
+      /// Add(std::make_unique<iguana::MyAlgorithm>("my_algorithm_name"));
+      /// @endcode
       /// @param algo the algorithm
       void Add(algo_t&& algo);
+
 
       /// Get an algorithm by name
       /// @param name the name of the algorithm
