@@ -38,11 +38,21 @@ namespace iguana {
       /// @param algo the algorithm
       void Add(algo_t&& algo);
 
-
       /// Get an algorithm by name
+      ///
+      /// **Example**
+      /// @code
+      /// Get<iguana::MyAlgorithm>("my_algorithm_name");
+      /// @endcode
       /// @param name the name of the algorithm
       /// @return a reference to the algorithm
-      algo_t& Get(const std::string name);
+      template <class ALGORITHM>
+        ALGORITHM* Get(const std::string name) {
+          if(auto it{m_algo_names.find(name)}; it != m_algo_names.end())
+            return dynamic_cast<ALGORITHM*>(m_sequence[it->second].get());
+          m_log->Error("cannot find algorithm '{}' in sequence", name);
+          throw std::runtime_error("cannot Get algorithm");
+        }
 
       /// Set an algorithm option
       /// @see `Algorithm::SetOption`
