@@ -34,7 +34,6 @@ namespace iguana {
   std::string Algorithm::PrintOptionValue(const std::string key) const {
     if(auto it{m_opt.find(key)}; it != m_opt.end()) {
       auto val = it->second;
-      std::string format_str = "{} [{}]";
       if      (const auto valPtr(std::get_if<int>(&val));           valPtr) return fmt::format("{} [{}]", *valPtr,                 "int");
       else if (const auto valPtr(std::get_if<double>(&val));        valPtr) return fmt::format("{} [{}]", *valPtr,                 "double");
       else if (const auto valPtr(std::get_if<std::string>(&val));   valPtr) return fmt::format("{} [{}]", *valPtr,                 "string");
