@@ -30,7 +30,7 @@ namespace iguana::clas12 {
     private:
 
       /// `hipo::banklist` index for the particle bank
-      int b_particle;
+      hipo::banklist::size_type b_particle;
 
       /// Configuration options
       std::string o_frame;

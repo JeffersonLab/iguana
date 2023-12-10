@@ -25,7 +25,7 @@ namespace iguana::clas12 {
     private:
 
       /// `hipo::banklist` index for the particle bank
-      int b_particle, b_calo; // TODO: remove calorimeter
+      hipo::banklist::size_type b_particle, b_calo; // TODO: remove calorimeter
 
       /// Configuration options
       std::set<int> o_pids;

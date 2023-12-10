@@ -17,7 +17,7 @@ namespace iguana {
     }
   }
 
-  void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, int& idx) const {
+  void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {
     auto it = std::find_if(
         banks.begin(),
         banks.end(),
@@ -48,7 +48,7 @@ namespace iguana {
     return "UNKNOWN";
   }
 
-  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const int idx, const std::string expectedBankName) const {
+  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expectedBankName) const {
     try {
       auto& result = banks.at(idx);
       if(expectedBankName != "" && result.getSchema().getName() != expectedBankName)
