@@ -27,7 +27,7 @@ namespace iguana {
         algo->SetName(name + "|" + algoName);
     }
     // then change the object name
-    Object::SetName(name);
+    Algorithm::SetName(name);
   }
 
   void AlgorithmSequence::PrintSequence(Logger::Level level) const {
@@ -36,7 +36,7 @@ namespace iguana {
       m_log->Print(level, " - {}", algo->GetName());
   }
 
-  void AlgorithmSequence::Start(hipo::banklist& banks) const {
+  void AlgorithmSequence::Start(hipo::banklist& banks) {
     for(const auto& algo : m_sequence)
       algo->Start(banks);
   }
@@ -46,7 +46,7 @@ namespace iguana {
       algo->Run(banks);
   }
 
-  void AlgorithmSequence::Stop() const {
+  void AlgorithmSequence::Stop() {
     for(const auto& algo : m_sequence)
       algo->Stop();
   }

@@ -1,11 +1,13 @@
 algo_headers = [
   'clas12/event_builder_filter/EventBuilderFilter.h',
   'clas12/lorentz_transformer/LorentzTransformer.h',
+  'AlgorithmSequence.h',
 ]
 
 algo_sources = [
   'clas12/event_builder_filter/EventBuilderFilter.cc',
   'clas12/lorentz_transformer/LorentzTransformer.cc',
+  'AlgorithmSequence.cc',
 ]
 
 algo_lib = shared_library(

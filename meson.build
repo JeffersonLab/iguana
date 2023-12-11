@@ -22,5 +22,4 @@ fmt_dep  = dependency('fmt', version: '>=9.1.0')
 
 subdir('src/services')
 subdir('src/algorithms')
-subdir('src/iguana')
 subdir('src/tests')
