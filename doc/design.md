@@ -19,7 +19,7 @@ flowchart LR
     subgraph algorithms
         FiducialCuts:::algo
         MomentumCorrection:::algo
-        AlgorithmSequence:::cls
+        AlgorithmSequence:::algo
         bindings(language<br />bindings):::other
     end
 
