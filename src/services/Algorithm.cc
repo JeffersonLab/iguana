@@ -17,7 +17,7 @@ namespace iguana {
     }
   }
 
-  void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, int& idx) const {
+  void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {
     auto it = std::find_if(
         banks.begin(),
         banks.end(),
@@ -34,7 +34,6 @@ namespace iguana {
   std::string Algorithm::PrintOptionValue(const std::string key) const {
     if(auto it{m_opt.find(key)}; it != m_opt.end()) {
       auto val = it->second;
-      std::string format_str = "{} [{}]";
       if      (const auto valPtr(std::get_if<int>(&val));           valPtr) return fmt::format("{} [{}]", *valPtr,                 "int");
       else if (const auto valPtr(std::get_if<double>(&val));        valPtr) return fmt::format("{} [{}]", *valPtr,                 "double");
       else if (const auto valPtr(std::get_if<std::string>(&val));   valPtr) return fmt::format("{} [{}]", *valPtr,                 "string");
@@ -49,7 +48,7 @@ namespace iguana {
     return "UNKNOWN";
   }
 
-  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const int idx, const std::string expectedBankName) const {
+  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expectedBankName) const {
     try {
       auto& result = banks.at(idx);
       if(expectedBankName != "" && result.getSchema().getName() != expectedBankName)

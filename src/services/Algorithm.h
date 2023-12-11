@@ -61,7 +61,7 @@ namespace iguana {
       /// @param[in] banks the list of banks this algorithm will use
       /// @param[in] bankName the name of the bank
       /// @param[out] idx a reference to the `hipo::banklist` index of the bank
-      void CacheBankIndex(hipo::banklist& banks, const std::string bankName, int& idx) const noexcept(false);
+      void CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const noexcept(false);
 
       /// Cache an option specified by the user, and define its default value. If the user-specified
       /// option has the wrong type, an error will be printed and the default value will be used instead.
@@ -100,7 +100,7 @@ namespace iguana {
       /// @param idx the index of `banks` of the specified bank
       /// @param expectedBankName if specified, checks that the specified bank has this name
       /// @return a reference to the bank
-      hipo::bank& GetBank(hipo::banklist& banks, const int idx, const std::string expectedBankName="") const noexcept(false);
+      hipo::bank& GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expectedBankName="") const noexcept(false);
 
       /// Mask a row, setting all items to zero
       /// @param bank the bank to modify
