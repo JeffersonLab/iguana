@@ -26,7 +26,7 @@ flowchart LR
     AlgorithmSequence ---> Logger
     AlgorithmSequence ---> Algorithm
     AlgorithmSequence -.-  bindings
-    Algorithm         ---> Logger
+    Object            ---> Logger
 
     FiducialCuts       -.-> Algorithm
     MomentumCorrection -.-> Algorithm
