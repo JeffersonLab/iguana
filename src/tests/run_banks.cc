@@ -1,4 +1,4 @@
-#include "iguana/AlgorithmSequence.h"
+#include "algorithms/AlgorithmSequence.h"
 #include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"
 #include "algorithms/clas12/lorentz_transformer/LorentzTransformer.h"
 #include <hipo4/reader.h>

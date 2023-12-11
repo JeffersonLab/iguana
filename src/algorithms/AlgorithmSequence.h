@@ -8,12 +8,12 @@ namespace iguana {
   using algo_t = std::unique_ptr<Algorithm>;
 
   /// @brief User-level class for running a sequence of algorithms
-  class AlgorithmSequence : public Object {
+  class AlgorithmSequence : public Algorithm {
 
     public:
 
       /// @param name the name of this sequence
-      AlgorithmSequence(const std::string name="seq") : Object(name) {}
+      AlgorithmSequence(const std::string name="seq") : Algorithm(name) {}
       ~AlgorithmSequence() {}
 
       /// Add an algorithm to the sequence.
@@ -72,16 +72,16 @@ namespace iguana {
       /// Sequentially call each algorithm's `Start` method
       /// @see `Algorithm::Start`
       /// @param banks the list of banks
-      void Start(hipo::banklist& banks) const;
+      void Start(hipo::banklist& banks) override;
 
       /// Sequentially call each algorithm's `Run` method
       /// @see `Algorithm::Run`
       /// @param banks the list of banks
-      void Run(hipo::banklist& banks) const;
+      void Run(hipo::banklist& banks) const override;
 
       /// Sequentially call each algorithm's `Stop` method
       /// @see `Algorithm::Stop`
-      void Stop() const;
+      void Stop() override;
 
     private:
 

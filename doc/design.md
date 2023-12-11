@@ -10,28 +10,30 @@ flowchart LR
     classDef algo fill:#ff8888,color:black
     classDef other fill:#ff88ff,color:black
 
-    subgraph iguana
-        AlgorithmSequence:::cls
-        bindings(language<br />bindings):::other
-    end
-
     subgraph services
         Algorithm:::cls
         Logger:::cls
+        Object:::cls
     end
 
     subgraph algorithms
         FiducialCuts:::algo
         MomentumCorrection:::algo
+        AlgorithmSequence:::algo
+        bindings(language<br />bindings):::other
     end
 
-    AlgorithmSequence    ---> Logger
-    AlgorithmSequence    ---> Algorithm
-    AlgorithmSequence    -.-  bindings
-    Algorithm ---> Logger
-
     FiducialCuts       -.-> Algorithm
-    MomentumCorrection       -.-> Algorithm
+    MomentumCorrection -.-> Algorithm
+    AlgorithmSequence  -.-> Algorithm
+    Algorithm          -.-> Object
+
+    Object            ---> Logger
+    AlgorithmSequence ---> MomentumCorrection
+    AlgorithmSequence ---> FiducialCuts
+
+    AlgorithmSequence -.-  bindings
+
 ```
 
 #### Legend
@@ -60,7 +62,6 @@ flowchart TB
     classDef lib fill:#ffff88,color:black
     classDef ext fill:#88ffff,color:black
 
-    iguana{{libIguana}}:::lib
     algorithms{{libIguanaAlgorithms}}:::lib
     services{{libIguanaServices}}:::lib
 
@@ -70,8 +71,6 @@ flowchart TB
     hipo       ---> services
     fmt        ---> services
     services   ---> algorithms
-    algorithms ---> iguana
-    services   ---> iguana
 ```
 
 ## Algorithm Design
