@@ -1,6 +1,7 @@
 #pragma once
 
 #include "services/Algorithm.h"
+#include "algorithms/AlgorithmFactory.h"
 
 namespace iguana::clas12 {
 
@@ -15,6 +16,8 @@ namespace iguana::clas12 {
       /// @see `Algorithm::Algorithm`
       LorentzTransformer(std::string name="lorentz_transformer") : Algorithm(name) {}
       ~LorentzTransformer() {}
+      /// Create an instance of this algorithm. This is used by `AlgorithmFactory`.
+      static std::unique_ptr<Algorithm> Creator() { return std::make_unique<LorentzTransformer>(); }
 
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
@@ -28,6 +31,9 @@ namespace iguana::clas12 {
       void Transform(float& px, float& py, float& pz, float& e) const;
 
     private:
+
+      /// True if this algorithm is registered in `AlgorithmFactory`
+      static bool s_registered;
 
       /// `hipo::banklist` index for the particle bank
       hipo::banklist::size_type b_particle;

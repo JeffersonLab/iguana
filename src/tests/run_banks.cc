@@ -1,6 +1,4 @@
 #include "algorithms/AlgorithmSequence.h"
-#include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"
-#include "algorithms/clas12/lorentz_transformer/LorentzTransformer.h"
 #include <hipo4/reader.h>
 
 // show a bank along with a header
@@ -25,8 +23,8 @@ int main(int argc, char **argv) {
 
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
-  seq.Add<iguana::clas12::EventBuilderFilter>("pid_filter"); // filter by Event Builder PID
-  seq.Add<iguana::clas12::LorentzTransformer>("new_frame");  // Lorentz transform the momenta
+  seq.Add("clas12::EventBuilderFilter", "pid_filter"); // filter by Event Builder PID
+  seq.Add("clas12::LorentzTransformer", "new_frame");  // Lorentz transform the momenta
   
   // set log levels
   seq.SetOption("pid_filter", "log", "debug");

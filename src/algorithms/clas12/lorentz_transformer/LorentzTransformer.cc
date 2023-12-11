@@ -2,6 +2,12 @@
 
 namespace iguana::clas12 {
 
+  bool LorentzTransformer::s_registered = AlgorithmFactory::Register(
+      "clas12::LorentzTransformer",
+      LorentzTransformer::Creator
+      );
+
+
   void LorentzTransformer::Start(hipo::banklist& banks) {
 
     CacheOption("frame", std::string{"mirror"}, o_frame);

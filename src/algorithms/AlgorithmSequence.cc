@@ -2,6 +2,16 @@
 
 namespace iguana {
 
+  void AlgorithmSequence::Add(const std::string class_name, const std::string user_name) {
+    auto algo = AlgorithmFactory::Create(class_name);
+    if(algo==nullptr) {
+      m_log->Error("algorithm '{}' does not exist", class_name);
+      throw std::runtime_error("AlgorithmFactory cannot create non-existent algorithm");
+    }
+    algo->SetName(user_name);
+    Add(std::move(algo));
+  }
+
   void AlgorithmSequence::Add(algo_t&& algo) {
     auto algoName = algo->GetName();
     m_algo_names.insert({algoName, m_sequence.size()});

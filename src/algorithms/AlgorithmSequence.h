@@ -1,6 +1,7 @@
 #pragma once
 
 #include "services/Algorithm.h"
+#include "algorithms/AlgorithmFactory.h"
 
 namespace iguana {
 
@@ -16,7 +17,17 @@ namespace iguana {
       AlgorithmSequence(const std::string name="seq") : Algorithm(name) {}
       ~AlgorithmSequence() {}
 
-      /// Add an algorithm to the sequence.
+      /// Create and add an algorithm to the sequence, by name.
+      ///
+      /// **Example**
+      /// @code
+      /// Add("iguana::MyAlgorithm", "my_algorithm_name");
+      /// @endcode
+      /// @param class_name the name of the algorithm class
+      /// @param user_name a user-specified unique name for this algorithm
+      void Add(const std::string class_name, const std::string user_name);
+
+      /// Create and add an algorithm to the sequence.
       ///
       /// **Example**
       /// @code
@@ -28,7 +39,7 @@ namespace iguana {
           Add(std::make_unique<ALGORITHM>(name));
         }
 
-      /// Add an algorithm to the sequence. The `AlgorithmSequence` instance will take ownership of the algorithm
+      /// Add an existing algorithm to the sequence. The `AlgorithmSequence` instance will take ownership of the algorithm
       /// (if it is an `lvalue`, you will have to `std::move` it).
       ///
       /// **Example**

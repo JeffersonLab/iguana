@@ -1,10 +1,12 @@
 algo_headers = [
+  'AlgorithmFactory.h',
   'clas12/event_builder_filter/EventBuilderFilter.h',
   'clas12/lorentz_transformer/LorentzTransformer.h',
   'AlgorithmSequence.h',
 ]
 
 algo_sources = [
+  'AlgorithmFactory.cc',
   'clas12/event_builder_filter/EventBuilderFilter.cc',
   'clas12/lorentz_transformer/LorentzTransformer.cc',
   'AlgorithmSequence.cc',
