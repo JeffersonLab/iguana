@@ -23,7 +23,6 @@ flowchart LR
         bindings(language<br />bindings):::other
     end
 
-    AlgorithmSequence ---> Logger
     AlgorithmSequence ---> Algorithm
     AlgorithmSequence -.-  bindings
     Object            ---> Logger
