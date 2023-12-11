@@ -24,8 +24,8 @@ namespace iguana {
       /// Add("iguana::MyAlgorithm", "my_algorithm_name");
       /// @endcode
       /// @param class_name the name of the algorithm class
-      /// @param user_name a user-specified unique name for this algorithm
-      void Add(const std::string class_name, const std::string user_name);
+      /// @param user_name a user-specified unique name for this algorithm; if not specified, `class_name` will be used
+      void Add(const std::string class_name, const std::string user_name="");
 
       /// Create and add an algorithm to the sequence.
       ///

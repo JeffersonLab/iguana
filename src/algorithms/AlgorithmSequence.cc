@@ -8,7 +8,7 @@ namespace iguana {
       m_log->Error("algorithm '{}' does not exist", class_name);
       throw std::runtime_error("AlgorithmFactory cannot create non-existent algorithm");
     }
-    algo->SetName(user_name);
+    algo->SetName(user_name=="" ? class_name : user_name);
     Add(std::move(algo));
   }
 
