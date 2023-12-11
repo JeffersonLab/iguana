@@ -23,14 +23,17 @@ flowchart LR
         bindings(language<br />bindings):::other
     end
 
-    AlgorithmSequence ---> Algorithm
-    AlgorithmSequence -.-  bindings
-    Object            ---> Logger
-
     FiducialCuts       -.-> Algorithm
     MomentumCorrection -.-> Algorithm
     AlgorithmSequence  -.-> Algorithm
     Algorithm          -.-> Object
+
+    Object            ---> Logger
+    AlgorithmSequence ---> MomentumCorrection
+    AlgorithmSequence ---> FiducialCuts
+
+    AlgorithmSequence -.-  bindings
+
 ```
 
 #### Legend
