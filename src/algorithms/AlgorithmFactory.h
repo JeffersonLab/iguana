@@ -1,8 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <unordered_map>
-
 #include "services/Algorithm.h"
 
 namespace iguana {
@@ -16,7 +13,7 @@ namespace iguana {
     public:
 
       /// Algorithm creator function type
-      using algo_creator_t = algo_t(*)();
+      using algo_creator_t = std::function<algo_t()>;
 
       AlgorithmFactory() = delete;
 
