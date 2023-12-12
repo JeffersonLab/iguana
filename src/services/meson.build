@@ -23,4 +23,4 @@ services_dep = declare_dependency(
   dependencies: [ fmt_dep, hipo_dep ]
 )
 
-install_headers(services_headers, subdir : meson.project_name())
+install_headers(services_headers, subdir: meson.project_name())
