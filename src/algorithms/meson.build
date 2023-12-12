@@ -34,6 +34,7 @@ algo_lib = shared_library(
   install:             true,
   install_rpath:       project_lib_rpath,
 )
+package_libs += algo_lib
 
 foreach key : algo_headers.keys()
   dir = key == 'algo' ? '' : '/'+key

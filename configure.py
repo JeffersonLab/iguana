@@ -23,6 +23,7 @@ parser_build = parser.add_argument_group('iguana build settings')
 parser_build.add_argument( '--prefix', default='iguana',           type=str, help='iguana installation prefix'         )
 parser_build.add_argument( '--build',  default='build-iguana',     type=str, help='iguana buildsystem directory'       )
 parser_build.add_argument( '--ini',    default='build-iguana.ini', type=str, help='name of the output config INI file' )
+parser_build.add_argument( '--relocatable', default=True, action=argparse.BooleanOptionalAction, help='make installation relocatable or not')
 args = parser.parse_args()
 
 # set dependency paths
@@ -53,6 +54,9 @@ if(len(pkg_config_path) > 0):
     config.set('built-in options', 'pkg_config_path', meson_string_array(pkg_config_path))
 config.set('built-in options', '; installation settings')
 config.set('built-in options', 'prefix', f'\'{os.path.realpath(args.prefix)}\'')
+config.set('built-in options', 'pkgconfig.relocatable', f'{args.relocatable}')
+
+# write the INI file
 with open(args.ini, 'w') as fp:
     config.write(fp)
 print(f'Wrote build configuration file {args.ini}:')

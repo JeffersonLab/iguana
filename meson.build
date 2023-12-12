@@ -1,11 +1,12 @@
 project(
   'iguana',
   'cpp',
-  version: '0.0.0',
-  license: 'LGPLv3',
+  version:         '0.0.0',
+  license:         'LGPLv3',
   default_options: [ 'cpp_std=c++17' ],
-  meson_version: '>=1.1'
+  meson_version:   '>=1.1',
 )
+project_description = 'Implementation Guardian of Analysis Algorithms'
 
 project_inc = include_directories('src')
 
@@ -20,5 +21,14 @@ project_bin_rpath = ':'.join( dep_lib_rpaths + [ '$ORIGIN/../' + get_option('lib
 hipo_dep = dependency('hipo4', version: '>=1.3')
 fmt_dep  = dependency('fmt', version: '>=9.1.0')
 
+package_libs = []
+
 subdir('src/services')
 subdir('src/algorithms')
+
+pkg = import('pkgconfig')
+pkg.generate(
+  name:        meson.project_name(),
+  description: project_description,
+  libraries:   package_libs,
+)

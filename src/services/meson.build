@@ -18,6 +18,7 @@ services_lib = shared_library(
   install:             true,
   install_rpath:       project_lib_rpath,
 )
+package_libs += services_lib
 
 services_dep = declare_dependency(
   dependencies: [ fmt_dep, hipo_dep ]
