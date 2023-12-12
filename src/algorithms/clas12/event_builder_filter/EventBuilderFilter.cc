@@ -2,6 +2,12 @@
 
 namespace iguana::clas12 {
 
+  bool EventBuilderFilter::s_registered = AlgorithmFactory::Register(
+      EventBuilderFilter::ClassName(),
+      EventBuilderFilter::Creator
+      );
+
+
   void EventBuilderFilter::Start(hipo::banklist& banks) {
 
     // define options, their default values, and cache them

@@ -2,6 +2,16 @@
 
 namespace iguana {
 
+  void AlgorithmSequence::Add(const std::string class_name, const std::string instance_name) {
+    auto algo = AlgorithmFactory::Create(class_name);
+    if(algo==nullptr) {
+      m_log->Error("algorithm '{}' does not exist", class_name);
+      throw std::runtime_error("AlgorithmFactory cannot create non-existent algorithm");
+    }
+    algo->SetName(instance_name=="" ? class_name : instance_name);
+    Add(std::move(algo));
+  }
+
   void AlgorithmSequence::Add(algo_t&& algo) {
     auto algoName = algo->GetName();
     m_algo_names.insert({algoName, m_sequence.size()});
@@ -13,8 +23,8 @@ namespace iguana {
     }
   }
 
-  void AlgorithmSequence::SetOption(const std::string algo, const std::string key, const option_t val) {
-    Get<Algorithm>(algo)->SetOption(key,val);
+  void AlgorithmSequence::SetOption(const std::string algo_name, const std::string key, const option_t val) {
+    Get<Algorithm>(algo_name)->SetOption(key,val);
   }
 
   void AlgorithmSequence::SetName(const std::string name) {

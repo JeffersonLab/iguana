@@ -1,6 +1,4 @@
 #include "algorithms/AlgorithmSequence.h"
-#include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"
-#include "algorithms/clas12/lorentz_transformer/LorentzTransformer.h"
 #include <hipo4/reader.h>
 
 // show a bank along with a header
@@ -25,16 +23,16 @@ int main(int argc, char **argv) {
 
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
-  seq.Add<iguana::clas12::EventBuilderFilter>("pid_filter"); // filter by Event Builder PID
-  seq.Add<iguana::clas12::LorentzTransformer>("new_frame");  // Lorentz transform the momenta
+  seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID
+  seq.Add("clas12::LorentzTransformer"); // Lorentz transform the momenta
   
   // set log levels
-  seq.SetOption("pid_filter", "log", "debug");
-  seq.SetOption("new_frame",  "log", "debug");
+  seq.SetOption("clas12::EventBuilderFilter", "log", "debug");
+  seq.SetOption("clas12::LorentzTransformer", "log", "debug");
 
   // set algorithm options
-  seq.SetOption("pid_filter", "pids",  std::set<int>{11, 211, -211});
-  seq.SetOption("new_frame",  "frame", "mirror");
+  seq.SetOption("clas12::EventBuilderFilter", "pids",  std::set<int>{11, 211, -211});
+  seq.SetOption("clas12::LorentzTransformer", "frame", "mirror");
 
   // start the algorithms
   seq.Start(banks);
