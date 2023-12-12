@@ -11,10 +11,12 @@ namespace iguana::clas12 {
     public:
 
       /// @see `Algorithm::Algorithm`
-      EventBuilderFilter(std::string name="event_builder_filter") : Algorithm(name) {}
+      EventBuilderFilter(std::string name="") : Algorithm(name=="" ? ClassName() : name) {}
       ~EventBuilderFilter() {}
-      /// Create an instance of this algorithm. This is used by `AlgorithmFactory`.
-      static std::unique_ptr<Algorithm> Creator() { return std::make_unique<EventBuilderFilter>(); }
+      /// @returns An instance of this algorithm. This is used by `AlgorithmFactory`.
+      static algo_t Creator() { return std::make_unique<EventBuilderFilter>(); }
+      /// @returns This algorithm's class name
+      static std::string ClassName() { return "clas12::EventBuilderFilter"; }
 
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;

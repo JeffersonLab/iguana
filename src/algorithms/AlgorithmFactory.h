@@ -7,13 +7,16 @@
 
 namespace iguana {
 
+  /// Algorithm pointer type
+  using algo_t = std::unique_ptr<Algorithm>;
+
   /// @brief Factory to create an algorithm.
   class AlgorithmFactory {
 
     public:
 
       /// Algorithm creator function type
-      using algo_creator_t = std::unique_ptr<Algorithm>(*)();
+      using algo_creator_t = algo_t(*)();
 
       AlgorithmFactory() = delete;
 
@@ -24,7 +27,7 @@ namespace iguana {
 
       /// Create an algorithm.
       /// @param name the name of the algorithm, which was used as an argument in the `AlgorithmFactory::Register` call
-      static std::unique_ptr<Algorithm> Create(const std::string& name) noexcept;
+      static algo_t Create(const std::string& name) noexcept;
 
     private:
 

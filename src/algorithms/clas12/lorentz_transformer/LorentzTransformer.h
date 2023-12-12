@@ -14,10 +14,12 @@ namespace iguana::clas12 {
     public:
 
       /// @see `Algorithm::Algorithm`
-      LorentzTransformer(std::string name="lorentz_transformer") : Algorithm(name) {}
+      LorentzTransformer(std::string name="") : Algorithm(name=="" ? ClassName() : name) {}
       ~LorentzTransformer() {}
-      /// Create an instance of this algorithm. This is used by `AlgorithmFactory`.
-      static std::unique_ptr<Algorithm> Creator() { return std::make_unique<LorentzTransformer>(); }
+      /// @returns An instance of this algorithm. This is used by `AlgorithmFactory`.
+      static algo_t Creator() { return std::make_unique<LorentzTransformer>(); }
+      /// @returns This algorithm's class name
+      static std::string ClassName() { return "clas12::LorentzTransformer"; }
 
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;

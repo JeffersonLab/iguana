@@ -3,7 +3,7 @@
 namespace iguana::clas12 {
 
   bool LorentzTransformer::s_registered = AlgorithmFactory::Register(
-      "clas12::LorentzTransformer",
+      LorentzTransformer::ClassName(),
       LorentzTransformer::Creator
       );
 

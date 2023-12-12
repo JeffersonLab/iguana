@@ -5,9 +5,6 @@
 
 namespace iguana {
 
-  /// Algorithm pointer type
-  using algo_t = std::unique_ptr<Algorithm>;
-
   /// @brief User-level class for running a sequence of algorithms
   class AlgorithmSequence : public Algorithm {
 
@@ -24,8 +21,9 @@ namespace iguana {
       /// Add("iguana::MyAlgorithm", "my_algorithm_name");
       /// @endcode
       /// @param class_name the name of the algorithm class
-      /// @param user_name a user-specified unique name for this algorithm; if not specified, `class_name` will be used
-      void Add(const std::string class_name, const std::string user_name="");
+      /// @param instance_name a user-specified unique name for this algorithm instance;
+      ///        if not specified, `class_name` will be used
+      void Add(const std::string class_name, const std::string instance_name="");
 
       /// Create and add an algorithm to the sequence.
       ///
@@ -33,10 +31,14 @@ namespace iguana {
       /// @code
       /// Add<iguana::MyAlgorithm>("my_algorithm_name");
       /// @endcode
-      /// @param name the name of the algorithm
+      /// @param instance_name a user-specified unique name for this algorithm instance;
+      ///        if not specified, the class name will be used
       template <class ALGORITHM>
-        void Add(const std::string name) {
-          Add(std::make_unique<ALGORITHM>(name));
+        void Add(const std::string instance_name="") {
+          if(instance_name=="")
+            Add(std::make_unique<ALGORITHM>());
+          else
+            Add(std::make_unique<ALGORITHM>(instance_name));
         }
 
       /// Add an existing algorithm to the sequence. The `AlgorithmSequence` instance will take ownership of the algorithm
@@ -49,28 +51,28 @@ namespace iguana {
       /// @param algo the algorithm
       void Add(algo_t&& algo);
 
-      /// Get an algorithm by name
+      /// Get an algorithm by its instance name
       ///
       /// **Example**
       /// @code
       /// Get<iguana::MyAlgorithm>("my_algorithm_name");
       /// @endcode
-      /// @param name the name of the algorithm
+      /// @param instance_name the instance name of the algorithm
       /// @return a reference to the algorithm
       template <class ALGORITHM>
-        ALGORITHM* Get(const std::string name) {
-          if(auto it{m_algo_names.find(name)}; it != m_algo_names.end())
+        ALGORITHM* Get(const std::string instance_name) {
+          if(auto it{m_algo_names.find(instance_name)}; it != m_algo_names.end())
             return dynamic_cast<ALGORITHM*>(m_sequence[it->second].get());
-          m_log->Error("cannot find algorithm '{}' in sequence", name);
+          m_log->Error("cannot find algorithm '{}' in sequence", instance_name);
           throw std::runtime_error("cannot Get algorithm");
         }
 
       /// Set an algorithm option
       /// @see `Algorithm::SetOption`
-      /// @param algo the algorithm name
+      /// @param algo_name the algorithm instance name
       /// @param key the option name
       /// @param val the option value
-      void SetOption(const std::string algo, const std::string key, const option_t val);
+      void SetOption(const std::string algo_name, const std::string key, const option_t val);
 
       /// Set the name of this sequence
       /// @param name the new name

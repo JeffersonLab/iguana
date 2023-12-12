@@ -3,7 +3,7 @@
 namespace iguana::clas12 {
 
   bool EventBuilderFilter::s_registered = AlgorithmFactory::Register(
-      "clas12::EventBuilderFilter",
+      EventBuilderFilter::ClassName(),
       EventBuilderFilter::Creator
       );
 

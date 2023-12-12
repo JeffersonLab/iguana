@@ -12,7 +12,7 @@ namespace iguana {
     return false;
   }
 
-  std::unique_ptr<Algorithm> AlgorithmFactory::Create(const std::string& name) noexcept {
+  algo_t AlgorithmFactory::Create(const std::string& name) noexcept {
     if(auto it=s_creators.find(name); it!=s_creators.end())
       return it->second();
     return nullptr;
