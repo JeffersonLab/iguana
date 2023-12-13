@@ -141,8 +141,8 @@ jobs:
   # run tests
   #########################################################
 
-  test_examples:
-    name: Test Examples
+  test_iguana:
+    name: Test Iguana
     needs:
       - download_validation_files
       - build_iguana
@@ -200,7 +200,7 @@ jobs:
       - name: build and run
         run: |
           test_file=$(find validation_files -name "*.hipo" | head -n1)
-          examples/build_with_${{ matrix.tool }}/test.sh $test_file
+          .github/test-dependent-build.sh ${{ matrix.tool }} $test_file
 
   # documentation
   #########################################################

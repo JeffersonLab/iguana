@@ -1,4 +1,4 @@
-# compiler and flags
+# compiler
 CXX := g++
 
 # dependency libraries
@@ -16,7 +16,8 @@ BINDIR = bin
 EXECUTABLES := $(addprefix $(BINDIR)/, $(basename $(wildcard *.cc)))
 
 # build executable
-# - you may want to set the rpath here too
+# - NOTE: we haven't set an rpath here, so the user will need
+#   to make sure dependency libraries are found in $LD_LIBRARY_PATH
 $(EXECUTABLES): $(BINDIR)/%: %.cc
 	mkdir -p $(BINDIR)
 	$(CXX) -c $< -o $@.o $(DEP_INCLUDES)

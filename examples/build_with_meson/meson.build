@@ -13,7 +13,7 @@ iguana_dep = dependency('iguana')
 
 # set rpath
 # - this is so that the executable knows where the dependency libraries are
-# - alternatively, set LD_LIBRARY_PATH before running your executables
+# - alternatively, set $LD_LIBRARY_PATH before running your executables
 bin_rpaths = []
 foreach path : get_option('cmake_prefix_path')
   bin_rpaths += path / 'lib'
