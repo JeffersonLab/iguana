@@ -164,12 +164,13 @@ jobs:
         run: tree
       - name: run test
         run: |
-          test_file=$(find validation_files -name "*.hipo" | head -n1)
-          echo "[+] TEST FILE: $test_file"
-          for exe in $(find iguana/bin -executable -type f); do
-            echo "[+] EXECUTE TEST: $exe"
-            $exe $test_file
-          done
+          exit 1
+          # test_file=$(find validation_files -name "*.hipo" | head -n1)
+          # echo "[+] TEST FILE: $test_file"
+          # for exe in $(find iguana/bin -executable -type f); do
+          #   echo "[+] EXECUTE TEST: $exe"
+          #   $exe $test_file
+          # done
 
   # documentation
   #########################################################
