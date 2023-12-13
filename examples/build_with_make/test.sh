@@ -27,5 +27,6 @@ popd
 
 # run the executable
 # - since we didn't set the rpath in the Makefile, we must use LD_LIBRARY_PATH
+# - passes script arguments to the executable
 export LD_LIBRARY_PATH=$hipo_dep/lib:$fmt_dep/lib:$iguana_dep/lib
-$source_dir/bin/iguana-example-00-basic
+$source_dir/bin/iguana-example-00-basic "$@"

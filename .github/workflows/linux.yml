@@ -100,7 +100,7 @@ jobs:
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - run: tree
       - name: configure
-        run: ./configure.py --hipo hipo --fmt fmt
+        run: ./configure.py --hipo hipo --fmt fmt --examples
       - name: build
         run: ./install-iguana.sh
       - name: dump build log
@@ -141,8 +141,8 @@ jobs:
   # run tests
   #########################################################
 
-  test_iguana:
-    name: Test Iguana
+  test_examples:
+    name: Test Examples
     needs:
       - download_validation_files
       - build_iguana
@@ -164,13 +164,40 @@ jobs:
         run: tree
       - name: run test
         run: |
-          exit 1
-          # test_file=$(find validation_files -name "*.hipo" | head -n1)
-          # echo "[+] TEST FILE: $test_file"
-          # for exe in $(find iguana/bin -executable -type f); do
-          #   echo "[+] EXECUTE TEST: $exe"
-          #   $exe $test_file
-          # done
+          test_file=$(find validation_files -name "*.hipo" | head -n1)
+          echo "[+] TEST FILE: $test_file"
+          for exe in $(find iguana/bin -executable -type f); do
+            echo "[+] EXECUTE TEST: $exe"
+            $exe $test_file
+          done
+
+  test_dependent_builds:
+    name: Test Dependent Builds
+    needs:
+      - download_validation_files
+      - build_iguana
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        tool: [ meson, make ]
+    steps:
+      - name: get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: get test data
+        uses: actions/download-artifact@v3
+        with:
+          name: validation_files
+      - name: untar artifacts
+        run: |
+          ls *.tar.gz | xargs -I{} tar xzvf {}
+          rm -v *.tar.gz
+      - name: build and run
+        run: |
+          test_file=$(find validation_files -name "*.hipo" | head -n1)
+          examples/build_with_${{ matrix.tool }}/test.sh $test_file
 
   # documentation
   #########################################################

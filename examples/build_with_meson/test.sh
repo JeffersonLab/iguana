@@ -36,4 +36,5 @@ meson setup \
 meson install -C $build_dir
 
 # run the executable
-$install_dir/bin/iguana-example-00-basic
+# - passes script arguments to the executable
+$install_dir/bin/iguana-example-00-basic "$@"
