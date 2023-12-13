@@ -57,7 +57,7 @@ Inspect both of them, and if they look correct, proceed with building and instal
 
 Instead of `configure.py`, use `meson` directly for more control:
 
-1. Follow the [note on dependency resolution](doc/dependency_resolution.md)
+1. Follow the [note on dependency resolution](dependency_resolution.md)
 2. Build with `meson`, for example
 ```bash
 meson setup --prefix=$(pwd)/iguana build-iguana /path/to/iguana/repository

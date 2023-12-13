@@ -11,11 +11,15 @@ Take a look at each dependency's installation prefix to see which of these optio
 are available.
 
 One way of using these dependencies is with environment variables
-(multiple paths are delimited by colons):
-- `pkg-config`: include `$prefix/lib/pkgconfig` in `$PKG_CONFIG_PATH`
-- `cmake`: include `$prefix` in `$CMAKE_PREFIX_PATH`
+```bash
+export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
+export CMAKE_PREFIX_PATH=$prefix
+```
+Multiple paths are delimited by colons.
 
-A better way is to use build options; for `meson`, use the following
-(multiple paths are delimited by commas):
-- `-Dpkg_config_path`
-- `-Dcmake_prefix_path`
+A better way is to use build options; for `meson`, use the following:
+```bash
+-Dpkg_config_path=$prefix/lib/pkgconfig
+-Dcmake_prefix_path=$prefix
+```
+Multiple paths are delimited by commas.
