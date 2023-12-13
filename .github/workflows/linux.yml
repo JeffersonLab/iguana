@@ -180,7 +180,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        tool: [ meson, make ]
+        tool: [ cmake, make, meson ]
     steps:
       - uses: actions/checkout@v4
       - name: setup meson

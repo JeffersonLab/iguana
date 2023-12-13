@@ -28,6 +28,12 @@ test_executable=iguana-example-00-basic
 
 # build and test
 case $tool in
+  cmake)
+    cmake -S $source_dir -B $build_dir -DCMAKE_INSTALL_PREFIX=$install_dir
+    cmake --build $build_dir
+    cmake --install $build_dir
+    $install_dir/bin/$test_executable "$@"
+    ;;
   make)
     pushd $source_dir
     make

@@ -21,7 +21,7 @@ foreach path : get_option('pkg_config_path')
   bin_rpaths += path / '..'
 endforeach
 
-# build the executable
+# build and install the executable
 example_bin = 'iguana-example-00-basic'
 executable(
   example_bin,
