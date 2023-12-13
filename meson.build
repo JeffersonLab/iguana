@@ -8,27 +8,30 @@ project(
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
 
-project_inc = include_directories('src')
-
-dep_lib_rpaths = [ ]
-foreach path : get_option('cmake_prefix_path')
-  dep_lib_rpaths += path + '/lib' # TODO: this adds hipo4 libs to the rpath; consider instead linking against hipo4 static lib
-endforeach
-
-project_lib_rpath = '$ORIGIN'
-project_bin_rpath = ':'.join( dep_lib_rpaths + [ '$ORIGIN/../' + get_option('libdir') ] )
-
-hipo_dep = dependency('hipo4', version: '>=1.3')
+# resolve dependencies
 fmt_dep  = dependency('fmt', version: '>=9.1.0')
+hipo_dep = dependency('hipo4', version: '>=1.3', method: 'cmake')
 
-package_libs = []
+# general project vars
+project_lib_rpath = '$ORIGIN'
+project_inc       = include_directories('include')
+project_libs      = []
+project_deps      = declare_dependency(dependencies: [ fmt_dep, hipo_dep ])
 
+# build and install shared libraries
 subdir('src/services')
 subdir('src/algorithms')
+install_subdir('include/iguana', install_dir: get_option('includedir'))
 
+# generate pkg-config file for shared libraries
 pkg = import('pkgconfig')
 pkg.generate(
   name:        meson.project_name(),
   description: project_description,
-  libraries:   package_libs,
+  libraries:   project_libs,
 )
+
+# build examples
+if(get_option('examples'))
+  subdir('examples')
+endif

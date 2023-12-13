@@ -1,4 +1,4 @@
-#include "algorithms/clas12/event_builder_filter/EventBuilderFilter.h"
+#include <iguana/clas12/EventBuilderFilter.h>
 #include <hipo4/reader.h>
 
 int main(int argc, char **argv) {

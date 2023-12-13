@@ -1,4 +1,4 @@
-#include "LorentzTransformer.h"
+#include "iguana/clas12/LorentzTransformer.h"
 
 namespace iguana::clas12 {
 

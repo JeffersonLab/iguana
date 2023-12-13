@@ -9,7 +9,7 @@
 
 #include <hipo4/bank.h>
 
-#include "Object.h"
+#include "iguana/Object.h"
 
 namespace iguana {
 

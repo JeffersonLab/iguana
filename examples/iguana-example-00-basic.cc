@@ -1,5 +1,6 @@
-#include "algorithms/AlgorithmSequence.h"
+#include <iguana/AlgorithmSequence.h>
 #include <hipo4/reader.h>
+#include <fmt/format.h>
 
 // show a bank along with a header
 void prettyPrint(std::string header, hipo::bank& bank) {
@@ -8,6 +9,8 @@ void prettyPrint(std::string header, hipo::bank& bank) {
 }
 
 int main(int argc, char **argv) {
+  
+  fmt::print("aaaaaa\n");
 
   // parse arguments
   int argi = 1;
