@@ -5,8 +5,10 @@ set -e
 
 # paths to dependencies
 # - you will need to customize these
+# - if they are installed on your system, (e.g., `fmt`), you may not need to specify them
 # - this script is used by CI, which assumes they are in `./<dependency>`
 hipo_dep=$(realpath hipo)
+fmt_dep=$(realpath fmt)
 iguana_dep=$(realpath iguana)
 
 # source directory is where this script is found
@@ -25,7 +27,7 @@ install_dir=$(realpath $install_dir)
 #   (alternatively use corresponding environment variables)
 meson setup \
   -Dcmake_prefix_path=$hipo_dep \
-  -Dpkg_config_path=$iguana_dep/lib/pkgconfig \
+  -Dpkg_config_path=$fmt_dep/lib/pkgconfig,$iguana_dep/lib/pkgconfig \
   --prefix=$install_dir \
   $build_dir \
   $source_dir
