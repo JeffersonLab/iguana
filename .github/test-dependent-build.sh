@@ -27,7 +27,7 @@ install_dir=$(realpath $install_dir)
 test_executable=iguana-example-00-basic
 
 # build and test
-case tool in
+case $tool in
   make)
     pushd $source_dir
     make
