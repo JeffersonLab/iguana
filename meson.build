@@ -29,6 +29,7 @@ pkg.generate(
   name:        meson.project_name(),
   description: project_description,
   libraries:   project_libs,
+  requires:    [ fmt_dep ],
 )
 
 # build examples

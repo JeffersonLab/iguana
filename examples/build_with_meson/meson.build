@@ -7,7 +7,6 @@ project(
 
 # find dependencies
 # - it's good practice to specifiy minimum version requirements; here we just assume that `iguana` already did this
-fmt_dep    = dependency('fmt')
 hipo_dep   = dependency('hipo4')
 iguana_dep = dependency('iguana')
 
@@ -27,7 +26,7 @@ example_bin = 'iguana-example-00-basic'
 executable(
   example_bin,
   example_bin + '.cc',
-  dependencies:  [ fmt_dep, hipo_dep, iguana_dep ],
+  dependencies:  [ hipo_dep, iguana_dep ],
   install:       true,
   install_rpath: ':'.join(bin_rpaths),
 )
