@@ -1,25 +1,33 @@
 project(
-  'iguana-examples',
+  'iguana-build-example',
   'cpp',
+  version: '1.0.0',
   default_options: [ 'cpp_std=c++17' ],
 )
 
+# find dependencies
+# - it's good practice to specifiy minimum version requirements; here we just assume that `iguana` already did this
 fmt_dep    = dependency('fmt')
 hipo_dep   = dependency('hipo4')
 iguana_dep = dependency('iguana')
 
-dep_lib_rpaths = [ ]
+# set rpath
+# - this is so that the executable knows where the dependency libraries are
+# - alternatively, set LD_LIBRARY_PATH before running your executables
+bin_rpaths = []
 foreach path : get_option('cmake_prefix_path')
-  dep_lib_rpaths += path / 'lib' # TODO: this adds hipo4 libs to the rpath; consider instead linking against hipo4 static lib
+  bin_rpaths += path / 'lib'
 endforeach
-project_bin_rpath = ':'.join( dep_lib_rpaths + [ '$ORIGIN/../' + get_option('libdir') ] )
+foreach path : get_option('pkg_config_path')
+  bin_rpaths += path / '..'
+endforeach
 
-foreach bin : [ '00-basic', '01-bank-rows' ]
-  executable(
-    'iguana-example-' + bin,
-    bin + '.cc',
-    dependencies:  [ fmt_dep, hipo_dep, iguana_dep ],
-    install:       true,
-    install_rpath: project_bin_rpath,
-  )
-endforeach
+# build the executable
+example_bin = 'iguana-example-00-basic'
+executable(
+  example_bin,
+  example_bin + '.cc',
+  dependencies:  [ fmt_dep, hipo_dep, iguana_dep ],
+  install:       true,
+  install_rpath: ':'.join(bin_rpaths),
+)

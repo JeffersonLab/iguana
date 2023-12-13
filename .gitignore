@@ -3,6 +3,7 @@
 install-iguana.sh
 /build*/
 /iguana
+/install*/
 
 # doxygen artifacts
 /doc/api
