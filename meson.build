@@ -43,6 +43,7 @@ if(get_option('documentation'))
     message('Generating documentation...')
     run_command('doxygen', meson.project_source_root() / 'doc' / 'Doxyfile', check: true)
     message('...documentation generated.')
+    install_subdir('doc/api', install_dir: 'doc')
   else
     warning('Cannot generate documentation since `doxygen` is not found')
   endif
