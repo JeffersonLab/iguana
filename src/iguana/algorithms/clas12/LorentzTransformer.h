@@ -1,7 +1,6 @@
 #pragma once
 
-#include "iguana/Algorithm.h"
-#include "iguana/AlgorithmFactory.h"
+#include "iguana/algorithms/AlgorithmFactory.h"
 
 namespace iguana::clas12 {
 

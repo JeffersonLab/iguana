@@ -11,12 +11,12 @@ flowchart LR
     classDef other fill:#ff88ff,color:black
 
     subgraph services
-        Algorithm:::cls
         Logger:::cls
         Object:::cls
     end
 
     subgraph algorithms
+        Algorithm:::cls
         FiducialCuts:::algo
         MomentumCorrection:::algo
         AlgorithmSequence:::algo

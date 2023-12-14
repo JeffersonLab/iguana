@@ -1,4 +1,4 @@
-#include "iguana/AlgorithmFactory.h"
+#include "AlgorithmFactory.h"
 
 namespace iguana {
 

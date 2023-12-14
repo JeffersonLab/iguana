@@ -1,8 +1,17 @@
 algo_sources = [
+  'Algorithm.cc',
   'AlgorithmFactory.cc',
   'AlgorithmSequence.cc',
   'clas12/EventBuilderFilter.cc',
   'clas12/LorentzTransformer.cc',
+]
+
+algo_public_headers = [
+  'Algorithm.h',
+  'AlgorithmFactory.h',
+  'AlgorithmSequence.h',
+  'clas12/EventBuilderFilter.h',
+  'clas12/LorentzTransformer.h',
 ]
 
 algo_lib = shared_library(
@@ -15,3 +24,9 @@ algo_lib = shared_library(
   install_rpath:       project_lib_rpath,
 )
 project_libs += algo_lib
+
+install_headers(
+  algo_public_headers,
+  subdir:        meson.project_name() / 'algorithms',
+  preserve_path: true,
+)

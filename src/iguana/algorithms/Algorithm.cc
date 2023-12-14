@@ -1,4 +1,4 @@
-#include "iguana/Algorithm.h"
+#include "Algorithm.h"
 
 namespace iguana {
 

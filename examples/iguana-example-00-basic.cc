@@ -1,4 +1,4 @@
-#include <iguana/AlgorithmSequence.h>
+#include <iguana/algorithms/AlgorithmSequence.h>
 #include <hipo4/reader.h>
 
 // show a bank along with a header

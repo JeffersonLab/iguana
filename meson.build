@@ -14,14 +14,13 @@ hipo_dep = dependency('hipo4', version: '>=1.3', method: 'cmake')
 
 # general project vars
 project_lib_rpath = '$ORIGIN'
-project_inc       = include_directories('include')
+project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, hipo_dep ])
 
 # build and install shared libraries
-subdir('src/services')
-subdir('src/algorithms')
-install_subdir('include/iguana', install_dir: get_option('includedir'))
+subdir('src/iguana/services')
+subdir('src/iguana/algorithms')
 
 # generate pkg-config file for shared libraries
 pkg = import('pkgconfig')
