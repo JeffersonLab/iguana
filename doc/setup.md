@@ -40,7 +40,7 @@ cmake --install build-hipo
 
 First, configure your `iguana` build using `configure.py`:
 ```bash
-configure.py --help
+./configure.py --help
 ```
 The `--help` option will print the usage guide.
 Unless the dependencies are installed in one of the system default locations, you will need to specify the path to each of them, _e.g._,
