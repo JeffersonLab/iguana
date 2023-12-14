@@ -35,3 +35,15 @@ pkg.generate(
 if(get_option('examples'))
   subdir('examples')
 endif
+
+# generate documentation
+if(get_option('documentation'))
+  doxygen = find_program('doxygen', required: false)
+  if(doxygen.found())
+    message('Generating documentation...')
+    run_command('doxygen', meson.project_source_root() / 'doc' / 'Doxyfile', check: true)
+    message('...documentation generated.')
+  else
+    warning('Cannot generate documentation since `doxygen` is not found')
+  endif
+endif

@@ -3,8 +3,10 @@
 from configparser import ConfigParser
 import argparse, os, sys, textwrap
 
-SYSTEM_ASSUMPTION = 'assume system installation'
-SEPARATOR = '-'*50
+# constants
+SYSTEM_ASSUMPTION     = 'assume system installation'
+SEPARATOR             = '-'*50
+PKGCONFIG_RELOCATABLE = True
 
 # parse user options
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
@@ -22,10 +24,10 @@ parser_deps.add_argument( '--fmt', default=SYSTEM_ASSUMPTION, type=str, help='pa
 parser_build = parser.add_argument_group('build settings')
 parser_build.add_argument( '--prefix', default='iguana', type=str, help='iguana installation prefix')
 parser_build.add_argument( '--examples', default=False, action=argparse.BooleanOptionalAction, help='build examples or not')
+parser_build.add_argument( '--documentation', default=False, action=argparse.BooleanOptionalAction, help='generate API documentation or not')
 parser_build = parser.add_argument_group('advanced settings')
 parser_build.add_argument( '--build', default='build-iguana', type=str, help='iguana buildsystem directory')
 parser_build.add_argument( '--ini', default='build-iguana.ini', type=str, help='name of the output config INI file')
-parser_build.add_argument( '--relocatable', default=True, action=argparse.BooleanOptionalAction, help='make pkg-config `.pc` file relocatable or not')
 args = parser.parse_args()
 
 # get prefix absolute path
@@ -60,8 +62,9 @@ if(len(pkg_config_path) > 0):
 config.set('built-in options', '; installation settings')
 config.set('built-in options', 'prefix', f'\'{prefix}\'')
 config.set('built-in options', 'libdir', '\'lib\'') # make all systems use lib/
-config.set('built-in options', 'pkgconfig.relocatable', f'{args.relocatable}')
+config.set('built-in options', 'pkgconfig.relocatable', f'{PKGCONFIG_RELOCATABLE}')
 config.set('built-in options', 'examples', f'{args.examples}')
+config.set('built-in options', 'documentation', f'{args.documentation}')
 
 # write the INI file
 with open(args.ini, 'w') as fp:
