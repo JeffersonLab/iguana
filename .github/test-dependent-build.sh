@@ -26,7 +26,6 @@ ld_library_path=(
   $fmt_dep/lib
   $iguana_dep/lib
 )
-hipo=$hipo_dep # needed for Makefile
 
 # source, build, and install directories
 source_dir=examples/build_with_$tool
@@ -58,29 +57,29 @@ case $tool in
   cmake)
     exe \
       cmake \
-      -DCMAKE_PREFIX_PATH="$(joinList ';' ${cmake_prefix_path[*]} ${pkg_config_path[*]})" \
+      -DCMAKE_PREFIX_PATH="$(joinList ';' ${cmake_prefix_path[*]} $iguana_dep)" \
       -S $source_dir -B $build_dir
     exe cmake --build $build_dir
     exe cmake --install $build_dir --prefix $install_dir
     exe $install_dir/bin/$test_executable "$@"
     ;;
   make)
+    export PKG_CONFIG_PATH=$(joinList ':' ${pkg_config_path[*]})
+    export HIPO=$hipo_dep
+    env | grep -wE '^PKG_CONFIG_PATH|^HIPO'
     pushd $source_dir
-    exe \
-      PKG_CONFIG_PATH=$(joinList ':' ${pkg_config_path[*]}) \
-      HIPO=$hipo \
-      make
+    exe make
     popd
-    exe \
-      LD_LIBRARY_PATH=$(joinList ':' ${ld_library_path[*]}) \
-      $source_dir/bin/$test_executable "$@"
+    export LD_LIBRARY_PATH=$(joinList ':' ${ld_library_path[*]})
+    env | grep -wE '^LD_LIBRARY_PATH'
+    exe $source_dir/bin/$test_executable "$@"
     ;;
   meson)
     exe \
       meson setup \
       --prefix=$install_dir \
-      --Dcmake_prefix_path=$(joinList ',' ${cmake_prefix_path[*]}) \
-      --Dpkg_config_path=$(joinList ',' ${pkg_config_path[*]}) \
+      -Dcmake_prefix_path=$(joinList ',' ${cmake_prefix_path[*]}) \
+      -Dpkg_config_path=$(joinList ',' ${pkg_config_path[*]}) \
       $build_dir $source_dir
     exe meson install -C $build_dir
     exe $install_dir/bin/$test_executable "$@"
