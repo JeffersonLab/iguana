@@ -57,7 +57,7 @@ case $tool in
   cmake)
     exe \
       cmake \
-      -DCMAKE_PREFIX_PATH="$(joinList ';' ${cmake_prefix_path[*]} $iguana_dep)" \
+      -DCMAKE_PREFIX_PATH="$(joinList ';' ${cmake_prefix_path[*]} $fmt_dep $iguana_dep)" \
       -S $source_dir -B $build_dir
     exe cmake --build $build_dir
     exe cmake --install $build_dir --prefix $install_dir
