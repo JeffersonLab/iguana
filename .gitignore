@@ -3,6 +3,11 @@
 install-iguana.sh
 /build*/
 /iguana
+/install*/
+
+# local dependency builds
+/fmt
+/hipo
 
 # doxygen artifacts
 /doc/api

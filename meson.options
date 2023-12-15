@@ -1,0 +1,2 @@
+option('examples',      type: 'boolean', value: false, description: 'Build examples')
+option('documentation', type: 'boolean', value: false, description: 'Generate API documentation')

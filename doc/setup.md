@@ -32,9 +32,15 @@ cmake --install build-hipo
 ```
 
 ## Building and Installing
+
+- For convenience, a configuration script is provided.
+- Advanced users who want more control may skip to the "Using Meson Directly" section.
+
+### Using the Configuration Script
+
 First, configure your `iguana` build using `configure.py`:
 ```bash
-configure.py --help
+./configure.py --help
 ```
 The `--help` option will print the usage guide.
 Unless the dependencies are installed in one of the system default locations, you will need to specify the path to each of them, _e.g._,
@@ -47,5 +53,15 @@ Inspect both of them, and if they look correct, proceed with building and instal
 ./install-iguana.sh
 ```
 
-### Note for advanced users
-If you are comfortable with `meson` and dependency resolution, there is no need to run `configure.py` or `install-iguana.sh`; you may instead run `meson` commands with your preferred options.
+### Using Meson Directly
+
+Instead of `configure.py`, use `meson` directly for more control:
+
+1. Follow the [note on dependency resolution](dependency_resolution.md)
+2. Build with `meson`, for example
+```bash
+meson setup --prefix=$(pwd)/iguana build-iguana /path/to/iguana/repository
+meson install -C build-iguana
+```
+**NOTE**: `configure.py` produces a native file (`.ini`) which may be used by
+`meson setup` option `--native-file`.

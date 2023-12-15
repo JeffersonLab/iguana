@@ -1,4 +1,4 @@
-#include "algorithms/AlgorithmSequence.h"
+#include <iguana/algorithms/AlgorithmSequence.h>
 #include <hipo4/reader.h>
 
 // show a bank along with a header
@@ -8,7 +8,7 @@ void prettyPrint(std::string header, hipo::bank& bank) {
 }
 
 int main(int argc, char **argv) {
-
+  
   // parse arguments
   int argi = 1;
   const char* inFileName = argc > argi ? argv[argi++]            : "data.hipo";

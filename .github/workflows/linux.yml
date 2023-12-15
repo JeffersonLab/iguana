@@ -100,7 +100,7 @@ jobs:
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - run: tree
       - name: configure
-        run: ./configure.py --hipo hipo --fmt fmt
+        run: ./configure.py --hipo hipo --fmt fmt --examples --no-documentation
       - name: build
         run: ./install-iguana.sh
       - name: dump build log
@@ -170,6 +170,37 @@ jobs:
             echo "[+] EXECUTE TEST: $exe"
             $exe $test_file
           done
+
+  test_dependent_builds:
+    name: Test Dependent Builds
+    needs:
+      - download_validation_files
+      - build_iguana
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        tool: [ cmake, make, meson ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: setup meson
+        run: python -m pip install meson ninja
+      - name: get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: get test data
+        uses: actions/download-artifact@v3
+        with:
+          name: validation_files
+      - name: untar artifacts
+        run: |
+          ls *.tar.gz | xargs -I{} tar xzvf {}
+          rm -v *.tar.gz
+      - name: build and run
+        run: |
+          test_file=$(find validation_files -name "*.hipo" | head -n1)
+          .github/test-dependent-build.sh ${{ matrix.tool }} $test_file 1
 
   # documentation
   #########################################################
