@@ -13,7 +13,7 @@ are available.
 To use these dependencies with your software, they must be findable by its build system.
 The following sections explain how to do so with each.
 
-### `meson`
+### Meson
 For `iguana`, the build system is `meson`, which accepts the build options
 ```bash
 -Dpkg_config_path=$prefix/lib/pkgconfig
@@ -21,7 +21,7 @@ For `iguana`, the build system is `meson`, which accepts the build options
 ```
 (where multiple paths are delimited by commas).
 
-### `cmake`
+### CMake
 For `cmake`, the `pkg-config` path can be combined with the `cmake` path, so only the
 build option
 ```bash
