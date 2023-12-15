@@ -82,6 +82,7 @@ jobs:
       - uses: actions/checkout@v4
         with: # settings needed for version number detection
           clean: false
+          fetch-tags: true
       - name: setup meson
         run: python -m pip install meson ninja
       - name: summarize dependencies
