@@ -53,3 +53,11 @@ if(get_option('documentation'))
     warning('Cannot generate documentation since `doxygen` is not found')
   endif
 endif
+
+# install environment setup file
+fs = import('fs')
+if(fs.is_file('.env'))
+  install_data('.env', install_dir: get_option('bindir'), rename: 'this_iguana.sh')
+else
+  warning('no .env file; not installing environment setup file')
+endif

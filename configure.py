@@ -7,6 +7,7 @@ import argparse, os, sys, textwrap, subprocess
 SYSTEM_ASSUMPTION     = 'assume system installation'
 SEPARATOR             = '-'*50
 PKGCONFIG_RELOCATABLE = True
+LIBDIR                = 'lib'
 
 # parse user options
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
@@ -33,8 +34,8 @@ parser_build.add_argument( '--ini', default='build-iguana.ini', type=str, help='
 args = parser.parse_args()
 
 # get prefix and source absolute paths
-prefix    = os.path.realpath(args.prefix)
-sourceDir = os.path.dirname(os.path.realpath(__file__))
+installDir = os.path.realpath(args.prefix)
+sourceDir  = os.path.dirname(os.path.realpath(__file__))
 
 # detect the version number
 subprocess.run('meson/detect-version.sh', cwd=sourceDir)
@@ -67,8 +68,8 @@ if(len(pkg_config_path) > 0):
     config.set('built-in options', '; path to dependencies: ' + ','.join(pkg_config_deps))
     config.set('built-in options', 'pkg_config_path', meson_string_array(pkg_config_path))
 config.set('built-in options', '; installation settings')
-config.set('built-in options', 'prefix', f'\'{prefix}\'')
-config.set('built-in options', 'libdir', '\'lib\'') # make all systems use lib/
+config.set('built-in options', 'prefix', f'\'{installDir}\'')
+config.set('built-in options', 'libdir', f'\'{LIBDIR}\'') # make all systems use LIBDIR
 config.set('built-in options', 'pkgconfig.relocatable', f'{PKGCONFIG_RELOCATABLE}')
 config.set('built-in options', 'examples', f'{args.examples}')
 config.set('built-in options', 'documentation', f'{args.documentation}')
@@ -82,6 +83,22 @@ print(SEPARATOR)
 with open(args.ini, 'r') as fp:
     print(fp.read())
 print(SEPARATOR)
+
+# generate environment file
+# TODO: should just jinja instead...
+with open(f'{sourceDir}/.env', 'w') as fp:
+    ld_library_path=':'.join(map(lambda s: f'{s}/lib', cmake_prefix_path)) # for HIPO
+    fp.write(textwrap.dedent(f'''\
+    #!/bin/bash
+    thisEnv=${{BASH_SOURCE[0]:-$0}}
+    export IGUANA=$(cd $(dirname $thisEnv)/.. && pwd -P)
+    export LD_LIBRARY_PATH=$IGUANA/{LIBDIR}${{LD_LIBRARY_PATH:+:${{LD_LIBRARY_PATH}}}}
+    '''))
+    if(args.hipo != SYSTEM_ASSUMPTION):
+        fp.write(f'export HIPO={os.path.realpath(args.hipo)}\n')
+        fp.write(f'export LD_LIBRARY_PATH=$HIPO/lib${{LD_LIBRARY_PATH:+:${{LD_LIBRARY_PATH}}}}\n')
+    if(args.python):
+        fp.write(f'export PYTHONPATH=$IGUANA/python${{PYTHONPATH:+:${{PYTHONPATH}}}}\n')
 
 # generate the installation script
 installScript = 'install-iguana.sh'
