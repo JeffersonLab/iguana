@@ -29,7 +29,7 @@ build option
 ```
 is needed; this assumes:
 - all dependencies are in `$prefix` (delimit multiple paths with semicolons)
-- `PKG_CONFIG_USE_CMAKE_PREFIX_PATH` has not been disabled).
+- `PKG_CONFIG_USE_CMAKE_PREFIX_PATH` has not been disabled.
 
 ### General Case
 Environment variables may be used instead of build options for a general approach:
