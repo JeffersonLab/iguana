@@ -37,7 +37,7 @@ prefix    = os.path.realpath(args.prefix)
 sourceDir = os.path.dirname(os.path.realpath(__file__))
 
 # detect the version number
-subprocess.run('.github/detect-version.sh', cwd=sourceDir)
+subprocess.run('meson/detect-version.sh', cwd=sourceDir)
 print(SEPARATOR)
 
 # set dependency paths
