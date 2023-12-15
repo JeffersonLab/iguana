@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from configparser import ConfigParser
-import argparse, os, sys, textwrap
+import argparse, os, sys, textwrap, subprocess
 
 # constants
 SYSTEM_ASSUMPTION     = 'assume system installation'
@@ -30,8 +30,13 @@ parser_build.add_argument( '--build', default='build-iguana', type=str, help='ig
 parser_build.add_argument( '--ini', default='build-iguana.ini', type=str, help='name of the output config INI file')
 args = parser.parse_args()
 
-# get prefix absolute path
-prefix = os.path.realpath(args.prefix)
+# get prefix and source absolute paths
+prefix    = os.path.realpath(args.prefix)
+sourceDir = os.path.dirname(os.path.realpath(__file__))
+
+# detect the version number
+subprocess.run('.github/detect-version.sh', cwd=sourceDir)
+print(SEPARATOR)
 
 # set dependency paths
 cmake_prefix_path = []
@@ -76,7 +81,6 @@ with open(args.ini, 'r') as fp:
 print(SEPARATOR)
 
 # generate the installation script
-sourceDir = os.path.dirname(os.path.realpath(__file__))
 installScript = 'install-iguana.sh'
 with open(installScript, 'w') as fp:
     fp.write(textwrap.dedent(f'''\

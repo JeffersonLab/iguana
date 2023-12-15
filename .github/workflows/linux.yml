@@ -100,7 +100,10 @@ jobs:
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - run: tree
       - name: configure
-        run: ./configure.py --hipo hipo --fmt fmt --examples --no-documentation
+        run: |
+          ./configure.py --hipo hipo --fmt fmt --examples --no-documentation
+          echo '### Iguana Version' >> $GITHUB_STEP_SUMMARY
+          cat .version
       - name: build
         run: ./install-iguana.sh
       - name: dump build log
