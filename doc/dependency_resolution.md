@@ -18,6 +18,13 @@ for `iguana`, the build system is `meson`, which accepts the build options
 ```
 (where multiple paths are delimited by commas).
 
+For `cmake`, the `pkg-config` path can be combined with the `cmake` path, so only the
+build option
+```bash
+-DCMAKE_PREFIX_PATH="$prefix;$prefix/lib/pkgconfig"
+```
+is needed (which assumes `PKG_CONFIG_USE_CMAKE_PREFIX_PATH` has not been disabled).
+
 Environment variables may be used instead of build options for a general approach:
 ```bash
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig

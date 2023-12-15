@@ -1,5 +1,5 @@
 #!/bin/bash
-# test building dependent builds
+# CI test of building iguana-dependent code
 
 set -e
 
@@ -8,13 +8,25 @@ set -e
 tool=$1
 shift
 
-# dependencies
+# dependencies: assumed to be in `./<dependency>`
 fmt_dep=$(realpath fmt)
 iguana_dep=$(realpath iguana)
 hipo_dep=$(realpath hipo)
-export PKG_CONFIG_PATH=$fmt_dep/lib/pkgconfig:$iguana_dep/lib/pkgconfig
-export HIPO=$hipo_dep
-export CMAKE_PREFIX_PATH=$HIPO
+
+# dependency resolution objects
+pkg_config_path=(
+  $fmt_dep/lib/pkgconfig
+  $iguana_dep/lib/pkgconfig
+)
+cmake_prefix_path=(
+  $hipo_dep
+)
+ld_library_path=(
+  $hipo_dep/lib
+  $fmt_dep/lib
+  $iguana_dep/lib
+)
+hipo=$hipo_dep # needed for Makefile
 
 # source, build, and install directories
 source_dir=examples/build_with_$tool
@@ -26,25 +38,52 @@ install_dir=$(realpath $install_dir)
 # executable
 test_executable=iguana-example-00-basic
 
+# join items in a list to a string delimited by $1
+joinList() {
+  d=$1
+  shift
+  echo "$@" | sed "s/ /$d/g"
+}
+
+# print and execute a command
+exe() {
+  echo "--------------------------------------------------"
+  echo "$@"
+  echo "--------------------------------------------------"
+  "$@"
+}
+
 # build and test
 case $tool in
   cmake)
-    cmake -S $source_dir -B $build_dir -DCMAKE_INSTALL_PREFIX=$install_dir
-    cmake --build $build_dir
-    cmake --install $build_dir
-    $install_dir/bin/$test_executable "$@"
+    exe \
+      cmake \
+      -DCMAKE_PREFIX_PATH="$(joinList ';' ${cmake_prefix_path[*]} ${pkg_config_path[*]})" \
+      -S $source_dir -B $build_dir
+    exe cmake --build $build_dir
+    exe cmake --install $build_dir --prefix $install_dir
+    exe $install_dir/bin/$test_executable "$@"
     ;;
   make)
     pushd $source_dir
-    make
+    exe \
+      PKG_CONFIG_PATH=$(joinList ':' ${pkg_config_path[*]}) \
+      HIPO=$hipo \
+      make
     popd
-    export LD_LIBRARY_PATH=$hipo_dep/lib:$fmt_dep/lib:$iguana_dep/lib
-    $source_dir/bin/$test_executable "$@"
+    exe \
+      LD_LIBRARY_PATH=$(joinList ':' ${ld_library_path[*]}) \
+      $source_dir/bin/$test_executable "$@"
     ;;
   meson)
-    meson setup --prefix=$install_dir $build_dir $source_dir
-    meson install -C $build_dir
-    $install_dir/bin/$test_executable "$@"
+    exe \
+      meson setup \
+      --prefix=$install_dir \
+      --Dcmake_prefix_path=$(joinList ',' ${cmake_prefix_path[*]}) \
+      --Dpkg_config_path=$(joinList ',' ${pkg_config_path[*]}) \
+      $build_dir $source_dir
+    exe meson install -C $build_dir
+    exe $install_dir/bin/$test_executable "$@"
     ;;
   *)
     echo "ERROR: unknown tool '$tool'" >&2
