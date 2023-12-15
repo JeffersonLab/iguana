@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include "iguana/services/Logger.h"
+#include "Logger.h"
 
 namespace iguana {
 
