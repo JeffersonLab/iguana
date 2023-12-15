@@ -36,6 +36,11 @@ if(get_option('examples'))
   subdir('examples')
 endif
 
+# build bindings
+if(get_option('bind_python'))
+  subdir('bind/python')
+endif
+
 # generate documentation
 if(get_option('documentation'))
   doxygen = find_program('doxygen', required: false)

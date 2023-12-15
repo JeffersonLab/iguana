@@ -25,6 +25,8 @@ parser_build = parser.add_argument_group('build settings')
 parser_build.add_argument( '--prefix', default='iguana', type=str, help='iguana installation prefix')
 parser_build.add_argument( '--examples', default=False, action=argparse.BooleanOptionalAction, help='build examples or not')
 parser_build.add_argument( '--documentation', default=False, action=argparse.BooleanOptionalAction, help='generate API documentation or not')
+parser_build = parser.add_argument_group('bindings')
+parser_build.add_argument( '--python', default=False, action=argparse.BooleanOptionalAction, help='generate Python bindings or not')
 parser_build = parser.add_argument_group('advanced settings')
 parser_build.add_argument( '--build', default='build-iguana', type=str, help='iguana buildsystem directory')
 parser_build.add_argument( '--ini', default='build-iguana.ini', type=str, help='name of the output config INI file')
@@ -70,6 +72,7 @@ config.set('built-in options', 'libdir', '\'lib\'') # make all systems use lib/
 config.set('built-in options', 'pkgconfig.relocatable', f'{PKGCONFIG_RELOCATABLE}')
 config.set('built-in options', 'examples', f'{args.examples}')
 config.set('built-in options', 'documentation', f'{args.documentation}')
+config.set('built-in options', 'bind_python', f'{args.python}')
 
 # write the INI file
 with open(args.ini, 'w') as fp:
