@@ -10,16 +10,17 @@ Assuming a dependency is installed in `$prefix`, it uses one or more of the foll
 Take a look at each dependency's installation prefix to see which of these options
 are available.
 
-One way of using these dependencies is with environment variables:
-```bash
-export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
-export CMAKE_PREFIX_PATH=$prefix
-```
-Multiple paths are delimited by colons.
-
-A better way is to use build options; for `meson`, use the following:
+To use these dependencies with your software, they must be findable by its build system;
+for `iguana`, the build system is `meson`, which accepts the build options
 ```bash
 -Dpkg_config_path=$prefix/lib/pkgconfig
 -Dcmake_prefix_path=$prefix
 ```
-Multiple paths are delimited by commas.
+(where multiple paths are delimited by commas).
+
+Environment variables may be used instead of build options for a general approach:
+```bash
+export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
+export CMAKE_PREFIX_PATH=$prefix
+```
+(where multiple paths are delimited by colons).
