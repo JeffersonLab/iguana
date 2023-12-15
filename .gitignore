@@ -1,5 +1,6 @@
 # build artifacts
 *.ini
+.version
 install-iguana.sh
 /build*/
 /iguana
