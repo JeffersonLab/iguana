@@ -1,7 +1,7 @@
 project(
   'iguana',
   'cpp',
-  version:         '0.0.0',
+  version:         '0.1.0',
   license:         'LGPLv3',
   default_options: [ 'cpp_std=c++17' ],
   meson_version:   '>=1.1',
