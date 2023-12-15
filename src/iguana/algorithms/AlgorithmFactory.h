@@ -1,6 +1,6 @@
 #pragma once
 
-#include "iguana/algorithms/Algorithm.h"
+#include "Algorithm.h"
 
 namespace iguana {
 
