@@ -105,7 +105,7 @@ jobs:
         run: |
           ./configure.py --hipo hipo --fmt fmt --examples --no-documentation
           echo '### Iguana Version' >> $GITHUB_STEP_SUMMARY
-          cat .version
+          cat .version >> $GITHUB_STEP_SUMMARY
       - name: build
         run: ./install-iguana.sh
       - name: dump build log
