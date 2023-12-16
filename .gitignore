@@ -18,4 +18,4 @@ install-iguana.sh
 *.hipo
 
 # TODO: remove this?
-.python
+.venv
