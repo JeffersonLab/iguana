@@ -115,7 +115,9 @@ jobs:
         run: cat build-iguana/meson-logs/meson-log.txt
       - name: readelf iguana
         run: |
-          for obj in $(ls iguana/bin/*) $(find iguana -name "*.so") ; do
+          binaries=$(find iguana/bin -executable -type f -exec grep -IL . "{}" \;)
+          libraries=$(find iguana -name "*.so")
+          for obj in $binaries $libraries; do
             echo "[+++] READELF $obj"
             readelf -d $obj
           done
