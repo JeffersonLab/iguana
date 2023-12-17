@@ -3,11 +3,11 @@ CXX := g++
 
 # dependency libraries
 DEP_LIBRARIES = $(shell pkg-config --libs iguana)
-DEP_LIBRARIES += -L${HIPO}/lib -lhipo4
+DEP_LIBRARIES += -lhipo4
 
 # dependency headers
 DEP_INCLUDES = $(shell pkg-config --cflags iguana)
-DEP_INCLUDES += -I${HIPO}/include
+# DEP_INCLUDES += -I${HIPO}/include
 
 # assume each .cc file has `main`; install it to ./bin/
 BINDIR = bin

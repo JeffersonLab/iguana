@@ -21,6 +21,9 @@ dep_lib_paths = []
 foreach path : get_option('cmake_prefix_path')
   dep_lib_paths += path / 'lib'
 endforeach
+foreach path : get_option('pkg_config_path')
+  dep_lib_paths += path / '..'
+endforeach
 
 # general project vars
 project_lib_rpath = '$ORIGIN'
