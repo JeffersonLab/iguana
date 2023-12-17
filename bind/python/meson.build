@@ -1,3 +1,4 @@
+project_pkg_vars += 'pythonpath=' + get_option('prefix') / 'python'
 install_subdir(
   'PyIguana',
   install_dir: 'python',

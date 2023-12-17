@@ -5,7 +5,7 @@ project(
   default_options: [ 'cpp_std=c++17' ],
   meson_version:   '>=1.1',
   version: run_command(
-    meson.project_source_root() / '.github' / 'detect-version.sh',
+    meson.project_source_root() / 'meson' / 'detect-version.sh',
     meson.project_source_root(),
     check: true
   ).stdout().strip()
@@ -16,15 +16,27 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 fmt_dep  = dependency('fmt', version: '>=9.1.0')
 hipo_dep = dependency('hipo4', version: '>=1.3', method: 'cmake')
 
+# dependency library paths
+dep_lib_paths = []
+foreach path : get_option('cmake_prefix_path')
+  dep_lib_paths += path / 'lib'
+endforeach
+
 # general project vars
 project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, hipo_dep ])
+project_pkg_vars  = [ 'dep_lib_paths=' + ':'.join(dep_lib_paths) ]
 
 # build and install shared libraries
 subdir('src/iguana/services')
 subdir('src/iguana/algorithms')
+
+# build bindings
+if(get_option('bind_python'))
+  subdir('bind/python')
+endif
 
 # generate pkg-config file for shared libraries
 pkg = import('pkgconfig')
@@ -33,16 +45,12 @@ pkg.generate(
   description: project_description,
   libraries:   project_libs,
   requires:    [ fmt_dep ],
+  variables:   project_pkg_vars,
 )
 
 # build examples
 if(get_option('examples'))
   subdir('examples')
-endif
-
-# build bindings
-if(get_option('bind_python'))
-  subdir('bind/python')
 endif
 
 # generate documentation
@@ -59,16 +67,8 @@ if(get_option('documentation'))
 endif
 
 # install environment setup file
-# TODO: can we generate .env from meson? e.g.,:
-# configure_file(
-#   configuration: { 'a': 'aaa', 'b': 'bbb' },
-#   install: true,
-#   install_dir: get_option('bindir'),
-#   output: 'this_iguana.sh',
-# )
-fs = import('fs')
-if(fs.is_file('.env'))
-  install_data('.env', install_dir: get_option('bindir'), rename: 'this_iguana.sh')
-else
-  warning('no .env file; not installing environment setup file')
-endif
+install_data(
+  'meson' / 'this_iguana.sh.in',
+  install_dir: get_option('bindir'),
+  rename:      'this_iguana.sh'
+)

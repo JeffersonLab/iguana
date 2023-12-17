@@ -80,22 +80,6 @@ with open(args.ini, 'r') as fp:
     print(fp.read())
 print(SEPARATOR)
 
-# generate environment file
-# TODO: should just jinja instead...
-with open(f'{sourceDir}/.env', 'w') as fp:
-    ld_library_path=':'.join(map(lambda s: f'{s}/lib', cmake_prefix_path)) # for HIPO
-    fp.write(textwrap.dedent(f'''\
-    #!/bin/bash
-    thisEnv=${{BASH_SOURCE[0]:-$0}}
-    export IGUANA=$(cd $(dirname $thisEnv)/.. && pwd -P)
-    export LD_LIBRARY_PATH=$IGUANA/{LIBDIR}${{LD_LIBRARY_PATH:+:${{LD_LIBRARY_PATH}}}}
-    '''))
-    if(args.hipo != SYSTEM_ASSUMPTION):
-        fp.write(f'export HIPO={os.path.realpath(args.hipo)}\n')
-        fp.write(f'export LD_LIBRARY_PATH=$HIPO/lib${{LD_LIBRARY_PATH:+:${{LD_LIBRARY_PATH}}}}\n')
-    if(args.python):
-        fp.write(f'export PYTHONPATH=$IGUANA/python${{PYTHONPATH:+:${{PYTHONPATH}}}}\n')
-
 # generate the installation script
 installScript = 'install-iguana.sh'
 with open(installScript, 'w') as fp:

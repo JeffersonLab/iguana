@@ -4,12 +4,7 @@ example_sources = [
 ]
 
 # add iguana libraries to rpath
-example_rpaths = [ '$ORIGIN' / '..' / get_option('libdir') ]
-
-# add dependency libraries to rpath
-foreach path : get_option('cmake_prefix_path')
-  example_rpaths += path / 'lib'
-endforeach
+example_rpaths = [ '$ORIGIN' / '..' / get_option('libdir') ] + dep_lib_paths
 
 # build executables
 foreach src : example_sources
