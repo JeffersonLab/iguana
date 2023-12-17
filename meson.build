@@ -38,7 +38,7 @@ if(get_option('bind_python'))
   subdir('bind/python')
 endif
 
-# generate pkg-config file for shared libraries
+# generate pkg-config file
 pkg = import('pkgconfig')
 pkg.generate(
   name:        meson.project_name(),
