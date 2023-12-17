@@ -1,10 +1,14 @@
 project(
   'iguana',
   'cpp',
-  version:         files(meson.project_source_root() / '.version'),
   license:         'LGPLv3',
   default_options: [ 'cpp_std=c++17' ],
   meson_version:   '>=1.1',
+  version: run_command(
+    meson.project_source_root() / '.github' / 'detect-version.sh',
+    meson.project_source_root(),
+    check: true
+  ).stdout().strip()
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
 
@@ -55,6 +59,13 @@ if(get_option('documentation'))
 endif
 
 # install environment setup file
+# TODO: can we generate .env from meson? e.g.,:
+# configure_file(
+#   configuration: { 'a': 'aaa', 'b': 'bbb' },
+#   install: true,
+#   install_dir: get_option('bindir'),
+#   output: 'this_iguana.sh',
+# )
 fs = import('fs')
 if(fs.is_file('.env'))
   install_data('.env', install_dir: get_option('bindir'), rename: 'this_iguana.sh')
