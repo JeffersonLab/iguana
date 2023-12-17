@@ -206,6 +206,7 @@ jobs:
       - name: build and run
         run: |
           test_file=$(find validation_files -name "*.hipo" | head -n1)
+          source iguana/bin/this_iguana.sh
           .github/test-dependent-build.sh ${{ matrix.tool }} $test_file 1
 
   # documentation
