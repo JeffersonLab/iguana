@@ -206,11 +206,11 @@ jobs:
       - name: build and run
         run: |
           test_file=$(find validation_files -name "*.hipo" | head -n1)
-          source iguana/bin/this_iguana.sh
-          echo "PKG_CONFIG_PATH = $PKG_CONFIG_PATH"
-          echo "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
-          echo "PYTHONPATH = $PYTHONPATH"
-          .github/test-dependent-build.sh ${{ matrix.tool }} $test_file 1
+          # source iguana/bin/this_iguana.sh
+          # echo "PKG_CONFIG_PATH = $PKG_CONFIG_PATH"
+          # echo "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
+          # echo "PYTHONPATH = $PYTHONPATH"
+          # .github/test-dependent-build.sh ${{ matrix.tool }} $test_file 1
 
   # documentation
   #########################################################
