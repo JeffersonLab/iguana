@@ -23,10 +23,6 @@ namespace iguana {
     }
   }
 
-  void AlgorithmSequence::SetOption(const std::string algo_name, const std::string key, const option_t val) {
-    Get<Algorithm>(algo_name)->SetOption(key,val);
-  }
-
   void AlgorithmSequence::SetName(const std::string name) {
     // change the `m_name+"|"` prefix of each algorithm
     for(const auto& algo : m_sequence) {

@@ -71,7 +71,10 @@ namespace iguana {
       /// @param algo_name the algorithm instance name
       /// @param key the option name
       /// @param val the option value
-      void SetOption(const std::string algo_name, const std::string key, const option_t val);
+      template <typename OPTION_TYPE>
+        void SetOption(const std::string algo_name, const std::string key, const OPTION_TYPE val) {
+          Get<Algorithm>(algo_name)->SetOption(key,val);
+        }
 
       /// Set the name of this sequence
       /// @param name the new name

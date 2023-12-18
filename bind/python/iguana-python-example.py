@@ -19,11 +19,13 @@ seq.Add('clas12::EventBuilderFilter')
 seq.Add('clas12::LorentzTransformer')
 seq.PrintSequence()
 
-# # TODO: need to marshal to std::variant; config files are a possible workaround here
-cppyy.cppexec('iguana::option_t log_level = "debug";')
-cppyy.cppexec('iguana::option_t pids = std::set<int>{11,211,-211};')
-seq.SetOption('clas12::EventBuilderFilter', 'log',  cppyy.gbl.log_level)
-seq.SetOption('clas12::EventBuilderFilter', 'pids', cppyy.gbl.pids)
+seq.SetOption('clas12::EventBuilderFilter', 'log',       'trace')
+seq.SetOption('clas12::EventBuilderFilter', 'testInt',   7)
+seq.SetOption('clas12::EventBuilderFilter', 'testFloat', 42.3)
+# # TODO: need to marshal std::set
+# seq.SetOption('clas12::EventBuilderFilter', 'pids',  [11,211,-211])
+# cppyy.cppexec('iguana::option_t pids = std::set<int>{11,211,-211};')
+# seq.SetOption('clas12::EventBuilderFilter', 'pids', cppyy.gbl.pids)
 
 def prettyPrint(message, bank):
     print(f'{"="*30} {message} {"="*30}')

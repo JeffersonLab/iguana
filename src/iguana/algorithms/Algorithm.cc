@@ -2,7 +2,7 @@
 
 namespace iguana {
 
-  void Algorithm::SetOption(const std::string key, const option_t val) {
+  void Algorithm::SetOptionVariant(const std::string key, const option_t val) {
     if(key == "log") {
       try {
         m_log->SetLevel(std::get<std::string>(val));
