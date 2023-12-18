@@ -1,6 +1,8 @@
 #!/bin/bash
 # source this file to set environment variables for this iguana installation
 
+set -x
+
 # find the iguana installation prefix, with respect to this file
 thisEnv=${BASH_SOURCE[0]:-$0}
 thisDir=$(cd $(dirname $thisEnv)/.. && pwd -P)
@@ -20,3 +22,5 @@ done
 # append to PYTHONPATH
 iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
 [ -n "$iguana_pythonpath" ] && export PYTHONPATH=$iguana_pythonpath${PYTHONPATH:+:${PYTHONPATH}}
+
+set +x
