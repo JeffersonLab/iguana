@@ -30,7 +30,7 @@ project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, hipo_dep ])
-project_pkg_vars  = [ 'dep_lib_paths=' + ':'.join(dep_lib_paths) ]
+project_pkg_vars  = [ 'dep_libdirs=' + ':'.join(dep_lib_paths) ]
 
 # build and install shared libraries
 subdir('src/iguana/services')

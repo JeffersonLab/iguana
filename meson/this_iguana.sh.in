@@ -8,14 +8,11 @@ thisDir=$(cd $(dirname $thisEnv)/.. && pwd -P)
 # append to PKG_CONFIG_PATH
 export PKG_CONFIG_PATH=$thisDir/lib/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 
-# # append to LD_LIBRARY_PATH
-# libdirs=(
-#   $(pkg-config --variable hipo_libdir iguana)
-#   $(pkg-config --variable libdir      iguana)
-# )
-# for libdir in ${libdirs[*]}; do
-#   [ -n "$libdir" ] && export LD_LIBRARY_PATH=$libdir${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-# done
+# append to LD_LIBRARY_PATH
+for var in libdir dep_libdirs; do
+  libdir=$(pkg-config --variable $var iguana)
+  [ -n "$libdir" ] && export LD_LIBRARY_PATH=$libdir${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+done
 
 # # append to PYTHONPATH
 # iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
