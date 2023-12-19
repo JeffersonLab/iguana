@@ -11,7 +11,7 @@ namespace iguana::clas12 {
   void EventBuilderFilter::Start(hipo::banklist& banks) {
 
     // define options, their default values, and cache them
-    CacheOption("pids", std::set<int>{11, 211}, o_pids);
+    CacheVectorOptionToSet("pids", {11, 211}, o_pids);
     CacheOption("testInt", 8, o_testInt); // TODO: remove
     CacheOption("testFloat", 7.0, o_testFloat); // TODO: remove
 

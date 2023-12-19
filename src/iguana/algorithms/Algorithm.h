@@ -1,8 +1,8 @@
 #pragma once
 
-#include <set>
 #include <variant>
 #include <vector>
+#include <set>
 #include <unordered_map>
 #include <algorithm>
 #include <functional>
@@ -18,7 +18,7 @@ namespace iguana {
     int,
     double,
     std::string,
-    std::set<int>
+    std::vector<int>
   >;
 
   /// @brief Base class for all algorithms to inherit from
@@ -105,6 +105,18 @@ namespace iguana {
           if(get_error)
             m_log->Error("...using default value '{}' instead", PrintOptionValue(key));
           m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
+        }
+
+      /// Cache an option of type `std::vector` and convert it to `std::set`
+      /// @see `Algorithm::CacheOption`
+      /// @param[in] key the name of the option
+      /// @param[in] def the default `std::vector`
+      /// @param[out] val reference to the `std::set` option
+      template <typename T>
+        void CacheVectorOptionToSet(const std::string key, const std::vector<T> def, std::set<T>& val) {
+          std::vector<T> vec;
+          CacheOption(key, def, vec);
+          std::copy(vec.begin(), vec.end(), std::inserter(val, val.end()));
         }
 
       /// Return a string with the value of an option along with its type
