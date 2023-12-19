@@ -11,8 +11,7 @@ inFile    = 'data.hipo'
 numEvents = 3
 
 reader = hipo.reader(inFile)
-cppyy.cppexec('std::vector<std::string> banks = { "REC::Particle", "REC::Calorimeter" };')
-banks = reader.getBanks(cppyy.gbl.banks)
+banks  = reader.getBanks(["REC::Particle", "REC::Calorimeter"]);
 
 seq = iguana.AlgorithmSequence('PyIguana')
 seq.Add('clas12::EventBuilderFilter')
