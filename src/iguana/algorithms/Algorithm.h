@@ -55,17 +55,24 @@ namespace iguana {
       /// @param val the value to set
       template <typename OPTION_TYPE>
         void SetOption(const std::string key, const OPTION_TYPE val) {
-          SetOptionVariant(key,val);
+          if(key == "log") {
+            if constexpr(std::disjunction<
+                std::is_same<OPTION_TYPE, std::string>,
+                std::is_same<OPTION_TYPE, const char*>,
+                std::is_same<OPTION_TYPE, Logger::Level>
+                >::value
+                )
+              m_log->SetLevel(val);
+            else
+              m_log->Error("Option '{}' must be a string or a Logger::Level", key);
+          }
+          else {
+            m_opt[key] = val;
+            m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
+          }
         }
 
     protected:
-
-      /// Set an option specified by the user; this method is protected, since
-      /// `Algorithm::SetOption` is preferred as the public method, which has
-      /// parameters that are friendlier to language bindings
-      /// @param key the name of the option
-      /// @param val the value to set
-      void SetOptionVariant(const std::string key, const option_t val);
 
       /// Cache the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
       /// @param[in] banks the list of banks this algorithm will use

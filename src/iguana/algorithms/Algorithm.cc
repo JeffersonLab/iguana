@@ -2,21 +2,6 @@
 
 namespace iguana {
 
-  void Algorithm::SetOptionVariant(const std::string key, const option_t val) {
-    if(key == "log") {
-      try {
-        m_log->SetLevel(std::get<std::string>(val));
-      }
-      catch(const std::bad_variant_access& ex) {
-        m_log->Error("Option '{}' must be a string", key);
-      }
-    }
-    else {
-      m_opt[key] = val;
-      m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
-    }
-  }
-
   void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {
     auto it = std::find_if(
         banks.begin(),
