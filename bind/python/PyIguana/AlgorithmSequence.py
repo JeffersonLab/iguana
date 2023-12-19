@@ -3,11 +3,10 @@
 import os
 import cppyy
 
-# TODO: use jinja to set these paths, rather than relying on env var IGUANA;
-#       we should NOT need $IGUANA to be set
-for prefix in map(lambda d: os.environ.get(d), ['IGUANA', 'HIPO']):
-    if prefix is not None:
-        cppyy.add_include_path(f'{prefix}/include')
+iguana_include_path = os.environ.get('IGUANA_INCLUDE_PATH')
+if iguana_include_path is not None:
+    for path in iguana_include_path.split(':'):
+        cppyy.add_include_path(path)
 
 cppyy.load_library('IguanaAlgorithms')
 cppyy.include('iguana/algorithms/AlgorithmSequence.h')

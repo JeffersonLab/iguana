@@ -10,10 +10,30 @@ export PKG_CONFIG_PATH=$thisDir/lib/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PA
 
 # append to LD_LIBRARY_PATH
 for var in libdir dep_libdirs; do
-  libdir=$(pkg-config --variable $var iguana)
-  [ -n "$libdir" ] && export LD_LIBRARY_PATH=$libdir${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+  dir=$(pkg-config --variable $var iguana)
+  [ -n "${dir-}" ] && export LD_LIBRARY_PATH=$dir${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 done
 
-# # append to PYTHONPATH
-# iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
-# [ -n "$iguana_pythonpath" ] && export PYTHONPATH=$iguana_pythonpath${PYTHONPATH:+:${PYTHONPATH}}
+# IGUANA_INCLUDE_PATH
+#
+###### TODO: can we avoid this? #####
+#
+unset IGUANA_INCLUDE_PATH
+for var in includedir dep_includedirs; do
+  dir=$(pkg-config --variable $var iguana)
+  [ -n "${dir-}" ] && export IGUANA_INCLUDE_PATH=$dir${IGUANA_INCLUDE_PATH:+:${IGUANA_INCLUDE_PATH}}
+done
+
+# append to PYTHONPATH
+iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
+[ -n "${iguana_pythonpath-}" ] && export PYTHONPATH=$iguana_pythonpath${PYTHONPATH:+:${PYTHONPATH}}
+
+echo """
+Iguana Environment Variables
+----------------------------
+PKG_CONFIG_PATH     = ${PKG_CONFIG_PATH-}
+LD_LIBRARY_PATH     = ${LD_LIBRARY_PATH-}
+IGUANA_INCLUDE_PATH = ${IGUANA_INCLUDE_PATH-}
+PYTHONPATH          = ${PYTHONPATH-}
+----------------------------
+"""

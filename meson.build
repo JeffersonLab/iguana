@@ -17,12 +17,12 @@ fmt_dep  = dependency('fmt', version: '>=9.1.0')
 hipo_dep = dependency('hipo4', version: '>=1.3', method: 'cmake')
 
 # dependency library paths
-dep_lib_paths = []
+# TODO: maybe we don't need all of this if we can static-link libhipo
+dep_lib_paths     = []
+dep_include_paths = []
 foreach path : get_option('cmake_prefix_path')
-  dep_lib_paths += path / 'lib'
-endforeach
-foreach path : get_option('pkg_config_path')
-  dep_lib_paths += path / '..'
+  dep_lib_paths     += path / 'lib'
+  dep_include_paths += path / 'include'
 endforeach
 
 # general project vars
@@ -30,7 +30,10 @@ project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, hipo_dep ])
-project_pkg_vars  = [ 'dep_libdirs=' + ':'.join(dep_lib_paths) ]
+project_pkg_vars = [
+  'dep_libdirs='     + ':'.join(dep_lib_paths),
+  'dep_includedirs=' + ':'.join(dep_include_paths),
+]
 
 # build and install shared libraries
 subdir('src/iguana/services')
