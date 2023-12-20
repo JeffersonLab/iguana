@@ -18,5 +18,5 @@ to set the `bind_python` option to `True`. Then, build and try the example:
 ```bash
 ./install-iguana.sh
 source iguana/bin/this_iguana.sh
-iguana/bin/iguana-python-example.py
+iguana/bin/iguana-example-bind.py
 ```

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import cppyy
-import PyIguana.AlgorithmSequence as iguana
+import pyiguana
 
-cppyy.load_library('hipo4')
-cppyy.include('hipo4/reader.h')
-from cppyy.gbl import hipo
+# include the header files that you need
+pyiguana.include('hipo4/reader.h', 'iguana/algorithms/AlgorithmSequence.h')
+# then import the bound namespaces (must be after including the headers)
+from cppyy.gbl import hipo, iguana
+# from here the syntax is analogous to the C++ example
 
 inFile    = 'data.hipo'
 numEvents = 3
@@ -13,7 +14,7 @@ numEvents = 3
 reader = hipo.reader(inFile)
 banks  = reader.getBanks(["REC::Particle", "REC::Calorimeter"]);
 
-seq = iguana.AlgorithmSequence('PyIguana')
+seq = iguana.AlgorithmSequence('pyiguana')
 seq.Add('clas12::EventBuilderFilter')
 seq.Add('clas12::LorentzTransformer')
 seq.PrintSequence()
