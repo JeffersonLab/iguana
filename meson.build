@@ -16,14 +16,28 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 fmt_dep  = dependency('fmt', version: '>=9.1.0')
 hipo_dep = dependency('hipo4', version: '>=1.3', method: 'cmake')
 
-# dependency library paths
+# dependency paths for pkg-config packaging
 dep_lib_paths        = []
 dep_include_paths    = []
 dep_pkg_config_paths = []
+# cmake dependency libraries and headers
+# FIXME: prefer `dep.get_variable(cmake: 'VARIABLE_NAME')`, but not sure if the needed variables are available...
 foreach path : get_option('cmake_prefix_path')
   dep_lib_paths     += path / 'lib'
   dep_include_paths += path / 'include'
 endforeach
+# pkg-config dependency libraries and headers
+foreach dep : [fmt_dep]
+  val = dep.get_variable(pkgconfig: 'libdir', default_value: '')
+  if(val != '')
+    dep_lib_paths += val
+  endif
+  val = dep.get_variable(pkgconfig: 'includedir', default_value: '')
+  if(val != '')
+    dep_include_paths += val
+  endif
+endforeach
+# dependency pkg-config paths
 foreach path : get_option('pkg_config_path')
   dep_pkg_config_paths += path
 endforeach
