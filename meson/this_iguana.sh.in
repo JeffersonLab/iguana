@@ -7,21 +7,13 @@ thisDir=$(cd $(dirname $thisEnv)/.. && pwd -P)
 
 # append to PKG_CONFIG_PATH
 export PKG_CONFIG_PATH=$thisDir/lib/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+dep_pkgconfigdirs=$(pkg-config --variable dep_pkgconfigdirs iguana)
+[ -n "${dep_pkgconfigdirs-}" ] && export PKG_CONFIG_PATH=$dep_pkgconfigdirs${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 
 # append to LD_LIBRARY_PATH
 for var in libdir dep_libdirs; do
   dir=$(pkg-config --variable $var iguana)
   [ -n "${dir-}" ] && export LD_LIBRARY_PATH=$dir${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-done
-
-# IGUANA_INCLUDE_PATH
-#
-###### TODO: can we avoid this? #####
-#
-unset IGUANA_INCLUDE_PATH
-for var in includedir dep_includedirs; do
-  dir=$(pkg-config --variable $var iguana)
-  [ -n "${dir-}" ] && export IGUANA_INCLUDE_PATH=$dir${IGUANA_INCLUDE_PATH:+:${IGUANA_INCLUDE_PATH}}
 done
 
 # append to PYTHONPATH
@@ -33,7 +25,6 @@ Iguana Environment Variables
 ----------------------------
 PKG_CONFIG_PATH     = ${PKG_CONFIG_PATH-}
 LD_LIBRARY_PATH     = ${LD_LIBRARY_PATH-}
-IGUANA_INCLUDE_PATH = ${IGUANA_INCLUDE_PATH-}
 PYTHONPATH          = ${PYTHONPATH-}
 ----------------------------
 """

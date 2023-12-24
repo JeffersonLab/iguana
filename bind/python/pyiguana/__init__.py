@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 
-import os, cppyy
+import os, cppyy, pkgconfig
 
-# add include dirs to cpppyy
-iguana_include_path = os.environ.get('IGUANA_INCLUDE_PATH')
-if iguana_include_path is not None:
-    for path in iguana_include_path.split(':'):
+# read iguana pkg-config
+PKG = 'iguana'
+if not pkgconfig.exists(PKG):
+    raise Exception(f'failed to find pkg-config package "{PKG}"')
+pkg_vars = pkgconfig.variables(PKG)
+
+# add include dirs to cppyy
+for var in ['includedir', 'dep_includedirs']:
+    include_path = pkg_vars[var]
+    for path in include_path.split(':'):
         cppyy.add_include_path(path)
 
 # add libraries to cppyy
-[ cppyy.load_library(lib) for lib in [ 'hipo4', 'IguanaServices', 'IguanaAlgorithms' ]]
+for lib in ['hipo4', 'IguanaServices', 'IguanaAlgorithms']:
+  cppyy.load_library(lib)
 
 # include header file(s)
 def include(*headers):

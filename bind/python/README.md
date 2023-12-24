@@ -11,6 +11,7 @@ Then install packages with:
 ```bash
 pip install -r bind/python/requirements.txt
 ```
+**Note**: If you get an error stating that `"Python.h"` cannot be found, you need to install Python development headers and static libraries; depending on your OS and package manager, the relevant package to install is something like `python3-dev` or `python3-devel`.
 
 ## Building the Python Bindings
 Use the `--python` option when running `configure.py`, or edit your `build-iguana.ini` file
