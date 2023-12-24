@@ -188,6 +188,38 @@ jobs:
             $exe $test_file
           done
 
+  test_bind_python:
+    name: Test Python Bindings
+    needs:
+      - download_validation_files
+      - build_iguana
+    runs-on: ubuntu-latest
+    steps:
+      - name: get dependency build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build_deps
+      - name: get iguana build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build_iguana_python
+      - name: get test data
+        uses: actions/download-artifact@v3
+        with:
+          name: validation_files
+      - name: untar artifacts
+        run: |
+          ls *.tar.gz | xargs -I{} tar xzvf {}
+          rm -v *.tar.gz
+      - name: pip install requirements
+        run: python -m pip install -r bind/python/requirements.txt
+      - name: run test
+        run: |
+          test_file=$(find validation_files -name "*.hipo" | head -n1)
+          echo "[+] TEST FILE: $test_file"
+          source iguana/bin/this_iguana.sh
+          iguana/bin/iguana-example-bind.py ${test_file} 1
+
   test_dependent_builds:
     name: Test Dependent Builds
     needs:

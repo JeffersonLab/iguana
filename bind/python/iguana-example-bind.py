@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pyiguana
+import sys
 
 # include the header files that you need
 pyiguana.include('hipo4/reader.h', 'iguana/algorithms/AlgorithmSequence.h')
@@ -8,8 +9,8 @@ pyiguana.include('hipo4/reader.h', 'iguana/algorithms/AlgorithmSequence.h')
 from cppyy.gbl import hipo, iguana
 # from here the syntax is analogous to the C++ example
 
-inFile    = 'data.hipo'
-numEvents = 3
+inFile    = sys.argv[1]      if len(sys.argv)>1 else 'data.hipo'
+numEvents = int(sys.argv[2]) if len(sys.argv)>2 else 3
 
 reader = hipo.reader(inFile)
 banks  = reader.getBanks(["REC::Particle", "REC::Calorimeter"]);
