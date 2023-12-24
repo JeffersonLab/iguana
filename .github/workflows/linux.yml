@@ -42,7 +42,7 @@ jobs:
         run: tar czvf hipo{.tar.gz,}
       - uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: build_deps
           retention-days: 1
           path: hipo.tar.gz
 
@@ -65,7 +65,7 @@ jobs:
         run: tar czvf fmt{.tar.gz,}
       - uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: build_deps
           retention-days: 1
           path: fmt.tar.gz
 
@@ -78,6 +78,13 @@ jobs:
       - build_hipo
       - build_fmt
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        binding: [ cpp, python ]
+        include:
+          - { binding: cpp,    opts: ''         }
+          - { binding: python, opts: '--python' }
     steps:
       - uses: actions/checkout@v4
         with: # settings needed for version number detection
@@ -96,15 +103,15 @@ jobs:
           done
           echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
-      - name: get build artifacts
+      - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: build
+          name: build_deps
       - name: untar build
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - run: tree
       - name: configure
-        run: ./configure.py --hipo hipo --fmt fmt --examples --no-documentation
+        run: ./configure.py --hipo hipo --fmt fmt --examples --no-documentation ${{ matrix.opts }}
       - name: build
         run: ./install-iguana.sh
       - name: dump build log
@@ -123,7 +130,7 @@ jobs:
         run: tar czvf iguana{.tar.gz,}
       - uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: build_iguana_${{ matrix.binding }}
           retention-days: 1
           path: iguana.tar.gz
 
@@ -154,10 +161,14 @@ jobs:
       - build_iguana
     runs-on: ubuntu-latest
     steps:
-      - name: get build artifacts
+      - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: build
+          name: build_deps
+      - name: get iguana build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build_iguana_cpp
       - name: get test data
         uses: actions/download-artifact@v3
         with:
@@ -191,10 +202,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: setup meson
         run: python -m pip install meson ninja
-      - name: get build artifacts
+      - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: build
+          name: build_deps
+      - name: get iguana build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build_iguana_cpp
       - name: get test data
         uses: actions/download-artifact@v3
         with:
