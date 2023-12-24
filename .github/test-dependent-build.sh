@@ -18,9 +18,6 @@ install_dir=$(realpath $install_dir)
 # executable
 test_executable=iguana-example-00-basic
 
-# set CMAKE_PREFIX_PATH from LD_LIBRARY_PATH
-export CMAKE_PREFIX_PATH=$LD_LIBRARY_PATH
-
 # print and execute a command
 exe() {
   echo "--------------------------------------------------"

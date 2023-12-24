@@ -237,10 +237,7 @@ jobs:
       - name: build and run
         run: |
           source iguana/bin/this_iguana.sh
-          echo "CI VARS: ------------------"
-          echo "PKG_CONFIG_PATH = $PKG_CONFIG_PATH"
-          echo "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
-          echo "PYTHONPATH = $PYTHONPATH"
+          export CMAKE_PREFIX_PATH="'"$(pwd)/hipo"'"
           .github/test-dependent-build.sh ${{ matrix.tool }} test_data.hipo 1
 
   # documentation
