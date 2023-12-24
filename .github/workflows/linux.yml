@@ -125,6 +125,13 @@ jobs:
             echo "[+++] READELF $obj"
             readelf -d $obj
           done
+      - name: cat pkg-config pc files
+        run: |
+          pcfiles=$(find iguana -type f -name "*.pc")
+          for pcfile in $pcfiles; do
+            echo "[+++] cat $pcfile"
+            cat $pcfile
+          done
       - run: tree iguana
       - name: tar
         run: tar czvf iguana{.tar.gz,}
