@@ -7,7 +7,7 @@ DEP_LIBRARIES += -lhipo4
 
 # dependency headers
 DEP_INCLUDES = $(shell pkg-config --cflags iguana)
-# DEP_INCLUDES += -I${HIPO}/include
+DEP_INCLUDES += -I${HIPO}/include
 
 # assume each .cc file has `main`; install it to ./bin/
 BINDIR = bin
