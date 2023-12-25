@@ -241,10 +241,16 @@ jobs:
         run: |
           ls *.tar.gz | xargs -I{} tar xzvf {}
           rm -v *.tar.gz
+      - name: set HIPO env vars
+        run: |
+          hipodir=$(pwd)/hipo
+          echo CMAKE_PREFIX_PATH=${hipodir} >> $GITHUB_ENV
+          if [ "${{ matrix.tool }}" = "make" ]; then
+            echo HIPO=${hipodir} >> $GITHUB_ENV
+          fi
       - name: build and run
         run: |
           source iguana/bin/this_iguana.sh
-          export CMAKE_PREFIX_PATH="'"$(pwd)/hipo"'"
           .github/test-dependent-build.sh ${{ matrix.tool }} test_data.hipo 1
 
   # documentation

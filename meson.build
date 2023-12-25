@@ -22,6 +22,10 @@ dep_include_paths    = []
 dep_pkg_config_paths = []
 # cmake dependency libraries and headers
 # FIXME: prefer `dep.get_variable(cmake: 'VARIABLE_NAME')`, but not sure if the needed variables are available...
+#        - if HIPO had a pkg-config file, we could:
+#          - get rid of this `cmake_prefix_path` loop and move `hipo_dep` into the `get_variable` loop
+#          - replace `$HIPO` in the Makefile example with a pkg-config command
+#          - remove `$HIPO` assignment in the Makefile CI job description
 foreach path : get_option('cmake_prefix_path')
   dep_lib_paths     += path / 'lib'
   dep_include_paths += path / 'include'
