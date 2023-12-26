@@ -4,5 +4,6 @@
 1. [Troubleshooting](doc/troubleshooting.md)
 1. [Design Notes](doc/design.md)
 1. [API documentation](https://jeffersonlab.github.io/iguana/)
+1. [Repository Maintenance](doc/maintenance.md)
 
 **NOTE**: this is still a _prototype_ design
