@@ -2,17 +2,11 @@
 
 import os, cppyy, pkgconfig
 
-# read iguana pkg-config
-PKG = 'iguana'
-if not pkgconfig.exists(PKG):
-    raise Exception(f'failed to find pkg-config package "{PKG}"')
-pkg_vars = pkgconfig.variables(PKG)
-
-# add include dirs to cppyy
-for var in ['includedir', 'dep_includedirs']:
-    include_path = pkg_vars[var]
-    for path in include_path.split(':'):
-        cppyy.add_include_path(path)
+# add include directories to cppyy
+for pkg in ['hipo4', 'iguana']:
+    if not pkgconfig.exists(pkg):
+        raise Exception(f'failed to find "{pkg}.pc" in pkg-config path')
+    cppyy.add_include_path(pkgconfig.variables(pkg)['includedir'])
 
 # add libraries to cppyy
 for lib in ['hipo4', 'IguanaServices', 'IguanaAlgorithms']:

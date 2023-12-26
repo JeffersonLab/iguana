@@ -12,4 +12,3 @@ pkg-config --libs iguana
 pkg-config --cflags iguana
 ```
 - These commands are used in the example `Makefile`
-- `hipo` is assumed to be installed in `$HIPO`.

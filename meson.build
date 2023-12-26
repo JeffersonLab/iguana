@@ -13,42 +13,16 @@ project(
 project_description = 'Implementation Guardian of Analysis Algorithms'
 
 # resolve dependencies
-fmt_dep  = dependency('fmt', version: '>=9.1.0')
-hipo_dep = dependency('hipo4', version: '>=1.3', method: 'cmake')
-
-# dependency paths for pkg-config packaging
-dep_lib_paths        = []
-dep_include_paths    = []
-dep_pkg_config_paths = []
-# cmake dependency libraries and headers
-# FIXME: prefer `dep.get_variable(cmake: 'VARIABLE_NAME')`, but not sure if the needed variables are available...
-#        - if HIPO had a pkg-config file, we could:
-#          - get rid of this `cmake_prefix_path` loop and move `hipo_dep` into the `get_variable` loop
-#          - replace `$HIPO` in the Makefile example with a pkg-config command
-#          - remove `$HIPO` assignment in the Makefile CI job description
-foreach path : get_option('cmake_prefix_path')
-  dep_lib_paths     += path / 'lib'
-  dep_include_paths += path / 'include'
-endforeach
-# pkg-config dependency libraries and headers
-foreach dep : [fmt_dep]
-  dep_lib_paths     += dep.get_variable(pkgconfig: 'libdir')
-  dep_include_paths += dep.get_variable(pkgconfig: 'includedir')
-endforeach
-# dependency pkg-config paths
-foreach path : get_option('pkg_config_path')
-  dep_pkg_config_paths += path
-endforeach
+fmt_dep  = dependency('fmt',   version: '>=9.1.0', method: 'pkg-config')
+hipo_dep = dependency('hipo4', version: '>=4.0.1', method: 'pkg-config')
 
 # general project vars
 project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, hipo_dep ])
-project_pkg_vars = [
-  'dep_libdirs='       + ':'.join(dep_lib_paths),
-  'dep_includedirs='   + ':'.join(dep_include_paths),
-  'dep_pkgconfigdirs=' + ':'.join(dep_pkg_config_paths),
+project_pkg_vars  = [
+  'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path'))
 ]
 
 # build and install shared libraries
@@ -56,7 +30,7 @@ subdir('src/iguana/services')
 subdir('src/iguana/algorithms')
 
 # build bindings
-if(get_option('bind_python'))
+if get_option('bind_python')
   subdir('bind/python')
 endif
 
@@ -66,19 +40,19 @@ pkg.generate(
   name:        meson.project_name(),
   description: project_description,
   libraries:   project_libs,
-  requires:    [ fmt_dep ],
+  requires:    [ fmt_dep, hipo_dep ],
   variables:   project_pkg_vars,
 )
 
 # build examples
-if(get_option('examples'))
+if get_option('examples')
   subdir('examples')
 endif
 
 # generate documentation
-if(get_option('documentation'))
+if get_option('documentation')
   doxygen = find_program('doxygen', required: false)
-  if(doxygen.found())
+  if doxygen.found()
     message('Generating documentation...')
     run_command('doxygen', meson.project_source_root() / 'doc' / 'Doxyfile', check: true)
     message('...documentation generated.')
