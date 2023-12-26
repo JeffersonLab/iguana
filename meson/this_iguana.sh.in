@@ -27,8 +27,8 @@ iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
 echo """
 Iguana Environment Variables
 ----------------------------
-PKG_CONFIG_PATH     = ${PKG_CONFIG_PATH-}
-LD_LIBRARY_PATH     = ${LD_LIBRARY_PATH-}
-PYTHONPATH          = ${PYTHONPATH-}
+PKG_CONFIG_PATH = ${PKG_CONFIG_PATH-}
+LD_LIBRARY_PATH = ${LD_LIBRARY_PATH-}
+PYTHONPATH      = ${PYTHONPATH-}
 ----------------------------
 """
