@@ -3,7 +3,7 @@
 import os, cppyy, pkgconfig
 
 # add include directories to cppyy
-for pkg in ['hipo4', 'iguana']:
+for pkg in ['iguana'] + [p.split()[0] for p in pkgconfig.requires('iguana') if p!='']:
     if not pkgconfig.exists(pkg):
         raise Exception(f'failed to find "{pkg}.pc" in pkg-config path')
     cppyy.add_include_path(pkgconfig.variables(pkg)['includedir'])
