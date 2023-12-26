@@ -11,8 +11,12 @@ dep_pkgconfigdirs=$(pkg-config --variable dep_pkgconfigdirs iguana)
 [ -n "${dep_pkgconfigdirs-}" ] && export PKG_CONFIG_PATH=$dep_pkgconfigdirs${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 
 # append to LD_LIBRARY_PATH
-for var in libdir dep_libdirs; do
-  dir=$(pkg-config --variable $var iguana)
+deps=(
+  iguana
+  $(pkg-config --print-requires iguana | awk '{print $1}')
+)
+for dep in ${deps[*]}; do
+  dir=$(pkg-config --variable libdir $dep)
   [ -n "${dir-}" ] && export LD_LIBRARY_PATH=$dir${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 done
 
