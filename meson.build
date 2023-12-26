@@ -32,14 +32,8 @@ foreach path : get_option('cmake_prefix_path')
 endforeach
 # pkg-config dependency libraries and headers
 foreach dep : [fmt_dep]
-  val = dep.get_variable(pkgconfig: 'libdir', default_value: '')
-  if(val != '')
-    dep_lib_paths += val
-  endif
-  val = dep.get_variable(pkgconfig: 'includedir', default_value: '')
-  if(val != '')
-    dep_include_paths += val
-  endif
+  dep_lib_paths     += dep.get_variable(pkgconfig: 'libdir')
+  dep_include_paths += dep.get_variable(pkgconfig: 'includedir')
 endforeach
 # dependency pkg-config paths
 foreach path : get_option('pkg_config_path')
