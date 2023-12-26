@@ -6,6 +6,11 @@ project(
   VERSION 1.0.0
 )
 
+# set C++ standard
+if(NOT "${CMAKE_CXX_STANDARD}")
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
 # find dependencies
 # - iguana doesn't create a `iguanaConfig.cmake` file, but it does create a pkg-config `.pc` file;
 #   the target will be imported as `PkgConfig::iguana`
