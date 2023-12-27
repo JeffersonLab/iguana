@@ -12,13 +12,13 @@ LIBDIR                = 'lib'
 # parse user options
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
 parser = argparse.ArgumentParser(
-        usage = f'{sys.argv[0]} [OPTION]...',
-        description = textwrap.dedent('''
+    usage = f'{sys.argv[0]} [OPTION]...',
+    description = textwrap.dedent('''
         description:
           Generate a configuration file with build settings for iguana
         '''),
-        formatter_class = Formatter
-        )
+    formatter_class = Formatter
+)
 parser_deps = parser.add_argument_group('dependency installation paths')
 parser_deps.add_argument( '--hipo', default=SYSTEM_ASSUMPTION, type=str, help='path to `hipo` installation')
 parser_deps.add_argument( '--fmt', default=SYSTEM_ASSUMPTION, type=str, help='path to `fmt` installation')

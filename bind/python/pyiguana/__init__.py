@@ -11,7 +11,7 @@ for pkg in ['iguana'] + [p.split()[0] for p in pkgconfig.requires('iguana') if p
 
 # add libraries to cppyy
 for lib in ['hipo4', 'IguanaServices', 'IguanaAlgorithms']:
-  cppyy.load_library(lib)
+    cppyy.load_library(lib)
 
 # include header file(s)
 def include(*headers):
