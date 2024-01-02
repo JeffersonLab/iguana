@@ -14,6 +14,3 @@ install-iguana.sh
 
 # data files
 *.hipo
-
-# TODO: remove this?
-.venv
