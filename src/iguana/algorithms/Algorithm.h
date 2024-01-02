@@ -113,7 +113,7 @@ namespace iguana {
       /// @param[in] def the default `std::vector`
       /// @param[out] val reference to the `std::set` option
       template <typename T>
-        void CacheVectorOptionToSet(const std::string key, const std::vector<T> def, std::set<T>& val) {
+        void CacheOptionToSet(const std::string key, const std::vector<T> def, std::set<T>& val) {
           std::vector<T> vec;
           CacheOption(key, def, vec);
           std::copy(vec.begin(), vec.end(), std::inserter(val, val.end()));
