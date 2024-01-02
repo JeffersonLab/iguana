@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   seq.SetOption("clas12::LorentzTransformer", "log", "debug");
 
   // set algorithm options
-  seq.SetOption("clas12::EventBuilderFilter", "pids",  std::set<int>{11, 211, -211});
+  seq.SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", {11, 211, -211});
   seq.SetOption("clas12::LorentzTransformer", "frame", "mirror");
 
   // start the algorithms

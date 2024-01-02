@@ -2,21 +2,6 @@
 
 namespace iguana {
 
-  void Algorithm::SetOption(const std::string key, const option_t val) {
-    if(key == "log") {
-      try {
-        m_log->SetLevel(std::get<std::string>(val));
-      }
-      catch(const std::bad_variant_access& ex) {
-        m_log->Error("Option '{}' must be a string", key);
-      }
-    }
-    else {
-      m_opt[key] = val;
-      m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
-    }
-  }
-
   void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {
     auto it = std::find_if(
         banks.begin(),
@@ -37,7 +22,7 @@ namespace iguana {
       if      (const auto valPtr(std::get_if<int>(&val));           valPtr) return fmt::format("{} [{}]", *valPtr,                 "int");
       else if (const auto valPtr(std::get_if<double>(&val));        valPtr) return fmt::format("{} [{}]", *valPtr,                 "double");
       else if (const auto valPtr(std::get_if<std::string>(&val));   valPtr) return fmt::format("{} [{}]", *valPtr,                 "string");
-      else if (const auto valPtr(std::get_if<std::set<int>>(&val)); valPtr) return fmt::format("({}) [{}]", fmt::join(*valPtr,", "), "set<int>");
+      else if (const auto valPtr(std::get_if<std::vector<int>>(&val)); valPtr) return fmt::format("({}) [{}]", fmt::join(*valPtr,", "), "vector<int>");
       else {
         m_log->Error("option '{}' type has no printer defined in Algorithm::PrintOptionValue", key);
         return "UNKNOWN";

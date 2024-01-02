@@ -7,6 +7,7 @@ import argparse, os, sys, textwrap, subprocess
 SYSTEM_ASSUMPTION     = 'assume system installation'
 SEPARATOR             = '-'*50
 PKGCONFIG_RELOCATABLE = True
+LIBDIR                = 'lib'
 
 # parse user options
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
@@ -25,18 +26,16 @@ parser_build = parser.add_argument_group('build settings')
 parser_build.add_argument( '--prefix', default='iguana', type=str, help='iguana installation prefix')
 parser_build.add_argument( '--examples', default=False, action=argparse.BooleanOptionalAction, help='build examples or not')
 parser_build.add_argument( '--documentation', default=False, action=argparse.BooleanOptionalAction, help='generate API documentation or not')
+parser_build = parser.add_argument_group('bindings')
+parser_build.add_argument( '--python', default=False, action=argparse.BooleanOptionalAction, help='generate Python bindings or not')
 parser_build = parser.add_argument_group('advanced settings')
 parser_build.add_argument( '--build', default='build-iguana', type=str, help='iguana buildsystem directory')
 parser_build.add_argument( '--ini', default='build-iguana.ini', type=str, help='name of the output config INI file')
 args = parser.parse_args()
 
 # get prefix and source absolute paths
-prefix    = os.path.realpath(args.prefix)
-sourceDir = os.path.dirname(os.path.realpath(__file__))
-
-# detect the version number
-subprocess.run('.github/detect-version.sh', cwd=sourceDir)
-print(SEPARATOR)
+installDir = os.path.realpath(args.prefix)
+sourceDir  = os.path.dirname(os.path.realpath(__file__))
 
 # set dependency paths
 cmake_prefix_path = []
@@ -65,11 +64,12 @@ if(len(pkg_config_path) > 0):
     config.set('built-in options', '; path to dependencies: ' + ','.join(pkg_config_deps))
     config.set('built-in options', 'pkg_config_path', meson_string_array(pkg_config_path))
 config.set('built-in options', '; installation settings')
-config.set('built-in options', 'prefix', f'\'{prefix}\'')
-config.set('built-in options', 'libdir', '\'lib\'') # make all systems use lib/
+config.set('built-in options', 'prefix', f'\'{installDir}\'')
+config.set('built-in options', 'libdir', f'\'{LIBDIR}\'') # make all systems use LIBDIR
 config.set('built-in options', 'pkgconfig.relocatable', f'{PKGCONFIG_RELOCATABLE}')
 config.set('built-in options', 'examples', f'{args.examples}')
 config.set('built-in options', 'documentation', f'{args.documentation}')
+config.set('built-in options', 'bind_python', f'{args.python}')
 
 # write the INI file
 with open(args.ini, 'w') as fp:

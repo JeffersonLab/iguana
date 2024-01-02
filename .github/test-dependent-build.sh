@@ -8,25 +8,6 @@ set -e
 tool=$1
 shift
 
-# dependencies: assumed to be in `./<dependency>`
-fmt_dep=$(realpath fmt)
-iguana_dep=$(realpath iguana)
-hipo_dep=$(realpath hipo)
-
-# dependency resolution objects
-pkg_config_path=(
-  $fmt_dep/lib/pkgconfig
-  $iguana_dep/lib/pkgconfig
-)
-cmake_prefix_path=(
-  $hipo_dep
-)
-ld_library_path=(
-  $hipo_dep/lib
-  $fmt_dep/lib
-  $iguana_dep/lib
-)
-
 # source, build, and install directories
 source_dir=examples/build_with_$tool
 build_dir=build-dependent
@@ -36,13 +17,6 @@ install_dir=$(realpath $install_dir)
 
 # executable
 test_executable=iguana-example-00-basic
-
-# join items in a list to a string delimited by $1
-joinList() {
-  d=$1
-  shift
-  echo "$@" | sed "s/ /$d/g"
-}
 
 # print and execute a command
 exe() {
@@ -55,32 +29,19 @@ exe() {
 # build and test
 case $tool in
   cmake)
-    exe \
-      cmake \
-      -DCMAKE_PREFIX_PATH="$(joinList ';' ${cmake_prefix_path[*]} $fmt_dep $iguana_dep)" \
-      -S $source_dir -B $build_dir
+    exe cmake -S $source_dir -B $build_dir
     exe cmake --build $build_dir
     exe cmake --install $build_dir --prefix $install_dir
     exe $install_dir/bin/$test_executable "$@"
     ;;
   make)
-    export PKG_CONFIG_PATH=$(joinList ':' ${pkg_config_path[*]})
-    export HIPO=$hipo_dep
-    env | grep -wE '^PKG_CONFIG_PATH|^HIPO'
     pushd $source_dir
     exe make
     popd
-    export LD_LIBRARY_PATH=$(joinList ':' ${ld_library_path[*]})
-    env | grep -wE '^LD_LIBRARY_PATH'
     exe $source_dir/bin/$test_executable "$@"
     ;;
   meson)
-    exe \
-      meson setup \
-      --prefix=$install_dir \
-      -Dcmake_prefix_path=$(joinList ',' ${cmake_prefix_path[*]}) \
-      -Dpkg_config_path=$(joinList ',' ${pkg_config_path[*]}) \
-      $build_dir $source_dir
+    exe meson setup --prefix=$install_dir $build_dir $source_dir
     exe meson install -C $build_dir
     exe $install_dir/bin/$test_executable "$@"
     ;;

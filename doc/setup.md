@@ -57,11 +57,8 @@ Inspect both of them, and if they look correct, proceed with building and instal
 
 Instead of `configure.py`, use `meson` directly for more control:
 
-1. The version number is dynamically determined from the most recent `git` tag; either:
-   - run `.github/detect-version.sh`
-   - put the version number in `.version` in the top-level directory of the repository
-2. Follow the [note on dependency resolution](dependency_resolution.md)
-3. Build with `meson`, for example
+1. Follow the [note on dependency resolution](dependency_resolution.md)
+2. Build with `meson`, for example
 ```bash
 meson setup --prefix=$(pwd)/iguana build-iguana /path/to/iguana/repository
 meson install -C build-iguana

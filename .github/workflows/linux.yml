@@ -42,7 +42,7 @@ jobs:
         run: tar czvf hipo{.tar.gz,}
       - uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: build_deps
           retention-days: 1
           path: hipo.tar.gz
 
@@ -65,7 +65,7 @@ jobs:
         run: tar czvf fmt{.tar.gz,}
       - uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: build_deps
           retention-days: 1
           path: fmt.tar.gz
 
@@ -78,6 +78,13 @@ jobs:
       - build_hipo
       - build_fmt
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        binding: [ cpp, python ]
+        include:
+          - { binding: cpp,    configure_opts: ''         }
+          - { binding: python, configure_opts: '--python' }
     steps:
       - uses: actions/checkout@v4
         with: # settings needed for version number detection
@@ -96,18 +103,15 @@ jobs:
           done
           echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
-      - name: get build artifacts
+      - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: build
+          name: build_deps
       - name: untar build
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - run: tree
       - name: configure
-        run: |
-          ./configure.py --hipo hipo --fmt fmt --examples --no-documentation
-          echo '### Iguana Version' >> $GITHUB_STEP_SUMMARY
-          cat .version >> $GITHUB_STEP_SUMMARY
+        run: ./configure.py --hipo hipo --fmt fmt --examples --no-documentation ${{ matrix.configure_opts }}
       - name: build
         run: ./install-iguana.sh
       - name: dump build log
@@ -115,16 +119,25 @@ jobs:
         run: cat build-iguana/meson-logs/meson-log.txt
       - name: readelf iguana
         run: |
-          for obj in $(ls iguana/bin/*) $(find iguana -name "*.so") ; do
+          binaries=$(find iguana/bin -executable -type f -exec grep -IL . "{}" \;)
+          libraries=$(find iguana -name "*.so")
+          for obj in $binaries $libraries; do
             echo "[+++] READELF $obj"
             readelf -d $obj
+          done
+      - name: cat pkg-config pc files
+        run: |
+          pcfiles=$(find iguana -type f -name "*.pc")
+          for pcfile in $pcfiles; do
+            echo "[+++] cat $pcfile"
+            cat $pcfile
           done
       - run: tree iguana
       - name: tar
         run: tar czvf iguana{.tar.gz,}
       - uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: build_iguana_${{ matrix.binding }}
           retention-days: 1
           path: iguana.tar.gz
 
@@ -137,13 +150,15 @@ jobs:
     steps:
       - name: download
         run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
-      - name: list
-        run: tar tzvf validation_files.tar.gz
+      - name: untar
+        run: tar xzvf validation_files.tar.gz
+      - name: select one file
+        run: mv -v $(find validation_files -name "*.hipo" | head -n1) test_data.hipo
       - uses: actions/upload-artifact@v3
         with:
           name: validation_files
           retention-days: 1
-          path: validation_files.tar.gz
+          path: test_data.hipo
 
   # run tests
   #########################################################
@@ -154,11 +169,25 @@ jobs:
       - download_validation_files
       - build_iguana
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        binding: [ cpp, python ]
     steps:
-      - name: get build artifacts
+      - uses: actions/checkout@v4
+        with:
+          path: iguana_src # keep source code isolated
+      - name: install python binding runtime dependencies
+        if: ${{ matrix.binding == 'python' }}
+        run: python -m pip install -r iguana_src/bind/python/requirements.txt
+      - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: build
+          name: build_deps
+      - name: get iguana build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build_iguana_${{ matrix.binding }}
       - name: get test data
         uses: actions/download-artifact@v3
         with:
@@ -169,17 +198,21 @@ jobs:
           rm -v *.tar.gz
       - name: tree artifacts
         run: tree
-      - name: run test
+      - name: test cpp
+        if: ${{ matrix.binding == 'cpp' }}
         run: |
-          test_file=$(find validation_files -name "*.hipo" | head -n1)
-          echo "[+] TEST FILE: $test_file"
           for exe in $(find iguana/bin -executable -type f); do
             echo "[+] EXECUTE TEST: $exe"
-            $exe $test_file
+            $exe test_data.hipo 10
           done
+      - name: test python
+        if: ${{ matrix.binding == 'python' }}
+        run: |
+          source iguana/bin/this_iguana.sh
+          iguana/bin/iguana-example-bind.py test_data.hipo 10
 
   test_dependent_builds:
-    name: Test Dependent Builds
+    name: Test dependent builds
     needs:
       - download_validation_files
       - build_iguana
@@ -192,10 +225,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: setup meson
         run: python -m pip install meson ninja
-      - name: get build artifacts
+      - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: build
+          name: build_deps
+      - name: get iguana build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build_iguana_cpp
       - name: get test data
         uses: actions/download-artifact@v3
         with:
@@ -204,10 +241,17 @@ jobs:
         run: |
           ls *.tar.gz | xargs -I{} tar xzvf {}
           rm -v *.tar.gz
+      - name: set HIPO env vars
+        run: |
+          hipodir=$(pwd)/hipo
+          echo CMAKE_PREFIX_PATH=${hipodir} >> $GITHUB_ENV
+          if [ "${{ matrix.tool }}" = "make" ]; then
+            echo HIPO=${hipodir} >> $GITHUB_ENV
+          fi
       - name: build and run
         run: |
-          test_file=$(find validation_files -name "*.hipo" | head -n1)
-          .github/test-dependent-build.sh ${{ matrix.tool }} $test_file 1
+          source iguana/bin/this_iguana.sh
+          .github/test-dependent-build.sh ${{ matrix.tool }} test_data.hipo 1
 
   # documentation
   #########################################################
@@ -241,3 +285,15 @@ jobs:
       - name: deployment
         id: deployment
         uses: actions/deploy-pages@v2
+
+  # finalize
+  #########################################################
+
+  final:
+    name: Final
+    needs:
+      - test_iguana
+      - test_dependent_builds
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 0

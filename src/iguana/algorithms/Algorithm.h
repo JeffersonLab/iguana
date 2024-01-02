@@ -1,8 +1,8 @@
 #pragma once
 
-#include <set>
 #include <variant>
 #include <vector>
+#include <set>
 #include <unordered_map>
 #include <algorithm>
 #include <functional>
@@ -18,7 +18,7 @@ namespace iguana {
     int,
     double,
     std::string,
-    std::set<int>
+    std::vector<int>
   >;
 
   /// @brief Base class for all algorithms to inherit from
@@ -53,7 +53,24 @@ namespace iguana {
       /// owned by this algorithm will be changed to the specified value.
       /// @param key the name of the option
       /// @param val the value to set
-      void SetOption(const std::string key, const option_t val);
+      template <typename OPTION_TYPE>
+        void SetOption(const std::string key, const OPTION_TYPE val) {
+          if(key == "log") {
+            if constexpr(std::disjunction<
+                std::is_same<OPTION_TYPE, std::string>,
+                std::is_same<OPTION_TYPE, const char*>,
+                std::is_same<OPTION_TYPE, Logger::Level>
+                >::value
+                )
+              m_log->SetLevel(val);
+            else
+              m_log->Error("Option '{}' must be a string or a Logger::Level", key);
+          }
+          else {
+            m_opt[key] = val;
+            m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
+          }
+        }
 
     protected:
 
@@ -88,6 +105,18 @@ namespace iguana {
           if(get_error)
             m_log->Error("...using default value '{}' instead", PrintOptionValue(key));
           m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
+        }
+
+      /// Cache an option of type `std::vector` and convert it to `std::set`
+      /// @see `Algorithm::CacheOption`
+      /// @param[in] key the name of the option
+      /// @param[in] def the default `std::vector`
+      /// @param[out] val reference to the `std::set` option
+      template <typename T>
+        void CacheOptionToSet(const std::string key, const std::vector<T> def, std::set<T>& val) {
+          std::vector<T> vec;
+          CacheOption(key, def, vec);
+          std::copy(vec.begin(), vec.end(), std::inserter(val, val.end()));
         }
 
       /// Return a string with the value of an option along with its type

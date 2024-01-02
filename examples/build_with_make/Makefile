@@ -1,5 +1,6 @@
 # compiler
 CXX := g++
+FLAGS := -std=c++17
 
 # dependency libraries
 DEP_LIBRARIES = $(shell pkg-config --libs iguana)
@@ -18,6 +19,6 @@ EXECUTABLES := $(addprefix $(BINDIR)/, $(basename $(wildcard *.cc)))
 #   to make sure dependency libraries are found in $LD_LIBRARY_PATH
 $(EXECUTABLES): $(BINDIR)/%: %.cc
 	mkdir -p $(BINDIR)
-	$(CXX) -c $< -o $@.o $(DEP_INCLUDES)
+	$(CXX) -c $< -o $@.o $(FLAGS) $(DEP_INCLUDES)
 	$(CXX) -o $@ $@.o $(DEP_LIBRARIES)
 	$(RM) $@.o
