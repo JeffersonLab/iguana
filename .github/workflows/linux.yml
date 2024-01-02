@@ -179,7 +179,11 @@ jobs:
           path: iguana_src # keep source code isolated
       - name: install python binding runtime dependencies
         if: ${{ matrix.binding == 'python' }}
-        run: python -m pip install -r iguana_src/bind/python/requirements.txt
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+          python -m pip install -r iguana_src/bind/python/requirements.txt
       - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
@@ -223,8 +227,6 @@ jobs:
         tool: [ cmake, make, meson ]
     steps:
       - uses: actions/checkout@v4
-      - name: setup meson
-        run: python -m pip install meson ninja
       - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
@@ -241,6 +243,9 @@ jobs:
         run: |
           ls *.tar.gz | xargs -I{} tar xzvf {}
           rm -v *.tar.gz
+      - name: setup meson
+        if: ${{ matrix.tool == 'meson' }}
+        run: python -m pip install meson ninja
       - name: set cmake prefix path
         if: ${{ matrix.tool == 'cmake' }}
         run: echo CMAKE_PREFIX_PATH=$(pwd)/hipo >> $GITHUB_ENV
