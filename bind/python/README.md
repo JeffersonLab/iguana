@@ -5,7 +5,7 @@
 > [!TIP]
 > Since you will need to install some additional Python packages, we recommend setting up a Python Virtual Environment, _e.g._, with `venv`.
 
-Install packages with:
+Install the required packages with:
 ```bash
 pip install -r bind/python/requirements.txt
 ```
