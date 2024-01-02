@@ -12,13 +12,13 @@ LIBDIR                = 'lib'
 # parse user options
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
 parser = argparse.ArgumentParser(
-        usage = f'{sys.argv[0]} [OPTION]...',
-        description = textwrap.dedent('''
+    usage = f'{sys.argv[0]} [OPTION]...',
+    description = textwrap.dedent('''
         description:
           Generate a configuration file with build settings for iguana
         '''),
-        formatter_class = Formatter
-        )
+    formatter_class = Formatter
+)
 parser_deps = parser.add_argument_group('dependency installation paths')
 parser_deps.add_argument( '--hipo', default=SYSTEM_ASSUMPTION, type=str, help='path to `hipo` installation')
 parser_deps.add_argument( '--fmt', default=SYSTEM_ASSUMPTION, type=str, help='path to `fmt` installation')
@@ -38,16 +38,16 @@ installDir = os.path.realpath(args.prefix)
 sourceDir  = os.path.dirname(os.path.realpath(__file__))
 
 # set dependency paths
-cmake_prefix_path = []
-cmake_deps        = []
-pkg_config_path   = []
-pkg_config_deps   = []
+cmake_prefix_path = set()
+cmake_deps        = set()
+pkg_config_path   = set()
+pkg_config_deps   = set()
 if(args.hipo != SYSTEM_ASSUMPTION):
-    cmake_prefix_path.append(os.path.realpath(args.hipo))
-    cmake_deps.append('hipo')
+    pkg_config_path.add(os.path.realpath(args.hipo) + '/lib/pkgconfig')
+    pkg_config_deps.add('hipo')
 if(args.fmt != SYSTEM_ASSUMPTION):
-    pkg_config_path.append(os.path.realpath(args.fmt) + '/lib/pkgconfig')
-    pkg_config_deps.append('fmt')
+    pkg_config_path.add(os.path.realpath(args.fmt) + '/lib/pkgconfig')
+    pkg_config_deps.add('fmt')
 
 # return an array of strings for meson's INI parsing
 def meson_string_array(arr):

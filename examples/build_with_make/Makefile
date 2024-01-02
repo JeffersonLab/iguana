@@ -1,24 +1,31 @@
 # compiler
 CXX := g++
-FLAGS := -std=c++17
+CFLAGS := -std=c++17
 
-# dependency libraries
-DEP_LIBRARIES = $(shell pkg-config --libs iguana)
-DEP_LIBRARIES += -L${HIPO}/lib -lhipo4
+# iguana headers and libraries
+IGUANA_INCLUDES  := $(shell pkg-config --cflags iguana)
+IGUANA_LIBRARIES := $(shell pkg-config --libs   iguana)
 
-# dependency headers
-DEP_INCLUDES = $(shell pkg-config --cflags iguana)
-DEP_INCLUDES += -I${HIPO}/include
+# set rpath
+# - this is so that the executable knows where the dependency libraries are
+# - alternatively, set $LD_LIBRARY_PATH before running your executables
+RPATH_DEPS := iguana hipo4
+rpath_arg = -Wl,-rpath,$(shell pkg-config --variable libdir $1)
+LDFLAGS := $(foreach dep,$(RPATH_DEPS),$(call rpath_arg,$(dep)))
 
-# assume each .cc file has `main`; install it to ./bin/
-BINDIR = bin
+# installation directory
+BINDIR := bin
+
+# assume we want each `.cc` file built as an executable
 EXECUTABLES := $(addprefix $(BINDIR)/, $(basename $(wildcard *.cc)))
 
-# build executable
-# - NOTE: we haven't set an rpath here, so the user will need
-#   to make sure dependency libraries are found in $LD_LIBRARY_PATH
+# build each executable and install to $(BINDIR)
 $(EXECUTABLES): $(BINDIR)/%: %.cc
 	mkdir -p $(BINDIR)
-	$(CXX) -c $< -o $@.o $(FLAGS) $(DEP_INCLUDES)
-	$(CXX) -o $@ $@.o $(DEP_LIBRARIES)
+	$(CXX) -c $< -o $@.o $(CFLAGS) $(IGUANA_INCLUDES)
+	$(CXX) -o $@ $@.o $(LDFLAGS) $(IGUANA_LIBRARIES)
 	$(RM) $@.o
+
+# remove the executable
+clean:
+	$(RM) $(EXECUTABLES)

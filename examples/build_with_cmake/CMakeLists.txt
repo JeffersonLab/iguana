@@ -13,7 +13,7 @@ endif()
 
 # find dependencies
 # - iguana doesn't create a `iguanaConfig.cmake` file, but it does create a pkg-config `.pc` file;
-#   the target will be imported as `PkgConfig::iguana`
+#   using `PkgConfig`, the iguana target will be imported as `PkgConfig::iguana`
 find_package(hipo4 REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(iguana REQUIRED IMPORTED_TARGET iguana)
