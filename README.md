@@ -6,4 +6,5 @@
 1. [API documentation](https://jeffersonlab.github.io/iguana/)
 1. [Repository Maintenance](doc/maintenance.md)
 
-**NOTE**: this is still a _prototype_ design
+> [!CAUTION]
+> This is still a _prototype_ design

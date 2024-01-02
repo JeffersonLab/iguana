@@ -63,5 +63,6 @@ Instead of `configure.py`, use `meson` directly for more control:
 meson setup --prefix=$(pwd)/iguana build-iguana /path/to/iguana/repository
 meson install -C build-iguana
 ```
-**NOTE**: `configure.py` produces a native file (`.ini`) which may be used by
-`meson setup` option `--native-file`.
+
+> [!TIP]
+> `configure.py` produces a native file (`.ini`) which may be used by `meson setup` option `--native-file`.
