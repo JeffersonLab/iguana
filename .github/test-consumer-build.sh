@@ -10,8 +10,8 @@ shift
 
 # source, build, and install directories
 source_dir=examples/build_with_$tool
-build_dir=build-dependent
-install_dir=install-dependent
+build_dir=build-consumer
+install_dir=install-consumer
 mkdir -p $install_dir
 install_dir=$(realpath $install_dir)
 
