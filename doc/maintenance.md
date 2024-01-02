@@ -21,6 +21,6 @@ Keep the Python binding dependency versions reasonably up to date in the corresp
 
 ## C++ Standard
 
-We currently support up to C++17. This is set in:
-- [`meson.build`](../meson.build) 
+We currently support up to the C++ standard defined in:
+- [`meson.build`](../meson.build)
 - example build configurations in [`examples/build_with_*` subdirectories](../examples)
