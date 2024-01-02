@@ -211,8 +211,8 @@ jobs:
           source iguana/bin/this_iguana.sh
           iguana/bin/iguana-example-bind.py test_data.hipo 10
 
-  test_dependent_builds:
-    name: Test dependent builds
+  test_consumer_builds:
+    name: Test consumer builds
     needs:
       - download_validation_files
       - build_iguana
@@ -247,7 +247,7 @@ jobs:
       - name: build and run
         run: |
           source iguana/bin/this_iguana.sh
-          .github/test-dependent-build.sh ${{ matrix.tool }} test_data.hipo 1
+          .github/test-consumer-build.sh ${{ matrix.tool }} test_data.hipo 1
 
   # documentation
   #########################################################
@@ -289,7 +289,7 @@ jobs:
     name: Final
     needs:
       - test_iguana
-      - test_dependent_builds
+      - test_consumer_builds
     runs-on: ubuntu-latest
     steps:
       - run: exit 0
