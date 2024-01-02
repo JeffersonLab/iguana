@@ -212,7 +212,7 @@ jobs:
           iguana/bin/iguana-example-bind.py test_data.hipo 10
 
   test_dependent_builds:
-    name: Test Dependent Builds
+    name: Test dependent builds
     needs:
       - download_validation_files
       - build_iguana
@@ -285,3 +285,15 @@ jobs:
       - name: deployment
         id: deployment
         uses: actions/deploy-pages@v2
+
+  # finalize
+  #########################################################
+
+  final:
+    name: Final
+    needs:
+      - test_iguana
+      - test_dependent_builds
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 0
