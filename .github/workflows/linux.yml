@@ -181,8 +181,9 @@ jobs:
         if: ${{ matrix.binding == 'python' }}
         run: |
           python -m venv .venv
-          python -m pip install -r iguana_src/bind/python/requirements.txt
+          source .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
+          python -m pip install -r iguana_src/bind/python/requirements.txt
       - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
