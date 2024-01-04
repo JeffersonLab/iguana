@@ -2,7 +2,15 @@
 
 namespace iguana {
 
+  void Algorithm::Start() {
+    m_rows_only = true;
+    hipo::banklist no_banks = {};
+    Start(no_banks);
+  }
+
   void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {
+    if(m_rows_only)
+      return;
     auto it = std::find_if(
         banks.begin(),
         banks.end(),
@@ -34,14 +42,18 @@ namespace iguana {
   }
 
   hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expectedBankName) const {
-    try {
-      auto& result = banks.at(idx);
-      if(expectedBankName != "" && result.getSchema().getName() != expectedBankName)
-        m_log->Error("expected input bank '{}' at index={}; got bank named '{}'", expectedBankName, idx, result.getSchema().getName());
-      else
-        return result;
-    } catch(const std::out_of_range& o) {
-      m_log->Error("required input bank '{}' not found; cannot `Run` algorithm '{}'", expectedBankName, m_name);
+    if(m_rows_only) {
+      m_log->Error("algorithm is in 'rows only' mode; cannot call `Run` since banks are not cached; use action function(s) instead");
+    } else {
+      try {
+        auto& result = banks.at(idx);
+        if(expectedBankName != "" && result.getSchema().getName() != expectedBankName)
+          m_log->Error("expected input bank '{}' at index={}; got bank named '{}'", expectedBankName, idx, result.getSchema().getName());
+        else
+          return result;
+      } catch(const std::out_of_range& o) {
+        m_log->Error("required input bank '{}' not found; cannot `Run` algorithm '{}'", expectedBankName, m_name);
+      }
     }
     throw std::runtime_error("GetBank failed");
   }

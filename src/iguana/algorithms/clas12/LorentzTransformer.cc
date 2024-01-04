@@ -16,10 +16,9 @@ namespace iguana::clas12 {
     // define transformation function
     // TODO: add more useful frames, e.g., Breit
     if(o_frame == "mirror") { // reverses the momentum, just for demonstration
-      m_transform = [] (float& px, float& py, float& pz, float& e) {
-        px = -px;
-        py = -py;
-        pz = -pz;
+      m_transform = [] (lorentz_vector_t p) {
+        auto [px, py, pz, e] = p;
+        return lorentz_vector_t{-px, -py, -pz, -e};
       };
     }
     else {
@@ -34,11 +33,12 @@ namespace iguana::clas12 {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
     for(int row = 0; row < particleBank.getRows(); row++) {
-      auto px = particleBank.getFloat("px", row);
-      auto py = particleBank.getFloat("py", row);
-      auto pz = particleBank.getFloat("pz", row);
-      float e = 0.0; // TODO: get the energy
-      Transform(px, py, pz, e);
+      auto [px, py, pz, e] = Transform(
+          particleBank.getFloat("px", row),
+          particleBank.getFloat("py", row),
+          particleBank.getFloat("pz", row),
+          0.0 // TODO: get the energy
+          );
       particleBank.putFloat("px", row, px);
       particleBank.putFloat("py", row, py);
       particleBank.putFloat("pz", row, pz);
@@ -47,8 +47,14 @@ namespace iguana::clas12 {
   }
 
 
-  void LorentzTransformer::Transform(float& px, float& py, float& pz, float& e) const {
-    m_transform(px, py, pz, e);
+  LorentzTransformer::lorentz_vector_t LorentzTransformer::Transform(
+      lorentz_element_t px,
+      lorentz_element_t py,
+      lorentz_element_t pz,
+      lorentz_element_t E
+      ) const
+  {
+    return m_transform({px, py, pz, E});
   }
 
 

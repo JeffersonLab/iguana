@@ -1,10 +1,19 @@
 project_pkg_vars += 'pythonpath=' + '${prefix}' / 'python'
+
 install_subdir(
   'pyiguana',
   install_dir: 'python',
 )
-install_data(
-  'iguana-example-bind.py',
-  install_dir:  get_option('bindir'),
-  install_mode: 'rwxr--r--',
-)
+
+python_examples = [
+  'iguana-example-00-basic.py',
+  'iguana-example-01-bank-rows.py',
+]
+
+foreach example : python_examples
+  install_data(
+    example,
+    install_dir:  get_option('bindir'),
+    install_mode: 'rwxr--r--',
+  )
+endforeach
