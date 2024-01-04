@@ -5,12 +5,6 @@
 
 namespace iguana::clas12 {
 
-  /// Lorentz vector element type, matching that of `REC::Particle` momentum components
-  using lorentz_element_t = float;
-
-  /// generic Lorentz vector container type
-  using lorentz_vector_t = std::tuple<lorentz_element_t, lorentz_element_t, lorentz_element_t, lorentz_element_t>;
-
   /// @brief Lorentz transform momenta in `REC::Particle` (or similar banks)
   ///
   /// Available frames are:
@@ -18,6 +12,12 @@ namespace iguana::clas12 {
   class LorentzTransformer : public Algorithm {
 
     public:
+
+      /// Lorentz vector element type, matching that of `REC::Particle` momentum components
+      using lorentz_element_t = float;
+
+      /// Generic Lorentz vector container type
+      using lorentz_vector_t = std::tuple<lorentz_element_t, lorentz_element_t, lorentz_element_t, lorentz_element_t>;
 
       /// @see `Algorithm::Algorithm`
       LorentzTransformer(std::string name="") : Algorithm(name=="" ? ClassName() : name) {}
@@ -38,7 +38,12 @@ namespace iguana::clas12 {
       /// @param pz @f$p_z@f$
       /// @param E @f$E@f$
       /// @returns the transformed momentum
-      lorentz_vector_t Transform(lorentz_element_t px, lorentz_element_t py, lorentz_element_t pz, lorentz_element_t E) const;
+      lorentz_vector_t Transform(
+          lorentz_element_t px,
+          lorentz_element_t py,
+          lorentz_element_t pz,
+          lorentz_element_t E
+          ) const;
 
     private:
 
