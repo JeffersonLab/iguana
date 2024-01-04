@@ -2,11 +2,11 @@
 
 namespace iguana {
 
-  REGISTER_ALGORITHM(AlgorithmSequence);
+  REGISTER_IGUANA_ALGORITHM(AlgorithmSequence);
 
-  START_ALGORITHM(AlgorithmSequence) { for(const auto& algo : m_sequence) algo->Start(banks); }
-  RUN_ALGORITHM(AlgorithmSequence)   { for(const auto& algo : m_sequence) algo->Run(banks);   }
-  STOP_ALGORITHM(AlgorithmSequence)  { for(const auto& algo : m_sequence) algo->Stop();       }
+  START_IGUANA_ALGORITHM(AlgorithmSequence) { for(const auto& algo : m_sequence) algo->Start(banks); }
+  RUN_IGUANA_ALGORITHM(AlgorithmSequence)   { for(const auto& algo : m_sequence) algo->Run(banks);   }
+  STOP_IGUANA_ALGORITHM(AlgorithmSequence)  { for(const auto& algo : m_sequence) algo->Stop();       }
 
   void AlgorithmSequence::Add(const std::string class_name, const std::string instance_name) {
     auto algo = AlgorithmFactory::Create(class_name);

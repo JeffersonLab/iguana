@@ -10,7 +10,7 @@ namespace iguana {
   /// in the order the algorithms were added to the sequence by `AlgorithmSequence::Add`.
   class AlgorithmSequence : public Algorithm {
 
-    DEFINE_ALGORITHM(AlgorithmSequence, seq)
+    DEFINE_IGUANA_ALGORITHM(AlgorithmSequence, seq)
 
     public:
 

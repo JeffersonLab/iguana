@@ -3,18 +3,18 @@
 
 /// Generate an algorithm constructor
 /// @param ALGO_NAME the name of the algorithm class
-#define CONSTRUCT_ALGORITHM(ALGO_NAME) \
+#define CONSTRUCT_IGUANA_ALGORITHM(ALGO_NAME) \
   ALGO_NAME(std::string name="") : Algorithm(name=="" ? ClassName() : name) {}
 
 /// Generate an algorithm destructor
 /// @param ALGO_NAME the name of the algorithm class
-#define DESTROY_ALGORITHM(ALGO_NAME) \
+#define DESTROY_IGUANA_ALGORITHM(ALGO_NAME) \
   ~ALGO_NAME() {}
 
 /// Define the public members of an algorithm
 /// @param ALGO_NAME the name of the algorithm class
 /// @param ALGO_FULL_NAME the full name of this algorithm, used by `iguana::AlgorithmFactory`
-#define ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME)         \
+#define IGUANA_ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME)  \
   using Algorithm::Start;                                           \
   void Start(hipo::banklist& banks) override;                       \
   void Run(hipo::banklist& banks) const override;                   \
@@ -23,37 +23,37 @@
   static std::string ClassName() { return #ALGO_FULL_NAME; }
 
 /// Define the private members of an algorithm
-#define ALGORITHM_PRIVATE_MEMBERS \
+#define IGUANA_ALGORITHM_PRIVATE_MEMBERS \
   static bool s_registered;
 
 /// Define the public and private members of an algorithm, along with its constructor and destructor; this
 /// macro should be called in the `class` body in the algorithm's header file
 /// @param ALGO_NAME the name of the algorithm class
 /// @param ALGO_FULL_NAME the full name of this algorithm, used by `iguana::AlgorithmFactory`
-#define DEFINE_ALGORITHM(ALGO_NAME, ALGO_FULL_NAME) \
-  private:                                          \
-    ALGORITHM_PRIVATE_MEMBERS                       \
-  public:                                           \
-    CONSTRUCT_ALGORITHM(ALGO_NAME)                  \
-    DESTROY_ALGORITHM(ALGO_NAME)                    \
-    ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME)
+#define DEFINE_IGUANA_ALGORITHM(ALGO_NAME, ALGO_FULL_NAME) \
+  private:                                                 \
+    IGUANA_ALGORITHM_PRIVATE_MEMBERS                       \
+  public:                                                  \
+    CONSTRUCT_IGUANA_ALGORITHM(ALGO_NAME)                  \
+    DESTROY_IGUANA_ALGORITHM(ALGO_NAME)                    \
+    IGUANA_ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME)
 
 /// Register an algorithm for the `iguana::AlgorithmFactory`; this macro should be called in the algorithm's implementation
 /// @param ALGO_NAME the name of the algorithm class
-#define REGISTER_ALGORITHM(ALGO_NAME) \
+#define REGISTER_IGUANA_ALGORITHM(ALGO_NAME) \
   bool ALGO_NAME::s_registered = AlgorithmFactory::Register(ALGO_NAME::ClassName(), ALGO_NAME::Creator);
 
 /// Define the algorithm's `Start` method
 /// @param ALGO_NAME the name of the algorithm class
-#define START_ALGORITHM(ALGO_NAME) \
+#define START_IGUANA_ALGORITHM(ALGO_NAME) \
   void ALGO_NAME::Start(hipo::banklist& banks)
 
 /// Define the algorithm's `Run` method
 /// @param ALGO_NAME the name of the algorithm class
-#define RUN_ALGORITHM(ALGO_NAME) \
+#define RUN_IGUANA_ALGORITHM(ALGO_NAME) \
   void ALGO_NAME::Run(hipo::banklist& banks) const
 
 /// Define the algorithm's `Stop` method
 /// @param ALGO_NAME the name of the algorithm class
-#define STOP_ALGORITHM(ALGO_NAME) \
+#define STOP_IGUANA_ALGORITHM(ALGO_NAME) \
   void ALGO_NAME::Stop()

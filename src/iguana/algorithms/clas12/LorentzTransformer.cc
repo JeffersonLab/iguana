@@ -2,9 +2,9 @@
 
 namespace iguana::clas12 {
 
-  REGISTER_ALGORITHM(LorentzTransformer);
+  REGISTER_IGUANA_ALGORITHM(LorentzTransformer);
 
-  START_ALGORITHM(LorentzTransformer) {
+  START_IGUANA_ALGORITHM(LorentzTransformer) {
 
     CacheOption("frame", std::string{"mirror"}, o_frame);
     CacheBankIndex(banks, "REC::Particle", b_particle);
@@ -25,7 +25,7 @@ namespace iguana::clas12 {
   }
 
 
-  RUN_ALGORITHM(LorentzTransformer) {
+  RUN_IGUANA_ALGORITHM(LorentzTransformer) {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
     for(int row = 0; row < particleBank.getRows(); row++) {
@@ -54,7 +54,7 @@ namespace iguana::clas12 {
   }
 
 
-  STOP_ALGORITHM(LorentzTransformer) {
+  STOP_IGUANA_ALGORITHM(LorentzTransformer) {
   }
 
 }

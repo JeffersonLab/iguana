@@ -7,7 +7,7 @@ namespace iguana::clas12 {
   /// @brief Filter the `REC::Particle` (or similar) bank by PID from the Event Builder
   class EventBuilderFilter : public Algorithm {
 
-    DEFINE_ALGORITHM(EventBuilderFilter, clas12::EventBuilderFilter)
+    DEFINE_IGUANA_ALGORITHM(EventBuilderFilter, clas12::EventBuilderFilter)
 
     public:
 

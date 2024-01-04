@@ -11,7 +11,7 @@ namespace iguana::clas12 {
   /// - `"mirror"`: reverse the momentum (just a demo)
   class LorentzTransformer : public Algorithm {
 
-    DEFINE_ALGORITHM(LorentzTransformer, clas12::LorentzTransformer)
+    DEFINE_IGUANA_ALGORITHM(LorentzTransformer, clas12::LorentzTransformer)
 
     public:
 
