@@ -5,13 +5,14 @@
 namespace iguana {
 
   /// @brief User-level class for running a sequence of algorithms
+  ///
+  /// The `Start`, `Run`, and `Stop` methods will sequentially call the corresponding algorithms' methods,
+  /// in the order the algorithms were added to the sequence by `AlgorithmSequence::Add`.
   class AlgorithmSequence : public Algorithm {
 
-    public:
+    DEFINE_ALGORITHM(AlgorithmSequence, seq)
 
-      /// @param name the name of this sequence
-      AlgorithmSequence(const std::string name="seq") : Algorithm(name) {}
-      ~AlgorithmSequence() {}
+    public:
 
       /// Create and add an algorithm to the sequence, by name.
       ///
@@ -83,20 +84,6 @@ namespace iguana {
       /// Print the names of the algorithms in this sequence
       /// @param level the log level of the printout
       void PrintSequence(Logger::Level level=Logger::info) const;
-
-      /// Sequentially call each algorithm's `Start` method
-      /// @see `Algorithm::Start`
-      /// @param banks the list of banks
-      void Start(hipo::banklist& banks) override;
-
-      /// Sequentially call each algorithm's `Run` method
-      /// @see `Algorithm::Run`
-      /// @param banks the list of banks
-      void Run(hipo::banklist& banks) const override;
-
-      /// Sequentially call each algorithm's `Stop` method
-      /// @see `Algorithm::Stop`
-      void Stop() override;
 
     private:
 

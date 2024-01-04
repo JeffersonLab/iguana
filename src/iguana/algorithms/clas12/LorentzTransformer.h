@@ -11,6 +11,8 @@ namespace iguana::clas12 {
   /// - `"mirror"`: reverse the momentum (just a demo)
   class LorentzTransformer : public Algorithm {
 
+    DEFINE_ALGORITHM(LorentzTransformer, clas12::LorentzTransformer)
+
     public:
 
       /// Lorentz vector element type, matching that of `REC::Particle` momentum components
@@ -18,19 +20,6 @@ namespace iguana::clas12 {
 
       /// Generic Lorentz vector container type
       using lorentz_vector_t = std::tuple<lorentz_element_t, lorentz_element_t, lorentz_element_t, lorentz_element_t>;
-
-      /// @see `Algorithm::Algorithm`
-      LorentzTransformer(std::string name="") : Algorithm(name=="" ? ClassName() : name) {}
-      ~LorentzTransformer() {}
-      /// @returns An instance of this algorithm. This is used by `AlgorithmFactory`.
-      static algo_t Creator() { return std::make_unique<LorentzTransformer>(); }
-      /// @returns This algorithm's class name
-      static std::string ClassName() { return "clas12::LorentzTransformer"; }
-
-      using Algorithm::Start;
-      void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
-      void Stop() override;
 
       /// **Action function**: transform the 4-momentum @f$p=(p_x,p_y,p_z,E)@f$ to the specified frame
       /// @param px @f$p_x@f$
@@ -46,9 +35,6 @@ namespace iguana::clas12 {
           ) const;
 
     private:
-
-      /// True if this algorithm is registered in `AlgorithmFactory`
-      static bool s_registered;
 
       /// `hipo::banklist` index for the particle bank
       hipo::banklist::size_type b_particle;
