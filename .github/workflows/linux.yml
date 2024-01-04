@@ -17,6 +17,7 @@ defaults:
 env:
   hipo_version: dev
   fmt_version: 9.1.0
+  num_events: 10
 
 jobs:
 
@@ -173,6 +174,9 @@ jobs:
       fail-fast: true
       matrix:
         binding: [ cpp, python ]
+        include:
+          - { binding: cpp,    extension: ''    }
+          - { binding: python, extension: '.py' }
     steps:
       - uses: actions/checkout@v4
         with:
@@ -202,21 +206,16 @@ jobs:
           rm -v *.tar.gz
       - name: tree artifacts
         run: tree
-      - name: test cpp
-        if: ${{ matrix.binding == 'cpp' }}
-        run: |
-          for exe in $(find iguana/bin -executable -type f); do
-            echo "[+] EXECUTE TEST: $exe"
-            $exe test_data.hipo 10
-          done
-      - name: test python
-        if: ${{ matrix.binding == 'python' }}
+      - name: source environment
+        if: ${{ matrix.binding != 'cpp' }}
         run: |
           source iguana/bin/this_iguana.sh
-          for exe in $(find iguana/bin -executable -type f -name "*.py"); do
-            echo "[+] EXECUTE TEST: $exe"
-            $exe test_data.hipo 10
-          done
+          echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
+          echo PYTHONPATH=$PYTHONPATH           >> $GITHUB_ENV
+      - name: test 00
+        run: stdbuf -o0 iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
+      - name: test 01
+        run: stdbuf -o0 iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
 
   test_consumer_builds:
     name: Test consumer builds
