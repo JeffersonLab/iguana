@@ -11,8 +11,6 @@ pyiguana.include(
         )
 # then import the bound namespaces (must be after including the headers)
 from cppyy.gbl import hipo, iguana
-# we also need support for C++ tuples
-from cppyy.gbl.std import make_tuple
 # from here the syntax is analogous to the C++ example
 
 inFile    = sys.argv[1]      if len(sys.argv)>1 else 'data.hipo'
@@ -45,12 +43,10 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
         if(algo_eventbuilder_filter.Filter(pid)):
 
             px, py, pz, e = algo_lorentz_transformer.Transform(
-                    make_tuple( # NOTE: make_tuple requires `from cppyy.gbl.std import make_tuple`
-                        particleBank.getFloat("px", row),
-                        particleBank.getFloat("py", row),
-                        particleBank.getFloat("pz", row),
-                        0.0,
-                        )
+                    particleBank.getFloat("px", row),
+                    particleBank.getFloat("py", row),
+                    particleBank.getFloat("pz", row),
+                    0.0,
                     )
 
             print(f'Accepted PID {pid}:')

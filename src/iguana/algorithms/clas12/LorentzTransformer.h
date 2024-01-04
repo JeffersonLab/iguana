@@ -5,8 +5,11 @@
 
 namespace iguana::clas12 {
 
-  /// generic Lorentz vector container type; element type is set to match that of `REC::Particle` momentum components
-  using lorentz_vector_t = std::tuple<float, float, float, float>;
+  /// Lorentz vector element type, matching that of `REC::Particle` momentum components
+  using lorentz_element_t = float;
+
+  /// generic Lorentz vector container type
+  using lorentz_vector_t = std::tuple<lorentz_element_t, lorentz_element_t, lorentz_element_t, lorentz_element_t>;
 
   /// @brief Lorentz transform momenta in `REC::Particle` (or similar banks)
   ///
@@ -30,9 +33,12 @@ namespace iguana::clas12 {
       void Stop() override;
 
       /// **Action function**: transform the 4-momentum @f$p=(p_x,p_y,p_z,E)@f$ to the specified frame
-      /// @param p the Lorentz vector @f$p@f$
+      /// @param px @f$p_x@f$
+      /// @param py @f$p_y@f$
+      /// @param pz @f$p_z@f$
+      /// @param E @f$E@f$
       /// @returns the transformed momentum
-      lorentz_vector_t Transform(lorentz_vector_t p) const;
+      lorentz_vector_t Transform(lorentz_element_t px, lorentz_element_t py, lorentz_element_t pz, lorentz_element_t E) const;
 
     private:
 

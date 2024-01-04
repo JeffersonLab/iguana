@@ -48,12 +48,12 @@ int main(int argc, char **argv) {
       if(algo_eventbuilder_filter.Filter(pid)) {
 
         // if accepted PID, transform its momentum with LorentzTransformer
-        auto [px, py, pz, e] = algo_lorentz_transformer.Transform({
+        auto [px, py, pz, e] = algo_lorentz_transformer.Transform(
             particleBank.getFloat("px", row),
             particleBank.getFloat("py", row),
             particleBank.getFloat("pz", row),
             0.0 // (ignoring the energy)
-            });
+            );
 
         // then print the result
         fmt::print("Accepted PID {}:\n", pid);

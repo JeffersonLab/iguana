@@ -33,12 +33,12 @@ namespace iguana::clas12 {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
     for(int row = 0; row < particleBank.getRows(); row++) {
-      auto [px, py, pz, e] = Transform({
+      auto [px, py, pz, e] = Transform(
           particleBank.getFloat("px", row),
           particleBank.getFloat("py", row),
           particleBank.getFloat("pz", row),
           0.0 // TODO: get the energy
-          });
+          );
       particleBank.putFloat("px", row, px);
       particleBank.putFloat("py", row, py);
       particleBank.putFloat("pz", row, pz);
@@ -47,8 +47,8 @@ namespace iguana::clas12 {
   }
 
 
-  lorentz_vector_t LorentzTransformer::Transform(lorentz_vector_t p) const {
-    return m_transform(p);
+  lorentz_vector_t LorentzTransformer::Transform(lorentz_element_t px, lorentz_element_t py, lorentz_element_t pz, lorentz_element_t E) const {
+    return m_transform({px, py, pz, E});
   }
 
 
