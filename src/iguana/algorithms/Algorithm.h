@@ -10,6 +10,7 @@
 #include <hipo4/bank.h>
 
 #include "iguana/services/Object.h"
+#include "iguana/algorithms/AlgorithmBoilerplate.h"
 
 namespace iguana {
 

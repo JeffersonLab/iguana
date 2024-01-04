@@ -2,13 +2,9 @@
 
 namespace iguana::clas12 {
 
-  bool EventBuilderFilter::s_registered = AlgorithmFactory::Register(
-      EventBuilderFilter::ClassName(),
-      EventBuilderFilter::Creator
-      );
+  REGISTER_IGUANA_ALGORITHM(EventBuilderFilter);
 
-
-  void EventBuilderFilter::Start(hipo::banklist& banks) {
+  START_IGUANA_ALGORITHM(EventBuilderFilter) {
 
     // define options, their default values, and cache them
     CacheOptionToSet("pids", {11, 211}, o_pids);
@@ -22,7 +18,7 @@ namespace iguana::clas12 {
   }
 
 
-  void EventBuilderFilter::Run(hipo::banklist& banks) const {
+  RUN_IGUANA_ALGORITHM(EventBuilderFilter) {
 
     // get the banks
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
@@ -50,7 +46,7 @@ namespace iguana::clas12 {
   }
 
 
-  void EventBuilderFilter::Stop() {
+  STOP_IGUANA_ALGORITHM(EventBuilderFilter) {
     m_log->Info("test info");
     m_log->Warn("test warn");
     m_log->Error("test error");
