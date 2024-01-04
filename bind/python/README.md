@@ -18,9 +18,9 @@ pip install -r bind/python/requirements.txt
 
 ## Building the Python Bindings
 Use the `--python` option when running `configure.py`, or edit your `build-iguana.ini` file
-to set the `bind_python` option to `True`. Then, build and try the example:
+to set the `bind_python` option to `True`.
 ```bash
 ./install-iguana.sh
 source iguana/bin/this_iguana.sh
-iguana/bin/iguana-example-bind.py
 ```
+Then try the examples `iguana/bin/iguana-example*.py`

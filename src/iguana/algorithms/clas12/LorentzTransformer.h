@@ -1,8 +1,12 @@
 #pragma once
 
 #include "iguana/algorithms/AlgorithmFactory.h"
+#include <tuple>
 
 namespace iguana::clas12 {
+
+  /// generic Lorentz vector container type; element type is set to match that of `REC::Particle` momentum components
+  using lorentz_vector_t = std::tuple<float, float, float, float>;
 
   /// @brief Lorentz transform momenta in `REC::Particle` (or similar banks)
   ///
@@ -20,16 +24,15 @@ namespace iguana::clas12 {
       /// @returns This algorithm's class name
       static std::string ClassName() { return "clas12::LorentzTransformer"; }
 
+      using Algorithm::Start;
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
       /// **Action function**: transform the 4-momentum @f$p=(p_x,p_y,p_z,E)@f$ to the specified frame
-      /// @param px @f$p_x@f$
-      /// @param py @f$p_y@f$
-      /// @param pz @f$p_z@f$
-      /// @param e @f$E@f$
-      void Transform(float& px, float& py, float& pz, float& e) const;
+      /// @param p the Lorentz vector @f$p@f$
+      /// @returns the transformed momentum
+      lorentz_vector_t Transform(lorentz_vector_t p) const;
 
     private:
 
@@ -43,7 +46,7 @@ namespace iguana::clas12 {
       std::string o_frame;
 
       /// Lorentz transformation function
-      std::function<void(float&,float&,float&,float&)> m_transform;
+      std::function<lorentz_vector_t(lorentz_vector_t)> m_transform;
 
   };
 

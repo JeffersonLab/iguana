@@ -8,7 +8,7 @@ void prettyPrint(std::string header, hipo::bank& bank) {
 }
 
 int main(int argc, char **argv) {
-  
+
   // parse arguments
   int argi = 1;
   const char* inFileName = argc > argi ? argv[argi++]            : "data.hipo";
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID
   seq.Add("clas12::LorentzTransformer"); // Lorentz transform the momenta
-  
+
   // set log levels
   seq.SetOption("clas12::EventBuilderFilter", "log", "debug");
   seq.SetOption("clas12::LorentzTransformer", "log", "debug");

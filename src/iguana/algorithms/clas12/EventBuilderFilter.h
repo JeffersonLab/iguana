@@ -17,6 +17,7 @@ namespace iguana::clas12 {
       /// @returns This algorithm's class name
       static std::string ClassName() { return "clas12::EventBuilderFilter"; }
 
+      using Algorithm::Start;
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;

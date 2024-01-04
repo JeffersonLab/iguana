@@ -213,7 +213,10 @@ jobs:
         if: ${{ matrix.binding == 'python' }}
         run: |
           source iguana/bin/this_iguana.sh
-          iguana/bin/iguana-example-bind.py test_data.hipo 10
+          for exe in $(find iguana/bin -executable -type f -name "*.py"); do
+            echo "[+] EXECUTE TEST: $exe"
+            $exe test_data.hipo 10
+          done
 
   test_consumer_builds:
     name: Test consumer builds
