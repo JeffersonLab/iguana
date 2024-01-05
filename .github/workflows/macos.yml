@@ -1,4 +1,4 @@
-name: CI
+name: macOS
 
 on:
   pull_request:
@@ -12,10 +12,6 @@ concurrency:
 
 jobs:
   dispatch:
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [ ubuntu-latest, macos-latest ]
     uses: ./.github/workflows/ci.yml
     with:
-      runner: ${{ matrix.runner }}
+      runner: macos-latest
