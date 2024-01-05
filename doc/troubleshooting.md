@@ -20,6 +20,6 @@ Try enabling debugging symbols, either by:
 - set built-in option `buildtype` to `'debug'` in your build-configuration `.ini` file (or in your `meson` command)
 - use `--debug` when running `configure.py`
 
-Then re-build `iguana`.
+Then rebuild `iguana`.
 
-Remember to revert this change and re-build, so that `iguana` runs with full optimization when you are processing large data sets (`buildtype = 'release'`).
+Remember to revert this change and rebuild, so that `iguana` runs with full optimization when you are processing large data sets (`buildtype = 'release'`).

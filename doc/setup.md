@@ -69,7 +69,7 @@ Inspect both of them, and if they look correct, proceed with building and instal
 
 > [!TIP]
 > You may edit the configuration file (`build-iguana.ini`, by default) to
-> change any settings, and re-build `iguana` with `./install-iguana.sh`.
+> change any settings, and rebuild `iguana` with `./install-iguana.sh`.
 > - this procedure is preferred if you just want to change some settings
 > - re-running `configure.py` will _overwrite_ your configuration file
 
@@ -79,6 +79,7 @@ Inspect both of them, and if they look correct, proceed with building and instal
 > ```bash
 > meson setup --wipe build-iguana
 > ```
+> Then try to rebuild
 
 ### Using Meson Directly
 
