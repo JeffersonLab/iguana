@@ -16,7 +16,7 @@ The following sections list the dependencies and how to obtain them.
 > git log --tags --decorate --simplify-by-decoration --oneline
 > ```
 
-### `meson`: Build system used by `iguana`
+### :large_orange_diamond: `meson`: Build system used by `iguana`
 <https://mesonbuild.com/>
 - likely available in your package manager
 - you may also install `meson` (and `ninja`) with `pip`:
@@ -24,7 +24,7 @@ The following sections list the dependencies and how to obtain them.
 python -m pip install meson ninja
 ```
 
-### `fmt`: C++ output formatting library
+### :large_orange_diamond: `fmt`: C++ output formatting library
 <https://github.com/fmtlib/fmt>
 - likely available in your package manager, possibly under `libfmt`
 - if you compile it yourself, include the `cmake` option `-DCMAKE_POSITION_INDEPENDENT_CODE=ON`
@@ -35,7 +35,7 @@ cmake --build build-fmt -j$(nproc)
 cmake --install build-fmt
 ```
 
-### `hipo`: C++ HIPO API
+### :large_orange_diamond: `hipo`: C++ HIPO API
 <https://github.com/gavalian/hipo>
 - use the `hipo` module on `ifarm`, or obtain and build it yourself
 - example `cmake` commands:
