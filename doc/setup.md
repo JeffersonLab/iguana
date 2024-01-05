@@ -50,7 +50,7 @@ cmake --install build-hipo
 - For convenience, a configuration script is provided.
 - Advanced users who want more control may skip to the "Using Meson Directly" section.
 
-### Using the Configuration Script
+### :large_blue_diamond: Using the Configuration Script
 
 First, configure your `iguana` build using `configure.py`:
 ```bash
@@ -81,7 +81,7 @@ Inspect both of them, and if they look correct, proceed with building and instal
 > ```
 > Then try to rebuild
 
-### Using Meson Directly
+### :large_blue_diamond: Using Meson Directly
 
 Instead of `configure.py`, use `meson` directly for more control:
 
