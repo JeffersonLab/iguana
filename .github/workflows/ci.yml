@@ -266,6 +266,7 @@ jobs:
   #########################################################
 
   doc_generate:
+    if: ${{ inputs.runner == 'ubuntu-latest' }}
     name: Generate documentation
     runs-on: ${{ inputs.runner }}
     steps:
