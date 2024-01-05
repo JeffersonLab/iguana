@@ -224,9 +224,9 @@ jobs:
           echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
           echo PYTHONPATH=$PYTHONPATH           >> $GITHUB_ENV
       - name: test 00
-        run: stdbuf -o0 iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
+        run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 01
-        run: stdbuf -o0 iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
+        run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
 
   test_consumer_builds:
     name: Test consumer builds
