@@ -2,6 +2,20 @@
 
 ## Dependencies
 
+The following sections list the dependencies and how to obtain them.
+
+> [!IMPORTANT]
+> If you obtain a dependency with `git clone`, it is strongly recommended to checkout a recent tag,
+> rather than using the most recent version on the main branch. For example, to use version `10.2.0`
+> of `fmt`, run (while in the `fmt` repository directory):
+> ```bash
+> git checkout 10.2.0
+> ```
+> See the list of tags in chronological order (latest is first) by running:
+> ```bash
+> git log --tags --decorate --simplify-by-decoration --oneline
+> ```
+
 ### `meson`: Build system used by `iguana`
 <https://mesonbuild.com/>
 - likely available in your package manager
@@ -45,7 +59,7 @@ First, configure your `iguana` build using `configure.py`:
 The `--help` option will print the usage guide.
 Unless the dependencies are installed in one of the system default locations, you will need to specify the path to each of them, _e.g._,
 ```bash
-./configure.py --hipo /path/to/hipo_installation
+./configure.py --hipo /path/to/hipo_installation --fmt /path/to/fmt_installation
 ```
 This will generate a configuration file (`.ini`) with the build settings, along with an installation script (`install-iguana.sh`).
 Inspect both of them, and if they look correct, proceed with building and installing `iguana` by running:
