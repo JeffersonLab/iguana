@@ -126,6 +126,7 @@ jobs:
         if: ${{ inputs.runner == 'macos-latest' }}
       - name: readelf iguana examples
         run: |
+          if: ${{ matrix.binding == 'cpp' }}
           binaries=$(find iguana/bin -type f -name "iguana-example-*")
           libraries=$(find iguana -type f -name "*.so")
           for obj in $binaries $libraries; do
