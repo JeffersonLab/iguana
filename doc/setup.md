@@ -67,6 +67,11 @@ Inspect both of them, and if they look correct, proceed with building and instal
 ./install-iguana.sh
 ```
 
+> [!TIP]
+> You may edit the configuration file (`.ini`) to change any settings, and re-build `iguana` with `./install-iguana.sh`.
+> - this procedure is preferred if you just want to change some settings
+> - re-running `configure.py` will _overwrite_ your configuration file
+
 ### Using Meson Directly
 
 Instead of `configure.py`, use `meson` directly for more control:
