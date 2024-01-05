@@ -20,7 +20,7 @@ pkg_check_modules(iguana REQUIRED IMPORTED_TARGET iguana)
 
 # set the rpath to use the link path
 # - this is so that the executable knows where the dependency libraries are
-# - alternatively, set $LD_LIBRARY_PATH before running your executables
+# - alternatively, set $LD_LIBRARY_PATH before running your executables ($DYLD_LIBRARY_PATH on macOS)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # build and install the executable

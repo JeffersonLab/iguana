@@ -14,7 +14,7 @@ bin_deps = [
 
 # set rpath
 # - this is so that the executable knows where the dependency libraries are
-# - alternatively, set $LD_LIBRARY_PATH before running your executables
+# - alternatively, set $LD_LIBRARY_PATH before running your executables ($DYLD_LIBRARY_PATH on macOS)
 bin_rpaths = []
 foreach dep : bin_deps
   bin_rpaths += dep.get_variable('libdir')
