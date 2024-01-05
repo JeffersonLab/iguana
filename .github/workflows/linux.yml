@@ -1,0 +1,17 @@
+name: Linux
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+    tags: [ '*' ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    uses: ./.github/workflows/ci.yml
+    with:
+      runner: ubuntu-latest
