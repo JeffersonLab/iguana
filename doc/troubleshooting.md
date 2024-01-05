@@ -22,4 +22,4 @@ Try enabling debugging symbols, either by:
 
 Then re-build `iguana`.
 
-Remember to revert this change and re-build, so that `iguana` runs with full optimization when you are processing large data sets (`buildtype = 'release').
+Remember to revert this change and re-build, so that `iguana` runs with full optimization when you are processing large data sets (`buildtype = 'release'`).
