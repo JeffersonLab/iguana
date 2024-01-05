@@ -262,10 +262,20 @@ jobs:
       - name: set cmake prefix path
         if: ${{ matrix.tool == 'cmake' }}
         run: echo CMAKE_PREFIX_PATH=$(pwd)/hipo >> $GITHUB_ENV
-      - name: build and run
+      - name: build
         run: |
           source iguana/bin/this_iguana.sh
-          .github/test-consumer-build.sh ${{ matrix.tool }} test_data.hipo 1
+          .github/test-consumer-build.sh ${{ matrix.tool }}
+      - name: readelf/otool executable
+        run: |
+          if [ ${{ inputs.runner }} = "macos-latest" ]; then
+            otool -l install-consumer/bin/iguana-example-00-basic
+          else
+            readelf -d install-consumer/bin/iguana-example-00-basic
+          fi
+      - name: run
+        run: |
+          install-consumer/bin/iguana-example-00-basic test_data.hipo 1
 
   # documentation
   #########################################################
