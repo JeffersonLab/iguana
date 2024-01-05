@@ -23,3 +23,8 @@ src/iguana/algorithms/example/make_template.sh AwesomeAlgorithm clas12 src/iguan
 Once you have generated your new algorithm, add it to the appropriate
 `meson.build` file (likely [`src/iguana/algorithms/meson.build`](../meson.build)),
 and get started coding!
+
+> [!TIP]
+> Enable debugging symbols when building, by either:
+> - set built-in option `buildtype` to `'debug'` in your build-configuration `.ini` file (or in your `meson` command)
+> - use `--debug` when running `configure.py`
