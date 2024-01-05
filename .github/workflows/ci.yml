@@ -122,6 +122,8 @@ jobs:
       - name: dump build log
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
+      - run: brew install binutils
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: readelf iguana
         run: |
           binaries=$(find iguana/bin -executable -type f -exec grep -IL . "{}" \;)
