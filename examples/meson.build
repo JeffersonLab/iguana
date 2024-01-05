@@ -18,6 +18,6 @@ foreach src : example_sources
     dependencies:        project_deps,
     link_with:           project_libs,
     install:             true,
-    install_rpath:       ':'.join(example_rpaths),
+    install_rpath:       ';'.join(example_rpaths),
   )
 endforeach
