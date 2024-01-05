@@ -122,8 +122,11 @@ jobs:
       - name: dump build log
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
-      - run: brew install binutils
+      - name: brew install binutils
         if: ${{ inputs.runner == 'macos-latest' }}
+        run: |
+          brew install binutils
+          echo PATH="/usr/local/opt/binutils/bin:$PATH" >> $GITHUB_ENV
       - name: readelf iguana examples
         if: ${{ matrix.binding == 'cpp' }}
         run: |
