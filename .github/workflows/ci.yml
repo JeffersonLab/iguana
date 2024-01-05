@@ -126,6 +126,7 @@ jobs:
         if: ${{ inputs.runner == 'macos-latest' }}
         run: |
           brew install binutils
+          ls /usr/local/opt/binutils/bin
           echo PATH="/usr/local/opt/binutils/bin:$PATH" >> $GITHUB_ENV
       - name: readelf iguana examples
         if: ${{ matrix.binding == 'cpp' }}
