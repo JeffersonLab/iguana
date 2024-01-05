@@ -16,6 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ ubuntu-latest, macos-latest ]
-    uses: ci.yml
+    uses: ./.github/workflows/ci.yml
     with:
       runner: ${{ matrix.runner }}
