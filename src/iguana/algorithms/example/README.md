@@ -26,5 +26,5 @@ and get started coding!
 
 > [!TIP]
 > Enable debugging symbols when building, by either:
-> - use `--debug` in `configure.py`
-> - set built-in option `buildtype` to `'debug'` in the build-configuration `.ini` file (or in your `meson` command); see `meson` documentation for more details
+> - set built-in option `buildtype` to `'debug'` in your build-configuration `.ini` file (or in your `meson` command)
+> - use `--debug` when running `configure.py`

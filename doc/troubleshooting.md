@@ -17,8 +17,9 @@ stdbuf -o0 myAnalysisProgram |& tee output.txt
 ## I got a crash, but the stack trace (or debugger) is not telling me exactly where
 
 Try enabling debugging symbols, either by:
-- use `--debug` in `configure.py`
-- set built-in option `buildtype` to `'debug'` in the build-configuration
-  `.ini` file (or in your `meson` command); see `meson` documentation for more details
+- set built-in option `buildtype` to `'debug'` in your build-configuration `.ini` file (or in your `meson` command)
+- use `--debug` when running `configure.py`
 
-Remember to revert this change and re-build, so that `iguana` runs with full optimization when you are processing large data sets.
+Then re-build `iguana`.
+
+Remember to revert this change and re-build, so that `iguana` runs with full optimization when you are processing large data sets (`buildtype = 'release').
