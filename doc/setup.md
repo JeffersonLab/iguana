@@ -61,16 +61,24 @@ Unless the dependencies are installed in one of the system default locations, yo
 ```bash
 ./configure.py --hipo /path/to/hipo_installation --fmt /path/to/fmt_installation
 ```
-This will generate a configuration file (`.ini`) with the build settings, along with an installation script (`install-iguana.sh`).
+This will generate a configuration file (`build-iguana.ini`, by default) with the build settings, along with an installation script (`install-iguana.sh`).
 Inspect both of them, and if they look correct, proceed with building and installing `iguana` by running:
 ```bash
 ./install-iguana.sh
 ```
 
 > [!TIP]
-> You may edit the configuration file (`.ini`) to change any settings, and re-build `iguana` with `./install-iguana.sh`.
+> You may edit the configuration file (`build-iguana.ini`, by default) to
+> change any settings, and re-build `iguana` with `./install-iguana.sh`.
 > - this procedure is preferred if you just want to change some settings
 > - re-running `configure.py` will _overwrite_ your configuration file
+
+> [!TIP]
+> If you have trouble and want to try a clean build, wipe your build directory (`build-iguana/`, by default). The safest
+> way to do this is:
+> ```bash
+> meson setup --wipe build-iguana
+> ```
 
 ### Using Meson Directly
 
