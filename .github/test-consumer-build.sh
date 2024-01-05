@@ -13,7 +13,7 @@ source_dir=examples/build_with_$tool
 build_dir=build-consumer
 install_dir=install-consumer
 mkdir -p $install_dir
-install_dir=$(realpath $install_dir)
+install_dir=$(cd $install_dir && pwd -P)
 
 # executable
 test_executable=iguana-example-00-basic
