@@ -27,5 +27,5 @@ executable(
   example_bin + '.cc',
   dependencies:  bin_deps,
   install:       true,
-  install_rpath: ';'.join(bin_rpaths),
+  install_rpath: ':'.join(bin_rpaths),
 )
