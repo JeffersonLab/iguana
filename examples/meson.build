@@ -5,7 +5,7 @@ example_sources = [
 
 # add iguana libraries to rpath
 example_rpaths = [
-  '@executable_path' / '..' / get_option('libdir'),
+  '$ORIGIN' / '..' / get_option('libdir'),
   hipo_dep.get_variable(pkgconfig: 'libdir'),
 ]
 
