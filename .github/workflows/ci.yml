@@ -1,14 +1,12 @@
-name: Linux
+name: CI
 
 on:
-  pull_request:
-  push:
-    branches: [ main ]
-    tags: [ '*' ]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+  workflow_call:
+    inputs:
+      runner:
+        description: 'GitHub runner'
+        required: true
+        type: string
 
 defaults:
   run:
@@ -26,7 +24,7 @@ jobs:
 
   build_hipo:
     name: Build HIPO
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: checkout hipo
         uses: actions/checkout@v4
@@ -38,6 +36,8 @@ jobs:
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           cmake --build build -j2
           cmake --install build
+      - run: brew install tree
+        if: ${{ inputs.runner == 'macos-latest' }}
       - run: tree hipo
       - name: tar
         run: tar czvf hipo{.tar.gz,}
@@ -49,7 +49,7 @@ jobs:
 
   build_fmt:
     name: Build fmt
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: checkout fmt
         uses: actions/checkout@v4
@@ -61,6 +61,8 @@ jobs:
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           cmake --build build -j2
           cmake --install build
+      - run: brew install tree
+        if: ${{ inputs.runner == 'macos-latest' }}
       - run: tree fmt
       - name: tar
         run: tar czvf fmt{.tar.gz,}
@@ -78,7 +80,7 @@ jobs:
     needs:
       - build_hipo
       - build_fmt
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     strategy:
       fail-fast: true
       matrix:
@@ -110,6 +112,8 @@ jobs:
           name: build_deps
       - name: untar build
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      - run: brew install tree
+        if: ${{ inputs.runner == 'macos-latest' }}
       - run: tree
       - name: configure
         run: ./configure.py --hipo hipo --fmt fmt --examples --no-documentation ${{ matrix.configure_opts }}
@@ -147,7 +151,7 @@ jobs:
 
   download_validation_files:
     name: Download validation files
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: download
         run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
@@ -169,7 +173,7 @@ jobs:
     needs:
       - download_validation_files
       - build_iguana
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     strategy:
       fail-fast: true
       matrix:
@@ -204,6 +208,8 @@ jobs:
         run: |
           ls *.tar.gz | xargs -I{} tar xzvf {}
           rm -v *.tar.gz
+      - run: brew install tree
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: tree artifacts
         run: tree
       - name: source environment
@@ -222,7 +228,7 @@ jobs:
     needs:
       - download_validation_files
       - build_iguana
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     strategy:
       fail-fast: true
       matrix:
@@ -261,7 +267,7 @@ jobs:
 
   doc_generate:
     name: Generate documentation
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - uses: actions/checkout@v4
       - name: doxygen
@@ -274,7 +280,7 @@ jobs:
           path: doc/api/
 
   doc_deploy:
-    if: ${{ github.head_ref == 'main' || github.ref_name == 'main' }}
+    if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.runner == 'ubuntu-latest' }}
     name: Deploy documentation
     needs: doc_generate
     permissions:
@@ -283,7 +289,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: deployment
         id: deployment
@@ -297,6 +303,6 @@ jobs:
     needs:
       - test_iguana
       - test_consumer_builds
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - run: exit 0
