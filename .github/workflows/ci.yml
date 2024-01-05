@@ -124,10 +124,10 @@ jobs:
         run: cat build-iguana/meson-logs/meson-log.txt
       - run: brew install binutils
         if: ${{ inputs.runner == 'macos-latest' }}
-      - name: readelf iguana
+      - name: readelf iguana examples
         run: |
-          binaries=$(find iguana/bin -executable -type f -exec grep -IL . "{}" \;)
-          libraries=$(find iguana -name "*.so")
+          binaries=$(find iguana/bin -type f -name "iguana-example-*")
+          libraries=$(find iguana -type f -name "*.so")
           for obj in $binaries $libraries; do
             echo "[+++] READELF $obj"
             readelf -d $obj
@@ -160,7 +160,7 @@ jobs:
       - name: untar
         run: tar xzvf validation_files.tar.gz
       - name: select one file
-        run: mv -v $(find validation_files -name "*.hipo" | head -n1) test_data.hipo
+        run: mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
       - uses: actions/upload-artifact@v3
         with:
           name: validation_files
