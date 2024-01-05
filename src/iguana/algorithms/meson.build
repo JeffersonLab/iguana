@@ -2,6 +2,7 @@ algo_sources = [
   'Algorithm.cc',
   'AlgorithmFactory.cc',
   'AlgorithmSequence.cc',
+  'example/ExampleAlgorithm.cc',
   'clas12/EventBuilderFilter.cc',
   'clas12/LorentzTransformer.cc',
 ]
@@ -11,6 +12,7 @@ algo_public_headers = [
   'AlgorithmBoilerplate.h',
   'AlgorithmFactory.h',
   'AlgorithmSequence.h',
+  'example/ExampleAlgorithm.h',
   'clas12/EventBuilderFilter.h',
   'clas12/LorentzTransformer.h',
 ]
