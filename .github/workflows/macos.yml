@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ci:
+  macOS:
     uses: ./.github/workflows/ci.yml
     with:
       runner: macos-latest
