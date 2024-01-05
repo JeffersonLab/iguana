@@ -14,6 +14,9 @@ To redirect output to a file with the ordering preserved, run your executable wi
 stdbuf -o0 myAnalysisProgram |& tee output.txt
 ```
 
+> [!NOTE]
+> `stdbuf` on macOS may be installed as `gstdbuf`, from the Homebrew package `coreutils`.
+
 ### :large_blue_diamond: I got a crash, but the stack trace (or debugger) is not telling me exactly where
 
 Try enabling debugging symbols, either by:
