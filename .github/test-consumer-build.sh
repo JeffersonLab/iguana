@@ -33,8 +33,8 @@ case $tool in
     pushd $source_dir
     exe make
     popd
-    mkdir -pv $install_dir/bin
-    ln -sv ../../$source_dir/bin/* $install_dir/bin/
+    mkdir -pv $install_dir
+    mv -v $source_dir/bin $install_dir/
     ;;
   meson)
     exe meson setup --prefix=$install_dir $build_dir $source_dir
