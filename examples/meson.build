@@ -5,12 +5,9 @@ example_sources = [
 
 # add iguana libraries to rpath
 example_rpaths = []
-if host_machine.system() == 'darwin'
-  warning('on macOS, not yet sure how to handle rpath')
-  example_rpaths += hipo_dep.get_variable(pkgconfig: 'libdir')
-else
+example_rpaths += hipo_dep.get_variable(pkgconfig: 'libdir')
+if host_machine.system() != 'darwin'
   example_rpaths += '$ORIGIN' / '..' / get_option('libdir')
-  example_rpaths += hipo_dep.get_variable(pkgconfig: 'libdir')
 endif
 
 # build executables
