@@ -24,7 +24,7 @@ example_bin = 'iguana-example-00-basic'
 executable(
   example_bin,
   example_bin + '.cc',
-  dependencies:  bin_deps,
+  dependencies:  [hipo_dep, iguana_dep],
   install:       true,
   install_rpath: ':'.join(bin_rpaths),
 )
