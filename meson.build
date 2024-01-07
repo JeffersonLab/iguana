@@ -35,6 +35,7 @@ yamlcpp_dep = dependency(
 )
 hipo_dep = dependency(
   'hipo4',
+  static:  true,
   method:  'pkg-config',
   version: '>=4.0.1',
 )
