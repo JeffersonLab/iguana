@@ -14,7 +14,7 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 
 # resolve dependencies
 fmt_dep  = dependency('fmt',   version: '>=9.1.0', method: 'pkg-config')
-hipo_dep = dependency('hipo4', version: '>=4.0.1', method: 'pkg-config')
+hipo_dep = dependency('hipo4', version: '>=4.0.1', method: 'pkg-config', static: true)
 
 # general project vars
 project_lib_rpath = '$ORIGIN'
