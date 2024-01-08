@@ -15,14 +15,25 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 # resolve dependencies
 fmt_dep  = dependency('fmt',   version: '>=9.1.0', method: 'pkg-config')
 hipo_dep = dependency('hipo4', version: '>=4.0.1', method: 'pkg-config')
+full_dep_list = [
+  fmt_dep,
+  hipo_dep,
+]
+
+# dependency libdirs
+dep_lib_paths = []
+foreach dep : full_dep_list
+  dep_lib_paths += dep.get_variable(pkgconfig: 'libdir')
+endforeach
 
 # general project vars
 project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
-project_deps      = declare_dependency(dependencies: [ fmt_dep, hipo_dep ])
+project_deps      = declare_dependency(dependencies: full_dep_list)
 project_pkg_vars  = [
-  'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path'))
+  'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
+  'dep_libdirs='       + ':'.join(dep_lib_paths),
 ]
 
 # build and install shared libraries
@@ -40,7 +51,7 @@ pkg.generate(
   name:        meson.project_name(),
   description: project_description,
   libraries:   project_libs,
-  requires:    [ fmt_dep, hipo_dep ],
+  requires:    full_dep_list,
   variables:   project_pkg_vars,
 )
 

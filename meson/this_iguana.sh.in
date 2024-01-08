@@ -14,10 +14,19 @@ dep_pkgconfigdirs=$(pkg-config --variable dep_pkgconfigdirs iguana)
 iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
 [ -n "${iguana_pythonpath-}" ] && export PYTHONPATH=$iguana_pythonpath${PYTHONPATH:+:${PYTHONPATH}}
 
+# TEST: hack ld path for mac
+for var in libdir dep_libdirs; do
+  dir=$(pkg-config --variable $var iguana)
+  # FIXME: support LD_LIBRARY_PATH too
+  # FIXME: uniqueness of path entries
+  [ -n "${dir-}" ] && export DYLD_LIBRARY_PATH=$dir${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
+done
+
 echo """
 Iguana Environment Variables
 ----------------------------
 PKG_CONFIG_PATH = ${PKG_CONFIG_PATH-}
 PYTHONPATH      = ${PYTHONPATH-}
+DYLD_LIBRARY_PATH = ${DYLD_LIBRARY_PATH-}
 ----------------------------
 """

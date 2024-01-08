@@ -221,8 +221,9 @@ jobs:
         if: ${{ matrix.binding != 'cpp' }}
         run: |
           source iguana/bin/this_iguana.sh
-          echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
-          echo PYTHONPATH=$PYTHONPATH           >> $GITHUB_ENV
+          echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH     >> $GITHUB_ENV
+          echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
+          echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV
       - name: test 00
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 01
