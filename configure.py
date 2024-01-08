@@ -97,6 +97,12 @@ with open(installScript, 'w') as fp:
     meson setup --native-file {args.ini} {args.build} {sourceDir}
     meson install -C {args.build}
     '''))
+    for rpath in pkg_config_path:
+        fp.write(textwrap.dedent(f'''\
+        for exe in iguana-example-00-basic iguana-example-01-bank-rows; do
+          install_name_tool -add_rpath {rpath}/.. iguana/bin/$exe
+        done
+        '''))
 os.chmod(installScript, 0o744)
 print(f'''
 Generated installation script {installScript}
