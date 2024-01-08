@@ -1,4 +1,4 @@
-name: Linux
+name: macOS
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Linux:
+  macOS:
     uses: ./.github/workflows/ci.yml
     with:
-      runner: ubuntu-latest
+      runner: macos-latest
