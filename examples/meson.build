@@ -4,7 +4,7 @@ example_sources = [
 ]
 
 # add iguana libraries to rpath
-example_rpaths [
+example_rpaths = [
   hipo_dep.get_variable(pkgconfig: 'libdir'),
 ]
 if host_machine.system() != 'darwin'
