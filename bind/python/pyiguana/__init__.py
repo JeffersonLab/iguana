@@ -7,8 +7,8 @@ for pkg in ['iguana'] + [p.split()[0] for p in pkgconfig.requires('iguana') if p
     if not pkgconfig.exists(pkg):
         raise Exception(f'failed to find "{pkg}.pc" in pkg-config path')
     pkg_info = {
-            'includedir': pkgconfig.variables(pkg)['includedir'],
-            'libdir':     pkgconfig.variables(pkg)['libdir'],
+            'includedir': os.path.realpath(pkgconfig.variables(pkg)['includedir']),
+            'libdir':     os.path.realpath(pkgconfig.variables(pkg)['libdir']),
             }
     print(f'DEBUG: pyiguana - add package {pkg}: {pkg_info}')
     cppyy.add_include_path(pkg_info['includedir'])
