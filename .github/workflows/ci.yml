@@ -37,7 +37,7 @@ jobs:
           cmake --build build -j2
           cmake --install build
       - run: brew install tree
-        if: ${{ inputs.runner == 'macos-latest' }}
+        if: ${{ inputs.runner == 'macos-11' }}
       - run: tree hipo
       - name: tar
         run: tar czvf hipo{.tar.gz,}
@@ -62,7 +62,7 @@ jobs:
           cmake --build build -j2
           cmake --install build
       - run: brew install tree
-        if: ${{ inputs.runner == 'macos-latest' }}
+        if: ${{ inputs.runner == 'macos-11' }}
       - run: tree fmt
       - name: tar
         run: tar czvf fmt{.tar.gz,}
@@ -113,7 +113,7 @@ jobs:
       - name: untar build
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - run: brew install tree
-        if: ${{ inputs.runner == 'macos-latest' }}
+        if: ${{ inputs.runner == 'macos-11' }}
       - run: tree
       - name: configure
         run: ./configure.py --hipo hipo --fmt fmt --examples --no-documentation ${{ matrix.configure_opts }}
@@ -129,7 +129,7 @@ jobs:
           libraries=$(find iguana -type f -name "*.so")
           for obj in $binaries $libraries; do
             echo "[+++] READ $obj"
-            if [ ${{ inputs.runner }} = "macos-latest" ]; then
+            if [ ${{ inputs.runner }} = "macos-11" ]; then
               otool -l $obj
             else
               readelf -d $obj
@@ -214,7 +214,7 @@ jobs:
           ls *.tar.gz | xargs -I{} tar xzvf {}
           rm -v *.tar.gz
       - run: brew install tree
-        if: ${{ inputs.runner == 'macos-latest' }}
+        if: ${{ inputs.runner == 'macos-11' }}
       - name: tree artifacts
         run: tree
       - name: source environment
@@ -225,10 +225,8 @@ jobs:
           echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
           echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV
       - name: test 00
-        if: ${{ inputs.runner != 'macos-latest' || matrix.binding != 'python' }} # FIXME: https://github.com/JeffersonLab/iguana/issues/75
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 01
-        if: ${{ inputs.runner != 'macos-latest' || matrix.binding != 'python' }} # FIXME: https://github.com/JeffersonLab/iguana/issues/75
         run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
 
   test_consumer_builds:
@@ -271,7 +269,7 @@ jobs:
           .github/test-consumer-build.sh ${{ matrix.tool }}
       - name: readelf/otool executable
         run: |
-          if [ ${{ inputs.runner }} = "macos-latest" ]; then
+          if [ ${{ inputs.runner }} = "macos-11" ]; then
             otool -l install-consumer/bin/iguana-example-00-basic
           else
             readelf -d install-consumer/bin/iguana-example-00-basic

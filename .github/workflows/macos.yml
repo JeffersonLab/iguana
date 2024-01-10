@@ -14,4 +14,4 @@ jobs:
   macOS:
     uses: ./.github/workflows/ci.yml
     with:
-      runner: macos-latest
+      runner: macos-11
