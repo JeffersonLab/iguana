@@ -225,8 +225,10 @@ jobs:
           echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
           echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV
       - name: test 00
+        if: ${{ inputs.runner != 'macos-latest' || matrix.binding != 'python' }} # FIXME: https://github.com/JeffersonLab/iguana/issues/75
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 01
+        if: ${{ inputs.runner != 'macos-latest' || matrix.binding != 'python' }} # FIXME: https://github.com/JeffersonLab/iguana/issues/75
         run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
 
   test_consumer_builds:
