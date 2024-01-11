@@ -15,9 +15,14 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 # resolve dependencies
 fmt_dep  = dependency('fmt',   version: '>=9.1.0', method: 'pkg-config')
 hipo_dep = dependency('hipo4', version: '>=4.0.1', method: 'pkg-config')
+
+# list of dependencies
+# FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
+# ordered such that the ones users are *least likely* to try to build
+# themselves are listed last (see FIXME in meson/this_iguana.sh.in)
 full_dep_list = [
-  fmt_dep,
   hipo_dep,
+  fmt_dep,
 ]
 
 # dependency libdirs
@@ -74,8 +79,13 @@ if get_option('documentation')
 endif
 
 # install environment setup file
-install_data(
-  'meson' / 'this_iguana.sh.in',
-  install_dir: get_option('bindir'),
-  rename:      'this_iguana.sh'
+configure_file(
+  input:         'meson' / 'this_iguana.sh.in',
+  output:        'this_iguana.sh',
+  install:       true,
+  install_dir:   get_option('bindir'),
+  configuration: {
+    'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
+    'python':  get_option('bind_python') ? 'true' : 'false',
+  },
 )

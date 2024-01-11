@@ -1,32 +1,95 @@
 #!/bin/bash
-# source this file to set environment variables for this iguana installation
+
+################################################################################
+#
+# `source` this file to set environment variables relevant for this `iguana`
+# installation. This file is compatible with `bash` and `zsh`, but not with
+# `tcsh`.
+#
+# In general, users should not be _required_ to `source` this file, since we
+# have tried to discourage the usage of environment variables in `iguana`;
+# however, there may be cases where a user may want to `source` this file, for
+# example:
+#  - if `LD_LIBRARY_PATH` has conflicting libraries.
+#  - if `pkg-config` paths are needed, _e.g_, for `pyiguana` (Python bindings)
+#
+# You may use any of the following arguments when sourcing this file, for example
+# `source this_iguana.sh quiet ld`
+#
+#   ld       append library paths to LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH);
+#            by default these variables are not modified
+#
+#   quiet    don't print anything
+#
+# The following environment variables may be set (depending on iguana build
+# options, user arguments, and operating system):
+#
+#   PKG_CONFIG_PATH     paths to the `pkg-config` files (extension `.pc`) for
+#                       dependencies; `pkg-config` is used in `iguana` for
+#                       dependency resolution
+#
+#   PYTHONPATH          paths to dependency and `iguana` Python packages
+#
+#   LD_LIBRARY_PATH     paths to dependency and `iguana` libraries (on Linux)
+#   DYLD_LIBRARY_PATH   paths to dependency and `iguana` libraries (on macOS)
+#
+################################################################################
 
 # find the iguana installation prefix, with respect to this file
-thisEnv=${BASH_SOURCE[0]:-$0}
-thisDir=$(cd $(dirname $thisEnv)/.. && pwd -P)
+this_env=${BASH_SOURCE[0]:-$0}
+this_dir=$(cd $(dirname $this_env)/.. && pwd -P)
+
+# parse arguments
+set_ld_path=false
+verbose=true
+for arg in "$@"; do
+  [ "$arg" = "ld" ]    && set_ld_path=true
+  [ "$arg" = "quiet" ] && verbose=false
+done
 
 # append to PKG_CONFIG_PATH
-export PKG_CONFIG_PATH=$thisDir/lib/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+export PKG_CONFIG_PATH=$this_dir/lib/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 dep_pkgconfigdirs=$(pkg-config --variable dep_pkgconfigdirs iguana)
 [ -n "${dep_pkgconfigdirs-}" ] && export PKG_CONFIG_PATH=$dep_pkgconfigdirs${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 
 # append to PYTHONPATH
-iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
-[ -n "${iguana_pythonpath-}" ] && export PYTHONPATH=$iguana_pythonpath${PYTHONPATH:+:${PYTHONPATH}}
+set_python_path=@python@
+if $set_python_path; then
+  iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
+  [ -n "${iguana_pythonpath-}" ] && export PYTHONPATH=$iguana_pythonpath${PYTHONPATH:+:${PYTHONPATH}}
+fi
 
-# TEST: hack ld path for mac
-for var in libdir dep_libdirs; do
-  dir=$(pkg-config --variable $var iguana)
-  # FIXME: support LD_LIBRARY_PATH too
-  # FIXME: uniqueness of path entries
-  [ -n "${dir-}" ] && export DYLD_LIBRARY_PATH=$dir${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
-done
+# append to LD_LIBRARY_PATH or DYLD_LIBRARY_PATH
+if $set_ld_path; then
+  for var in dep_libdirs libdir; do
+    dir=$(pkg-config --variable $var iguana)
+    [ -n "${dir-}" ] && export @ld_path@=$dir${@ld_path@:+:${@ld_path@}}
+  done
+fi
+# FIXME: this won't work well if a user already has all dependency libraries
+# in, for example, `/opt/lib`, but has custom built and installed one
+# elsewhere, e.g., `/tmp/lib`; if `/opt/lib` is listed before `/tmp/lib` in
+# `$LD_LIBRARY_PATH`, the `/opt/lib` library will be used at runtime rather
+# than the one at `/tmp/lib` (cf. FIXME in ../meson.build)
 
-echo """
+# print environment variables
+if $verbose; then
+  print_var() { echo "$@" | sed 's/:/\n  /g'; }
+  no_change='has NOT been changed'
+  echo """
 Iguana Environment Variables
 ----------------------------
-PKG_CONFIG_PATH = ${PKG_CONFIG_PATH-}
-PYTHONPATH      = ${PYTHONPATH-}
-DYLD_LIBRARY_PATH = ${DYLD_LIBRARY_PATH-}
+
+PKG_CONFIG_PATH: (ADDED iguana and dependency pkg-config paths)
+  $(print_var ${PKG_CONFIG_PATH-})
+
+PYTHONPATH: ($(if $set_python_path; then echo 'ADDED iguana python bindings'; else echo $no_change; fi))
+  $(print_var ${PYTHONPATH-})
+
+@ld_path@: ($(if $set_ld_path; then echo 'ADDED iguana and dependency library paths'; else echo $no_change'; use argument "ld" if you want to add iguana and dependencies'; fi))
+  $(print_var ${@ld_path@-})
+
 ----------------------------
 """
+  unset -f print_var
+fi
