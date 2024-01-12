@@ -14,7 +14,7 @@ defaults:
 
 env:
   hipo_version: dev
-  fmt_version: 9.1.0
+  # fmt_version: 9.1.0
   num_events: 10
 
 jobs:
@@ -47,30 +47,30 @@ jobs:
           retention-days: 1
           path: hipo.tar.gz
 
-  build_fmt:
-    name: Build fmt
-    runs-on: ${{ inputs.runner }}
-    steps:
-      - name: checkout fmt
-        uses: actions/checkout@v4
-        with:
-          repository: fmtlib/fmt
-          ref: ${{ env.fmt_version }}
-      - name: build
-        run: |
-          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-          cmake --build build -j2
-          cmake --install build
-      - run: brew install tree
-        if: ${{ inputs.runner == 'macos-latest' }}
-      - run: tree fmt
-      - name: tar
-        run: tar czvf fmt{.tar.gz,}
-      - uses: actions/upload-artifact@v3
-        with:
-          name: build_deps
-          retention-days: 1
-          path: fmt.tar.gz
+  # build_fmt:
+  #   name: Build fmt
+  #   runs-on: ${{ inputs.runner }}
+  #   steps:
+  #     - name: checkout fmt
+  #       uses: actions/checkout@v4
+  #       with:
+  #         repository: fmtlib/fmt
+  #         ref: ${{ env.fmt_version }}
+  #     - name: build
+  #       run: |
+  #         cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+  #         cmake --build build -j2
+  #         cmake --install build
+  #     - run: brew install tree
+  #       if: ${{ inputs.runner == 'macos-latest' }}
+  #     - run: tree fmt
+  #     - name: tar
+  #       run: tar czvf fmt{.tar.gz,}
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: build_deps
+  #         retention-days: 1
+  #         path: fmt.tar.gz
 
   # build
   #########################################################
@@ -79,7 +79,7 @@ jobs:
     name: Build Iguana
     needs:
       - build_hipo
-      - build_fmt
+      # - build_fmt
     runs-on: ${{ inputs.runner }}
     strategy:
       fail-fast: true
@@ -104,19 +104,21 @@ jobs:
           for dep in python meson ninja ; do
             echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
           done
-          echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
+          # echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
       - name: get dependency build artifacts
         uses: actions/download-artifact@v3
         with:
           name: build_deps
+      - run: brew install fmt
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: untar build
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - run: brew install tree
         if: ${{ inputs.runner == 'macos-latest' }}
       - run: tree
       - name: configure
-        run: ./configure.py --hipo hipo --fmt fmt --examples --no-documentation ${{ matrix.configure_opts }}
+        run: ./configure.py --hipo hipo --examples --no-documentation ${{ matrix.configure_opts }}
       - name: build
         run: ./install-iguana.sh
       - name: dump build log
@@ -201,6 +203,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build_deps
+      - run: brew install fmt
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: get iguana build artifacts
         uses: actions/download-artifact@v3
         with:
@@ -225,10 +229,8 @@ jobs:
           echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
           echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV
       - name: test 00
-        if: ${{ inputs.runner != 'macos-latest' || matrix.binding != 'python' }} # FIXME: https://github.com/JeffersonLab/iguana/issues/75
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 01
-        if: ${{ inputs.runner != 'macos-latest' || matrix.binding != 'python' }} # FIXME: https://github.com/JeffersonLab/iguana/issues/75
         run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
 
   test_consumer_builds:
@@ -247,6 +249,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build_deps
+      - run: brew install fmt
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: get iguana build artifacts
         uses: actions/download-artifact@v3
         with:
