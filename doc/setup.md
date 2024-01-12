@@ -41,7 +41,7 @@ python -m pip install meson ninja
 - if you compile it yourself, include the `cmake` option `-DCMAKE_POSITION_INDEPENDENT_CODE=ON`
 - example `cmake` commands:
 ```bash
-cmake -S /path/to/fmt_source_code -B build-fmt -DCMAKE_INSTALL_PREFIX=/path/to/fmt_installation -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+cmake -S /path/to/fmt_source_code -B build-fmt -DCMAKE_INSTALL_PREFIX=/path/to/fmt_installation -DBUILD_SHARED_LIBS=TRUE
 cmake --build build-fmt -j$(nproc)
 cmake --install build-fmt
 ```
