@@ -3,7 +3,7 @@ example_sources = [
   'iguana-example-01-bank-rows.cc',
 ]
 
-# add dependencies' libraries to rpath
+# add dependencies' shared libraries to rpath
 example_rpaths = [
   hipo_dep.get_variable(pkgconfig: 'libdir'),
 ]
