@@ -59,7 +59,7 @@ jobs:
       - name: build
         if: ${{ inputs.runner != 'macos-latest' }}
         run: |
-          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DBUILD_SHARED_LIBS=TRUE
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DBUILD_SHARED_LIBS=TRUE -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE
           cmake --build build -j2
           cmake --install build
           tar czvf fmt{.tar.gz,}

@@ -38,10 +38,10 @@ python -m pip install meson ninja
 > ```bash
 > brew install fmt
 > ```
-- if you compile it yourself, include the `cmake` option `-DCMAKE_POSITION_INDEPENDENT_CODE=ON`
+- if you compile it yourself, include the `cmake` options `-DBUILD_SHARED_LIBS=TRUE` and `-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE`
 - example `cmake` commands:
 ```bash
-cmake -S /path/to/fmt_source_code -B build-fmt -DCMAKE_INSTALL_PREFIX=/path/to/fmt_installation -DBUILD_SHARED_LIBS=TRUE
+cmake -S /path/to/fmt_source_code -B build-fmt -DCMAKE_INSTALL_PREFIX=/path/to/fmt_installation -DBUILD_SHARED_LIBS=TRUE -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE
 cmake --build build-fmt -j$(nproc)
 cmake --install build-fmt
 ```
