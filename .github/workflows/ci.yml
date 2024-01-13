@@ -26,6 +26,9 @@ jobs:
     name: Build HIPO
     runs-on: ${{ inputs.runner }}
     steps:
+      - run: apt search fmt
+      - run: apt show fmt
+      - run: sudo apt -y install fmt
       - name: checkout hipo
         uses: actions/checkout@v4
         with:
