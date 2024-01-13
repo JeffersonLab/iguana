@@ -52,21 +52,24 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
       - name: checkout fmt
+        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
         uses: actions/checkout@v4
         with:
           repository: fmtlib/fmt
           ref: ${{ env.fmt_version }}
       - name: build
+        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
         run: |
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           cmake --build build -j2
           cmake --install build
-      - run: brew install tree
-        if: ${{ inputs.runner == 'macos-latest' }}
       - run: tree fmt
+        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
       - name: tar
+        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
         run: tar czvf fmt{.tar.gz,}
       - uses: actions/upload-artifact@v3
+        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
         with:
           name: build_deps
           retention-days: 1
@@ -82,7 +85,7 @@ jobs:
       - build_fmt
     runs-on: ${{ inputs.runner }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         binding: [ cpp, python ]
         include:
@@ -110,6 +113,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build_deps
+      - run: brew install fmt
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: untar build
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
       - run: brew install tree
@@ -180,7 +185,7 @@ jobs:
       - build_iguana
     runs-on: ${{ inputs.runner }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         binding: [ cpp, python ]
         include:
@@ -201,6 +206,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build_deps
+      - run: brew install fmt
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: get iguana build artifacts
         uses: actions/download-artifact@v3
         with:
@@ -236,7 +243,7 @@ jobs:
       - build_iguana
     runs-on: ${{ inputs.runner }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         tool: [ cmake, make, meson ]
     steps:
@@ -245,6 +252,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build_deps
+      - run: brew install fmt
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: get iguana build artifacts
         uses: actions/download-artifact@v3
         with:

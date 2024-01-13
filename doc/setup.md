@@ -26,7 +26,12 @@ python -m pip install meson ninja
 
 ### :large_orange_diamond: `fmt`: C++ output formatting library
 <https://github.com/fmtlib/fmt>
-- likely available in your package manager, possibly under `libfmt`
+- likely available in your package manager, likely as `fmt` or `libfmt`
+> [!IMPORTANT]
+> macOS users are _strongly_ encouraged to install this from Homebrew:
+> ```bash
+> brew install fmt
+> ```
 - if you compile it yourself, include the `cmake` option `-DCMAKE_POSITION_INDEPENDENT_CODE=ON`
 - example `cmake` commands:
 ```bash
