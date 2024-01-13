@@ -1,39 +1,5 @@
 #!/bin/bash
-
-################################################################################
-#
-# `source` this file to set environment variables relevant for this `iguana`
-# installation. This file is compatible with `bash` and `zsh`, but not with
-# `tcsh`.
-#
-# In general, users should not be _required_ to `source` this file, since we
-# have tried to discourage the usage of environment variables in `iguana`;
-# however, there may be cases where a user may want to `source` this file, for
-# example:
-#  - if `LD_LIBRARY_PATH` has conflicting libraries.
-#  - if `pkg-config` paths are needed, _e.g_, for `pyiguana` (Python bindings)
-#
-# You may use any of the following arguments when sourcing this file, for example
-# `source this_iguana.sh quiet ld`
-#
-#   ld       append library paths to LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH);
-#            by default these variables are not modified
-#
-#   quiet    don't print anything
-#
-# The following environment variables may be set (depending on iguana build
-# options, user arguments, and operating system):
-#
-#   PKG_CONFIG_PATH     paths to the `pkg-config` files (extension `.pc`) for
-#                       dependencies; `pkg-config` is used in `iguana` for
-#                       dependency resolution
-#
-#   PYTHONPATH          paths to dependency and `iguana` Python packages
-#
-#   LD_LIBRARY_PATH     paths to dependency and `iguana` libraries (on Linux)
-#   DYLD_LIBRARY_PATH   paths to dependency and `iguana` libraries (on macOS)
-#
-################################################################################
+# `source` this file to set environment variables relevant for this `iguana` installation
 
 # find the iguana installation prefix, with respect to this file
 this_env=${BASH_SOURCE[0]:-$0}

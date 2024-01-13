@@ -115,7 +115,6 @@ jobs:
             echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
           done
           if [ "${{ inputs.runner }}" = "macos-latest" ]; then
-            echo HOMEBREW_NO_COLOR=1 >> $GITHUB_ENV
             echo "| \`fmt\` | $(brew info fmt | head -n1) |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY

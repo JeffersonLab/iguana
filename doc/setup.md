@@ -1,5 +1,11 @@
 # Setup Guide
 
+**Table of Contents**
+1. [Dependencies](#dependencies)
+1. [Building and Installing](#building)
+1. [Environment Variables (optional)](#env)
+
+<a name="dependencies"/>
 ## Dependencies
 
 The following sections list the dependencies and how to obtain them.
@@ -50,6 +56,7 @@ cmake --build build-hipo -j$(nproc)
 cmake --install build-hipo
 ```
 
+<a name="building"/>
 ## Building and Installing
 
 - For convenience, a configuration script is provided.
@@ -99,3 +106,33 @@ meson install -C build-iguana
 
 > [!TIP]
 > `configure.py` produces a native file (`.ini`) which may be used by `meson setup` option `--native-file`.
+
+
+<a name="env"/>
+## Environment Variables (optional)
+The C++ `iguana` implementation does not require the use of any environment variables. However,
+some language bindings may take advantage of environment variables being set, such as `$PYTHONPATH`
+for Python. The documentation will tell you if certain environment variables are recommended.
+
+You may prefer to set your own environment variables, but for a quick start with suggested settings,
+the installed file `bin/this_iguana.sh` may be used as
+```
+source bin/this_iguana.sh [OPTIONAL ARGUMENTS]...
+
+OPTIONAL ARGUMENTS:
+
+   ld       append library paths to LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH);
+            by default these variables are NOT modified
+
+   quiet    don't print anything
+```
+
+which may set or modify the following environment variables:
+
+| Variable                                                 | Modification                                                                                                                              |
+| ---                                                      | ---                                                                                                                                       |
+| `PKG_CONFIG_PATH`                                        | adds paths to the `pkg-config` files (`.pc`) for dependencies and `iguana`; see [note on dependency resolution](dependency_resolution.md) |
+| `PYTHONPATH`                                             | adds paths to dependency and `iguana` Python packages, if Python bindings are installed                                                   |
+| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and `iguana` libraries, if the optional argument `ld` was used                                                   |
+
+This file compatible with `bash` and `zsh, but not with `tcsh` or `csh`.
