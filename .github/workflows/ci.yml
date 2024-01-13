@@ -50,26 +50,22 @@ jobs:
   build_fmt:
     name: Build fmt
     runs-on: ${{ inputs.runner }}
+    if: ${{ inputs.runner != 'macos-latest' }} # prefer Homebrew fmt installation on macOS
     steps:
       - name: checkout fmt
-        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
         uses: actions/checkout@v4
         with:
           repository: fmtlib/fmt
           ref: ${{ env.fmt_version }}
       - name: build
-        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
         run: |
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DCMAKE_POSITION_INDEPENDENT_CODE=ON
           cmake --build build -j2
           cmake --install build
       - run: tree fmt
-        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
       - name: tar
-        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
         run: tar czvf fmt{.tar.gz,}
       - uses: actions/upload-artifact@v3
-        if: ${{ inputs.runner != 'macos-latest' }} # FIXME
         with:
           name: build_deps
           retention-days: 1
