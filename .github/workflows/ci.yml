@@ -14,7 +14,7 @@ defaults:
 
 env:
   hipo_version: dev
-  fmt_version: 9.1.0
+  fmt_version: 9.1.0 # FIXME: differs from Homebrew
   num_events: 10
 
 jobs:
@@ -107,7 +107,7 @@ jobs:
           for dep in python meson ninja ; do
             echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
           done
-          echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY ### FIXME: differs from Homebrew
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
       - name: get dependency build artifacts
         uses: actions/download-artifact@v3
@@ -224,13 +224,19 @@ jobs:
         if: ${{ inputs.runner == 'macos-latest' }}
       - name: tree artifacts
         run: tree
-      - name: source environment
-        if: ${{ matrix.binding != 'cpp' }}
+      - name: source environment for Linux and python
+        if: ${{ inputs.runner == 'ubuntu-latest' && matrix.binding == 'python' }}
         run: |
           source iguana/bin/this_iguana.sh
+          echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
+          echo PYTHONPATH=$PYTHONPATH           >> $GITHUB_ENV
+      - name: source environment for macOS and python
+        if: ${{ inputs.runner == 'macos-latest' && matrix.binding == 'python' }}
+        run: |
+          source iguana/bin/this_iguana.sh ld
           echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH     >> $GITHUB_ENV
           echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
-          echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV
+          echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV  # for cppyy on macOS
       - name: test 00
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 01
