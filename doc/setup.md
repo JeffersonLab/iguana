@@ -5,7 +5,7 @@
 1. [Building and Installing](#building)
 1. [Environment Variables (optional)](#env)
 
-<a name="dependencies"/>
+<a name="dependencies"></a>
 ## Dependencies
 
 The following sections list the dependencies and how to obtain them.
@@ -56,7 +56,7 @@ cmake --build build-hipo -j$(nproc)
 cmake --install build-hipo
 ```
 
-<a name="building"/>
+<a name="building"></a>
 ## Building and Installing
 
 - For convenience, a configuration script is provided.
@@ -108,13 +108,13 @@ meson install -C build-iguana
 > `configure.py` produces a native file (`.ini`) which may be used by `meson setup` option `--native-file`.
 
 
-<a name="env"/>
+<a name="env"></a>
 ## Environment Variables (optional)
 The C++ `iguana` implementation does not require the use of any environment variables. However,
-some language bindings may take advantage of environment variables being set, such as `$PYTHONPATH`
-for Python. The documentation will tell you if certain environment variables are recommended.
+- some language bindings may benefit from variables such as `$PYTHONPATH`, for Python
+- you may want to override the `ld` library search path list (_e.g._, if you have conflicting libraries in it)
 
-You may prefer to set your own environment variables, but for a quick start with suggested settings,
+You may set your own environment variables, but for a quick start with suggested settings,
 the installed file `bin/this_iguana.sh` may be used as
 ```
 source bin/this_iguana.sh [OPTIONAL ARGUMENTS]...
@@ -127,7 +127,7 @@ OPTIONAL ARGUMENTS:
    quiet    don't print anything
 ```
 
-which may set or modify the following environment variables:
+which sets or modifies the following environment variables:
 
 | Variable                                                 | Modification                                                                                                                              |
 | ---                                                      | ---                                                                                                                                       |
@@ -135,4 +135,4 @@ which may set or modify the following environment variables:
 | `PYTHONPATH`                                             | adds paths to dependency and `iguana` Python packages, if Python bindings are installed                                                   |
 | `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and `iguana` libraries, if the optional argument `ld` was used                                                   |
 
-This file compatible with `bash` and `zsh, but not with `tcsh` or `csh`.
+`this_iguana.sh` is compatible with `bash` and `zsh, but not with `tcsh` or `csh`.
