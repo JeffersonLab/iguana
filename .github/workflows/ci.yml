@@ -234,20 +234,20 @@ jobs:
         if: ${{ inputs.runner == 'macos-latest' }}
       - name: tree artifacts
         run: tree
-      ### set env vars
+      ### set env vars - depends on runner and binding
       - name: source environment for Linux and python
         if: ${{ inputs.runner == 'ubuntu-latest' && matrix.binding == 'python' }}
         run: |
-          source iguana/bin/this_iguana.sh
+          source iguana/bin/this_iguana.sh verbose
           echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
           echo PYTHONPATH=$PYTHONPATH           >> $GITHUB_ENV
       - name: source environment for macOS and python
         if: ${{ inputs.runner == 'macos-latest' && matrix.binding == 'python' }}
         run: |
-          source iguana/bin/this_iguana.sh ld
+          source iguana/bin/this_iguana.sh verbose ld
           echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH     >> $GITHUB_ENV
           echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
-          echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV  # for cppyy on macOS
+          echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV  # for cppyy on macOS to be able to find dynamic libs
       ### run tests
       - name: test 00
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
@@ -296,7 +296,7 @@ jobs:
       ### build test
       - name: build
         run: |
-          source iguana/bin/this_iguana.sh
+          source iguana/bin/this_iguana.sh verbose
           .github/test-consumer-build.sh ${{ matrix.tool }}
       - name: readelf/otool executable
         run: |

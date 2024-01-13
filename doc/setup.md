@@ -124,7 +124,7 @@ OPTIONAL ARGUMENTS:
    ld       append library paths to LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH);
             by default these variables are NOT modified
 
-   quiet    don't print anything
+   verbose  print the relevant environment variable values
 ```
 
 which may set or modify the following environment variables:

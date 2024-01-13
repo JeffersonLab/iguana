@@ -7,10 +7,10 @@ this_dir=$(cd $(dirname $this_env)/.. && pwd -P)
 
 # parse arguments
 set_ld_path=false
-verbose=true
+verbose=false
 for arg in "$@"; do
-  [ "$arg" = "ld" ]    && set_ld_path=true
-  [ "$arg" = "quiet" ] && verbose=false
+  [ "$arg" = "ld"      ] && set_ld_path=true
+  [ "$arg" = "verbose" ] && verbose=true
 done
 
 # append to PKG_CONFIG_PATH
