@@ -15,7 +15,7 @@ for pkg in ['iguana'] + [p.split()[0] for p in pkgconfig.requires('iguana') if p
     cppyy.add_library_path(pkg_info['libdir'])
 
 # add libraries to cppyy
-for lib in ['hipo4', 'IguanaServices', 'IguanaAlgorithms']:
+for lib in ['hipo4', 'fmt', 'IguanaServices', 'IguanaAlgorithms']:
     cppyy.load_library(lib)
 
 # include header file(s)
