@@ -106,7 +106,7 @@ meson install -C build-iguana
 > [!TIP]
 > If you have trouble and want to try a clean build, wipe your build directory by running:
 > ```bash
-> meson setup --wipe build-iguana
+> meson setup --wipe build-iguana --native-file my-iguana.ini
 > ```
 > Then try to rebuild
 
