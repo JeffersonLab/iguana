@@ -22,7 +22,7 @@ The following sections list the dependencies and how to obtain them.
 >   git checkout 1.0.0                                               # checkout the tag '1.0.0'
 >   ```
 
-### :large_orange_diamond: `meson`: Build system used by `iguana`
+### :large_orange_diamond: `meson`: Build system used by Iguana
 <https://mesonbuild.com/>
 - Likely available in your package manager, but the latest version is preferred and may be installed with `pip`:
 ```bash
@@ -49,58 +49,74 @@ cmake --install build-hipo
 <a name="building"></a>
 ## Building and Installing
 
-- For convenience, a configuration script is provided.
-- Advanced users who want more control may skip to the "Using Meson Directly" section.
+Iguana uses [`meson`](https://mesonbuild.com/) as its build system. From here,
+we'll assume that you are in a working directory, which may be any directory.
+- it does not have to be your analysis working directory, since we are only
+_building_ Iguana at this time
+- you may also just use the top-level source code directory (`.`)
 
-### :large_blue_diamond: Using the Configuration Script
+We'll also assume the Iguana source code directory (this repository) is found at
+```
+/path/to/iguana
+```
 
-First, configure your `iguana` build using `configure.py`:
+### Set build options
+It's recommended to create an INI file to set the build options that you want
+to use. Copy the example INI file [`meson/build-iguana.ini`](meson/build-iguana.ini) to
+your working directory:
 ```bash
-./configure.py --help
+cp /path/to/iguana/meson/build-iguana.ini ./my-iguana.ini    # you may choose any file name
 ```
-The `--help` option will print the usage guide.
-Unless the dependencies are installed in one of the system default locations, you will need to specify the path to each of them, _e.g._,
+Then edit it, setting your preferred options; in particular, you'll need to set
+the dependency resolution options. Use [`meson/resolve-dependencies.py`](meson/resolve-dependencies.py)
+to help you:
 ```bash
-./configure.py --hipo /path/to/hipo_installation --fmt /path/to/fmt_installation
+/path/to/iguana/meson/resolve-dependencies.py --help    # prints the usage guide
 ```
-This will generate a configuration file (`build-iguana.ini`, by default) with the build settings, along with an installation script (`install-iguana.sh`).
-Inspect both of them, and if they look correct, proceed with building and installing `iguana` by running:
+See the [note on dependency resolution](dependency_resolution.md) for more guidance.
+
+### Configure your build
+Next, start an Iguana build directory; let's call it `build-iguana` (you may choose any name):
 ```bash
-./install-iguana.sh
+meson setup --native-file my-iguana.ini build-iguana /path/to/iguana
 ```
 
 > [!TIP]
-> You may edit the configuration file (`build-iguana.ini`, by default) to
-> change any settings, and rebuild `iguana` with `./install-iguana.sh`.
-> - this procedure is preferred if you just want to change some settings
-> - re-running `configure.py` will _overwrite_ your configuration file
+> If you _already_ have an Iguana build directory, and you have just changed options in your INI file, add the `--reconfigure` option.
+> Alternatively, run
+> ```bash
+> meson configure build-iguana -D<option>=<value>
+> ```
+
+> [!NOTE]
+> If you did not set `prefix` in your INI file, either:
+> - if you already have a build directory, run `meson configure --prefix=/path/to/iguana_installation
+> - if not, add the option `--prefix=/path/to/iguana_installation` to your `meson setup` command
+> - if you do not set `prefix`, it will default to a system installation
+>
+> The prefix must be an absolute path; if you want it to be relative to your
+> working directory, _e.g._ `./iguana/`, set it to `$(pwd)/iguana`
+
+# Compile and Install
+Now compile and install Iguana:
+```bash
+meson install -C build-iguana
+```
+> [!TIP]
+> You can use `meson compile` and `meson install`, if you want to separate compiling and installing
+> (_e.g._, if you do only want to build, but not install Iguana).
 
 > [!TIP]
-> If you have trouble and want to try a clean build, wipe your build directory (`build-iguana/`, by default). The safest
-> way to do this is:
+> If you have trouble and want to try a clean build, wipe your build directory by running:
 > ```bash
 > meson setup --wipe build-iguana
 > ```
 > Then try to rebuild
 
-### :large_blue_diamond: Using Meson Directly
-
-Instead of `configure.py`, use `meson` directly for more control:
-
-1. Follow the [note on dependency resolution](dependency_resolution.md)
-2. Build with `meson`, for example
-```bash
-meson setup --prefix=$(pwd)/iguana build-iguana /path/to/iguana/repository
-meson install -C build-iguana
-```
-
-> [!TIP]
-> `configure.py` produces a native file (`.ini`) which may be used by `meson setup` option `--native-file`.
-
 
 <a name="env"></a>
 ## Environment Variables (optional)
-The C++ `iguana` implementation does not require the use of any environment variables. However,
+The C++ Iguana implementation does not require the use of any environment variables. However,
 - some language bindings may benefit from variables such as `$PYTHONPATH`, for Python
 - you may want to override the linker library search path list (_e.g._, if you have conflicting libraries in it)
 
@@ -121,8 +137,8 @@ which sets or modifies the following environment variables:
 
 | Variable                                                 | Modification                                                                                                                              |
 | ---                                                      | ---                                                                                                                                       |
-| `PKG_CONFIG_PATH`                                        | adds paths to the `pkg-config` files (`.pc`) for dependencies and `iguana`; see [note on dependency resolution](dependency_resolution.md) |
-| `PYTHONPATH`                                             | adds paths to dependency and `iguana` Python packages, if Python bindings are installed                                                   |
-| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and `iguana` libraries, if the optional argument `ld` was used                                                   |
+| `PKG_CONFIG_PATH`                                        | adds paths to the `pkg-config` files (`.pc`) for dependencies and Iguana; see [note on dependency resolution](dependency_resolution.md)   |
+| `PYTHONPATH`                                             | adds paths to dependency and Iguana Python packages, if Python bindings are installed                                                     |
+| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries, if the optional argument `ld` was used                                                     |
 
 `this_iguana.sh` is compatible with `bash` and `zsh`, but not with `tcsh` or `csh`.

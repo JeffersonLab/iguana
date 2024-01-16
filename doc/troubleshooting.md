@@ -19,10 +19,6 @@ stdbuf -o0 myAnalysisProgram |& tee output.txt
 
 ### :large_blue_diamond: I got a crash, but the stack trace (or debugger) is not telling me exactly where
 
-Try enabling debugging symbols, either by:
-- set built-in option `buildtype` to `'debug'` in your build-configuration `.ini` file (or in your `meson` command)
-- use `--debug` when running `configure.py`
-
-Then rebuild `iguana`.
+Enable debugging symbols by setting the Iguana build option `buildtype` to `'debug'`, then rebuild.
 
 Remember to revert this change and rebuild, so that `iguana` runs with full optimization when you are processing large data sets (`buildtype = 'release'`).

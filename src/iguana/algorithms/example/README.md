@@ -25,6 +25,4 @@ Once you have generated your new algorithm, add it to the appropriate
 and get started coding!
 
 > [!TIP]
-> Enable debugging symbols when building, by either:
-> - set built-in option `buildtype` to `'debug'` in your build-configuration `.ini` file (or in your `meson` command)
-> - use `--debug` when running `configure.py`
+> Enable debugging symbols when building by setting the Iguana build option `buildtype` to `'debug'`.

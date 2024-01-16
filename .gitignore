@@ -1,13 +1,8 @@
-# build artifacts
-*.ini
-install-iguana.sh
+# common build artifacts
+/*.ini
 /build*/
 /iguana
 /install*/
-
-# local dependency builds
-/fmt
-/hipo
 
 # doxygen artifacts
 /doc/api

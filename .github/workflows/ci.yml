@@ -86,8 +86,8 @@ jobs:
       matrix:
         binding: [ cpp, python ]
         include:
-          - { binding: cpp,    configure_opts: ''         }
-          - { binding: python, configure_opts: '--python' }
+          - { binding: cpp,    extra_build_opts: ''              }
+          - { binding: python, extra_build_opts: '-Dpython=True' }
     steps:
       ### setup
       - uses: actions/checkout@v4
@@ -125,10 +125,20 @@ jobs:
         if: ${{ inputs.runner == 'macos-latest' }}
       - run: tree
       ### build iguana
-      - name: configure
-        run: ./configure.py --hipo hipo --fmt fmt --examples --no-documentation ${{ matrix.configure_opts }}
-      - name: build
-        run: ./install-iguana.sh
+      - name: meson setup
+        run: |
+          meson setup                                                    \
+            $(meson/resolve-dependencies.py --cli --hipo hipo --fmt fmt) \
+            -Dbuildtype     release                                      \
+            -Dprefix        $(pwd)/iguana                                \
+            -Dexamples      True                                         \
+            -Ddocumentation False                                        \
+            ${{ matrix.extra_build_opts }}                               \
+            build
+      - name: dump build options
+        run: meson configure build | cat
+      - run: meson compile -C build
+      - run: meson install -C build
       ### dump info about this build
       - name: dump build log
         if: always()
