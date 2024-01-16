@@ -10,10 +10,12 @@ Assuming a dependency is installed in `$prefix`, it uses one or more of the foll
 Take a look at each dependency's installation prefix to see which of these options
 are available.
 
+## Resolving Build Dependencies
+
 To use these dependencies with your software, they must be findable by its build system.
 The following sections explain how to do so with each.
 
-### Meson
+### :large_blue_diamond: Meson
 For `iguana`, the build system is `meson`, which accepts the build options
 ```bash
 -Dpkg_config_path=$prefix/lib/pkgconfig
@@ -21,7 +23,7 @@ For `iguana`, the build system is `meson`, which accepts the build options
 ```
 (where multiple paths are delimited by commas).
 
-### CMake
+### :large_blue_diamond: CMake
 For `cmake`, the `pkg-config` path can be combined with the `cmake` path, so only the
 build option
 ```bash
@@ -31,10 +33,26 @@ is needed; this assumes:
 - all dependencies are in `$prefix` (delimit multiple paths with semicolons)
 - `PKG_CONFIG_USE_CMAKE_PREFIX_PATH` has not been disabled.
 
-### General Case
+### :large_blue_diamond: General Case
 Environment variables may be used instead of build options for a general approach:
 ```bash
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
 export CMAKE_PREFIX_PATH=$prefix
 ```
 (where multiple paths are delimited by colons).
+
+`pkg-config` files (`.pc`) allow for usage of the `pkg-config` command. Assuming the package is `hipo4` and `hipo4.pc` is found in `PKG_CONFIG_PATH`, compiler flags may be found by
+```bash
+pkg-config --libs hipo4
+pkg-config --cflags hipo4
+```
+Any variable defined in `hipo4.pc` is accessible with `pkg-config --variable <variable>`.
+
+## Resolving Runtime Dependencies
+
+Depending on how the software was built, dependencies may also need to be findable at runtime. In `iguana`, we try to avoid this by
+setting [rpath variables](https://en.wikipedia.org/wiki/Rpath); this is preferred to avoid the usage of environment variables
+such as `LD_LIBRARY_PATH` or `DYLD_LIBRARY_PATH`, since they are globally mutable.
+
+However, depending on your local setup and the current state of your environment variables, you may need to set some variables
+such that `iguana` is prioritized. See [the Environment Variables section in the setup guide for more details](setup.md#env).
