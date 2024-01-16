@@ -133,13 +133,16 @@ jobs:
           echo opts=$(meson/resolve-dependencies.py $args --cli) >> $GITHUB_OUTPUT
       - name: meson setup
         run: |
-          # use the example INI file, and override some of its options
-          meson setup --native-file meson/build-iguana.ini build-iguana
-          meson configure \
+          # use the example INI file, adding `prefix` and dependency resolution opts
+          meson setup \
+            --native-file meson/build-iguana.ini \
             --prefix=$(pwd)/iguana \
+            ${{ steps.deps.outputs.opts }} \
+            build-iguana
+          # then override project build options
+          meson configure \
             -Dexamples=True \
             -Ddocumentation=False \
-            ${{ steps.deps.outputs.opts }} \
             ${{ matrix.binding_opts }} \
             build-iguana
       - name: dump build options
