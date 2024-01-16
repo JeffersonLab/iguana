@@ -13,8 +13,8 @@ The following sections list the dependencies and how to obtain them.
 
 > [!TIP]
 > - It's generally better to use your a package manager to install dependencies, _e.g._:
->   - `brew install <package>` macOS
->   - `apt install <package>`, `dnf install <package>`, `pacman -S <package` on Linux
+>   - macOS Homebrew: `brew install <package>`
+>   - Linux (depends on distribution) examples: `apt install <package>`, `dnf install <package>`, `pacman -S <package>`
 >   - The name of the package may be different for different package managers; search for and read about the package before installing it
 > - If you obtain a dependency from Github (or similar), it's best practice to obtain a recent tag rather than the latest version on the main branch:
 >   ```
