@@ -2,8 +2,13 @@ project(
   'iguana',
   'cpp',
   license:         'LGPLv3',
-  default_options: [ 'cpp_std=c++17' ],
-  meson_version:   '>=1.1',
+  default_options: {
+    'cpp_std':               'c++17',
+    'buildtype':             'release',
+    'libdir':                'lib',
+    'pkgconfig.relocatable': 'true',
+  },
+  meson_version:   '>=1.2',
   version: run_command(
     meson.project_source_root() / 'meson' / 'detect-version.sh',
     meson.project_source_root(),

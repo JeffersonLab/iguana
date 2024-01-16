@@ -126,26 +126,21 @@ jobs:
       - run: tree
       ### build iguana
       - name: resolve dependencies
-        id: deps
-        run: |
-          args="--hipo ./hipo --fmt ./fmt"
-          meson/resolve-dependencies.py $args
-          echo opts=$(meson/resolve-dependencies.py $args --cli) >> $GITHUB_OUTPUT
+        run: meson/resolve-dependencies.py --hipo ./hipo --fmt ./fmt --ini native.ini
       - name: meson setup
+        run: meson setup --native-file=native.ini build-iguana
+      - name: meson configure
         run: |
-          # use the example INI file, and override its options
-          meson setup \
-            --native-file=meson/build-iguana.ini \
-            ${{ steps.deps.outputs.opts }} \
-            --prefix=$(pwd)/iguana \
-            -Dexamples=True \
-            -Ddocumentation=False \
+          meson configure              \
+            --prefix=$(pwd)/iguana     \
+            -Dexamples=True            \
+            -Ddocumentation=False      \
             ${{ matrix.binding_opts }} \
             build-iguana
       - name: dump build options
         run: meson configure build-iguana | cat
-      - run: meson compile -C build-iguana
-      - run: meson install -C build-iguana
+      - name: meson install
+        run: meson install -C build-iguana
       ### dump info about this build
       - name: dump build log
         if: always()

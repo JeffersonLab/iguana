@@ -19,6 +19,11 @@ stdbuf -o0 myAnalysisProgram |& tee output.txt
 
 ### :large_blue_diamond: I got a crash, but the stack trace (or debugger) is not telling me exactly where
 
-Enable debugging symbols by setting the Iguana build option `buildtype` to `'debug'`, then rebuild.
-
-Remember to revert this change and rebuild, so that `iguana` runs with full optimization when you are processing large data sets (`buildtype = 'release'`).
+Enable debugging symbols by setting the Iguana build option `buildtype` to `'debug'`, then rebuild:
+```bash
+meson configure -Dbuildtype=debug build-iguana   # assumes your build directory is 'build-iguana'
+meson compile -C build-iguana                    # rebuild
+meson install -C build-iguana                    # if you need to re-install
+```
+Remember to revert this change and rebuild/re-install, so that Iguana runs with
+full optimization when you are processing large data sets (`-Dbuildtype=release`).

@@ -1,8 +1,7 @@
-# common build artifacts
+# in-source build artifacts
 /*.ini
 /build*/
 /iguana
-/install*/
 
 # doxygen artifacts
 /doc/api
