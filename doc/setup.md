@@ -53,7 +53,7 @@ Iguana uses [`meson`](https://mesonbuild.com/) as its build system. From here, w
 - you are in a working directory, which may be any directory
 - the Iguana source code directory (this repository) is found at `/path/to/iguana-source`
 
-### 1. Resolve Dependencies
+### Step 1. Resolve Dependencies
 
 Any dependencies which are not installed in the system-wide default locations will need to be found.
 Use [`meson/resolve-dependencies.py`](meson/resolve-dependencies.py) to help you:
@@ -61,12 +61,12 @@ Use [`meson/resolve-dependencies.py`](meson/resolve-dependencies.py) to help you
 /path/to/iguana-source/meson/resolve-dependencies.py --help    # prints the usage guide
 ```
 Tell it where your dependencies are installed and it will tell you the build options
-that you need for the next step; you can also choose to write those build options to an INI (native) file.
+that you need for Step 2; you can also choose to write those build options to an INI (native) file.
 
 See also the [note on dependency resolution](dependency_resolution.md) for more general guidance.
 
 
-### 2. Generate a build directory
+### Step 2. Generate a build directory
 
 Make a build directory named `build-iguana` (you may choose any name):
 ```bash
@@ -74,7 +74,7 @@ meson setup build-iguana /path/to/iguana-source [BUILD_OPTIONS_FROM_STEP_1]
 ```
 You'll need to replace `[BUILD_OPTIONS_FROM_STEP_1]` with the build options from Step 1 above.
 
-### 3. Set build options
+### Step 3. Set build options
 
 Now let's configure the build directory (assuming its `./build-iguana` here).
 If you will _install_ `iguana` (recommended), set an installation prefix:
@@ -92,6 +92,7 @@ enable building of Iguana examples, run
 ```bash
 meson configure -Dexamples=true build-iguana
 ```
+You can add as many `-D<option>=value` arguments as you need.
 
 > [!TIP]
 > You can see all of your options' values in the build directory `build-iguana` by running:
@@ -102,7 +103,7 @@ meson configure -Dexamples=true build-iguana
 > [!TIP]
 > You can also set all of your build options in Step 2, since `meson setup` accepts similar build-options arguments.
 
-### 4. Compile and Install
+### Step 4. Compile and Install
 Now compile and install Iguana:
 ```bash
 meson compile -C build-iguana   # builds Iguana, filling your build directory
