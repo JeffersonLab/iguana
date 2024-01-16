@@ -135,7 +135,7 @@ jobs:
         run: |
           # use the example INI file, adding `prefix` and dependency resolution opts
           meson setup \
-            --native-file meson/build-iguana.ini \
+            --native-file=meson/build-iguana.ini \
             --prefix=$(pwd)/iguana \
             ${{ steps.deps.outputs.opts }} \
             build-iguana

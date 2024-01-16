@@ -81,9 +81,9 @@ if(len(cmake_prefix_path) > 0):
 # CLI options
 cli_opts = []
 if(len(pkg_config_path) > 0):
-    cli_opts.append(f'--pkg_config_path=\'{",".join(pkg_config_path)}\'')
+    cli_opts.append(f'--pkg-config-path={",".join(pkg_config_path)}')
 if(len(cmake_prefix_path) > 0):
-    cli_opts.append(f'--cmake_prefix_path=\'{",".join(cmake_prefix_path)}\'')
+    cli_opts.append(f'--cmake-prefix-path={",".join(cmake_prefix_path)}')
 
 ##################################################
 # print
