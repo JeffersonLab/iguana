@@ -86,8 +86,8 @@ jobs:
       matrix:
         binding: [ cpp, python ]
         include:
-          - { binding: cpp,    extra_build_opts: ''              }
-          - { binding: python, extra_build_opts: '-Dpython=True' }
+          - { binding: cpp,    binding_opts: ''                   }
+          - { binding: python, binding_opts: '-Dbind_python=True' }
     steps:
       ### setup
       - uses: actions/checkout@v4
@@ -128,23 +128,24 @@ jobs:
       - name: resolve dependencies
         id: deps
         run: |
-          args="--hipo hipo --fmt fmt"
+          args="--hipo ./hipo --fmt ./fmt"
           meson/resolve-dependencies.py $args
           echo opts=$(meson/resolve-dependencies.py $args --cli) >> $GITHUB_OUTPUT
       - name: meson setup
         run: |
-          meson setup                      \
+          # use the example INI file, and override some of its options
+          meson setup --native-file meson/build-iguana.ini build-iguana
+          meson configure \
+            --prefix=$(pwd)/iguana \
+            -Dexamples=True \
+            -Ddocumentation=False \
             ${{ steps.deps.outputs.opts }} \
-            -Dbuildtype=release            \
-            -Dprefix=$(pwd)/iguana         \
-            -Dexamples=True                \
-            -Ddocumentation=False          \
-            ${{ matrix.extra_build_opts }} \
-            build
+            ${{ matrix.binding_opts }} \
+            build-iguana
       - name: dump build options
-        run: meson configure build | cat
-      - run: meson compile -C build
-      - run: meson install -C build
+        run: meson configure build-iguana | cat
+      - run: meson compile -C build-iguana
+      - run: meson install -C build-iguana
       ### dump info about this build
       - name: dump build log
         if: always()
