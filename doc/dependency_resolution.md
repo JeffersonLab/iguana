@@ -12,7 +12,7 @@ are available.
 
 ## Resolving Build Dependencies
 
-To use these dependencies with your software, they must be findable by its build system
+To use these dependencies with your software, they must be findable by its build system.
 The following sections explain how to do so with each.
 
 ### :large_blue_diamond: Meson
