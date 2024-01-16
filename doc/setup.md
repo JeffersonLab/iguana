@@ -85,12 +85,17 @@ meson setup --native-file my-iguana.ini build-iguana /path/to/iguana
 ```
 
 > [!TIP]
+> You can run `meson configure` to get information about the build options:
+> ```bash
+> meson configure /path/to/iguana   # print option default values and their descriptions
+> meson configure build-iguana      # your options' values and their descriptions
+> ```
+
+> [!TIP]
 > If you _already_ have an Iguana build directory, and you have just changed options in your INI file, add the `--reconfigure` option.
-> Alternatively, run `meson configure build-iguana -D<option>=<value>`
 
 > [!NOTE]
-> If you did not set `prefix` in your INI file, you can set it with the `--prefix` option of
-> `meson setup` or `meson configure`
+> If you did not set `prefix` in your INI file, you can set it with the `--prefix` option of `meson setup`
 > - If you do _not_ set `prefix`, it will default to a system installation.
 > - The prefix must be an absolute path; if you want it to be relative to your working directory, _e.g._ `./iguana/`, set it to `$(pwd)/iguana`
 

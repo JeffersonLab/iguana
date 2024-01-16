@@ -112,7 +112,7 @@ if(verbose or args.ini):
         print(opt)
 print_verbose('\n')
 
-print_verbose('>>> Alternatively, use these build options when running `meson setup` or `meson configure`:\n')
+print_verbose('>>> Alternatively, use these build options when running `meson setup`:\n')
 if(verbose or args.cli):
     print(f'{" ".join(cli_opts)}')
 print_verbose('\n')
