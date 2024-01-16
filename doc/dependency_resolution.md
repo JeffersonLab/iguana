@@ -50,13 +50,9 @@ Any variable defined in `hipo4.pc` is accessible with `pkg-config --variable <va
 
 ## Resolving Runtime Dependencies
 
-TODO: change these notes into documentation
+Depending on how the software was built, dependencies may also need to be findable at runtime. In `iguana`, we try to avoid this by
+setting [rpath variables](https://en.wikipedia.org/wiki/Rpath); this is preferred to avoid the usage of environment variables
+such as `LD_LIBRARY_PATH` or `DYLD_LIBRARY_PATH`, since they are globally mutable.
 
-- prefer `rpath`s over `$LD_LIBRARY_PATH` or `$DYLD_LIBRARY_PATH` (or other
-  environment variables), since they are globally mutable
-- both `rpaths` and environment variables are OS-dependent
-- while `rpaths` are typical in build files, they are usually stripped at
-installation, otherwise dependencies cannot be relocated (easily)
-- containerization with one installation prefix removes the need of both
-  `rpath`s and `ld` environment vars since dependency files will all be findable in the
-  default, assumed places
+However, depending on your local setup and the current state of your environment variables, you may need to set some variables
+such that `iguana` is prioritized. See [the Environment Variables section in the setup guide for more details](setup.md).
