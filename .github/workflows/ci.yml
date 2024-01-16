@@ -33,7 +33,7 @@ jobs:
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
-          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo
           cmake --build build -j2
           cmake --install build
           tar czvf hipo{.tar.gz,}
@@ -129,10 +129,10 @@ jobs:
         run: |
           meson setup                                                    \
             $(meson/resolve-dependencies.py --cli --hipo hipo --fmt fmt) \
-            -Dbuildtype     release                                      \
-            -Dprefix        $(pwd)/iguana                                \
-            -Dexamples      True                                         \
-            -Ddocumentation False                                        \
+            -Dbuildtype=release                                          \
+            -Dprefix=$(pwd)/iguana                                       \
+            -Dexamples=True                                              \
+            -Ddocumentation=False                                        \
             ${{ matrix.extra_build_opts }}                               \
             build
       - name: dump build options
