@@ -126,7 +126,12 @@ jobs:
       - run: tree
       ### build iguana
       - name: resolve dependencies
-        run: meson/resolve-dependencies.py --hipo ./hipo --fmt ./fmt --ini native.ini
+        run: |
+          if [ ${{ inputs.runner }} = "macos-latest" ]; then
+            meson/resolve-dependencies.py --ini native.ini --hipo ./hipo # fmt is a system installation on macOS runners
+          else
+            meson/resolve-dependencies.py --ini native.ini --hipo ./hipo --fmt ./fmt # fmt is locally built on Linux runners
+          fi
       - name: meson setup
         run: meson setup --native-file=native.ini build-iguana
       - name: meson configure
