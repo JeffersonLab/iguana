@@ -55,12 +55,15 @@ we'll assume that you are in a working directory, which may be any directory.
 _building_ Iguana at this time
 - you may also just use the top-level source code directory (`.`)
 
-We'll also assume the Iguana source code directory (this repository) is found at
-```
-/path/to/iguana
+We'll also assume the Iguana source code directory (this repository) is found at `/path/to/iguana`
+
+Follow guidance in the next 3 steps below; as a quick reference, here are the commands you'll run:
+```bash
+meson setup --native-file <INI_file> <build_directory> <source_directory>
+meson install -C <build_directory>
 ```
 
-### Set build options
+### 1. Set build options
 It's recommended to create an INI file to set the build options that you want
 to use. Copy the example INI file [`meson/build-iguana.ini`](meson/build-iguana.ini) to
 your working directory:
@@ -75,7 +78,7 @@ to help you:
 ```
 See the [note on dependency resolution](dependency_resolution.md) for more guidance.
 
-### Configure your build
+### 2.Configure your build
 Next, start an Iguana build directory; let's call it `build-iguana` (you may choose any name):
 ```bash
 meson setup --native-file my-iguana.ini build-iguana /path/to/iguana
@@ -83,21 +86,15 @@ meson setup --native-file my-iguana.ini build-iguana /path/to/iguana
 
 > [!TIP]
 > If you _already_ have an Iguana build directory, and you have just changed options in your INI file, add the `--reconfigure` option.
-> Alternatively, run
-> ```bash
-> meson configure build-iguana -D<option>=<value>
-> ```
+> Alternatively, run `meson configure build-iguana -D<option>=<value>`
 
 > [!NOTE]
-> If you did not set `prefix` in your INI file, either:
-> - if you already have a build directory, run `meson configure --prefix=/path/to/iguana_installation
-> - if not, add the option `--prefix=/path/to/iguana_installation` to your `meson setup` command
-> - if you do not set `prefix`, it will default to a system installation
->
-> The prefix must be an absolute path; if you want it to be relative to your
-> working directory, _e.g._ `./iguana/`, set it to `$(pwd)/iguana`
+> If you did not set `prefix` in your INI file, you can set it with the `--prefix` option of
+> `meson setup` or `meson configure`
+> - If you do _not_ set `prefix`, it will default to a system installation.
+> - The prefix must be an absolute path; if you want it to be relative to your working directory, _e.g._ `./iguana/`, set it to `$(pwd)/iguana`
 
-# Compile and Install
+### 3. Compile and Install
 Now compile and install Iguana:
 ```bash
 meson install -C build-iguana
