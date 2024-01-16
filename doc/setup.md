@@ -78,7 +78,7 @@ to help you:
 ```
 See the [note on dependency resolution](dependency_resolution.md) for more guidance.
 
-### 2.Configure your build
+### 2. Configure your build
 Next, start an Iguana build directory; let's call it `build-iguana` (you may choose any name):
 ```bash
 meson setup --native-file my-iguana.ini build-iguana /path/to/iguana
