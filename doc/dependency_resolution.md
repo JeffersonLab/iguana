@@ -55,4 +55,4 @@ setting [rpath variables](https://en.wikipedia.org/wiki/Rpath); this is preferre
 such as `LD_LIBRARY_PATH` or `DYLD_LIBRARY_PATH`, since they are globally mutable.
 
 However, depending on your local setup and the current state of your environment variables, you may need to set some variables
-such that `iguana` is prioritized. See [the Environment Variables section in the setup guide for more details](setup.md).
+such that `iguana` is prioritized. See [the Environment Variables section in the setup guide for more details](setup.md#env).
