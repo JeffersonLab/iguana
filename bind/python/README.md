@@ -1,6 +1,6 @@
 # Setup
 
-## Install Python Packages
+## Install Dependency Packages
 
 > [!TIP]
 > Since you will need to install some additional Python packages, we recommend setting up a Python Virtual Environment, _e.g._, with `venv`.
@@ -25,7 +25,7 @@ For Python to be able to find and use these bindings, you need to set some envir
 - on macOS only, shared libraries must be found in `DYLD_LIBRARY_PATH`
 
 > [!TIP]
-> You may use `this_iguana.sh` to set these variables automatically. Assuming you installed `iguana` to `./iguana/`:
+> You may use `this_iguana.sh` to set these variables automatically. Assuming you installed Iguana to `./iguana/`:
 > - on Linux: `source iguana/bin/this_iguana.sh`
 > - on macOS: `source iguana/bin/this_iguana.sh ld` (where `ld` is needed to set `DYLD_LIBRARY_PATH`)
 
