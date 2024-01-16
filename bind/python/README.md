@@ -17,11 +17,20 @@ pip install -r bind/python/requirements.txt
 > These bindings may not work for Python versions below 3.10
 
 ## Building the Python Bindings
-Use the `--python` option when running `configure.py`, or edit your `build-iguana.ini` file
-to set the `bind_python` option to `True`. Then rebuild `iguana`.
+To enable Python bindings when building `iguana`, set the build option `bind_python` to `True`
+(rebuild `iguana` if you changed this option).
 
 For Python to be able to find and use these bindings, you need to set some environment variables:
-- on Linux: `source iguana/bin/this_iguana.sh`
-- on macOS: `source iguana/bin/this_iguana.sh ld`
+- `PYTHONPATH` must include the path to the `python` subdirectory of the `iguana` installation
+- on macOS only, shared libraries must be found in `DYLD_LIBRARY_PATH`
 
-Then try the examples `iguana/bin/iguana-example*.py`
+> [!TIP]
+> You may use `this_iguana.sh` to set these variables automatically. Assuming you installed `iguana` to `./iguana/`:
+> - on Linux: `source iguana/bin/this_iguana.sh`
+> - on macOS: `source iguana/bin/this_iguana.sh ld` (where `ld` is needed to set `DYLD_LIBRARY_PATH`)
+
+## Running the Examples
+
+Example Python scripts are found in this directory as `iguana-example-*.py`; they will be installed in the `bin/` subdirectory.
+
+Most of them are analogous to the C++ examples, but some may be specific to the Python bindings.
