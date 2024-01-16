@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, cppyy, pkgconfig
+import cppyy, pkgconfig
 
 # add include and library directories to cppyy
 for pkg in ['iguana'] + [p.split()[0] for p in pkgconfig.requires('iguana') if p!='']:

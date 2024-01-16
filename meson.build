@@ -16,13 +16,29 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 fmt_dep  = dependency('fmt',   version: '>=9.1.0', method: 'pkg-config')
 hipo_dep = dependency('hipo4', version: '>=4.0.1', method: 'pkg-config')
 
+# list of dependencies
+# FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
+# ordered such that the ones users are *least likely* to try to build
+# themselves are listed last (see FIXME in meson/this_iguana.sh.in)
+full_dep_list = [
+  hipo_dep,
+  fmt_dep,
+]
+
+# dependency libdirs
+dep_lib_paths = []
+foreach dep : full_dep_list
+  dep_lib_paths += dep.get_variable(pkgconfig: 'libdir')
+endforeach
+
 # general project vars
 project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
-project_deps      = declare_dependency(dependencies: [ fmt_dep, hipo_dep ])
+project_deps      = declare_dependency(dependencies: full_dep_list)
 project_pkg_vars  = [
-  'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path'))
+  'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
+  'dep_libdirs='       + ':'.join(dep_lib_paths),
 ]
 
 # build and install shared libraries
@@ -40,7 +56,7 @@ pkg.generate(
   name:        meson.project_name(),
   description: project_description,
   libraries:   project_libs,
-  requires:    [ fmt_dep, hipo_dep ],
+  requires:    full_dep_list,
   variables:   project_pkg_vars,
 )
 
@@ -63,8 +79,13 @@ if get_option('documentation')
 endif
 
 # install environment setup file
-install_data(
-  'meson' / 'this_iguana.sh.in',
-  install_dir: get_option('bindir'),
-  rename:      'this_iguana.sh'
+configure_file(
+  input:         'meson' / 'this_iguana.sh.in',
+  output:        'this_iguana.sh',
+  install:       true,
+  install_dir:   get_option('bindir'),
+  configuration: {
+    'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
+    'python':  get_option('bind_python') ? 'true' : 'false',
+  },
 )
