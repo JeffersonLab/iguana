@@ -45,7 +45,15 @@ namespace iguana::example {
     public:
 
       //############################################################################
-      //# public functions go here
+      //# define `Start`, `Run`, and `Stop`
+      //# - this is boilerplate (every algorithm should have this)
+      //############################################################################
+      void Start(hipo::banklist& banks) override;
+      void Run(hipo::banklist& banks) const override;
+      void Stop() override;
+
+      //############################################################################
+      //# additional public functions go here
       //# - typically these are "action functions", which expose the primary operation of an algorithm
       //# - these functions are _unique_ to each algorithm, and therefore are not defined in the
       //#   `Algorithm` base class

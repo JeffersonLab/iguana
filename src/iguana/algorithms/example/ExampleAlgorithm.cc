@@ -19,11 +19,9 @@ namespace iguana::example {
 
   //############################################################################
   //# define `ExampleAlgorithm::Start()`
-  //# - again, a preprocessor macro is used here
-  //# - this overrides the virtual function `Algorithm::Start`; see `Algorithm.h`
-  //#   for its parameters and return type
+  //# - this overrides the virtual function `Algorithm::Start`
   //############################################################################
-  START_IGUANA_ALGORITHM(ExampleAlgorithm) {
+  void ExampleAlgorithm::Start(hipo::banklist& banks) {
     //############################################################################
     //# define configuration options, their default values, and cache them
     //# - see `Algorithm.h` for more details
@@ -45,14 +43,13 @@ namespace iguana::example {
 
   //############################################################################
   //# define `ExampleAlgorithm::Run()`
-  //# - this overrides the virtual function `Algorithm::Run`; see `Algorithm.h`
-  //#   for its parameters and return type
+  //# - this overrides the virtual function `Algorithm::Run`
   //# - note that this method must be _thread safe_, for example, you cannot modify
   //#   class instance objects
   //# - try to avoid expensive operations here; instead, put them in the `Start` method
   //#   if it is reasonable to do so
   //############################################################################
-  RUN_IGUANA_ALGORITHM(ExampleAlgorithm) {
+  void ExampleAlgorithm::Run(hipo::banklist& banks) const {
     //############################################################################
     //# get the banks; here we just need `REC::Particle`
     //############################################################################
@@ -101,11 +98,10 @@ namespace iguana::example {
 
   //############################################################################
   //# define `ExampleAlgorithm::Stop()`
-  //# - this overrides the virtual function `Algorithm::Stop`; see `Algorithm.h`
-  //#   for its parameters and return type
+  //# - this overrides the virtual function `Algorithm::Stop`
   //# - in this example, there is nothing to do
   //############################################################################
-  STOP_IGUANA_ALGORITHM(ExampleAlgorithm) {
+  void ExampleAlgorithm::Stop() {
   }
 
 }

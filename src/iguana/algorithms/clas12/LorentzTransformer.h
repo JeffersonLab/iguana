@@ -21,6 +21,10 @@ namespace iguana::clas12 {
       /// Generic Lorentz vector container type
       using lorentz_vector_t = std::tuple<lorentz_element_t, lorentz_element_t, lorentz_element_t, lorentz_element_t>;
 
+      void Start(hipo::banklist& banks) override;
+      void Run(hipo::banklist& banks) const override;
+      void Stop() override;
+
       /// **Action function**: transform the 4-momentum @f$p=(p_x,p_y,p_z,E)@f$ to the specified frame
       /// @param px @f$p_x@f$
       /// @param py @f$p_y@f$

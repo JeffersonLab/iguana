@@ -16,9 +16,6 @@
 /// @param ALGO_FULL_NAME the full name of this algorithm, used by `iguana::AlgorithmFactory`
 #define IGUANA_ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME)  \
   using Algorithm::Start;                                           \
-  void Start(hipo::banklist& banks) override;                       \
-  void Run(hipo::banklist& banks) const override;                   \
-  void Stop() override;                                             \
   static algo_t Creator() { return std::make_unique<ALGO_NAME>(); } \
   static std::string ClassName() { return #ALGO_FULL_NAME; }
 
@@ -42,18 +39,3 @@
 /// @param ALGO_NAME the name of the algorithm class
 #define REGISTER_IGUANA_ALGORITHM(ALGO_NAME) \
   bool ALGO_NAME::s_registered = AlgorithmFactory::Register(ALGO_NAME::ClassName(), ALGO_NAME::Creator);
-
-/// Define the algorithm's `Start` method
-/// @param ALGO_NAME the name of the algorithm class
-#define START_IGUANA_ALGORITHM(ALGO_NAME) \
-  void ALGO_NAME::Start(hipo::banklist& banks)
-
-/// Define the algorithm's `Run` method
-/// @param ALGO_NAME the name of the algorithm class
-#define RUN_IGUANA_ALGORITHM(ALGO_NAME) \
-  void ALGO_NAME::Run(hipo::banklist& banks) const
-
-/// Define the algorithm's `Stop` method
-/// @param ALGO_NAME the name of the algorithm class
-#define STOP_IGUANA_ALGORITHM(ALGO_NAME) \
-  void ALGO_NAME::Stop()
