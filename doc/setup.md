@@ -12,17 +12,17 @@
 The following sections list the dependencies and how to obtain them.
 
 > [!TIP]
-> - It's generally better to use your a package manager to install dependencies, _e.g._:
->   - macOS Homebrew: `brew install <package>`
->   - Linux (depends on distribution) examples: `apt install <package>`, `dnf install <package>`, `pacman -S <package>`
->   - The name of the package may be different for different package managers; search for and read about the package before installing it
+> It's generally better to use your a package manager to install dependencies, _e.g._:
+> - macOS Homebrew: `brew install <package>`
+> - Linux (depends on distribution) examples: `apt install <package>`, `dnf install <package>`, `pacman -S <package>`
+> - The name of the package may be different for different package managers; search for and read about the package before installing it
 
 > [!IMPORTANT]
-> - If you obtain a dependency from GitHub (or similar), it's best practice to obtain a recent tag rather than the latest version on the main branch:
->   ```
->   git log --tags --decorate --simplify-by-decoration --oneline     # list all the tags (latest first)
->   git checkout 1.0.0                                               # checkout the tag '1.0.0'
->   ```
+> If you obtain a dependency from GitHub (or similar), it's best practice to obtain a recent tag rather than the latest version on the main branch:
+> ```
+> git log --tags --decorate --simplify-by-decoration --oneline     # list all the tags (latest first)
+> git checkout 1.0.0                                               # checkout the tag '1.0.0'
+> ```
 
 ### 🔶 `meson`: Build system used by Iguana
 <https://mesonbuild.com/>
