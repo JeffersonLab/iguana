@@ -9,7 +9,7 @@
 <a name="dependencies"></a>
 ## 🟠 Dependencies
 
-The following sections list the dependencies and how to obtain them.
+The following sections (🔶) list the dependencies and how to obtain them.
 
 > [!TIP]
 > It's generally better to use your a package manager to install dependencies, _e.g._:
