@@ -1,7 +1,7 @@
 # Setup Guide
 
-| **Table of Contents**                                    |
-| ---                                                      |
+| **Table of Contents**                       |
+| ---                                         |
 | 🟠 [Dependencies](#dependencies)            |
 | 🟠 [Building and Installing](#building)     |
 | 🟠 [Environment Variables (optional)](#env) |
@@ -70,46 +70,43 @@ See also the [note on dependency resolution](dependency_resolution.md) for more 
 
 ### 🟩 Step 2: Generate a build directory
 
-Make a build directory named `build-iguana` (you may choose any name):
+Make a build directory named `build-iguana` (you may choose any name), then `cd` into it:
 ```bash
 meson setup build-iguana /path/to/iguana-source [BUILD_OPTIONS_FROM_STEP_1]
+cd build-iguana
 ```
 You'll need to replace `[BUILD_OPTIONS_FROM_STEP_1]` with the build options from Step 1 above.
 
+> [!IMPORTANT]
+> The next steps assume your current directory is the build directory. Refer to `meson` documentation if
+> you'd rather be in a different directory.
+
 ### 🟩 Step 3: Set build options
 
-Now let's configure the build directory (assuming its `./build-iguana` here).
 If you will _install_ `iguana` (recommended), set an installation prefix:
 ```bash
-meson configure --prefix=/path/to/iguana-installation build-iguana
+meson configure --prefix=/path/to/iguana-installation  # must be an ABSOLUTE path
 ```
-The path must be _absolute_; if you want it relative to your current working directory, _e.g. `./iguana`, use `--prefix=$(pwd)/iguana`
 
-Additional build options and their descriptions may be found by running
+_All_ build options and their descriptions may be found by running
 ```bash
-meson configure /path/to/iguana
+meson configure
 ```
-**That's a _lot_ of text!** However, the most important build options are near the bottom, under "Project options". For example, to
-enable building of Iguana examples, run
+**but that's a _lot_ of text!** The _most important_ build options are near the bottom, under **"Project options"**. For example, to
+enable building of Iguana examples, run:
 ```bash
-meson configure -Dexamples=true build-iguana
+meson configure -Dexamples=true
 ```
 You can add as many `-D<option>=value` arguments as you need.
 
 > [!TIP]
-> You can see all of your options' values in the build directory `build-iguana` by running:
-> ```bash
-> meson configure build-iguana
-> ```
-
-> [!TIP]
-> You can also set all of your build options in Step 2, since `meson setup` accepts similar build-options arguments.
+> The `meson setup` command from Step 2 also accepts `-D` arguments
 
 ### 🟩 Step 4: Compile and Install
 Now compile and install Iguana:
 ```bash
-meson compile -C build-iguana   # builds Iguana, filling your build directory
-meson install -C build-iguana   # installs Iguana to your prefix (build option 'prefix')
+meson compile   # builds Iguana, filling your build directory
+meson install   # installs Iguana to your prefix (build option 'prefix')
 ```
 
 > [!TIP]
@@ -119,7 +116,7 @@ meson install -C build-iguana   # installs Iguana to your prefix (build option '
 > If you have trouble and want to try a clean build, do _not_ delete your build directory (since you spent the time to configure it);
 > instead, clean your build directory by running:
 > ```bash
-> meson setup --wipe build-iguana /path/to/iguana-source
+> meson setup --wipe /path/to/iguana-source
 > ```
 > This will preserve your build options; then try to rebuild.
 
