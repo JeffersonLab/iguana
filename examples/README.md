@@ -1,7 +1,7 @@
 # Examples
 
-All of the examples (`*.cc`) in this directory may be built using the
-`--examples` option of `configure.py`; they will be installed in the `bin/`
+All of the examples (`*.cc`) in this directory may be built if the Iguana build
+option `examples` is set to `True`. They will be installed in the `bin/`
 subdirectory of your `iguana` installation.
 
 If you would like to integrate `iguana` into an existing analysis, you'll need

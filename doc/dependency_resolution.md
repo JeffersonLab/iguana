@@ -15,7 +15,7 @@ are available.
 To use these dependencies with your software, they must be findable by its build system.
 The following sections explain how to do so with each.
 
-### :large_blue_diamond: Meson
+### 🔷 Meson
 For `iguana`, the build system is `meson`, which accepts the build options
 ```bash
 -Dpkg_config_path=$prefix/lib/pkgconfig
@@ -23,7 +23,7 @@ For `iguana`, the build system is `meson`, which accepts the build options
 ```
 (where multiple paths are delimited by commas).
 
-### :large_blue_diamond: CMake
+### 🔷 CMake
 For `cmake`, the `pkg-config` path can be combined with the `cmake` path, so only the
 build option
 ```bash
@@ -33,7 +33,7 @@ is needed; this assumes:
 - all dependencies are in `$prefix` (delimit multiple paths with semicolons)
 - `PKG_CONFIG_USE_CMAKE_PREFIX_PATH` has not been disabled.
 
-### :large_blue_diamond: General Case
+### 🔷 General Case
 Environment variables may be used instead of build options for a general approach:
 ```bash
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig

@@ -1,3 +1,3 @@
-option('examples',      type: 'boolean', value: false, description: 'Build examples')
-option('documentation', type: 'boolean', value: false, description: 'Generate API documentation')
-option('bind_python',   type: 'boolean', value: false, description: 'Generate Python bindings')
+option('examples',      type: 'boolean', value: false, description: 'Build Iguana C++ examples')
+option('documentation', type: 'boolean', value: false, description: 'Generate API documentation (requires Doxygen)')
+option('bind_python',   type: 'boolean', value: false, description: 'Generate Python bindings and their examples')

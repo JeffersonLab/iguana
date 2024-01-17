@@ -1,6 +1,6 @@
 # Troubleshooting Notes
 
-### :large_blue_diamond: My output appears to be out of order: errors are not printed exactly when they occur
+### 🔵 My output appears to be out of order: errors are not printed exactly when they occur
 
 If you redirect `stdout` and `stderr` to a file, you may notice that `stderr` lines are out-of-order with respect to the `stdout` lines; for example:
 ```bash
@@ -17,12 +17,14 @@ stdbuf -o0 myAnalysisProgram |& tee output.txt
 > [!NOTE]
 > `stdbuf` on macOS may be installed as `gstdbuf`, from the Homebrew package `coreutils`.
 
-### :large_blue_diamond: I got a crash, but the stack trace (or debugger) is not telling me exactly where
+### 🔵 I got a crash, but the stack trace (or debugger) is not telling me exactly where
 
-Try enabling debugging symbols, either by:
-- set built-in option `buildtype` to `'debug'` in your build-configuration `.ini` file (or in your `meson` command)
-- use `--debug` when running `configure.py`
+Enable debugging symbols by setting the Iguana build option `buildtype` to `'debug'`, then rebuild.
+Assuming you're in your build directory, run:
+```bash
+meson configure -Dbuildtype=debug
+```
+Then rebuild (`meson compile` and/or `meson install`).
 
-Then rebuild `iguana`.
-
-Remember to revert this change and rebuild, so that `iguana` runs with full optimization when you are processing large data sets (`buildtype = 'release'`).
+Remember to revert this change and rebuild/re-install, so that Iguana runs with
+full optimization when you are processing large data sets (`-Dbuildtype=release`).
