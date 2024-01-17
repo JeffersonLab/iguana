@@ -111,7 +111,7 @@ meson install   # installs Iguana to your prefix (build option 'prefix')
 ```
 
 > [!TIP]
-> You can use combine these two commands by just running the second "`install`" one
+> You can use combine these two commands by just running `meson install`
 
 > [!IMPORTANT]
 > If you have trouble and want to try a clean build, do _not_ delete your build directory (since you spent the time to configure it);
