@@ -25,4 +25,4 @@ Once you have generated your new algorithm, add it to the appropriate
 and get started coding!
 
 > [!TIP]
-> Enable debugging symbols when building by setting the Iguana build option `buildtype` to `'debug'`.
+> Enable debugging symbols when building by setting the Iguana build option `buildtype` to `debug`.
