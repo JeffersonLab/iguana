@@ -1,6 +1,6 @@
 #pragma once
 
-#include "iguana/algorithms/AlgorithmFactory.h"
+#include "iguana/algorithms/Algorithm.h"
 #include <tuple>
 
 namespace iguana::clas12 {
