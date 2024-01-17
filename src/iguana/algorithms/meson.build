@@ -10,7 +10,6 @@ algo_sources = [
 algo_public_headers = [
   'Algorithm.h',
   'AlgorithmBoilerplate.h',
-  'AlgorithmFactory.h',
   'AlgorithmSequence.h',
   'example/ExampleAlgorithm.h',
   'clas12/EventBuilderFilter.h',

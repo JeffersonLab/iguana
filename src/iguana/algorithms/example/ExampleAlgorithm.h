@@ -4,9 +4,9 @@
 #pragma once
 
 //############################################################################
-//# include `AlgorithmFactory`, so that we may register this algorithm for factory creation
+//# include `Algorithm.h`, which defines the base class `Algorithm`
 //############################################################################
-#include "iguana/algorithms/AlgorithmFactory.h"
+#include "iguana/algorithms/Algorithm.h"
 
 //############################################################################
 //# define the namespace
