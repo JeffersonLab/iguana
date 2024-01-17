@@ -103,9 +103,6 @@ meson configure -Dexamples=true
 ```
 You can add as many `-D<option>=<value>` arguments as you need.
 
-> [!TIP]
-> The `meson setup` command from Step 2 also accepts `-D` arguments
-
 ### 🟩 Step 4: Compile and Install
 Now compile and install Iguana:
 ```bash
