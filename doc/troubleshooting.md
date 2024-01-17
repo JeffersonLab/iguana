@@ -1,6 +1,6 @@
 # Troubleshooting Notes
 
-### :large_blue_diamond: My output appears to be out of order: errors are not printed exactly when they occur
+### 🔵 My output appears to be out of order: errors are not printed exactly when they occur
 
 If you redirect `stdout` and `stderr` to a file, you may notice that `stderr` lines are out-of-order with respect to the `stdout` lines; for example:
 ```bash
@@ -17,7 +17,7 @@ stdbuf -o0 myAnalysisProgram |& tee output.txt
 > [!NOTE]
 > `stdbuf` on macOS may be installed as `gstdbuf`, from the Homebrew package `coreutils`.
 
-### :large_blue_diamond: I got a crash, but the stack trace (or debugger) is not telling me exactly where
+### 🔵 I got a crash, but the stack trace (or debugger) is not telling me exactly where
 
 Enable debugging symbols by setting the Iguana build option `buildtype` to `'debug'`, then rebuild:
 ```bash
