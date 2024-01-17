@@ -67,7 +67,8 @@ Use [`meson/resolve-dependencies.py`](../meson/resolve-dependencies.py) to help 
 Tell it where your dependencies are installed and it will tell you the build options
 that you need for Step 2; you can also choose to write those build options to an INI (native) file.
 
-See also the [note on dependency resolution](dependency_resolution.md) for more general guidance.
+Alternatively, you may use environment variables; see the [note on dependency
+resolution](dependency_resolution.md) for more general guidance.
 
 
 ### 🟩 Step 2: Generate a build directory
