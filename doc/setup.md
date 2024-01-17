@@ -2,12 +2,12 @@
 
 | **Table of Contents**                                    |
 | ---                                                      |
-| :orange_circle: [Dependencies](#dependencies)            |
-| :orange_circle: [Building and Installing](#building)     |
-| :orange_circle: [Environment Variables (optional)](#env) |
+| 🟠 [Dependencies](#dependencies)            |
+| 🟠 [Building and Installing](#building)     |
+| 🟠 [Environment Variables (optional)](#env) |
 
 <a name="dependencies"></a>
-## :orange_circle: Dependencies
+## 🟠 Dependencies
 
 The following sections list the dependencies and how to obtain them.
 
@@ -22,7 +22,7 @@ The following sections list the dependencies and how to obtain them.
 >   git checkout 1.0.0                                               # checkout the tag '1.0.0'
 >   ```
 
-### :large_orange_diamond: `meson`: Build system used by Iguana
+### 🔶 `meson`: Build system used by Iguana
 <https://mesonbuild.com/>
 - Likely available in your package manager, but the latest version is preferred and may be installed with `pip`:
 ```bash
@@ -30,13 +30,13 @@ python -m pip install meson ninja
 ```
 This includes [`ninja`](https://ninja-build.org/), which `meson` will benefit from using. 
 
-### :large_orange_diamond: `fmt`: C++ output formatting library
+### 🔶 `fmt`: C++ output formatting library
 <https://github.com/fmtlib/fmt>
 - Likely available in your package manager, likely as `fmt` or `libfmt`
   - If you need Python bindings on macOS, please install `fmt` with `brew install fmt`
   - If you compile it yourself on Linux, include the `cmake` option `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` to build the static library
 
-### :large_orange_diamond: `hipo`: C++ HIPO API
+### 🔶 `hipo`: C++ HIPO API
 <https://github.com/gavalian/hipo>
 - Use the `hipo` module on `ifarm`, or obtain and build it yourself
 - Example `cmake` commands:
@@ -47,13 +47,15 @@ cmake --install build-hipo
 ```
 
 <a name="building"></a>
-## :orange_circle: Building and Installing
+## 🟠 Building and Installing
 
 Iguana uses [`meson`](https://mesonbuild.com/) as its build system. From here, we assume that:
 - you are in a working directory, which may be any directory
 - the Iguana source code directory (this repository) is found at `/path/to/iguana-source`
 
-### Step 1. Resolve Dependencies
+The following Steps (🟩) explain how to use `meson` to install Iguana.
+
+### 🟩 Step 1: Resolve Dependencies
 
 Any dependencies which are not installed in the system-wide default locations will need to be found.
 Use [`meson/resolve-dependencies.py`](meson/resolve-dependencies.py) to help you:
@@ -66,7 +68,7 @@ that you need for Step 2; you can also choose to write those build options to an
 See also the [note on dependency resolution](dependency_resolution.md) for more general guidance.
 
 
-### Step 2. Generate a build directory
+### 🟩 Step 2: Generate a build directory
 
 Make a build directory named `build-iguana` (you may choose any name):
 ```bash
@@ -74,7 +76,7 @@ meson setup build-iguana /path/to/iguana-source [BUILD_OPTIONS_FROM_STEP_1]
 ```
 You'll need to replace `[BUILD_OPTIONS_FROM_STEP_1]` with the build options from Step 1 above.
 
-### Step 3. Set build options
+### 🟩 Step 3: Set build options
 
 Now let's configure the build directory (assuming its `./build-iguana` here).
 If you will _install_ `iguana` (recommended), set an installation prefix:
@@ -103,7 +105,7 @@ You can add as many `-D<option>=value` arguments as you need.
 > [!TIP]
 > You can also set all of your build options in Step 2, since `meson setup` accepts similar build-options arguments.
 
-### Step 4. Compile and Install
+### 🟩 Step 4: Compile and Install
 Now compile and install Iguana:
 ```bash
 meson compile -C build-iguana   # builds Iguana, filling your build directory
@@ -123,7 +125,7 @@ meson install -C build-iguana   # installs Iguana to your prefix (build option '
 
 
 <a name="env"></a>
-## :orange_circle: Environment Variables (optional)
+## 🟠 Environment Variables (optional)
 The C++ Iguana implementation does not require the use of any environment variables. However,
 - some language bindings may benefit from variables such as `$PYTHONPATH`, for Python
 - you may want to override the linker library search path list (_e.g._, if you have conflicting libraries in it)
