@@ -20,10 +20,11 @@ seq.Add('clas12::EventBuilderFilter')
 seq.Add('clas12::LorentzTransformer')
 seq.PrintSequence()
 
-seq.SetOption('clas12::EventBuilderFilter', 'log',  'trace')
+seq.SetOption('clas12::EventBuilderFilter', 'log',  'debug')
+seq.SetOption('clas12::LorentzTransformer', 'log',  'debug')
+
 seq.SetOption('clas12::EventBuilderFilter', 'pids', [11, 211, -211])
-seq.SetOption('clas12::EventBuilderFilter', 'testInt',   7)
-seq.SetOption('clas12::EventBuilderFilter', 'testFloat', 42.3)
+seq.SetOption('clas12::LorentzTransformer', 'frame', 'mirror')
 
 def prettyPrint(message, bank):
     print(f'{"="*30} {message} {"="*30}')

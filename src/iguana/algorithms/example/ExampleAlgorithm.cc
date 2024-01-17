@@ -28,8 +28,8 @@ namespace iguana::example {
     //# - this function "caches" the option values into the `o_*` members, to
     //#   avoid looking them up in the `Algorithm::Run` method
     //############################################################################
-    CacheOption("testInt",   8,   o_testInt);
-    CacheOption("testFloat", 7.0, o_testFloat);
+    CacheOption("exampleInt",   8,   o_exampleInt);
+    CacheOption("exampleFloat", 7.0, o_exampleFloat);
     //############################################################################
     //# cache expected bank indices
     //# - here we make sure that parameter `banks` includes the banks that are

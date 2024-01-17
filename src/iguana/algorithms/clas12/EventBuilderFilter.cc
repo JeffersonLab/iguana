@@ -8,12 +8,9 @@ namespace iguana::clas12 {
 
     // define options, their default values, and cache them
     CacheOptionToSet("pids", {11, 211}, o_pids);
-    CacheOption("testInt", 8, o_testInt); // TODO: remove
-    CacheOption("testFloat", 7.0, o_testFloat); // TODO: remove
 
     // cache expected bank indices
     CacheBankIndex(banks, "REC::Particle", b_particle);
-    CacheBankIndex(banks, "REC::Calorimeter", b_calo); // TODO: remove
 
   }
 
@@ -22,7 +19,6 @@ namespace iguana::clas12 {
 
     // get the banks
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    // auto& caloBank     = GetBank(banks, b_calo,     "REC::Calorimeter"); // TODO: remove
 
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
@@ -47,9 +43,6 @@ namespace iguana::clas12 {
 
 
   void EventBuilderFilter::Stop() {
-    m_log->Info("test info");
-    m_log->Warn("test warn");
-    m_log->Error("test error");
   }
 
 }
