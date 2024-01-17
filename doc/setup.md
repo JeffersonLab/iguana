@@ -1,10 +1,10 @@
 # Setup Guide
 
-| **Table of Contents**                       |
-| ---                                         |
-| 🟠 [Dependencies](#dependencies)            |
-| 🟠 [Building and Installing](#building)     |
-| 🟠 [Environment Variables (optional)](#env) |
+| **Table of Contents**                           |
+| ---                                             |
+| 🟠 [**Dependencies**](#dependencies)            |
+| 🟠 [**Building and Installing**](#building)     |
+| 🟠 [**Environment Variables** (optional)](#env) |
 
 <a name="dependencies"></a>
 ## 🟠 Dependencies
