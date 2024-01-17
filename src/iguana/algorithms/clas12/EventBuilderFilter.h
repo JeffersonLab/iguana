@@ -11,6 +11,10 @@ namespace iguana::clas12 {
 
     public:
 
+      void Start(hipo::banklist& banks) override;
+      void Run(hipo::banklist& banks) const override;
+      void Stop() override;
+
       /// **Action function**: checks if the PDG `pid` is a part of the list of user-specified PDGs
       /// @param pid the particle PDG to check
       /// @returns `true` if `pid` is one the user wants

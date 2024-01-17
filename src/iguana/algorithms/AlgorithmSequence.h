@@ -14,6 +14,10 @@ namespace iguana {
 
     public:
 
+      void Start(hipo::banklist& banks) override;
+      void Run(hipo::banklist& banks) const override;
+      void Stop() override;
+
       /// Create and add an algorithm to the sequence, by name.
       ///
       /// **Example**

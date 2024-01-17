@@ -4,9 +4,15 @@ namespace iguana {
 
   REGISTER_IGUANA_ALGORITHM(AlgorithmSequence);
 
-  START_IGUANA_ALGORITHM(AlgorithmSequence) { for(const auto& algo : m_sequence) algo->Start(banks); }
-  RUN_IGUANA_ALGORITHM(AlgorithmSequence)   { for(const auto& algo : m_sequence) algo->Run(banks);   }
-  STOP_IGUANA_ALGORITHM(AlgorithmSequence)  { for(const auto& algo : m_sequence) algo->Stop();       }
+  void AlgorithmSequence::Start(hipo::banklist& banks) {
+    for(const auto& algo : m_sequence) algo->Start(banks);
+  }
+  void AlgorithmSequence::Run(hipo::banklist& banks) const {
+    for(const auto& algo : m_sequence) algo->Run(banks);
+  }
+  void AlgorithmSequence::Stop() {
+    for(const auto& algo : m_sequence) algo->Stop();
+  }
 
   void AlgorithmSequence::Add(const std::string class_name, const std::string instance_name) {
     auto algo = AlgorithmFactory::Create(class_name);
