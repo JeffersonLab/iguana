@@ -73,7 +73,7 @@ resolution](dependency_resolution.md) for more general guidance.
 
 ### 🟩 Step 2: Generate a build directory
 
-Make a build directory named `build-iguana` (you may choose any name), then `cd` into it:
+Make a build directory, then `cd` into it. You may choose any name, but we'll use `build-iguana` in this example:
 ```bash
 meson setup build-iguana /path/to/iguana-source [BUILD_OPTIONS_FROM_STEP_1]
 cd build-iguana
