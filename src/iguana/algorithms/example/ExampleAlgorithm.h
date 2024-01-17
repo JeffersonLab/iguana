@@ -45,8 +45,8 @@ namespace iguana::example {
     public:
 
       //############################################################################
-      //# define `Start`, `Run`, and `Stop`
-      //# - this is boilerplate (every algorithm should have this)
+      //# define `Start`, `Run`, and `Stop` for this algorithm
+      //# - each algorithm must have these methods (even if they do nothing)
       //############################################################################
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
