@@ -101,7 +101,7 @@ To set any build option, _e.g._ `examples` to `true` (enables building of Iguana
 ```bash
 meson configure -Dexamples=true
 ```
-You can add as many `-D<option>=value` arguments as you need.
+You can add as many `-D<option>=<value>` arguments as you need.
 
 > [!TIP]
 > The `meson setup` command from Step 2 also accepts `-D` arguments
