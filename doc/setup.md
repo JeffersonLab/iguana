@@ -1,13 +1,13 @@
 # Setup Guide
 
-| **Table of Contents** |
-| --- |
-| [Dependencies](#dependencies) |
-| [Building and Installing](#building) |
-| [Environment Variables (optional)](#env) |
+| **Table of Contents**                                    |
+| ---                                                      |
+| :orange_circle: [Dependencies](#dependencies)            |
+| :orange_circle: [Building and Installing](#building)     |
+| :orange_circle: [Environment Variables (optional)](#env) |
 
 <a name="dependencies"></a>
-## Dependencies
+## :orange_circle: Dependencies
 
 The following sections list the dependencies and how to obtain them.
 
@@ -47,7 +47,7 @@ cmake --install build-hipo
 ```
 
 <a name="building"></a>
-## Building and Installing
+## :orange_circle: Building and Installing
 
 Iguana uses [`meson`](https://mesonbuild.com/) as its build system. From here, we assume that:
 - you are in a working directory, which may be any directory
@@ -123,7 +123,7 @@ meson install -C build-iguana   # installs Iguana to your prefix (build option '
 
 
 <a name="env"></a>
-## Environment Variables (optional)
+## :orange_circle: Environment Variables (optional)
 The C++ Iguana implementation does not require the use of any environment variables. However,
 - some language bindings may benefit from variables such as `$PYTHONPATH`, for Python
 - you may want to override the linker library search path list (_e.g._, if you have conflicting libraries in it)
