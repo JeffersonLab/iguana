@@ -97,9 +97,9 @@ namespace iguana::example {
       //# - convention: they should start with `o_`
       //############################################################################
       /// Example integer configuration option
-      int o_testInt;
+      int o_exampleInt;
       /// Example float configuration option
-      double o_testFloat;
+      double o_exampleFloat;
 
   };
 
