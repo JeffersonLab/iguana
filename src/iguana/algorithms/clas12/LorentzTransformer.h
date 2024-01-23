@@ -1,7 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
-#include <tuple>
+#include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
 
@@ -14,12 +14,6 @@ namespace iguana::clas12 {
     DEFINE_IGUANA_ALGORITHM(LorentzTransformer, clas12::LorentzTransformer)
 
     public:
-
-      /// Lorentz vector element type, matching that of `REC::Particle` momentum components
-      using lorentz_element_t = float;
-
-      /// Generic Lorentz vector container type
-      using lorentz_vector_t = std::tuple<lorentz_element_t, lorentz_element_t, lorentz_element_t, lorentz_element_t>;
 
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;

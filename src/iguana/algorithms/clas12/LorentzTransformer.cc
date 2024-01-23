@@ -43,7 +43,7 @@ namespace iguana::clas12 {
   }
 
 
-  LorentzTransformer::lorentz_vector_t LorentzTransformer::Transform(
+  lorentz_vector_t LorentzTransformer::Transform(
       lorentz_element_t px,
       lorentz_element_t py,
       lorentz_element_t pz,

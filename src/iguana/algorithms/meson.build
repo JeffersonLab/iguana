@@ -11,6 +11,7 @@ algo_public_headers = [
   'Algorithm.h',
   'AlgorithmBoilerplate.h',
   'AlgorithmSequence.h',
+  'TypeDefs.h',
   'example/ExampleAlgorithm.h',
   'clas12/EventBuilderFilter.h',
   'clas12/LorentzTransformer.h',
