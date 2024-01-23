@@ -44,7 +44,7 @@ This includes [`ninja`](https://ninja-build.org/), which `meson` will benefit fr
 - Example `cmake` commands:
 ```bash
 cmake -S /path/to/hipo_source_code -B build-hipo -DCMAKE_INSTALL_PREFIX=/path/to/hipo_installation
-cmake --build build-hipo -j$(nproc)
+cmake --build build-hipo
 cmake --install build-hipo
 ```
 
