@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include LorentzTransformer.h
 
 namespace iguana::clas12 {
 
