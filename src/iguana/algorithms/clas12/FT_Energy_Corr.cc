@@ -1,5 +1,7 @@
 #include "FT_Energy_Corr.h"
 #include LorentzTransformer.h
+#include "iguana/algorithms/TypeDefs.h"
+
 namespace iguana::clas12 {
 REGISTER_IGUANA_ALGORITHM(FT_Energy_Corr);
 
