@@ -7,6 +7,11 @@ on:
         description: 'GitHub runner'
         required: true
         type: string
+      num_threads:
+        description: 'Number of threads or CPUs'
+        required: false
+        type: string
+        default: 2
 
 defaults:
   run:
@@ -34,7 +39,7 @@ jobs:
       - name: build
         run: |
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo
-          cmake --build build -j4
+          cmake --build build -j${{ inputs.num_threads }}
           cmake --install build
           tar czvf hipo{.tar.gz,}
       - run: brew install tree
@@ -60,7 +65,7 @@ jobs:
         if: ${{ inputs.runner != 'macos-latest' }}
         run: |
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-          cmake --build build -j4
+          cmake --build build -j${{ inputs.num_threads }}
           cmake --install build
           tar czvf fmt{.tar.gz,}
       - run: tree fmt
