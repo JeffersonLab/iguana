@@ -11,7 +11,7 @@ on:
         description: 'Number of threads or CPUs'
         required: false
         type: string
-        default: 2
+        default: '2'
 
 defaults:
   run:
