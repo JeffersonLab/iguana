@@ -15,4 +15,4 @@ jobs:
     uses: ./.github/workflows/ci.yml
     with:
       runner: macos-latest
-      # num_threads: 3
+      num_threads: 3

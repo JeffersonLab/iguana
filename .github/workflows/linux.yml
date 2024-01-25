@@ -15,4 +15,4 @@ jobs:
     uses: ./.github/workflows/ci.yml
     with:
       runner: ubuntu-latest
-      # num_threads: 4
+      num_threads: 4
