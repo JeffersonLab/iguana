@@ -31,6 +31,7 @@ namespace iguana {
       else if (const auto valPtr(std::get_if<double>(&val));        valPtr) return fmt::format("{} [{}]", *valPtr,                 "double");
       else if (const auto valPtr(std::get_if<std::string>(&val));   valPtr) return fmt::format("{} [{}]", *valPtr,                 "string");
       else if (const auto valPtr(std::get_if<std::vector<int>>(&val)); valPtr) return fmt::format("({}) [{}]", fmt::join(*valPtr,", "), "vector<int>");
+      else if (const auto valPtr(std::get_if<std::vector<double>>(&val)); valPtr) return fmt::format("({}) [{}]", fmt::join(*valPtr,", "), "vector<double>");
       else {
         m_log->Error("option '{}' type has no printer defined in Algorithm::PrintOptionValue", key);
         return "UNKNOWN";
