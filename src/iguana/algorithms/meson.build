@@ -4,6 +4,7 @@ algo_sources = [
   'AlgorithmSequence.cc',
   'example/ExampleAlgorithm.cc',
   'clas12/EventBuilderFilter.cc',
+  'clas12/ZVertexFilter.cc',
   'clas12/LorentzTransformer.cc',
 ]
 
@@ -13,6 +14,7 @@ algo_public_headers = [
   'AlgorithmSequence.h',
   'example/ExampleAlgorithm.h',
   'clas12/EventBuilderFilter.h',
+  'clas12/ZVertexFilter.h',
   'clas12/LorentzTransformer.h',
 ]
 
