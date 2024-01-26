@@ -9,7 +9,7 @@ PACKAGE_LIST_MACOS=(
 )
 
 PACKAGE_LIST_LINUX=(
-  yaml-cpp
+  libyaml-cpp-dev
 )
 
 ##################################
