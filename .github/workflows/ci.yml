@@ -116,11 +116,10 @@ jobs:
           for dep in python meson ninja ; do
             echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
           done
-          if [ "${{ inputs.runner }}" = "macos-latest" ]; then
-            echo "| \`fmt\` | $(brew info fmt | head -n1) |" >> $GITHUB_STEP_SUMMARY
-          else
+          if [[ "${{ inputs.runner }}" =~ "ubuntu" ]; then
             echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
           fi
+          cat pkg_summary.md | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
       ### build iguana
       - name: resolve dependencies
