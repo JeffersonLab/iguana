@@ -1,5 +1,7 @@
 #!/bin/bash
-#
+
+set -e
+
 PACKAGE_LIST_MACOS=(
   fmt
   yaml-cpp
