@@ -7,13 +7,18 @@ on:
         description: 'GitHub runner'
         required: true
         type: string
+      num_threads:
+        description: 'Number of threads or CPUs'
+        required: false
+        type: string
+        default: 2
 
 defaults:
   run:
     shell: bash
 
 env:
-  hipo_version: dev
+  hipo_version: 4.0.1
   fmt_version: 9.1.0 # for Linux runners, whereas macOS uses Homebrew version
   num_events: 10
 
@@ -29,20 +34,20 @@ jobs:
       - name: checkout hipo
         uses: actions/checkout@v4
         with:
-          repository: c-dilks/hipo # FIXME: revert to gavalian
+          repository: gavalian/hipo
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo
-          cmake --build build -j2
+          cmake --build build -j${{ inputs.num_threads }}
           cmake --install build
           tar czvf hipo{.tar.gz,}
       - run: brew install tree
         if: ${{ inputs.runner == 'macos-latest' }}
       - run: tree hipo
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: build_deps
+          name: build_deps_hipo
           retention-days: 1
           path: hipo.tar.gz
 
@@ -60,15 +65,15 @@ jobs:
         if: ${{ inputs.runner != 'macos-latest' }}
         run: |
           cmake -S . -B build -DCMAKE_INSTALL_PREFIX=fmt -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-          cmake --build build -j2
+          cmake --build build -j${{ inputs.num_threads }}
           cmake --install build
           tar czvf fmt{.tar.gz,}
       - run: tree fmt
         if: ${{ inputs.runner != 'macos-latest' }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ inputs.runner != 'macos-latest' }}
         with:
-          name: build_deps
+          name: build_deps_fmt
           retention-days: 1
           path: fmt.tar.gz
 
@@ -99,9 +104,10 @@ jobs:
         run: python -m pip install meson ninja
       ### dependencies
       - name: get dependency build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: build_deps
+          pattern: build_deps_*
+          merge-multiple: true
       - run: brew install fmt
         if: ${{ inputs.runner == 'macos-latest' }}
       - name: untar build
@@ -174,7 +180,7 @@ jobs:
       ### upload artifacts
       - name: tar
         run: tar czvf iguana{.tar.gz,}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build_iguana_${{ matrix.binding }}
           retention-days: 1
@@ -193,7 +199,7 @@ jobs:
         run: tar xzvf validation_files.tar.gz
       - name: select one file
         run: mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: validation_files
           retention-days: 1
@@ -229,17 +235,18 @@ jobs:
           python -m pip install -r iguana_src/bind/python/requirements.txt
       ### dependencies and test data
       - name: get dependency build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: build_deps
+          pattern: build_deps_*
+          merge-multiple: true
       - run: brew install fmt
         if: ${{ inputs.runner == 'macos-latest' }}
       - name: get iguana build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build_iguana_${{ matrix.binding }}
       - name: get test data
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: validation_files
       - name: untar artifacts
@@ -289,17 +296,18 @@ jobs:
         run: python -m pip install meson ninja
       ### dependencies and test data
       - name: get dependency build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: build_deps
+          pattern: build_deps_*
+          merge-multiple: true
       - run: brew install fmt
         if: ${{ inputs.runner == 'macos-latest' }}
       - name: get iguana build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build_iguana_cpp
       - name: get test data
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: validation_files
       - name: untar artifacts
@@ -340,7 +348,7 @@ jobs:
         uses: mattnotmitt/doxygen-action@v1
         with:
           doxyfile-path: doc/Doxyfile
-      - uses: actions/upload-pages-artifact@v2
+      - uses: actions/upload-pages-artifact@v3
         with:
           retention-days: 1
           path: doc/api/
@@ -359,7 +367,7 @@ jobs:
     steps:
       - name: deployment
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
 
   # finalize
   #########################################################
