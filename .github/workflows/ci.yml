@@ -116,7 +116,7 @@ jobs:
           for dep in python meson ninja ; do
             echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
           done
-          if [[ "${{ inputs.runner }}" =~ "ubuntu" ]; then
+          if [[ "${{ inputs.runner }}" =~ "ubuntu" ]]; then
             echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
           fi
           cat pkg_summary.md | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
