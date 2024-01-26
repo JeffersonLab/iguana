@@ -232,6 +232,7 @@ jobs:
           merge-multiple: true
       - name: install dependencies from package manager
         run: .github/install-dependency-packages.sh ${{ inputs.runner }}
+        working-directory: iguana_src
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
