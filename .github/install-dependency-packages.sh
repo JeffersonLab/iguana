@@ -36,7 +36,7 @@ elif [[ "$runner" =~ "ubuntu" ]]; then
   echo "[+] On Linux runner"
   for pkg in ${PACKAGE_LIST_LINUX[@]}; do
     echo "[+] INSTALLING $pkg"
-    apt -y install $pkg
+    sudo apt -y install $pkg
     echo "| \`$pkg\` | $(apt show $pkg | grep -E '^Version:') |" >> $summary_file
   done
 else
