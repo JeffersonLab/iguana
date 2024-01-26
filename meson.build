@@ -37,7 +37,7 @@ hipo_dep = dependency(
 full_dep_list = [
   hipo_dep,
   fmt_dep,
-  glib_dep,
+  yamlcpp_dep,
 ]
 
 # dependency libdirs
