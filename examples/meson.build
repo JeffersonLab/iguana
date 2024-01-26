@@ -1,7 +1,7 @@
 example_sources = [
   'iguana-example-00-basic.cc',
   'iguana-example-01-bank-rows.cc',
-  'iguana-example-02-bank-rows-from-INIconfig.cc',
+  'iguana-example-02-YAMLReader.cc',
   'iguana-example-03-zvertex-filter.cc',
 ]
 
@@ -20,16 +20,11 @@ if host_machine.system() != 'darwin'
   example_rpaths += '$ORIGIN' / '..' / get_option('libdir')
 endif
 
-#hacking in toml and ini libraries
-#inc_dirs_config =  ['/Users/tyson/tomlplusplus/','/Users/tyson/inih/']
-#inc_dirs_config += project_inc
-
 # build executables
 foreach src : example_sources
   executable(
     src.split('.')[0],
     src,
-    #include_directories: inc_dirs_config,
     include_directories: project_inc,
     dependencies:        project_deps,
     link_with:           project_libs,

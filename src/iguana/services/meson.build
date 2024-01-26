@@ -1,13 +1,13 @@
 services_sources = [
   'Logger.cc',
   'Object.cc',
-  'INIReader.cc',
+  'YAMLReader.cc',
 ]
 
 services_public_headers = [
   'Logger.h',
   'Object.h',
-  'INIReader.h',
+  'YAMLReader.h',
 ]
 
 services_lib = shared_library(

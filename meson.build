@@ -20,7 +20,7 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 # resolve dependencies
 fmt_dep  = dependency('fmt',   version: '>=9.1.0', method: 'pkg-config')
 hipo_dep = dependency('hipo4', version: '>=4.0.1', method: 'pkg-config')
-glib_dep = dependency('glib-2.0', version: '>=2.0.0', method: 'pkg-config')
+yamlcpp_dep = dependency('yaml-cpp', version: '>=0.8.0', method: 'pkg-config')
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
@@ -29,7 +29,7 @@ glib_dep = dependency('glib-2.0', version: '>=2.0.0', method: 'pkg-config')
 full_dep_list = [
   hipo_dep,
   fmt_dep,
-  glib_dep,
+  yamlcpp_dep,
 ]
 
 # dependency libdirs

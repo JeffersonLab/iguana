@@ -1,0 +1,15 @@
+# Cut values for different run periods
+cuts:
+  - runs: #RG-A fall2018 inbending
+      - 4760
+      - 5419
+    vals:
+      - -13.0
+      - 12.0
+
+  - runs: #RG-A fall2018 outbending
+      - 5420
+      - 5674
+    vals:
+      - -18.0
+      - 10.0
