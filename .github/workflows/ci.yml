@@ -119,6 +119,7 @@ jobs:
           if [[ "${{ inputs.runner }}" =~ "ubuntu" ]; then
             echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
           fi
+          cat pkg_summary.md | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
       ### build iguana
       - name: resolve dependencies
