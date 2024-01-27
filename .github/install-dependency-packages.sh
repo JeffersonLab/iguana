@@ -36,6 +36,9 @@ if [[ "$runner" =~ "macos" ]]; then
   done
 elif [[ "$runner" =~ "ubuntu" ]]; then
   echo "[+] On Linux runner"
+  echo "[+] Updating apt"
+  sudo apt update
+  sudo apt upgrade
   for pkg in ${PACKAGE_LIST_LINUX[@]}; do
     echo "[+] INSTALLING $pkg"
     sudo apt -y install $pkg
