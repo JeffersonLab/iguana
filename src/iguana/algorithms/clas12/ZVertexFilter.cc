@@ -7,12 +7,12 @@ namespace iguana::clas12
 
     void ZVertexFilter::Start(hipo::banklist &banks)
     {
-        
+
         //Eventually need to find a good location for files
         // and a good way of passing in run numbers and pid values
         int runnb = 4768; //default to RG-A fall2018 inbending for now
         int pid=0; //no PID needed for this filter
-        YAMLReader yamlr("../../src/iguana/algorithms/clas12/Config_files/ZVertexFilter.yaml");
+        YAMLReader yamlr("../../../etc/iguana/ZVertexFilter.yaml");
 
         //Read YAML config file with cuts for a given run number.
         std::vector<double> defaultValues = yamlr.findKeyAtRunAndPIDVector<double>("cuts","runs","pid", "vals", runnb,pid, {-20.0, 20.0});

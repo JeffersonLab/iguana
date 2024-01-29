@@ -19,6 +19,10 @@ algo_public_headers = [
   'clas12/LorentzTransformer.h',
 ]
 
+algo_config_dirs = [
+  'clas12/config',
+]
+
 algo_lib = shared_library(
   'IguanaAlgorithms',
   algo_sources,
@@ -35,3 +39,10 @@ install_headers(
   subdir:        meson.project_name() / 'algorithms',
   preserve_path: true,
 )
+
+foreach algo_config_dir : algo_config_dirs
+  install_subdir(
+    algo_config_dir,
+    install_dir: get_option('sysconfdir')
+  )
+endforeach

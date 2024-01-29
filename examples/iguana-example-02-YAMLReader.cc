@@ -4,8 +4,15 @@ int main(int argc, char **argv)
 {
 
     // parse arguments
-    int argi = 1;
-    const char *inFileName = argc > argi ? argv[argi++] : "../../examples/config_files/ex2.yaml";
+    std::string inFileName;
+    if(argc>1)
+      inFileName = std::string(argv[1]);
+    else {
+      std::string exeName(argv[0]);
+      std::string exeDir = exeName.substr(0, exeName.find_last_of("/"));
+      inFileName = exeDir + "/../etc/iguana/examples/ex2.yaml";
+    }
+    std::cout << "Reading config file: " << inFileName << std::endl;
 
     //Below we access cut values defined for different and different pids.
     //There's a series of key we need to use
