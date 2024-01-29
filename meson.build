@@ -6,6 +6,7 @@ project(
     'cpp_std':               'c++17',
     'buildtype':             'release',
     'libdir':                'lib',
+    'sysconfdir':            'etc/iguana',
     'pkgconfig.relocatable': 'true',
   },
   meson_version:   '>=1.2',
