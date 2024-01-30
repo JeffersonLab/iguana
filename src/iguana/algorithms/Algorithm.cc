@@ -18,6 +18,18 @@ namespace iguana {
       m_config_manager->SetName("config|"+name);
   }
 
+  std::shared_ptr<ConfigFileManager> Algorithm::GetConfigFileManager() {
+    if(!m_config_manager) // instantiate it, if it doesn't exist
+      m_config_manager = std::make_shared<ConfigFileManager>("config|" + m_name);
+    return m_config_manager;
+  }
+
+  void Algorithm::SetConfigFileManager(std::shared_ptr<ConfigFileManager> config_manager) {
+    if(m_config_manager)
+      m_log->Warn("config file manager already exists for this algorithm; overwriting...");
+    m_config_manager = config_manager;
+  }
+
   void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {
     if(m_rows_only)
       return;
@@ -90,18 +102,6 @@ namespace iguana {
         m_log->Print(level, message);
       bank.show();
     }
-  }
-
-  std::unique_ptr<ConfigFileManager> Algorithm::GetConfigFileManager() {
-    if(!m_config_manager) // instantiate it, if it doesn't exist
-      m_config_manager = std::make_unique<ConfigFileManager>("config|" + name);
-    return m_config_manager;
-  }
-
-  void SetConfigFileManager(std::unique_ptr<ConfigFileManager> config_manager) {
-    if(m_config_manager)
-      m_log->Warn("config file manager already exists for this algorithm; overwriting...");
-    m_config_manager = config_manager;
   }
 
 }
