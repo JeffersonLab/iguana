@@ -10,6 +10,7 @@
 #include <hipo4/bank.h>
 
 #include "iguana/services/Object.h"
+#include "iguana/services/ConfigFileManager.h"
 #include "iguana/algorithms/AlgorithmBoilerplate.h"
 
 namespace iguana {
@@ -36,7 +37,7 @@ namespace iguana {
     public:
 
       /// @param name the unique name for a derived class instance
-      Algorithm(const std::string name) : Object(name), m_rows_only(false) {}
+      Algorithm(const std::string name);
       virtual ~Algorithm() {}
 
       /// Initialize an algorithm before any events are processed, with the intent to process _banks_;
@@ -78,6 +79,10 @@ namespace iguana {
             m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
           }
         }
+
+      /// Set the name of this algorithm
+      /// @param name the new name
+      void SetName(const std::string name);
 
     protected:
 
@@ -157,6 +162,9 @@ namespace iguana {
 
       /// Data structure to hold configuration options
       std::unordered_map<std::string, option_t> m_opt;
+
+      /// Configuration file manager instance
+      std::unique_ptr<ConfigFileManager> m_config_manager;
 
       /// If true, algorithm can only operate on bank _rows_; `Algorithm::GetBank`, and therefore `Algorithm::Run`, cannot be called
       bool m_rows_only;

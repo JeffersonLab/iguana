@@ -2,10 +2,20 @@
 
 namespace iguana {
 
+  Algorithm::Algorithm(const std::string name):
+    Object(name),
+    m_config_manager(std::make_unique<ConfigFileManager>("config|" + name)),
+    m_rows_only(false) {}
+
   void Algorithm::Start() {
     m_rows_only = true;
     hipo::banklist no_banks = {};
     Start(no_banks);
+  }
+
+  void Algorithm::SetName(const std::string name) {
+    Object::SetName(name);
+    m_config_manager->SetName("config|"+name);
   }
 
   void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {

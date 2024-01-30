@@ -20,4 +20,12 @@ namespace iguana {
     return m_name;
   }
 
+  void Object::SetLogLevel(const std::string lev) {
+    m_log->SetLevel(lev);
+  }
+
+  void Object::SetLogLevel(const Logger::Level lev) {
+    m_log->SetLevel(lev);
+  }
+
 }
