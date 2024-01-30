@@ -84,6 +84,16 @@ namespace iguana {
       /// @param name the new name
       void SetName(const std::string name);
 
+      /// Get the configuration file manager for this algorithm. If there is no configuration manager, this
+      /// will create one.
+      /// @return the configuration file manager
+      std::shared_ptr<ConfigFileManager> GetConfigFileManager();
+
+      /// Set the configuration file manager for this algorithm.
+      /// @param config_manager the configuration file manager
+      void SetConfigFileManager(std::shared_ptr<ConfigFileManager> config_manager);
+
+
     protected:
 
       /// Cache the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
@@ -160,10 +170,6 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank& bank, const std::string message="", const Logger::Level level=Logger::trace) const;
 
-      std::unique_ptr<ConfigFileManager> GetConfigFileManager();
-
-      void SetConfigFileManager(std::unique_ptr<ConfigFileManager> config_manager);
-
       /// Data structure to hold configuration options
       std::unordered_map<std::string, option_t> m_opt;
 
@@ -173,7 +179,7 @@ namespace iguana {
     private:
 
       /// Configuration file manager instance
-      std::unique_ptr<ConfigFileManager> m_config_manager;
+      std::shared_ptr<ConfigFileManager> m_config_manager;
 
   };
 
