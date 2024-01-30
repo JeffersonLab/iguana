@@ -160,14 +160,20 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank& bank, const std::string message="", const Logger::Level level=Logger::trace) const;
 
+      std::unique_ptr<ConfigFileManager> GetConfigFileManager();
+
+      void SetConfigFileManager(std::unique_ptr<ConfigFileManager> config_manager);
+
       /// Data structure to hold configuration options
       std::unordered_map<std::string, option_t> m_opt;
 
-      /// Configuration file manager instance
-      std::unique_ptr<ConfigFileManager> m_config_manager;
-
       /// If true, algorithm can only operate on bank _rows_; `Algorithm::GetBank`, and therefore `Algorithm::Run`, cannot be called
       bool m_rows_only;
+
+    private:
+
+      /// Configuration file manager instance
+      std::unique_ptr<ConfigFileManager> m_config_manager;
 
   };
 

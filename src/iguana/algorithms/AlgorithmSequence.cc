@@ -21,6 +21,8 @@ namespace iguana {
       throw std::runtime_error("AlgorithmFactory cannot create non-existent algorithm");
     }
     algo->SetName(instance_name=="" ? class_name : instance_name);
+    // use `AlgorithmSequence`'s config file manager instance in each of its algorithms
+    algo->SetConfigFileManager(GetConfigFileManager()); // must be done after `SetName`
     Add(std::move(algo));
   }
 

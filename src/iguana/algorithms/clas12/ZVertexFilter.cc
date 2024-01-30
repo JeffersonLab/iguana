@@ -12,7 +12,7 @@ namespace iguana::clas12
         // and a good way of passing in run numbers and pid values
         int runnb = 4768; //default to RG-A fall2018 inbending for now
         int pid=0; //no PID needed for this filter
-        auto config_file = m_config_manager->FindFile("ZVertexFilter.yaml");
+        auto config_file = GetConfigFileManager()->FindFile("ZVertexFilter.yaml");
         YAMLReader yamlr(config_file);
 
         //Read YAML config file with cuts for a given run number.
