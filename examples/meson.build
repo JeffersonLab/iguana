@@ -36,5 +36,6 @@ endforeach
 # install config files
 install_subdir(
   'config',
-  install_dir: get_option('sysconfdir') / 'examples'
+  install_dir:     get_option('sysconfdir') / 'examples',
+  strip_directory: true,
 )
