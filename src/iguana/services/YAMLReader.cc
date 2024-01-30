@@ -1,4 +1,5 @@
 #include "YAMLReader.h"
+#include <iostream>
 
 namespace iguana
 {

@@ -1,17 +1,36 @@
+#include <iguana/services/ConfigFileManager.h>
 #include <iguana/services/YAMLReader.h>
+#include <iostream>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
+
+    iguana::ConfigFileManager conf;
+    conf.SetLogLevel("debug");
 
     // parse arguments
     std::string inFileName;
-    if(argc>1)
+    if(argc>1) { // read this particular YAML file
       inFileName = std::string(argv[1]);
-    else {
-      std::string exeName(argv[0]);
-      std::string exeDir = exeName.substr(0, exeName.find_last_of("/"));
-      inFileName = exeDir + "/../etc/iguana/examples/ex2.yaml";
     }
+    else { // read the example YAML file
+      // add a config file directory that is relative to this executable;
+      // since this example is installed with the rest of `iguana`, it's in the
+      // installation prefix under `etc/`:
+      //
+      //    iguana_installation_prefix
+      //    ├── bin
+      //    │   └── argv[0]
+      //    └── etc
+      //        └── iguana
+      //            └── examples
+      //                └── ex2.yaml
+      //
+      auto executableDir = iguana::ConfigFileManager::DirName(argv[0]);
+      conf.AddDirectory(executableDir + "/../etc/iguana/examples");
+      // then find the example file
+      inFileName = conf.FindFile("ex2.yaml");
+    }
+
     std::cout << "Reading config file: " << inFileName << std::endl;
 
     //Below we access cut values defined for different and different pids.

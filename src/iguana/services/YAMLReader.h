@@ -1,11 +1,7 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
 #include <string>
-#include <memory>
-#include <sstream>
-#include <stdexcept>
 
 #include <yaml-cpp/yaml.h>
 

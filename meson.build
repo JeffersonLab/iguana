@@ -1,7 +1,8 @@
 project(
   'iguana',
   'cpp',
-  license:         'LGPLv3',
+  license: 'LGPLv3',
+  meson_version: '>=1.2',
   default_options: {
     'cpp_std':               'c++17',
     'buildtype':             'release',
@@ -9,7 +10,6 @@ project(
     'sysconfdir':            'etc/iguana',
     'pkgconfig.relocatable': 'true',
   },
-  meson_version:   '>=1.2',
   version: run_command(
     meson.project_source_root() / 'meson' / 'detect-version.sh',
     meson.project_source_root(),
@@ -17,6 +17,12 @@ project(
   ).stdout().strip()
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
+
+# set preprocessor macros
+add_project_arguments(
+  '-DIGUANA_ETC="' + get_option('prefix') / get_option('sysconfdir') + '"',
+  language: ['cpp'],
+)
 
 # resolve dependencies
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
