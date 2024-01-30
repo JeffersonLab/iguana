@@ -43,6 +43,7 @@ install_headers(
 foreach algo_config_dir : algo_config_dirs
   install_subdir(
     algo_config_dir,
-    install_dir: get_option('sysconfdir')
+    install_dir:     get_option('sysconfdir'),
+    strip_directory: true,
   )
 endforeach
