@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser(
 parser_deps = parser.add_argument_group('dependency installation paths')
 parser_deps.add_argument('--hipo', default=SYSTEM_ASSUMPTION, type=str, help='path to `hipo` installation')
 parser_deps.add_argument('--fmt', default=SYSTEM_ASSUMPTION, type=str, help='path to `fmt` installation')
+parser_deps.add_argument('--yaml', default=SYSTEM_ASSUMPTION, type=str, help='path to `yaml-cpp` installation')
 parser_output = parser.add_argument_group('output control')
 parser_output.add_argument('--cli', default=False, action=argparse.BooleanOptionalAction, help='only print the `meson` CLI options, and nothing else')
 parser_output.add_argument('--ini', default=NOT_USED, type=str, help='if set, generate an INI file (meson native file) with this name; you may then use it with `meson setup --native-file=_____`')
@@ -53,7 +54,8 @@ def use_cmake(dep, path):
 
 # resolve dependencies #########################
 use_pkg_config('hipo', args.hipo)
-use_pkg_config('fmt', args.fmt)
+use_pkg_config('fmt',  args.fmt)
+use_pkg_config('yaml', args.yaml)
 ################################################
 
 
