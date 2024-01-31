@@ -38,8 +38,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: install dependency packages
-      - run: |
-          .github/install-dependency-packages.sh ${{ inputs.runner }}
+        run: .github/install-dependency-packages.sh ${{ inputs.runner }}
+      - name: summarize
+        run: |
+          cat pkg_summary.md | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+          echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
+          echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
+          echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
+          # for dep in python meson ninja ; do
+          #   echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
+          # done
+          # echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
 
   # dependencies
