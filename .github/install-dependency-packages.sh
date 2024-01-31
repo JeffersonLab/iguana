@@ -11,6 +11,7 @@ PACKAGE_LIST_MACOS=(
 PACKAGE_LIST_LINUX=(
   fmt
   yaml-cpp
+  cmake
 )
 
 if [ $# -ne 1 ]; then
@@ -40,9 +41,7 @@ case $runner in
     for pkg in ${PACKAGE_LIST_MACOS[@]}; do
       echo "[+] INSTALLING $pkg"
       brew install $pkg
-      if [ ! "$pkg" = "tree" ]; then
-        echo "| \`$pkg\` | $(brew info $pkg | head -n1) |" >> $summary_file
-      fi
+      echo "| \`$pkg\` | $(brew info $pkg | head -n1) |" >> $summary_file
     done
     ;;
 
