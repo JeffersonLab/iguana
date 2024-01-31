@@ -37,11 +37,10 @@ jobs:
     container:
       image: ${{ inputs.container }}
     steps:
-      - name: install cmake
-        if: ${{ inputs.runner == 'ubuntu-latest' }}
-        run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm cmake
+      - name: checkout iguana for dependency installation script
+        uses: actions/checkout@v4
+      - name: install dependency packages
+        run: .github/install-dependency-packages.sh ${{ inputs.runner }}
       - name: checkout hipo
         uses: actions/checkout@v4
         with:

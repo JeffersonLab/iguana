@@ -11,6 +11,8 @@ PACKAGE_LIST_MACOS=(
 PACKAGE_LIST_LINUX=(
   fmt
   yaml-cpp
+  gcc
+  make
   cmake
 )
 
