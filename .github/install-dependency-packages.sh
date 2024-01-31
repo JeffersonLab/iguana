@@ -6,6 +6,7 @@ PACKAGE_LIST_ARCH_LINUX=(
   ### general dependencies
   python
   gcc
+  make
   cmake
   ### iguana dependencies
   ninja
