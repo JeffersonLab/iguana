@@ -37,6 +37,9 @@ jobs:
     container:
       image: ${{ inputs.container }}
     steps:
+      - name: install cmake
+        run: pacman -S --noconfirm cmake
+        if: ${{ inputs.runner == 'ubuntu-latest' }}
       - name: checkout hipo
         uses: actions/checkout@v4
         with:
