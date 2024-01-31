@@ -34,8 +34,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: install apptainer
         run: |
+          sudo apt update
           apt search apptainer
-          # sudo apt update
           # sudo apt upgrade
           # sudo apt -y install apptainer
       - name: build
