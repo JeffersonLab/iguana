@@ -2,12 +2,6 @@
 
 set -e
 
-PACKAGE_LIST_MACOS=(
-  fmt
-  yaml-cpp
-  tree
-)
-
 PACKAGE_LIST_ARCH_LINUX=(
   fmt
   yaml-cpp
@@ -15,6 +9,12 @@ PACKAGE_LIST_ARCH_LINUX=(
   make
   cmake
   python
+)
+
+PACKAGE_LIST_MACOS=(
+  fmt
+  yaml-cpp
+  tree
 )
 
 if [ $# -ne 1 ]; then
