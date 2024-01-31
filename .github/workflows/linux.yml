@@ -16,3 +16,4 @@ jobs:
     with:
       runner: ubuntu-latest
       num_threads: 4
+      container: archlinux/archlinux:latest

@@ -7,6 +7,11 @@ on:
         description: 'GitHub runner'
         required: true
         type: string
+      container:
+        description: 'Docker container'
+        required: false
+        type: string
+        default: ''
       num_threads:
         description: 'Number of threads or CPUs'
         required: false
@@ -26,16 +31,18 @@ jobs:
 
   # apptainer image
   #########################################################
-  build_apptainer_image:
-    name: Build apptainer image
-    if: ${{ inputs.runner != 'macos-latest' }}
+  test_deps:
     runs-on: ${{ inputs.runner }}
     container:
-      image: archlinux/archlinux:latest
+      image: ${{ inputs.container }}
     steps:
-      - uses: actions/checkout@v4
-      - run: pacman -Syu --noconfirm
-      - run: pacman -S fmt yaml-cpp --noconfirm
+      - run: |
+          pacman -Syu --noconfirm
+          pacman -S fmt yaml-cpp --noconfirm
+        if: ${{ inputs.runner == 'ubuntu-latest' }}
+      - run: |
+          brew install tree fmt yaml-cpp
+        if: ${{ inputs.runner == 'macos-latest' }}
 
   # dependencies
   #########################################################
