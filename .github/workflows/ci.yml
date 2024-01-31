@@ -24,6 +24,22 @@ env:
 
 jobs:
 
+  # apptainer image
+  #########################################################
+  build_apptainer_image:
+    name: Build apptainer image
+    if: ${{ inputs.runner != 'macos-latest' }}
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: build
+        run: apptainer build --fakeroot iguana.sif apptainer/iguana.def
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iguana.sif
+          retention-days: 1
+          path: iguana.sif
+
   # dependencies
   #########################################################
 
