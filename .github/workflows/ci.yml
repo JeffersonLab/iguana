@@ -33,11 +33,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: install apptainer
-        run: |
-          sudo apt update
-          apt search apptainer
-          # sudo apt upgrade
-          # sudo apt -y install apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.2.5
       - name: build
         run: apptainer build --fakeroot iguana.sif apptainer/iguana.def
       - uses: actions/upload-artifact@v4
