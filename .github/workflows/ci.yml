@@ -96,7 +96,7 @@ jobs:
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
-          cat pkg_summary.md | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+          cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       ### build iguana
       - name: resolve local dependencies
         run: meson/resolve-dependencies.py --ini native.ini --hipo ./hipo
