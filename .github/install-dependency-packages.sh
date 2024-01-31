@@ -3,19 +3,25 @@
 set -e
 
 PACKAGE_LIST_ARCH_LINUX=(
+  ### general dependencies
+  python
+  gcc
+  cmake
+  ### iguana dependencies
+  ninja
+  meson
   fmt
   yaml-cpp
-  gcc
-  make
-  cmake
-  python
-  python-pip
 )
 
 PACKAGE_LIST_MACOS=(
+  ### general dependencies
+  tree
+  ### iguana dependencies
+  ninja
+  meson
   fmt
   yaml-cpp
-  tree
 )
 
 if [ $# -ne 1 ]; then
@@ -33,7 +39,7 @@ case $runner in
     echo "[+] UPDATING"
     pacman -Syu --noconfirm
     for pkg in ${PACKAGE_LIST_ARCH_LINUX[@]}; do
-      echo "[+] INSTALLING $pkg"
+      echo "[+] INSTALLING PACKAGE $pkg"
       pacman -S --noconfirm $pkg
       echo "| \`$pkg\` | $(pacman -Qi $pkg | grep -Po '^Version\s*: \K.+') |" >> $summary_file
     done
@@ -43,7 +49,7 @@ case $runner in
     echo "[+] On macOS runner"
     export NO_COLOR=1
     for pkg in ${PACKAGE_LIST_MACOS[@]}; do
-      echo "[+] INSTALLING $pkg"
+      echo "[+] INSTALLING PACKAGE $pkg"
       brew install $pkg
       echo "| \`$pkg\` | $(brew info $pkg | head -n1) |" >> $summary_file
     done
