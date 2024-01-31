@@ -34,6 +34,8 @@ jobs:
   build_hipo:
     name: Build HIPO
     runs-on: ${{ inputs.runner }}
+    container:
+      image: ${{ inputs.container }}
     steps:
       - name: checkout hipo
         uses: actions/checkout@v4
@@ -60,6 +62,8 @@ jobs:
     needs:
       - build_hipo
     runs-on: ${{ inputs.runner }}
+    container:
+      image: ${{ inputs.container }}
     strategy:
       fail-fast: false
       matrix:
@@ -177,6 +181,8 @@ jobs:
       - download_validation_files
       - build_iguana
     runs-on: ${{ inputs.runner }}
+    container:
+      image: ${{ inputs.container }}
     strategy:
       fail-fast: false
       matrix:
@@ -244,6 +250,8 @@ jobs:
       - download_validation_files
       - build_iguana
     runs-on: ${{ inputs.runner }}
+    container:
+      image: ${{ inputs.container }}
     strategy:
       fail-fast: false
       matrix:
