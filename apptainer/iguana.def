@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: almalinux:{{ TAG }}
+From: archlinux/archlinux:{{ TAG }}
 Stage: build
 
 %labels
@@ -9,4 +9,5 @@ Stage: build
     TAG=latest
 
 %post
-    dnf upgrade -y
+    pacman -Syu --noconfirm
+    pacman -S fmt yaml-cpp

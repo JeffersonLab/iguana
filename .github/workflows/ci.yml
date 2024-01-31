@@ -38,8 +38,6 @@ jobs:
           apptainer-version: 1.2.5
       - name: build
         run: apptainer build --fakeroot iguana.sif apptainer/iguana.def
-      - run: apptainer run iguana.sif dnf search fmt
-      - run: apptainer run iguana.sif dnf search yaml-cpp
 
   # dependencies
   #########################################################
