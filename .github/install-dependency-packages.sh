@@ -14,6 +14,7 @@ PACKAGE_LIST_LINUX=(
   gcc
   make
   cmake
+  python
 )
 
 if [ $# -ne 1 ]; then
