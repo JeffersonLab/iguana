@@ -34,9 +34,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: install apptainer
         run: |
-          sudo apt update
-          sudo apt upgrade
-          sudo apt -y install apptainer
+          apt search apptainer
+          # sudo apt update
+          # sudo apt upgrade
+          # sudo apt -y install apptainer
       - name: build
         run: apptainer build --fakeroot iguana.sif apptainer/iguana.def
       - uses: actions/upload-artifact@v4
