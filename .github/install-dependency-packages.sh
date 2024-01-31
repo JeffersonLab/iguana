@@ -8,6 +8,7 @@ PACKAGE_LIST_ARCH_LINUX=(
   gcc
   make
   cmake
+  tree
   ### iguana dependencies
   ninja
   meson
