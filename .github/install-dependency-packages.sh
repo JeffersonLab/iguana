@@ -8,7 +8,7 @@ PACKAGE_LIST_MACOS=(
   tree
 )
 
-PACKAGE_LIST_LINUX=(
+PACKAGE_LIST_ARCH_LINUX=(
   fmt
   yaml-cpp
   gcc
@@ -31,7 +31,7 @@ case $runner in
     echo "[+] On Linux runner"
     echo "[+] UPDATING"
     pacman -Syu --noconfirm
-    for pkg in ${PACKAGE_LIST_LINUX[@]}; do
+    for pkg in ${PACKAGE_LIST_ARCH_LINUX[@]}; do
       echo "[+] INSTALLING $pkg"
       pacman -S --noconfirm $pkg
       echo "| \`$pkg\` | $(pacman -Qi $pkg | grep -Po '^Version\s*: \K.+') |" >> $summary_file
