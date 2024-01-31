@@ -91,12 +91,10 @@ jobs:
         run: tree hipo
       - name: summarize dependencies
         run: |
+          cat pkg_summary.md
           echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
-          for dep in python meson ninja ; do
-            echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
-          done
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
       ### build iguana
@@ -188,18 +186,10 @@ jobs:
           - { binding: cpp,    extension: ''    }
           - { binding: python, extension: '.py' }
     steps:
-      ### setup
+      ### dependencies and test data
       - uses: actions/checkout@v4
         with:
           path: iguana_src # keep source code isolated
-      - name: install python binding runtime dependencies
-        if: ${{ matrix.binding == 'python' }}
-        run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          echo PATH=$PATH >> $GITHUB_ENV
-          python -m pip install -r iguana_src/bind/python/requirements.txt
-      ### dependencies and test data
       - name: install dependency packages
         run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }}
       - name: get dependency build artifacts
@@ -221,6 +211,14 @@ jobs:
           rm -v *.tar.gz
       - name: tree artifacts
         run: tree
+      ### setup python virtaul environment (for python binding tests)
+      - name: install python binding runtime dependencies
+        if: ${{ matrix.binding == 'python' }}
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+          python -m pip install -r iguana_src/bind/python/requirements.txt
       ### set env vars - depends on runner and binding
       - name: source environment for Linux and python
         if: ${{ inputs.runner == 'ubuntu-latest' && matrix.binding == 'python' }}
