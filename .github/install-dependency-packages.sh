@@ -29,7 +29,7 @@ case $runner in
     pacman -Syu --noconfirm
     for pkg in ${PACKAGE_LIST_LINUX[@]}; do
       echo "[+] INSTALLING $pkg"
-      sudo pacman -Syu --noconfirm $pkg
+      pacman -Syu --noconfirm $pkg
       echo "| \`$pkg\` | $(pacman -Qi $pkg | grep -Po '^Version\s*: \K.+') |" >> $summary_file
     done
     ;;

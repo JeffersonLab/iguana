@@ -37,7 +37,10 @@ jobs:
       image: ${{ inputs.container }}
     steps:
       - uses: actions/checkout@v4
-      - run: .github/install-dependency-packages.sh ${{ inputs.runner }}
+      - name: install dependency packages
+      - run: |
+          .github/install-dependency-packages.sh ${{ inputs.runner }}
+          cat pkg_summary.md | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
 
   # dependencies
   #########################################################
