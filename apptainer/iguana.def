@@ -9,4 +9,4 @@ Stage: build
     TAG=latest
 
 %post
-    dnf upgrade
+    dnf upgrade -y
