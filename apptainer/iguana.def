@@ -10,4 +10,4 @@ Stage: build
 
 %post
     pacman -Syu --noconfirm
-    pacman -S fmt yaml-cpp
+    pacman -S fmt yaml-cpp --noconfirm
