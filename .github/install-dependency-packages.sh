@@ -9,6 +9,7 @@ PACKAGE_LIST_ARCH_LINUX=(
   make
   cmake
   python
+  python-pip
 )
 
 PACKAGE_LIST_MACOS=(
