@@ -40,11 +40,6 @@ jobs:
         run: apptainer build --fakeroot iguana.sif apptainer/iguana.def
       - run: apptainer run image.sif dnf info fmt
       - run: apptainer run image.sif dnf info yaml-cpp
-      - uses: actions/upload-artifact@v4
-        with:
-          name: iguana.sif
-          retention-days: 1
-          path: iguana.sif
 
   # dependencies
   #########################################################
