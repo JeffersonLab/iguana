@@ -1,0 +1,12 @@
+Bootstrap: docker
+From: almalinux:{{ TAG }}
+Stage: build
+
+%labels
+    Author c-dilks
+
+%arguments
+    TAG=latest
+
+%post
+    dnf upgrade
