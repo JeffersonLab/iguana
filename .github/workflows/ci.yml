@@ -24,7 +24,6 @@ defaults:
 
 env:
   hipo_version: 4.0.1
-  fmt_version: 9.1.0 # for Linux runners, whereas macOS uses Homebrew version
   num_events: 10
 
 jobs:
