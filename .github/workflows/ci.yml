@@ -38,6 +38,8 @@ jobs:
           apptainer-version: 1.2.5
       - name: build
         run: apptainer build --fakeroot iguana.sif apptainer/iguana.def
+      - name: image size
+        run: ls -lh iguana.sif
 
   # dependencies
   #########################################################
