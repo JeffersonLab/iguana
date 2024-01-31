@@ -25,9 +25,9 @@ exe() {
 # build and test
 case $tool in
   cmake)
-    exe cmake -S $source_dir -B $build_dir
+    exe cmake -S $source_dir -B $build_dir -G Ninja --install-prefix $install_dir
     exe cmake --build $build_dir
-    exe cmake --install $build_dir --prefix $install_dir
+    exe cmake --install $build_dir
     ;;
   make)
     pushd $source_dir

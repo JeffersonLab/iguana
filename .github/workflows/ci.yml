@@ -12,11 +12,6 @@ on:
         required: false
         type: string
         default: ''
-      num_threads:
-        description: 'Number of threads or CPUs'
-        required: false
-        type: string
-        default: 2
 
 defaults:
   run:
@@ -48,8 +43,8 @@ jobs:
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
-          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=hipo
-          cmake --build build -j${{ inputs.num_threads }}
+          cmake -S . -B build -G Ninja --install-prefix $(pwd)/hipo
+          cmake --build build
           cmake --install build
           tar czvf hipo{.tar.gz,}
       - uses: actions/upload-artifact@v4
