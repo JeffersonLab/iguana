@@ -13,7 +13,7 @@ PACKAGE_LIST_ARCH_LINUX=(
   ### iguana dependencies
   ninja
   meson
-  fmt
+  'fmt=9.1.0-4'
 )
 
 PACKAGE_LIST_MACOS=(
