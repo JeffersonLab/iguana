@@ -42,6 +42,9 @@ jobs:
           cmake --build build -j${{ inputs.num_threads }}
           cmake --install build
           tar czvf hipo{.tar.gz,}
+      - run: brew install tree
+        if: ${{ inputs.runner == 'macos-latest' }}
+      - run: tree hipo
       - uses: actions/upload-artifact@v4
         with:
           name: build_deps_hipo
@@ -65,6 +68,8 @@ jobs:
           cmake --build build -j${{ inputs.num_threads }}
           cmake --install build
           tar czvf fmt{.tar.gz,}
+      - run: tree fmt
+        if: ${{ inputs.runner != 'macos-latest' }}
       - uses: actions/upload-artifact@v4
         if: ${{ inputs.runner != 'macos-latest' }}
         with:
@@ -103,11 +108,10 @@ jobs:
         with:
           pattern: build_deps_*
           merge-multiple: true
-      - name: install dependencies from package manager
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }}
+      - run: brew install fmt
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: untar build
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
-      - run: tree
       - name: summarize dependencies
         run: |
           echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
@@ -116,11 +120,16 @@ jobs:
           for dep in python meson ninja ; do
             echo "| \`$dep\` | $($dep --version) |" >> $GITHUB_STEP_SUMMARY
           done
-          if [[ "${{ inputs.runner }}" =~ "ubuntu" ]]; then
+          if [ "${{ inputs.runner }}" = "macos-latest" ]; then
+            echo "| \`fmt\` | $(brew info fmt | head -n1) |" >> $GITHUB_STEP_SUMMARY
+          else
             echo "| \`fmt\` | ${{ env.fmt_version }} |" >> $GITHUB_STEP_SUMMARY
           fi
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
-          cat pkg_summary.md | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+      ### tree
+      - run: brew install tree
+        if: ${{ inputs.runner == 'macos-latest' }}
+      - run: tree
       ### build iguana
       - name: resolve dependencies
         run: |
@@ -230,9 +239,8 @@ jobs:
         with:
           pattern: build_deps_*
           merge-multiple: true
-      - name: install dependencies from package manager
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }}
-        working-directory: iguana_src
+      - run: brew install fmt
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -245,7 +253,11 @@ jobs:
         run: |
           ls *.tar.gz | xargs -I{} tar xzvf {}
           rm -v *.tar.gz
-      - run: tree
+      ### tree
+      - run: brew install tree
+        if: ${{ inputs.runner == 'macos-latest' }}
+      - name: tree artifacts
+        run: tree
       ### set env vars - depends on runner and binding
       - name: source environment for Linux and python
         if: ${{ inputs.runner == 'ubuntu-latest' && matrix.binding == 'python' }}
@@ -294,8 +306,8 @@ jobs:
         with:
           pattern: build_deps_*
           merge-multiple: true
-      - name: install dependencies from package manager
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }}
+      - run: brew install fmt
+        if: ${{ inputs.runner == 'macos-latest' }}
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
