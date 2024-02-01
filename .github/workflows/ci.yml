@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ''
+      verset:
+        description: 'Dependency version set'
+        required: false
+        type: string
+        default: 'latest'
 
 defaults:
   run:
@@ -35,7 +40,7 @@ jobs:
       - name: checkout iguana for dependency installation script
         uses: actions/checkout@v4
       - name: install dependency packages
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }}
+        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: checkout hipo
         uses: actions/checkout@v4
         with:
@@ -79,7 +84,7 @@ jobs:
           fetch-depth: 0
       ### dependencies
       - name: install dependency packages
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }}
+        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: get local dependencies
         uses: actions/download-artifact@v4
         with:
@@ -191,7 +196,7 @@ jobs:
         with:
           path: iguana_src # keep source code isolated
       - name: install dependency packages
-        run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }}
+        run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: get dependency build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -255,7 +260,7 @@ jobs:
       ### dependencies and test data
       - uses: actions/checkout@v4
       - name: install dependency packages
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }}
+        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: get dependency build artifacts
         uses: actions/download-artifact@v4
         with:
