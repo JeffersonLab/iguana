@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   Linux:
+    name: Linux (minver)
     uses: ./.github/workflows/ci.yml
     with:
       runner: ubuntu-latest
