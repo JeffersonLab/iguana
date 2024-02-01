@@ -23,6 +23,10 @@ case $dep in
     result_meson='>=9.1.0'
     result_ala='https://archive.archlinux.org/packages/f/fmt/fmt-9.1.0-4-x86_64.pkg.tar.zst'
     ;;
+  yaml-cpp)
+    result_meson='>=0.7.0'
+    result_ala='https://archive.archlinux.org/packages/y/yaml-cpp/yaml-cpp-0.7.0-2-x86_64.pkg.tar.zst'
+    ;;
   *)
     echo "ERROR: dependency '$dep' is unknown" >&2
     exit 1
