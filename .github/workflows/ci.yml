@@ -96,7 +96,6 @@ jobs:
         run: tree hipo
       - name: summarize dependencies
         run: |
-          cat pkg_summary.md
           echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
