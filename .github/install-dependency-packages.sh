@@ -17,6 +17,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
+  yaml-cpp
 )
 
 ##############################
@@ -29,6 +30,7 @@ GENERAL_PACKAGE_LIST_MACOS=(
 )
 IGUANA_PACKAGE_LIST_MACOS=(
   fmt
+  yaml-cpp
 )
 
 #############################################

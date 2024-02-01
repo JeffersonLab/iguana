@@ -31,6 +31,11 @@ fmt_dep = dependency(
   method:  'pkg-config',
   version: run_command('meson' / 'minimum-version.sh', 'fmt', check: true).stdout().strip()
 )
+yamlcpp_dep = dependency(
+  'yaml-cpp',
+  method:  'pkg-config',
+  version: run_command('meson' / 'minimum-version.sh', 'yaml-cpp', check: true).stdout().strip()
+)
 hipo_dep = dependency(
   'hipo4',
   method:  'pkg-config',
