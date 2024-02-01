@@ -52,9 +52,6 @@ jobs:
           cmake --build build
           cmake --install build
           tar czvf hipo{.tar.gz,}
-      - run: brew install tree
-        if: ${{ inputs.runner == 'macos-latest' }}
-      - run: tree hipo
       - uses: actions/upload-artifact@v4
         with:
           name: build_deps_hipo
