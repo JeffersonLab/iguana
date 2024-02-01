@@ -13,7 +13,6 @@ PACKAGE_LIST_ARCH_LINUX=(
   ### iguana dependencies
   ninja
   meson
-  'fmt=9.1.0-4'
 )
 
 PACKAGE_LIST_MACOS=(
@@ -44,6 +43,8 @@ case $runner in
       pacman -S --noconfirm $pkg
       echo "| \`$pkg\` | $(pacman -Qi $pkg | grep -Po '^Version\s*: \K.+') |" >> $summary_file
     done
+    echo "[+] TEST"
+    pacman -U https://archive.archlinux.org/packages/f/fmt/fmt-9.1.0-4-x86_64.pkg.tar.zst
     ;;
 
   macos*)
