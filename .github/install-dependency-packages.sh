@@ -14,7 +14,6 @@ PACKAGE_LIST_ARCH_LINUX=(
   ninja
   meson
   fmt
-  yaml-cpp
 )
 
 PACKAGE_LIST_MACOS=(
@@ -24,7 +23,6 @@ PACKAGE_LIST_MACOS=(
   ninja
   meson
   fmt
-  yaml-cpp
 )
 
 if [ $# -ne 1 ]; then
