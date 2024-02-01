@@ -1,4 +1,4 @@
-name: macOS
+name: MinVer # minimum required-version of dependencies on Linux
 
 on:
   pull_request:
@@ -11,8 +11,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  macOS:
-    name: macOS (latest)
+  Linux:
+    name: Linux (minver)
     uses: ./.github/workflows/ci.yml
     with:
-      runner: macos-latest
+      runner: ubuntu-latest
+      container: archlinux/archlinux:latest
+      verset: minver
