@@ -244,7 +244,7 @@ jobs:
       - name: test 01
         run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 02
-        run: iguana/bin/iguana-example-02-YAMLReader${{ matrix.extension }} iguana_src/examples/config_files/ex2.yaml #FIXME
+        run: iguana/bin/iguana-example-02-YAMLReader${{ matrix.extension }}
         if: ${{ matrix.binding == 'cpp' }} #FIXME
       - name: test 03
         run: iguana/bin/iguana-example-03-zvertex-filter${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
