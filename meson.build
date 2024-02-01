@@ -7,7 +7,6 @@ project(
     'cpp_std':               'c++17',
     'buildtype':             'release',
     'libdir':                'lib',
-    'sysconfdir':            'etc/iguana',
     'pkgconfig.relocatable': 'true',
   },
   version: run_command(
@@ -17,12 +16,6 @@ project(
   ).stdout().strip()
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
-
-# set preprocessor macros
-add_project_arguments(
-  '-DIGUANA_ETC="' + get_option('prefix') / get_option('sysconfdir') + '"',
-  language: ['cpp'],
-)
 
 # resolve dependencies
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
@@ -63,10 +56,17 @@ project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: full_dep_list)
+project_etc       = get_option('sysconfdir') / meson.project_name()
 project_pkg_vars  = [
   'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
   'dep_libdirs='       + ':'.join(dep_lib_paths),
 ]
+
+# set preprocessor macros
+add_project_arguments(
+  '-DIGUANA_ETC="' + get_option('prefix') / project_etc + '"',
+  language: ['cpp'],
+)
 
 # build and install shared libraries
 subdir('src/iguana/services')
