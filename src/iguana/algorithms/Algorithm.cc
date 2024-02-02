@@ -20,7 +20,7 @@ namespace iguana {
 
   std::shared_ptr<ConfigFileManager> Algorithm::GetConfigFileManager() {
     if(!m_config_manager) // instantiate it, if it doesn't exist
-      m_config_manager = std::make_shared<ConfigFileManager>("config|" + m_name);
+      m_config_manager = std::make_shared<ConfigFileManager>(m_name+ + "|config");
     return m_config_manager;
   }
 
