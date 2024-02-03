@@ -40,7 +40,7 @@ defaults:
     shell: bash
 
 env:
-  hipo_version: use_pkgconfig_for_lz4
+  hipo_version: 4.0.1
   num_events: 10
 
 jobs:
@@ -80,7 +80,7 @@ jobs:
       - name: checkout hipo
         uses: actions/checkout@v4
         with:
-          repository: mholtrop/hipo
+          repository: gavalian/hipo
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
