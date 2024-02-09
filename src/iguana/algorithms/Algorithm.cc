@@ -2,10 +2,6 @@
 
 namespace iguana {
 
-  Algorithm::Algorithm(const std::string name):
-    Object(name),
-    m_rows_only(false) {}
-
   void Algorithm::Start() {
     m_rows_only = true;
     hipo::banklist no_banks = {};

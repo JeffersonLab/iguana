@@ -37,7 +37,7 @@ namespace iguana {
     public:
 
       /// @param name the unique name for a derived class instance
-      Algorithm(const std::string name);
+      Algorithm(const std::string name) : Object(name), m_rows_only(false) {}
       virtual ~Algorithm() {}
 
       /// Initialize an algorithm before any events are processed, with the intent to process _banks_;
