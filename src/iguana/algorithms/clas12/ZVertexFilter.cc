@@ -19,8 +19,8 @@ namespace iguana::clas12
         std::vector<double> defaultValues = yamlr.findKeyAtRunAndPIDVector<double>("cuts","runs","pid", "vals", runnb,pid, {-20.0, 20.0});
 
         // define options, their default values, and cache them
-        CacheOption("low", defaultValues.at(0), zvertex_low);
-        CacheOption("high", defaultValues.at(1), zvertex_high);
+        CacheOption("low", defaultValues.at(0), o_zvertex_low);
+        CacheOption("high", defaultValues.at(1), o_zvertex_high);
 
         // cache expected bank indices
         CacheBankIndex(banks, "REC::Particle", b_particle);
@@ -51,8 +51,8 @@ namespace iguana::clas12
 
     bool ZVertexFilter::Filter(const double zvertex) const
     {
-        //std::cout << "low " << zvertex_low << " high " << zvertex_high << std::endl;
-        return (zvertex > zvertex_low) && (zvertex < zvertex_high);
+        //std::cout << "low " << o_zvertex_low << " high " << o_zvertex_high << std::endl;
+        return (zvertex > o_zvertex_low) && (zvertex < o_zvertex_high);
     }
 
     void ZVertexFilter::Stop()

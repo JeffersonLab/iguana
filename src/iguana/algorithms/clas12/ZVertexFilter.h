@@ -27,8 +27,8 @@ namespace iguana::clas12
         hipo::banklist::size_type b_particle;
 
         /// Configuration options
-        double zvertex_low;
-        double zvertex_high;
+        double o_zvertex_low;
+        double o_zvertex_high;
     };
 
 }
