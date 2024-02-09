@@ -84,10 +84,11 @@ namespace iguana {
       /// @param name the new name
       void SetName(const std::string name);
 
-      /// Get the configuration file manager for this algorithm. If there is no configuration manager, this
-      /// will create one.
-      /// @return the configuration file manager
-      std::shared_ptr<ConfigFileManager> GetConfigFileManager();
+      /// Get a reference to the configuration file manager for this algorithm.
+      /// If there is no configuration file manager owned by this algorithm,
+      /// calling this function will create one.
+      /// @return the configuration file manager reference
+      std::shared_ptr<ConfigFileManager>& GetConfigFileManager();
 
       /// Set the configuration file manager for this algorithm.
       /// @param config_manager the configuration file manager
