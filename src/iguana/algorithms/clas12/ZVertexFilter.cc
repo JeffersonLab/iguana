@@ -1,4 +1,5 @@
 #include "ZVertexFilter.h"
+#include "iguana/services/YAMLReader.h"
 
 namespace iguana::clas12
 {
@@ -8,8 +9,7 @@ namespace iguana::clas12
     void ZVertexFilter::Start(hipo::banklist &banks)
     {
 
-        // FIXME Eventually need to find a good location for files
-        // and a good way of passing in run numbers and pid values
+        // FIXME: need a way of passing in run numbers and pid values
         int runnb = 4768; //default to RG-A fall2018 inbending for now
         int pid=0; //no PID needed for this filter
         auto config_file = GetConfigFileManager()->FindFile("ZVertexFilter.yaml");

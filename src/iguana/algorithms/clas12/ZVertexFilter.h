@@ -1,7 +1,5 @@
 #pragma once
 
-
-#include "iguana/services/YAMLReader.h"
 #include "iguana/algorithms/Algorithm.h"
 
 namespace iguana::clas12
@@ -11,18 +9,12 @@ namespace iguana::clas12
     class ZVertexFilter : public Algorithm
     {
 
-        DEFINE_IGUANA_ALGORITHM(ZVertexFilter, clas12::ZVertexFilter)
+      DEFINE_IGUANA_ALGORITHM(ZVertexFilter, clas12::ZVertexFilter)
 
-    public:
-        /// Initialize an algorithm before any events are processed, with the intent to process _banks_;
-        /// use this method if you intend to use `Algorithm::Run`.
-        /// @param banks the list of banks this algorithm will use, so that `Algorithm::Run` can cache the indices
-        ///        of the banks that it needs
+      public:
+
         void Start(hipo::banklist &banks) override;
-        /// Run an algorithm for an event
-        /// @param banks the list of banks to process
         void Run(hipo::banklist &banks) const override;
-        /// Finalize an algorithm after all events are processed
         void Stop() override;
 
         /// **Action function**: checks if the Z Vertex is within specified bounds
@@ -30,7 +22,7 @@ namespace iguana::clas12
         /// @returns `true` if `zvertex` is within specified bounds
         bool Filter(const double zvertex) const;
 
-    private:
+      private:
         /// `hipo::banklist` index for the particle bank
         hipo::banklist::size_type b_particle;
 

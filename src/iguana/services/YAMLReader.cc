@@ -6,10 +6,10 @@ namespace iguana
 
     YAMLReader::YAMLReader(const std::string file) : m_file(file)
     {
-        m_config = YAML::LoadFile(file);
+        m_config = YAML::LoadFile(m_file);
     }
 
-    std::string YAMLReader::GetFile() const
+    std::string YAMLReader::GetFileName() const
     {
         return m_file;
     }
@@ -95,7 +95,15 @@ namespace iguana
     template std::vector<std::string> YAMLReader::readArray<std::string>(const std::string &, const std::vector<std::string> &, const YAML::Node &);
 
     template <typename T>
-    T YAMLReader::findKeyAtRunAndPID(const std::string &cutKey,const std::string &runkey, const std::string &pidkey, const std::string &key, int runnb,int pid, T defaultValue)
+    T YAMLReader::findKeyAtRunAndPID(
+        const std::string &cutKey,
+        const std::string &runkey,
+        const std::string &pidkey,
+        const std::string &key,
+        const int         runnb,
+        const int         pid,
+        const T           defaultValue
+        )
     {
         T returnVal = defaultValue;
         // Accessing the whole sequence of maps
@@ -136,11 +144,19 @@ namespace iguana
     template std::string YAMLReader::findKeyAtRunAndPID<std::string>(const std::string &,const std::string &, const std::string &, const std::string &, int, int, const std::string);
 
     template <typename T>
-    std::vector<T> YAMLReader::findKeyAtRunAndPIDVector(const std::string &cutKey, const std::string &runkey, const std::string &pidkey, const std::string &key, int runnb,int pid, const std::vector<T> &defaultValue)
+    std::vector<T> YAMLReader::findKeyAtRunAndPIDVector(
+        const std::string &cutKey,
+        const std::string &runkey,
+        const std::string &pidkey,
+        const std::string &key,
+        int runnb,
+        int pid,
+        const std::vector<T> &defaultValue
+        )
     {
         std::vector<T> returnVal = defaultValue;
         // Accessing the whole sequence of maps
-        
+
         const YAML::Node &cutsNode = m_config[cutKey];
         //std::cout<<cutsNode<<std::endl;
         //std::cout << cutsNode.IsSequence() << std::endl;
