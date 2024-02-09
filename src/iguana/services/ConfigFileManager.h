@@ -25,10 +25,12 @@ namespace iguana {
       /// @param level the log level
       void PrintDirectories(const Logger::Level level=Logger::info);
 
-      /// Find a configuration file by name. The following locations are searched, in order:
+      /// Find a configuration file by name. You may either give just a file name, or specify the full path and filename.
+      /// The following locations are searched, in order:
+      /// - current working directory `./`
       /// - directories included by `ConfigFileManager::AddDirectory`, starting from the most recently added directory
       /// - the common installation prefix
-      /// @param name the configuration file name (without a directory)
+      /// @param name the configuration file name (with or without a directory)
       /// @return the found configuration file (with the directory)
       std::string FindFile(const std::string name);
 
