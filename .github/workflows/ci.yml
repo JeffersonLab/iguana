@@ -40,7 +40,7 @@ defaults:
     shell: bash
 
 env:
-  hipo_version: test-maurik
+  hipo_version: master
   num_events: 10
 
 jobs:
@@ -80,7 +80,7 @@ jobs:
       - name: checkout hipo
         uses: actions/checkout@v4
         with:
-          repository: c-dilks/hipo
+          repository: mholtrop/hipo
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
