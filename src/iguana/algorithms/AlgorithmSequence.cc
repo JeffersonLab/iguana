@@ -27,9 +27,13 @@ namespace iguana {
   void AlgorithmSequence::Add(algo_t&& algo) {
     auto algoName = algo->GetName();
     m_algo_names.insert({algoName, m_sequence.size()});
-    algo->SetName(m_name + "|" + algoName); // prepend sequence name to algorithm name
+    // prepend sequence name to algorithm name
+    algo->SetName(m_name + "|" + algoName);
+    // use `this` config file manager in each of its algorithms (must be called AFTER `SetName`)
+    algo->SetConfigFileManager(GetConfigFileManager());
     m_sequence.push_back(std::move(algo));
-    if(m_algo_names.size() < m_sequence.size()) { // check for duplicate algorithm name
+    // check for duplicate algorithm name
+    if(m_algo_names.size() < m_sequence.size()) {
       m_log->Error("Duplicate algorithm name '{}' detected; please make sure all of your algorithms have unique names", algoName);
       throw std::runtime_error("cannot Add algorithm");
     }

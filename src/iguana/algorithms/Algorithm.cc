@@ -8,6 +8,24 @@ namespace iguana {
     Start(no_banks);
   }
 
+  void Algorithm::SetName(const std::string name) {
+    Object::SetName(name);
+    if(m_config_manager)
+      m_config_manager->SetName("config|"+name);
+  }
+
+  std::shared_ptr<ConfigFileManager>& Algorithm::GetConfigFileManager() {
+    if(!m_config_manager) // instantiate it, if it doesn't exist
+      m_config_manager = std::make_shared<ConfigFileManager>(m_name+ + "|config");
+    return m_config_manager;
+  }
+
+  void Algorithm::SetConfigFileManager(std::shared_ptr<ConfigFileManager> config_manager) {
+    if(m_config_manager)
+      m_log->Warn("config file manager already exists for this algorithm; overwriting...");
+    m_config_manager = config_manager;
+  }
+
   void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {
     if(m_rows_only)
       return;
@@ -31,6 +49,7 @@ namespace iguana {
       else if (const auto valPtr(std::get_if<double>(&val));        valPtr) return fmt::format("{} [{}]", *valPtr,                 "double");
       else if (const auto valPtr(std::get_if<std::string>(&val));   valPtr) return fmt::format("{} [{}]", *valPtr,                 "string");
       else if (const auto valPtr(std::get_if<std::vector<int>>(&val)); valPtr) return fmt::format("({}) [{}]", fmt::join(*valPtr,", "), "vector<int>");
+      else if (const auto valPtr(std::get_if<std::vector<double>>(&val)); valPtr) return fmt::format("({}) [{}]", fmt::join(*valPtr,", "), "vector<double>");
       else {
         m_log->Error("option '{}' type has no printer defined in Algorithm::PrintOptionValue", key);
         return "UNKNOWN";

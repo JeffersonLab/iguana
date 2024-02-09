@@ -10,6 +10,7 @@
 #include <hipo4/bank.h>
 
 #include "iguana/services/Object.h"
+#include "iguana/services/ConfigFileManager.h"
 #include "iguana/algorithms/AlgorithmBoilerplate.h"
 
 namespace iguana {
@@ -19,7 +20,8 @@ namespace iguana {
     int,
     double,
     std::string,
-    std::vector<int>
+    std::vector<int>,
+    std::vector<double>
   >;
 
   /// @brief Base class for all algorithms to inherit from
@@ -77,6 +79,21 @@ namespace iguana {
             m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
           }
         }
+
+      /// Set the name of this algorithm
+      /// @param name the new name
+      void SetName(const std::string name);
+
+      /// Get a reference to the configuration file manager for this algorithm.
+      /// If there is no configuration file manager owned by this algorithm,
+      /// calling this function will create one.
+      /// @return the configuration file manager reference
+      std::shared_ptr<ConfigFileManager>& GetConfigFileManager();
+
+      /// Set the configuration file manager for this algorithm.
+      /// @param config_manager the configuration file manager
+      void SetConfigFileManager(std::shared_ptr<ConfigFileManager> config_manager);
+
 
     protected:
 
@@ -159,6 +176,11 @@ namespace iguana {
 
       /// If true, algorithm can only operate on bank _rows_; `Algorithm::GetBank`, and therefore `Algorithm::Run`, cannot be called
       bool m_rows_only;
+
+    private:
+
+      /// Configuration file manager instance
+      std::shared_ptr<ConfigFileManager> m_config_manager;
 
   };
 
