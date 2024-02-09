@@ -40,7 +40,7 @@ defaults:
     shell: bash
 
 env:
-  hipo_version: 4.0.1
+  hipo_version: test-maurik
   num_events: 10
 
 jobs:
@@ -80,7 +80,7 @@ jobs:
       - name: checkout hipo
         uses: actions/checkout@v4
         with:
-          repository: gavalian/hipo
+          repository: c-dilks/hipo
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
