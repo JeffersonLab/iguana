@@ -37,7 +37,7 @@ cuts:
 
   #Cuts below are just examples:
   #No one defined pid/sector dependent cuts on vz
-  #No one defined RG-B specifict cuts on vz
+  #No one defined RG-B specific cuts on vz
   #single structure probably does not make send
   - runs: #RG-B spring2019
       - 6141
@@ -56,8 +56,3 @@ cuts:
     single: #single values instead of arrays
       0: -6
       1: 14
-
-
-
-
-
