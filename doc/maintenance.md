@@ -28,3 +28,14 @@ We currently support up to the C++ standard defined in:
 ## Code Ownership
 
 We maintain a [`CODEOWNERS` file](/CODEOWNERS) to track who wrote and maintains each file. If you make significant contributions to any part of the code, please update `CODEOWNERS`. Pull requests that edit a file that you maintain will automatically request for your review, when marked as ready.
+
+## Auto-Formatting
+
+### C++
+
+We provide a [`.clang-format`](../.clang-format) file for auto-formatting C++ code. If your system has `clang-format`,
+then `meson` will create a `ninja` build target called `clang-format`, which you may run as
+```bash
+ninja -C <builddir> clang-format
+```
+This is useful to do periodically (**TODO**: automate it).
