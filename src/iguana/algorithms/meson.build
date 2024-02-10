@@ -7,6 +7,7 @@ algo_sources = [
   'clas12/EventBuilderFilter.cc',
   'clas12/ZVertexFilter.cc',
   'clas12/LorentzTransformer.cc',
+  'clas12/MomentumCorrection.cc',
 ]
 
 # algorithm headers
@@ -19,6 +20,7 @@ algo_public_headers = [
   'clas12/EventBuilderFilter.h',
   'clas12/ZVertexFilter.h',
   'clas12/LorentzTransformer.h',
+  'clas12/MomentumCorrection.h',
 ]
 
 algo_config_files = [
