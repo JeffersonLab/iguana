@@ -1,0 +1,46 @@
+name: Doxygen
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+    tags: [ '*' ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  doc_generate:
+    name: Generate documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: doxygen
+        uses: mattnotmitt/doxygen-action@v1
+        with:
+          doxyfile-path: doc/Doxyfile
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          retention-days: 1
+          path: doc/api/
+
+  doc_deploy:
+    if: ${{ github.head_ref == 'main' || github.ref_name == 'main' }}
+    name: Deploy documentation
+    needs: doc_generate
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: deployment
+        id: deployment
+        uses: actions/deploy-pages@v4
