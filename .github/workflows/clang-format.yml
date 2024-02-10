@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: check formatting
-        uses: jidicula/clang-format-action@v4
+        uses: jidicula/clang-format-action@v4.11.0
         with:
           clang-format-version: 16
           exclude-regex: 'examples/build_with_.*/.*\.cc'
