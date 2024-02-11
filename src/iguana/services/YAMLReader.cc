@@ -1,25 +1,23 @@
 #include "YAMLReader.h"
-#include <iostream>
 
 namespace iguana
 {
-
-    YAMLReader::YAMLReader(const std::string file) : m_file(file)
-    {
-        m_config = YAML::LoadFile(m_file);
-    }
-
-    std::string YAMLReader::GetFileName() const
-    {
-        return m_file;
+    void YAMLReader::LoadFiles() {
+      for(const auto& file : m_files) {
+        m_configs.push_front(YAML::LoadFile(file));
+        //
+        // FIXME: catch bad `LoadFile` result
+        //
+      }
     }
 
     template <typename T>
     T YAMLReader::readValue(const std::string &key, T defaultValue, const YAML::Node &node)
     {
+      auto config = m_configs.at(0); // FIXME: loop
         try
         {
-            const YAML::Node &targetNode = node.IsNull() ? m_config : node;
+            const YAML::Node &targetNode = node.IsNull() ? config : node;
 
             if (targetNode[key])
             {
@@ -33,13 +31,13 @@ namespace iguana
         catch (const YAML::Exception &e)
         {
             // Handle YAML parsing errors
-            std::cerr << "YAML Exception: " << e.what() << std::endl;
+            // std::cerr << "YAML Exception: " << e.what() << std::endl; // FIXME
             return defaultValue;
         }
         catch (const std::exception &e)
         {
             // Handle other exceptions (e.g., conversion errors)
-            std::cerr << "Exception: " << e.what() << std::endl;
+            // std::cerr << "Exception: " << e.what() << std::endl; // FIXME
             return defaultValue;
         }
     }
@@ -54,9 +52,10 @@ namespace iguana
     template <typename T>
     std::vector<T> YAMLReader::readArray(const std::string &key, const std::vector<T> &defaultValue, const YAML::Node &node)
     {
+      auto config = m_configs.at(0); // FIXME: loop
         try
         {
-            const YAML::Node &targetNode = node.IsNull() ? m_config : node;
+            const YAML::Node &targetNode = node.IsNull() ? config : node;
 
             if (targetNode[key])
             {
@@ -76,13 +75,13 @@ namespace iguana
         catch (const YAML::Exception &e)
         {
             // Handle YAML parsing errors
-            std::cerr << "YAML Exception: " << e.what() << std::endl;
+            // std::cerr << "YAML Exception: " << e.what() << std::endl; // FIXME
             return defaultValue;
         }
         catch (const std::exception &e)
         {
             // Handle other exceptions (e.g., conversion errors)
-            std::cerr << "Exception: " << e.what() << std::endl;
+            // std::cerr << "Exception: " << e.what() << std::endl; // FIXME
             return defaultValue;
         }
     }
@@ -105,11 +104,10 @@ namespace iguana
         const T           defaultValue
         )
     {
+      auto config = m_configs.at(0); // FIXME: loop
         T returnVal = defaultValue;
         // Accessing the whole sequence of maps
-        const YAML::Node &cutsNode = m_config[cutKey];
-        //std::cout<<cutsNode<<std::endl;
-        //std::cout << cutsNode.IsSequence() << std::endl;
+        const YAML::Node &cutsNode = config[cutKey];
         if (cutsNode.IsSequence())
         {
             for (const auto &runNode : cutsNode)
@@ -118,7 +116,6 @@ namespace iguana
                 std::vector<int> runs = readArray<int>(runkey, {}, runNode);
                 if (runs.size() == 2 && runs[0] <= runnb && runs[1] >= runnb)
                 {
-                    //std::cout << runNode << std::endl;
                     if (runNode[pidkey].IsDefined())
                     {
                         const YAML::Node &pidNode = runNode[pidkey];
@@ -154,12 +151,11 @@ namespace iguana
         const std::vector<T> &defaultValue
         )
     {
+      auto config = m_configs.at(0); // FIXME: loop
         std::vector<T> returnVal = defaultValue;
         // Accessing the whole sequence of maps
 
-        const YAML::Node &cutsNode = m_config[cutKey];
-        //std::cout<<cutsNode<<std::endl;
-        //std::cout << cutsNode.IsSequence() << std::endl;
+        const YAML::Node &cutsNode = config[cutKey];
         if (cutsNode.IsSequence())
         {
             for (const auto &runNode : cutsNode)
@@ -168,7 +164,6 @@ namespace iguana
                 std::vector<int> runs = readArray<int>(runkey, {}, runNode);
                 if (runs.size() == 2 && runs[0] <= runnb && runs[1] >= runnb)
                 {
-                    //std::cout << runNode << std::endl;
                     if (runNode[pidkey].IsDefined())
                     {
                         const YAML::Node &pidNode = runNode[pidkey];

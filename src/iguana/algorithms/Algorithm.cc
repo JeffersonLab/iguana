@@ -10,20 +10,17 @@ namespace iguana {
 
   void Algorithm::SetName(const std::string name) {
     Object::SetName(name);
-    if(m_config_manager)
-      m_config_manager->SetName("config|"+name);
+    if(m_yaml_config)
+      m_yaml_config->SetName("config|"+m_name);
   }
 
-  std::shared_ptr<ConfigFileManager>& Algorithm::GetConfigFileManager() {
-    if(!m_config_manager) // instantiate it, if it doesn't exist
-      m_config_manager = std::make_shared<ConfigFileManager>(m_name+ + "|config");
-    return m_config_manager;
-  }
-
-  void Algorithm::SetConfigFileManager(std::shared_ptr<ConfigFileManager> config_manager) {
-    if(m_config_manager)
-      m_log->Warn("config file manager already exists for this algorithm; overwriting...");
-    m_config_manager = config_manager;
+  void Algorithm::ParseYAMLConfig() {
+    if(m_yaml_config)
+      m_yaml_config.reset();
+    m_yaml_config = std::make_unique<YAMLReader>("config|"+m_name);
+    m_yaml_config->AddFile(m_default_config_file);
+    m_yaml_config->AddFile(m_user_config_file);
+    m_yaml_config->LoadFiles();
   }
 
   void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {

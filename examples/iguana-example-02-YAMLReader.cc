@@ -1,4 +1,4 @@
-#include <iguana/services/ConfigFileManager.h>
+#include <iguana/services/ConfigFileReader.h>
 #include <iguana/services/YAMLReader.h>
 #include <iostream>
 

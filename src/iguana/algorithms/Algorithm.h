@@ -10,7 +10,7 @@
 #include <hipo4/bank.h>
 
 #include "iguana/services/Object.h"
-#include "iguana/services/ConfigFileManager.h"
+#include "iguana/services/YAMLReader.h"
 #include "iguana/algorithms/AlgorithmBoilerplate.h"
 
 namespace iguana {
@@ -37,7 +37,12 @@ namespace iguana {
     public:
 
       /// @param name the unique name for a derived class instance
-      Algorithm(const std::string name) : Object(name), m_rows_only(false) {}
+      Algorithm(const std::string name)
+        : Object(name)
+        , m_rows_only(false)
+        , m_default_config_file("")
+        , m_user_config_file("")
+      {}
       virtual ~Algorithm() {}
 
       /// Initialize an algorithm before any events are processed, with the intent to process _banks_;
@@ -84,18 +89,10 @@ namespace iguana {
       /// @param name the new name
       void SetName(const std::string name);
 
-      /// Get a reference to the configuration file manager for this algorithm.
-      /// If there is no configuration file manager owned by this algorithm,
-      /// calling this function will create one.
-      /// @return the configuration file manager reference
-      std::shared_ptr<ConfigFileManager>& GetConfigFileManager();
+    protected: // methods
 
-      /// Set the configuration file manager for this algorithm.
-      /// @param config_manager the configuration file manager
-      void SetConfigFileManager(std::shared_ptr<ConfigFileManager> config_manager);
-
-
-    protected:
+      /// Parse YAML configuration files. Sets `m_yaml_config`.
+      void ParseYAMLConfig();
 
       /// Cache the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
       /// @param[in] banks the list of banks this algorithm will use
@@ -171,16 +168,24 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank& bank, const std::string message="", const Logger::Level level=Logger::trace) const;
 
+    protected: // members
+
       /// Data structure to hold configuration options
       std::unordered_map<std::string, option_t> m_opt;
 
       /// If true, algorithm can only operate on bank _rows_; `Algorithm::GetBank`, and therefore `Algorithm::Run`, cannot be called
       bool m_rows_only;
 
-    private:
+      /// Default configuration file name
+      std::string m_default_config_file;
 
-      /// Configuration file manager instance
-      std::shared_ptr<ConfigFileManager> m_config_manager;
+      /// User's configuration file name
+      std::string m_user_config_file;
+
+      /// YAML reader
+      std::unique_ptr<YAMLReader> m_yaml_config;
+
+    private:
 
   };
 

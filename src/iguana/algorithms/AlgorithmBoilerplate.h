@@ -3,8 +3,10 @@
 
 /// Generate an algorithm constructor
 /// @param ALGO_NAME the name of the algorithm class
-#define CONSTRUCT_IGUANA_ALGORITHM(ALGO_NAME) \
-  ALGO_NAME(std::string name="") : Algorithm(name=="" ? ClassName() : name) {}
+#define CONSTRUCT_IGUANA_ALGORITHM(ALGO_NAME)                                    \
+  ALGO_NAME(std::string name="") : Algorithm(name=="" ? GetClassName() : name) { \
+    m_default_config_file = GetDefaultConfigFile();                              \
+  }
 
 /// Generate an algorithm destructor
 /// @param ALGO_NAME the name of the algorithm class
@@ -15,9 +17,13 @@
 /// @param ALGO_NAME the name of the algorithm class
 /// @param ALGO_FULL_NAME the full name of this algorithm, used by `iguana::AlgorithmFactory`
 #define IGUANA_ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME)  \
+                                                                    \
   using Algorithm::Start;                                           \
   static algo_t Creator() { return std::make_unique<ALGO_NAME>(); } \
-  static std::string ClassName() { return #ALGO_FULL_NAME; }
+  static std::string GetClassName() { return #ALGO_FULL_NAME; }     \
+  static std::string GetDefaultConfigFile() {                       \
+    return ConfigFileReader::ConvertAlgoNameToConfigName(#ALGO_FULL_NAME, "yaml"); \
+  }
 
 /// Define the private members of an algorithm
 #define IGUANA_ALGORITHM_PRIVATE_MEMBERS \
@@ -38,4 +44,4 @@
 /// Register an algorithm for the `iguana::AlgorithmFactory`; this macro should be called in the algorithm's implementation
 /// @param ALGO_NAME the name of the algorithm class
 #define REGISTER_IGUANA_ALGORITHM(ALGO_NAME) \
-  bool ALGO_NAME::s_registered = AlgorithmFactory::Register(ALGO_NAME::ClassName(), ALGO_NAME::Creator);
+  bool ALGO_NAME::s_registered = AlgorithmFactory::Register(ALGO_NAME::GetClassName(), ALGO_NAME::Creator);
