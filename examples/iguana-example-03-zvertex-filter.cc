@@ -34,10 +34,6 @@ int main(int argc, char **argv)
 
     // set log levels
     seq.SetOption("clas12::ZVertexFilter", "log", "debug");
-    seq.GetConfigFileManager()->SetLogLevel("debug");
-
-    // set algorithm options - if we don't set these, the default values from config files are used.
-    // seq.SetOption<std::vector<double>>("clas12::ZVertexFilter", "low&high", {-13.0,12.0});
 
     // start the algorithms
     seq.Start(banks);

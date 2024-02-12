@@ -13,12 +13,13 @@ namespace iguana {
   }
 
   void ConfigFileReader::AddDirectory(const std::string dir) {
+    if(dir=="") return; // handle unset directory name
     m_log->Debug("Add directory {}", dir);
     m_directories.push_front(dir);
   }
 
   void ConfigFileReader::AddFile(const std::string name) {
-    if(name=="") return; // handle unset filenames
+    if(name=="") return; // handle unset file name
     auto full_name = FindFile(name);
     m_log->Debug("  ===> Add file {}", full_name);
     m_files.push_front(full_name);
@@ -35,7 +36,7 @@ namespace iguana {
   }
 
   std::string ConfigFileReader::FindFile(const std::string name) {
-    if(name=="") return ""; // handle unset filenames
+    if(name=="") return ""; // handle unset file name
     m_log->Debug("Searching for file '{}' in:", name);
     // first try `./` or assume `name` is a relative or absolute path + filename
     auto found_local = std::filesystem::exists(name);

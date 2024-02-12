@@ -41,7 +41,8 @@ namespace iguana {
         : Object(name)
         , m_rows_only(false)
         , m_default_config_file("")
-        , m_user_config_file("")
+        , o_user_config_file("")
+        , o_user_config_dir("")
       {}
       virtual ~Algorithm() {}
 
@@ -88,6 +89,10 @@ namespace iguana {
       /// Set the name of this algorithm
       /// @param name the new name
       void SetName(const std::string name);
+
+      /// Set a custom `YAMLReader` to use for this algorithm
+      /// @param yaml_config the custom `YAMLReader` instance
+      void SetYAMLConfig(std::unique_ptr<YAMLReader>&& yaml_config);
 
     protected: // methods
 
@@ -179,8 +184,13 @@ namespace iguana {
       /// Default configuration file name
       std::string m_default_config_file;
 
-      /// User's configuration file name
-      std::string m_user_config_file;
+      /// User's configuration file name, which may override the default configuration file, `m_default_config_file`.
+      /// Set with `Algorithm::SetOption` using key `"config_file"`.
+      std::string o_user_config_file;
+
+      /// User's configuration file directory.
+      /// Set with `Algorithm::SetOption` using key `"config_dir"`.
+      std::string o_user_config_dir;
 
       /// YAML reader
       std::unique_ptr<YAMLReader> m_yaml_config;

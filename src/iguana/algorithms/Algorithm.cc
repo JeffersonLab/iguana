@@ -14,12 +14,23 @@ namespace iguana {
       m_yaml_config->SetName("config|"+m_name);
   }
 
+  void Algorithm::SetYAMLConfig(std::unique_ptr<YAMLReader>&& yaml_config) {
+    m_yaml_config = std::move(yaml_config);
+  }
+
   void Algorithm::ParseYAMLConfig() {
-    if(m_yaml_config)
-      m_yaml_config.reset();
-    m_yaml_config = std::make_unique<YAMLReader>("config|"+m_name);
-    m_yaml_config->AddFile(m_default_config_file);
-    m_yaml_config->AddFile(m_user_config_file);
+    if(!m_yaml_config) {
+      CacheOption("config_file", "", o_user_config_file);
+      CacheOption("config_dir",  "", o_user_config_dir);
+      m_log->Debug("Instantiating `YAMLReader`");
+      m_yaml_config = std::make_unique<YAMLReader>("config|"+m_name);
+      m_yaml_config->SetLogLevel(m_log->GetLevel());
+      m_yaml_config->AddDirectory(o_user_config_dir);
+      m_yaml_config->AddFile(m_default_config_file);
+      m_yaml_config->AddFile(o_user_config_file);
+    }
+    else
+      m_log->Debug("`YAMLReader` already instantiated for this algorithm; using that");
     m_yaml_config->LoadFiles();
   }
 
