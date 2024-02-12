@@ -1,4 +1,5 @@
 #include "MomentumCorrection.h"
+#include "iguana/algorithms/TypeDefs.h"
 #include <cmath>
 
 namespace iguana::clas12 {
@@ -64,7 +65,7 @@ namespace iguana::clas12 {
   double MomentumCorrection::CorrectionInbending(const float Px, const float Py, const float Pz, const int sec, const int pid) const {
 
     // skip the correction if it's not defined
-    if(!( pid == 11 || std::abs(pid) == 211 || pid == 2212 ))
+    if(!( pid == particle::electron || pid == particle::pi_plus || pid == particle::pi_minus || pid == particle::proton ))
       return 1.0;
 
     // Momentum Magnitude
@@ -88,17 +89,17 @@ namespace iguana::clas12 {
     double phi = PhiLocal;
 
     // For Electron Shift
-    if(pid == 11){
+    if(pid == particle::electron){
       phi = PhiLocal - 30/pp;
     }
 
     // For π+ Pion/Proton Shift
-    if(pid == 211 || pid == 2212){
+    if(pid == particle::pi_plus || pid == particle::proton){
       phi = PhiLocal + (32/(pp-0.05));
     }
 
     // For π- Pion Shift
-    if(pid == -211){
+    if(pid == particle::pi_minus){
       phi = PhiLocal - (32/(pp-0.05));
     }
 
@@ -107,7 +108,7 @@ namespace iguana::clas12 {
     //=======================//=======================//     Electron Corrections     //=======================//=======================//
     //==================================================================================================================================//
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if(pid == 11){
+    if(pid == particle::electron){
       if(sec == 1){
         // The CONTINUOUS QUADRATIC function predicted for ∆p_{El} for [Cor = Uncorrected][Sector 1] is:
         dp = ((-4.3303e-06)*phi*phi + (1.1006e-04)*phi + (-5.7235e-04))*pp*pp + ((3.2555e-05)*phi*phi + (-0.0014559)*phi + (0.0014878))*pp + ((-1.9577e-05)*phi*phi + (0.0017996)*phi + (0.025963));
@@ -139,7 +140,7 @@ namespace iguana::clas12 {
     //=========================//=========================//     π+ Corrections     //=========================//=========================//
     //====================================================================================================================================//
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if(pid == 211){
+    if(pid == particle::pi_plus){
       if(sec == 1){
         dp = ((-5.4904e-07)*phi*phi + (-1.4436e-05)*phi + (3.1534e-04))*pp*pp + ((3.8231e-06)*phi*phi + (3.6582e-04)*phi + (-0.0046759))*pp + ((-5.4913e-06)*phi*phi + (-4.0157e-04)*phi + (0.010767));
         dp = dp + ((6.1103e-07)*phi*phi + (5.5291e-06)*phi + (-1.9120e-04))*pp*pp + ((-3.2300e-06)*phi*phi + (1.5377e-05)*phi + (7.5279e-04))*pp + ((2.1434e-06)*phi*phi + (-6.9572e-06)*phi + (-7.9333e-05));
@@ -178,7 +179,7 @@ namespace iguana::clas12 {
     //==================//==================//    π- Corrections (Updated as of 01-13-2023)    //==================//==================//
     //====================================================================================================================================//
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if(pid == -211){
+    if(pid == particle::pi_minus){
       if(sec == 1){
 
         dp = (-9.2163E-07*phi*phi + 3.1862E-06*phi + 2.9805E-03)*pp*pp +(1.0435E-05*phi*phi + -8.7298E-05*phi + -1.7730E-02)*pp + -1.5154E-05*phi*phi + -1.3716E-04*phi + 2.2410E-02;
@@ -221,7 +222,7 @@ namespace iguana::clas12 {
     //=======================//=======================//     All Proton Corrections     //=======================//=======================//
     //====================================================================================================================================//
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if(pid == 2212){
+    if(pid == particle::proton){
       if(sec == 1){
         dp = ((1 + std::copysign(1, (pp - 1.4)))/2)*((4.4034e-03)*pp + (-0.01703)) + ((1 + std::copysign(1, -(pp - 1.4)))/2)*((-0.10898)*(pp - 1.4)*(pp - 1.4) + (-0.09574)*(pp - 1.4) + ((4.4034e-03)*1.4 + (-0.01703)));
       }
@@ -249,7 +250,7 @@ namespace iguana::clas12 {
   double MomentumCorrection::CorrectionOutbending(const float Px, const float Py, const float Pz, const int sec, const int pid) const {
 
     // skip the correction if it's not defined
-    if(!( pid == 11 || std::abs(pid) == 211))
+    if(!( pid == particle::electron || pid == particle::pi_plus || pid == particle::pi_minus ))
       return 1.0;
 
     // Momentum Magnitude
@@ -272,22 +273,22 @@ namespace iguana::clas12 {
     // Applying Shift Functions to Phi Angles (local shifted phi = phi)
     double phi = PhiLocal;
     // For Electron Shift
-    if(pid == 11){
+    if(pid == particle::electron){
         phi = PhiLocal - 30/pp;
     }
     // For π+ Pion/Proton Shift
-    if(pid == 211 || pid == 2212){
+    if(pid == particle::pi_plus || pid == particle::proton){
         phi = PhiLocal + (32/(pp-0.05));
     }
     // For π- Pion Shift
-    if(pid == -211){
+    if(pid == particle::pi_minus){
         phi = PhiLocal - (32/(pp-0.05));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //=======================//=======================//     Electron Corrections     //=======================//=======================//
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if(pid == 11){
+    if(pid == particle::electron){
         if(sec == 1){
             dp =     ((1.3189e-06)*phi*phi +  (4.26057e-05)*phi +  (-0.002322628))*pp*pp +  ((-1.1409e-05)*phi*phi +    (2.2188e-05)*phi + (0.02878927))*pp +   ((2.4950e-05)*phi*phi +   (1.6170e-06)*phi + (-0.061816275));
         }
@@ -311,7 +312,7 @@ namespace iguana::clas12 {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //=========================//=========================//     π+ Corrections     //=========================//=========================//
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if(pid == 211){
+    if(pid == particle::pi_plus){
         if(sec == 1){
             dp =   ((-1.7334e-06)*phi*phi +  (1.45112e-05)*phi +  (0.00150721))*pp*pp +    ((6.6234e-06)*phi*phi + (-4.81191e-04)*phi +  (-0.0138695))*pp + ((-3.23625e-06)*phi*phi +   (2.79751e-04)*phi + (0.027726));
         }
@@ -335,7 +336,7 @@ namespace iguana::clas12 {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //=======================//=======================//      π- Corrections            //=======================//=======================//
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if(pid == -211){
+    if(pid == particle::pi_minus){
         if(sec == 1){
             dp = (7.8044E-06*phi*phi + -9.4703E-05*phi + 4.6696E-03)*pp*pp +(-3.4668E-05*phi*phi + 6.2280E-04*phi + -2.4273E-02)*pp + 2.3566E-05*phi*phi + -5.8519E-04*phi + 3.9226E-02;
         }
@@ -363,7 +364,7 @@ namespace iguana::clas12 {
   double MomentumCorrection::EnergyLossInbending(const float Px, const float Py, const float Pz, const int pid) const {
 
     // The following code is for the Energy Loss Corrections for the proton
-    if(pid != 2212)
+    if(pid != particle::proton)
       return 1.0;
 
     double dE_loss = 0;
@@ -384,7 +385,7 @@ namespace iguana::clas12 {
   double MomentumCorrection::EnergyLossOutbending(const float Px, const float Py, const float Pz, const int pid) const {
 
     // The following code is for the Energy Loss Corrections for the proton
-    if(pid != 2212)
+    if(pid != particle::proton)
       return 1.0;
 
     double dE_loss = 0;
