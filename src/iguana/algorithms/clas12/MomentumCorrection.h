@@ -45,6 +45,22 @@ namespace iguana::clas12 {
       /// @returns the correction factor
       double CorrectionOutbending(const float Px, const float Py, const float Pz, const int sec, const int pid) const;
 
+      /// Energy loss correction for inbending data
+      /// @param Px @f$p_x@f$
+      /// @param Py @f$p_y@f$
+      /// @param Pz @f$p_z@f$
+      /// @param pid the particle PDG
+      /// @returns the correction factor
+      double EnergyLossInbending(const float Px, const float Py, const float Pz, const int pid) const;
+
+      /// Energy loss correction for outbending data
+      /// @param Px @f$p_x@f$
+      /// @param Py @f$p_y@f$
+      /// @param Pz @f$p_z@f$
+      /// @param pid the particle PDG
+      /// @returns the correction factor
+      double EnergyLossOutbending(const float Px, const float Py, const float Pz, const int pid) const;
+
     private:
 
       /// `hipo::banklist` index for the particle bank
