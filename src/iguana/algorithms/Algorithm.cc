@@ -20,8 +20,8 @@ namespace iguana {
 
   void Algorithm::ParseYAMLConfig() {
     if(!m_yaml_config) {
-      CacheOption("config_file", "", o_user_config_file);
-      CacheOption("config_dir",  "", o_user_config_dir);
+      CacheOption("config_file", std::string{""}, o_user_config_file);
+      CacheOption("config_dir",  std::string{""}, o_user_config_dir);
       m_log->Debug("Instantiating `YAMLReader`");
       m_yaml_config = std::make_unique<YAMLReader>("config|"+m_name);
       m_yaml_config->SetLogLevel(m_log->GetLevel());
