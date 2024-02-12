@@ -11,4 +11,6 @@ namespace iguana {
   /// Generic Lorentz vector container type
   using lorentz_vector_t = std::tuple<lorentz_element_t, lorentz_element_t, lorentz_element_t, lorentz_element_t>;
 
+  // TODO: enum for particle PDG
+
 }
