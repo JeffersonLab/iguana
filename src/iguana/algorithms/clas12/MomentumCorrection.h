@@ -27,15 +27,29 @@ namespace iguana::clas12 {
       /// @returns the transformed momenta
       std::tuple<float,float,float> Transform(float px, float py, float pz, int sec, int pid, float torus) const;
 
-    protected:
-
+      /// Calculate the correction factor for inbending data
+      /// @param Px @f$p_x@f$
+      /// @param Py @f$p_y@f$
+      /// @param Pz @f$p_z@f$
+      /// @param sec the sector
+      /// @param pid the particle PDG
+      /// @returns the correction factor
       double CorrectionInbending(const float Px, const float Py, const float Pz, const int sec, const int pid) const;
+
+      /// Calculate the correction factor for outbending data
+      /// @param Px @f$p_x@f$
+      /// @param Py @f$p_y@f$
+      /// @param Pz @f$p_z@f$
+      /// @param sec the sector
+      /// @param pid the particle PDG
+      /// @returns the correction factor
       double CorrectionOutbending(const float Px, const float Py, const float Pz, const int sec, const int pid) const;
 
     private:
 
-      /// `hipo::banklist` index for the particle bank (as an example)
+      /// `hipo::banklist` index for the particle bank
       hipo::banklist::size_type b_particle;
+      /// `hipo::banklist` index for the config bank
       hipo::banklist::size_type b_config;
 
   };
