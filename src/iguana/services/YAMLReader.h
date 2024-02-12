@@ -16,7 +16,7 @@ namespace iguana
 
     public:
         /// @param name the file to be opened by YAMLReader
-        YAMLReader(const std::string name) : ConfigFileReader(name) {}
+        YAMLReader(const std::string name="config") : ConfigFileReader(name) {}
         ~YAMLReader() {}
 
         /// Parse the YAML files added by `ConfigFileReader::AddFile`
