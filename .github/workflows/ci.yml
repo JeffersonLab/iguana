@@ -114,6 +114,7 @@ jobs:
       - name: tree local dependencies
         run: tree hipo
       - name: summarize dependencies
+        if: ${{ matrix.binding == 'cpp' }}
         run: |
           echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
@@ -424,7 +425,7 @@ jobs:
       - name: collect
         run: |
           mkdir pages
-          cp iguana_src/.github/pages-index.html pages/
+          cp iguana_src/.github/pages-index.html pages/index.html
           mv doxygen pages/
           mv meson-logs/coveragereport pages/
       - run: tree
