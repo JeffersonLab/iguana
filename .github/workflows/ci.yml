@@ -187,6 +187,7 @@ jobs:
     needs:
       - build_hipo
       - download_validation_files
+      - build_iguana
     runs-on: ${{ inputs.runner }}
     container:
       image: ${{ inputs.container }}
