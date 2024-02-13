@@ -232,7 +232,12 @@ jobs:
           echo -e "\e[1;35m[NOTE]: log files are found in artifact 'logs_build_iguana' \e[0m"
           meson test -C build-iguana
       - name: TEST coverage
-        run: ninja -C build-iguana coverage
+        run: |
+          ninja -C build-iguana coverage
+          echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat build-iguana/meson-logs/coverage.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
       ### upload artifacts
       - uses: actions/upload-artifact@v4
         with:
@@ -402,6 +407,9 @@ jobs:
       - test_iguana
     runs-on: ${{ inputs.runner }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          path: iguana_src
       - name: download doxygen documentation
         uses: actions/download-artifact@v4
         with:
@@ -416,6 +424,7 @@ jobs:
       - name: collect
         run: |
           mkdir pages
+          cp iguana_src/.github/pages-index.html pages/
           mv doxygen pages/
           mv meson-logs/coveragereport pages/
       - run: tree
