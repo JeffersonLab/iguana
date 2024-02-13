@@ -17,6 +17,10 @@ project(
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
 
+# meson modules
+pkg = import('pkgconfig')
+fs  = import('fs')
+
 # resolve dependencies
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
 fmt_dep = dependency(
@@ -71,6 +75,7 @@ add_project_arguments(
 # build and install shared libraries
 subdir('src/iguana/services')
 subdir('src/iguana/algorithms')
+subdir('src/iguana/tests')
 
 # build bindings
 if get_option('bind_python')
@@ -78,7 +83,6 @@ if get_option('bind_python')
 endif
 
 # generate pkg-config file
-pkg = import('pkgconfig')
 pkg.generate(
   name:        meson.project_name(),
   description: project_description,

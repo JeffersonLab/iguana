@@ -22,7 +22,7 @@ endif
 
 # build executables
 foreach src : example_sources
-  exe = executable(
+  executable(
     src.split('.')[0],
     src,
     include_directories: project_inc,
@@ -30,10 +30,6 @@ foreach src : example_sources
     link_with:           project_libs,
     install:             true,
     install_rpath:       ':'.join(example_rpaths),
-  )
-  test(src, exe,
-    args: ['data.hipo', '1000'],
-    workdir: get_option('prefix') / '..',
   )
 endforeach
 
