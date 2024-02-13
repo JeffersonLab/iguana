@@ -28,6 +28,25 @@ env:
 
 jobs:
 
+  # download test data
+  #########################################################
+
+  download_validation_files:
+    name: Download validation files
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: download
+        run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
+      - name: untar
+        run: tar xzvf validation_files.tar.gz
+      - name: select one file
+        run: mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: validation_files
+          retention-days: 1
+          path: test_data.hipo
+
   # dependencies
   #########################################################
 
@@ -65,6 +84,7 @@ jobs:
     name: Build Iguana
     needs:
       - build_hipo
+      - download_validation_files
     runs-on: ${{ inputs.runner }}
     container:
       image: ${{ inputs.container }}
@@ -82,6 +102,10 @@ jobs:
           clean: false
           fetch-tags: true
           fetch-depth: 0
+      - name: get test data
+        uses: actions/download-artifact@v4
+        with:
+          name: validation_files
       ### dependencies
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
@@ -108,16 +132,23 @@ jobs:
         run: meson setup --native-file=native.ini build-iguana
       - name: meson configure
         run: |
-          meson configure              \
-            --prefix=$(pwd)/iguana     \
-            -Dexamples=True            \
-            -Ddocumentation=False      \
-            ${{ matrix.binding_opts }} \
+          meson configure                          \
+            --prefix=$(pwd)/iguana                 \
+            -Dexamples=True                        \
+            -Ddocumentation=False                  \
+            -Dtest_data_file=$(pwd)/test_data.hipo \
+            -Dtest_num_events=1000                 \
+            ${{ matrix.binding_opts }}             \
             build-iguana
       - name: dump build options
         run: meson configure build-iguana | cat
       - name: meson install
         run: meson install -C build-iguana
+      ### run tests
+      - name: run automatic tests
+        run: |
+          echo "NOTE: log files are found in artifact 'logs_build_iguana_${{ matrix.binding }}'"
+          meson test -C build-iguana
       ### dump info about this build
       - name: dump build log
         if: always()
@@ -151,31 +182,17 @@ jobs:
           name: build_iguana_${{ matrix.binding }}
           retention-days: 1
           path: iguana.tar.gz
-
-  # download test data
-  #########################################################
-
-  download_validation_files:
-    name: Download validation files
-    runs-on: ${{ inputs.runner }}
-    steps:
-      - name: download
-        run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
-      - name: untar
-        run: tar xzvf validation_files.tar.gz
-      - name: select one file
-        run: mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
       - uses: actions/upload-artifact@v4
         with:
-          name: validation_files
-          retention-days: 1
-          path: test_data.hipo
+          name: logs_build_iguana_${{ matrix.binding }}
+          retention-days: 7
+          path: build-iguana/meson-logs
 
   # run tests
   #########################################################
 
-  test_iguana:
-    name: Test Iguana
+  test_examples:
+    name: Test Examples
     needs:
       - download_validation_files
       - build_iguana
@@ -345,7 +362,7 @@ jobs:
   final:
     name: Final
     needs:
-      - test_iguana
+      - test_examples
       - test_consumer_builds
     runs-on: ${{ inputs.runner }}
     steps:
