@@ -228,11 +228,11 @@ jobs:
       - name: meson install
         run: meson install -C build-iguana
       ### run tests
-      - name: TEST: automatic tests
+      - name: TEST automatic tests
         run: |
           echo -e "\e[1;31m[NOTE]: log files are found in artifact 'logs_build_iguana_${{ matrix.binding }}' \e[0m"
           meson test -C build-iguana
-      - name: TEST: coverage
+      - name: TEST coverage
         run: ninja -C build coverage
       ### upload artifacts
       - uses: actions/upload-artifact@v4
