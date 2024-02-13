@@ -15,6 +15,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   ninja
   meson
   gcovr
+  python-pygments
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt

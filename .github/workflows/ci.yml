@@ -411,13 +411,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: logs_build_iguana
-          path: build-iguana
+          path: meson-logs
       - run: tree
       - name: collect
         run: |
           mkdir pages
           mv doxygen pages/
-          mv build-iguana/meson-logs/coveragereport pages/
+          mv meson-logs/coveragereport pages/
+      - run: tree
       - uses: actions/upload-pages-artifact@v3
         with:
           retention-days: 1
