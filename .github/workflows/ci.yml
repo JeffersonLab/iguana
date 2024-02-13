@@ -81,7 +81,7 @@ jobs:
   #########################################################
 
   build_iguana:
-    name: Build Iguana
+    name: Build and Test Iguana
     needs:
       - build_hipo
       - download_validation_files
