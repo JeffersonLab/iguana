@@ -14,6 +14,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   pkgconf
   ninja
   meson
+  gcovr
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
@@ -27,6 +28,7 @@ GENERAL_PACKAGE_LIST_MACOS=(
   tree
   ninja
   meson
+  gcovr
 )
 IGUANA_PACKAGE_LIST_MACOS=(
   fmt

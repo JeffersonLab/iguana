@@ -73,7 +73,7 @@ jobs:
           tar czvf hipo{.tar.gz,}
       - uses: actions/upload-artifact@v4
         with:
-          name: build_deps_hipo
+          name: install_deps_hipo
           retention-days: 1
           path: hipo.tar.gz
 
@@ -81,10 +81,9 @@ jobs:
   #########################################################
 
   build_iguana:
-    name: Build and Test Iguana
+    name: Build Iguana
     needs:
       - build_hipo
-      - download_validation_files
     runs-on: ${{ inputs.runner }}
     container:
       image: ${{ inputs.container }}
@@ -102,17 +101,13 @@ jobs:
           clean: false
           fetch-tags: true
           fetch-depth: 0
-      - name: get test data
-        uses: actions/download-artifact@v4
-        with:
-          name: validation_files
       ### dependencies
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: get local dependencies
         uses: actions/download-artifact@v4
         with:
-          pattern: build_deps_*
+          pattern: install_deps_*
           merge-multiple: true
       - name: untar local dependencies
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
@@ -132,23 +127,16 @@ jobs:
         run: meson setup --native-file=native.ini build-iguana
       - name: meson configure
         run: |
-          meson configure                          \
-            --prefix=$(pwd)/iguana                 \
-            -Dexamples=True                        \
-            -Ddocumentation=False                  \
-            -Dtest_data_file=$(pwd)/test_data.hipo \
-            -Dtest_num_events=1000                 \
-            ${{ matrix.binding_opts }}             \
+          meson configure              \
+            --prefix=$(pwd)/iguana     \
+            -Dexamples=True            \
+            -Ddocumentation=False      \
+            ${{ matrix.binding_opts }} \
             build-iguana
       - name: dump build options
         run: meson configure build-iguana | cat
       - name: meson install
         run: meson install -C build-iguana
-      ### run tests
-      - name: run automatic tests
-        run: |
-          echo "NOTE: log files are found in artifact 'logs_build_iguana_${{ matrix.binding }}'"
-          meson test -C build-iguana
       ### dump info about this build
       - name: dump build log
         if: always()
@@ -176,20 +164,82 @@ jobs:
       - run: tree iguana
       ### upload artifacts
       - name: tar
-        run: tar czvf iguana{.tar.gz,}
+        run: |
+          tar czvf iguana{.tar.gz,}
+          tar czvf build-iguana{.tar.gz,}
       - uses: actions/upload-artifact@v4
         with:
-          name: build_iguana_${{ matrix.binding }}
+          name: install_iguana_${{ matrix.binding }}
           retention-days: 1
           path: iguana.tar.gz
       - uses: actions/upload-artifact@v4
+        if: ${{ matrix.binding == 'cpp' }}
         with:
-          name: logs_build_iguana_${{ matrix.binding }}
-          retention-days: 7
-          path: build-iguana/meson-logs
+          name: build_iguana_${{ matrix.binding }}
+          retention-days: 1
+          path: build-iguana.tar.gz
 
   # run tests
   #########################################################
+
+  test_iguana:
+    name: Test Iguana
+    needs:
+      - build_hipo
+      - download_validation_files
+    runs-on: ${{ inputs.runner }}
+    container:
+      image: ${{ inputs.container }}
+    steps:
+      ### setup
+      - uses: actions/checkout@v4
+        with: # settings needed for version number detection
+          clean: false
+          fetch-tags: true
+          fetch-depth: 0
+      - name: get test data
+        uses: actions/download-artifact@v4
+        with:
+          name: validation_files
+      - name: get iguana build dir
+        uses: actions/download-artifact@v4
+        with:
+          name: build_iguana_cpp
+      ### dependencies
+      - name: install dependency packages
+        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
+      - name: get local dependencies
+        uses: actions/download-artifact@v4
+        with:
+          pattern: install_deps_*
+          merge-multiple: true
+      - name: untar local dependencies
+        run: ls *.tar.gz | xargs -I{} tar xzvf {}
+      ### re-build iguana
+      - name: meson configure
+        run: |
+          meson configure                          \
+            -Dtest_data_file=$(pwd)/test_data.hipo \
+            -Dtest_num_events=1000                 \
+            -Db_coverage=true                      \
+            build-iguana
+      - name: dump build options
+        run: meson configure build-iguana | cat
+      - name: meson install
+        run: meson install -C build-iguana
+      ### run tests
+      - name: TEST: automatic tests
+        run: |
+          echo -e "\e[1;31m[NOTE]: log files are found in artifact 'logs_build_iguana_${{ matrix.binding }}' \e[0m"
+          meson test -C build-iguana
+      - name: TEST: coverage
+        run: ninja -C build coverage
+      ### upload artifacts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: logs_build_iguana_${{ matrix.binding }}
+          retention-days: 1
+          path: build-iguana/meson-logs
 
   test_examples:
     name: Test Examples
@@ -217,12 +267,12 @@ jobs:
       - name: get dependency build artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: build_deps_*
+          pattern: install_deps_*
           merge-multiple: true
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build_iguana_${{ matrix.binding }}
+          name: install_iguana_${{ matrix.binding }}
       - name: get test data
         uses: actions/download-artifact@v4
         with:
@@ -287,12 +337,12 @@ jobs:
       - name: get dependency build artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: build_deps_*
+          pattern: install_deps_*
           merge-multiple: true
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build_iguana_cpp
+          name: install_iguana_cpp
       - name: get test data
         uses: actions/download-artifact@v4
         with:
@@ -326,7 +376,7 @@ jobs:
   #########################################################
 
   doc_generate:
-    if: ${{ inputs.runner == 'ubuntu-latest' }}
+    if: ${{ inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
     name: Generate documentation
     runs-on: ${{ inputs.runner }}
     steps:
@@ -335,15 +385,50 @@ jobs:
         uses: mattnotmitt/doxygen-action@v1
         with:
           doxyfile-path: doc/Doxyfile
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: doxygen
           retention-days: 1
           path: doc/api/
 
-  doc_deploy:
-    if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.runner == 'ubuntu-latest' }}
-    name: Deploy documentation
-    needs: doc_generate
+  # deployment
+  #########################################################
+
+  collect_webpages:
+    # if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
+    if: ${{ (github.head_ref == 'meson-test' || github.ref_name == 'meson-test') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
+    name: Collect webpages
+    needs:
+      - doc_generate
+      - test_iguana
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: download doxygen documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: doxygen
+          path: doxygen
+      - name: download build logs
+        uses: actions/download-artifact@v4
+        with:
+          name: logs_build_iguana_cpp
+          path: build-iguana
+      - run: tree
+      - name: collect
+        run: |
+          mkdir pages
+          mv doxygen pages/
+          mv build-iguana/meson-logs/coveragereport pages/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          retention-days: 1
+          path: pages/
+
+  deploy_webpages:
+    # if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
+    if: ${{ (github.head_ref == 'meson-test' || github.ref_name == 'meson-test') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
+    name: Deploy webpages
+    needs: collect_webpages
     permissions:
       pages: write
       id-token: write
@@ -362,6 +447,7 @@ jobs:
   final:
     name: Final
     needs:
+      - test_iguana
       - test_examples
       - test_consumer_builds
     runs-on: ${{ inputs.runner }}
