@@ -257,9 +257,15 @@ jobs:
             -Dtest_num_events=1000                 \
             build-iguana
           if [ "${{ matrix.mode }}" = "coverage" ]; then
-            meson configure build-iguana -Db_coverage=true
+            meson configure     \
+              -Db_coverage=true \
+              build-iguana
           else
-            meson configure build-iguana -Db_sanitize=$(echo ${{ matrix.mode }} | sed 's;^san_;;') -Db_lundef=false
+            san=$(echo ${{ matrix.mode }} | sed 's;^san_;;')
+            meson configure     \
+              -Db_sanitize=$san \
+              -Db_lundef=false  \
+              build-iguana
           fi
       - name: dump build options
         run: meson configure build-iguana | cat
