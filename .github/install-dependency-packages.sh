@@ -14,8 +14,8 @@ GENERAL_PACKAGE_LIST_LINUX=(
   pkgconf
   ninja
   meson
-  gcovr
-  python-pygments
+  gcovr # for coverage
+  python-pygments # for coverage report syntax colors
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt

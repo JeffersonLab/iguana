@@ -8,7 +8,7 @@
 1. [Repository Maintenance](doc/maintenance.md)
 
 ## Status
-1. [Coverage Report](https://jeffersonlab.github.io/iguana/coveragereport)
+1. [Coverage Report](https://jeffersonlab.github.io/iguana/coverage-report)
 
 > [!CAUTION]
 > This is still a _prototype_ design

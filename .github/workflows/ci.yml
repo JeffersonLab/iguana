@@ -235,16 +235,25 @@ jobs:
       - name: TEST coverage
         run: |
           ninja -C build-iguana coverage
+          mv build-iguana/meson-logs/coveragereport coverage-report
           echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat build-iguana/meson-logs/coverage.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '- for details, see the `coverage-report` artifact' >> $GITHUB_STEP_SUMMARY
+          echo '- to compare to the report from the `main` branch, see <https://jeffersonlab.github.io/iguana/coverage-report>' >> $GITHUB_STEP_SUMMARY
       ### upload artifacts
       - uses: actions/upload-artifact@v4
         with:
           name: logs_build_iguana
           retention-days: 1
           path: build-iguana/meson-logs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          retention-days: 7
+          path: coverage-report
 
   test_examples:
     name: Test Examples
@@ -416,18 +425,18 @@ jobs:
         with:
           name: doxygen
           path: doxygen
-      - name: download build logs
+      - name: download coverage report
         uses: actions/download-artifact@v4
         with:
-          name: logs_build_iguana
-          path: meson-logs
+          name: coverage-report
+          path: coverage-report
       - run: tree
       - name: collect
         run: |
           mkdir pages
           cp iguana_src/.github/pages-index.html pages/index.html
           mv doxygen pages/
-          mv meson-logs/coveragereport pages/
+          mv coverage-report pages/
       - run: tree
       - uses: actions/upload-pages-artifact@v3
         with:
