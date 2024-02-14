@@ -92,8 +92,12 @@ jobs:
       matrix:
         binding: [ cpp, python ]
         include:
-          - { binding: cpp,    binding_opts: ''                   }
-          - { binding: python, binding_opts: '-Dbind_python=True' }
+          - { binding: cpp,    CC: gcc,   CXX: g++,     binding_opts: ''                   }
+          - { binding: cpp,    CC: clang, CXX: clang++, binding_opts: ''                   }
+          - { binding: python, CC: gcc,   CXX: g++,     binding_opts: '-Dbind_python=True' }
+    env:
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
     steps:
       ### setup
       - uses: actions/checkout@v4
@@ -122,6 +126,12 @@ jobs:
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       ### build iguana
+      # - name: set compiler
+      #   run: |
+      #     echo CC=${{ matrix.CC }} >> $GITHUB_ENV
+      #     echo CXX=${{ matrix.CXX }} >> $GITHUB_ENV
+      - name: echo compiler
+        run: echo $CC, $CXX
       - name: meson setup
         run: meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo)
       - name: meson configure
@@ -163,16 +173,18 @@ jobs:
       - run: tree iguana
       ### upload artifacts
       - name: tar
+        if: ${{ matrix.CC == 'gcc' }}
         run: |
           tar czvf iguana{.tar.gz,}
           tar czvf build-iguana{.tar.gz,}
       - uses: actions/upload-artifact@v4
+        if: ${{ matrix.CC == 'gcc' }}
         with:
           name: install_iguana_${{ matrix.binding }}
           retention-days: 1
           path: iguana.tar.gz
       - uses: actions/upload-artifact@v4
-        if: ${{ matrix.binding == 'cpp' }}
+        if: ${{ matrix.binding == 'cpp' && matrix.CC == 'gcc' }}
         with:
           name: build_iguana_${{ matrix.binding }}
           retention-days: 1
@@ -190,6 +202,23 @@ jobs:
     runs-on: ${{ inputs.runner }}
     container:
       image: ${{ inputs.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+          - coverage
+          - san_address
+          - san_thread
+          - san_undefined
+          - san_memory
+          - san_leak
+        include:
+          - { mode: coverage,      CC: gcc, CXX: g++ }  # TODO: use clang or g++?
+          - { mode: san_address,   CC: gcc, CXX: g++ }
+          - { mode: san_thread,    CC: gcc, CXX: g++ }
+          - { mode: san_undefined, CC: gcc, CXX: g++ }
+          - { mode: san_memory,    CC: gcc, CXX: g++ }
+          - { mode: san_leak,      CC: gcc, CXX: g++ }
     steps:
       ### setup
       - uses: actions/checkout@v4
@@ -221,18 +250,24 @@ jobs:
           meson configure                          \
             -Dtest_data_file=$(pwd)/test_data.hipo \
             -Dtest_num_events=1000                 \
-            -Db_coverage=true                      \
             build-iguana
+          if [ "${{ matrix.mode }}" = "coverage" ]; then
+            meson configure build-iguana -Db_coverage=true
+          else
+            meson configure build-iguana -Db_sanitize=$(echo ${{ matrix.mode }} | sed 's;^san_;;')
+          fi
       - name: dump build options
         run: meson configure build-iguana | cat
       - name: meson install
         run: meson install -C build-iguana
       ### run tests
-      - name: TEST automatic tests
+      - name: TEST automatic tests and sanitizers
+        if: ${{ matrix.mode != 'coverage' }}
         run: |
-          echo -e "\e[1;35m[NOTE]: log files are found in artifact 'logs_build_iguana' \e[0m"
+          echo -e "\e[1;35m[NOTE]: log files are found in artifact 'logs_build_iguana_${{ matrix.mode }}' \e[0m"
           meson test -C build-iguana
       - name: TEST coverage
+        if: ${{ matrix.mode == 'coverage' }}
         run: |
           ninja -C build-iguana coverage
           mv build-iguana/meson-logs/coveragereport coverage-report
@@ -245,11 +280,13 @@ jobs:
           echo '- to compare to the report from the `main` branch, see <https://jeffersonlab.github.io/iguana/coverage-report>' >> $GITHUB_STEP_SUMMARY
       ### upload artifacts
       - uses: actions/upload-artifact@v4
+        if: ${{ matrix.mode != 'coverage' }}
         with:
-          name: logs_build_iguana
+          name: logs_build_iguana_${{ matrix.mode }}
           retention-days: 1
           path: build-iguana/meson-logs
       - uses: actions/upload-artifact@v4
+        if: ${{ matrix.mode == 'coverage' }}
         with:
           name: coverage-report
           retention-days: 7
