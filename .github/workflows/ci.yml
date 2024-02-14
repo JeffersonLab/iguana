@@ -134,6 +134,7 @@ jobs:
         run: |
           meson configure              \
             --prefix=$(pwd)/iguana     \
+            -Dbuildtype=debug          \
             -Dexamples=True            \
             -Ddocumentation=False      \
             ${{ matrix.binding_opts }} \
@@ -206,9 +207,16 @@ jobs:
           - san_undefined
           - san_memory
           - san_leak
+        include:
+          - { mode: coverage,      CC: gcc,   CXX: g++     }
+          - { mode: san_address,   CC: clang, CXX: clang++ }
+          - { mode: san_thread,    CC: clang, CXX: clang++ }
+          - { mode: san_undefined, CC: clang, CXX: clang++ }
+          - { mode: san_memory,    CC: clang, CXX: clang++ }
+          - { mode: san_leak,      CC: clang, CXX: clang++ }
     env:
-      CC: clang # prefer `clang` sanitizers
-      CXX: clang++
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
     steps:
       ### setup
       - uses: actions/checkout@v4
