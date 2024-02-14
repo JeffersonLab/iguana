@@ -8,7 +8,6 @@ set -e
 GENERAL_PACKAGE_LIST_LINUX=(
   python
   gcc
-  gcc-libs
   clang
   make
   cmake

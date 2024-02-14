@@ -260,7 +260,6 @@ jobs:
         run: meson install -C build-iguana
       ### run tests
       - name: TEST automatic tests and sanitizers
-        if: ${{ matrix.mode != 'coverage' }}
         run: |
           echo -e "\e[1;35m[NOTE]: log files are found in artifact 'logs_build_iguana_${{ matrix.mode }}' \e[0m"
           meson test -C build-iguana
