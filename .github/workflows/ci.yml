@@ -215,11 +215,11 @@ jobs:
           - san_leak
         include:
           - { mode: coverage,      CC: gcc,   CXX: g++,     buildtype: release }
-          - { mode: san_address,   CC: clang, CXX: clang++, buildtype: release }
-          - { mode: san_thread,    CC: clang, CXX: clang++, buildtype: release }
-          - { mode: san_undefined, CC: clang, CXX: clang++, buildtype: release }
-          - { mode: san_memory,    CC: clang, CXX: clang++, buildtype: release }
-          - { mode: san_leak,      CC: clang, CXX: clang++, buildtype: release }
+          - { mode: san_address,   CC: clang, CXX: clang++, buildtype: debug   }
+          - { mode: san_thread,    CC: clang, CXX: clang++, buildtype: debug   }
+          - { mode: san_undefined, CC: clang, CXX: clang++, buildtype: debug   }
+          - { mode: san_memory,    CC: clang, CXX: clang++, buildtype: debug   }
+          - { mode: san_leak,      CC: clang, CXX: clang++, buildtype: debug   }
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
@@ -275,7 +275,7 @@ jobs:
       - name: TEST automatic tests and sanitizers
         run: |
           echo -e "\e[1;35m[NOTE]: log files are found in artifact 'logs_build_iguana_${{ matrix.mode }}' \e[0m"
-          meson test -C build-iguana
+          meson test --print-errorlogs -C build-iguana
       - name: TEST coverage
         if: ${{ matrix.mode == 'coverage' }}
         run: |
