@@ -128,8 +128,6 @@ jobs:
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
-      - name: echo compiler
-        run: echo $CC, $CXX
       - name: meson setup
         run: meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo)
       - name: meson configure

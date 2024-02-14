@@ -8,6 +8,7 @@ set -e
 GENERAL_PACKAGE_LIST_LINUX=(
   python
   gcc
+  clang
   make
   cmake
   tree
