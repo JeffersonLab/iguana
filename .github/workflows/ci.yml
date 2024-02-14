@@ -88,16 +88,22 @@ jobs:
     container:
       image: ${{ inputs.container }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        binding:
-          - cpp-gcc    # build C++-only version with both `g++` and `clang++`
-          - cpp-clang
+        id:
+          # build C++-only version with various compilers and buildtypes
+          - cpp-gcc-release
+          - cpp-gcc-debug
+          - cpp-clang-release
+          - cpp-clang-debug
+          # build with bindings
           - python
         include:
-          - { binding: cpp-gcc,   CC: gcc,   CXX: g++,     binding_opts: ''                   }
-          - { binding: cpp-clang, CC: clang, CXX: clang++, binding_opts: ''                   }
-          - { binding: python,    CC: gcc,   CXX: g++,     binding_opts: '-Dbind_python=True' }
+          - { id: cpp-gcc-release,   CC: gcc,   CXX: g++,     buildtype: release, binding_opts: ''                   }
+          - { id: cpp-gcc-debug,     CC: gcc,   CXX: g++,     buildtype: debug,   binding_opts: ''                   }
+          - { id: cpp-clang-release, CC: clang, CXX: clang++, buildtype: release, binding_opts: ''                   }
+          - { id: cpp-clang-debug,   CC: clang, CXX: clang++, buildtype: debug,   binding_opts: ''                   }
+          - { id: python,            CC: gcc,   CXX: g++,     buildtype: release, binding_opts: '-Dbind_python=True' }
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
@@ -121,7 +127,7 @@ jobs:
       - name: tree local dependencies
         run: tree hipo
       - name: summarize dependencies
-        if: ${{ matrix.binding == 'cpp-gcc' }}
+        if: ${{ matrix.id == 'cpp-gcc-release' }}
         run: |
           echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
@@ -132,12 +138,12 @@ jobs:
         run: meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo)
       - name: meson configure
         run: |
-          meson configure              \
-            --prefix=$(pwd)/iguana     \
-            -Dbuildtype=debug          \
-            -Dexamples=True            \
-            -Ddocumentation=False      \
-            ${{ matrix.binding_opts }} \
+          meson configure                       \
+            --prefix=$(pwd)/iguana              \
+            -Dbuildtype=${{ matrix.buildtype }} \
+            -Dexamples=True                     \
+            -Ddocumentation=False               \
+            ${{ matrix.binding_opts }}          \
             build-iguana
       - name: dump build options
         run: meson configure build-iguana | cat
@@ -148,7 +154,7 @@ jobs:
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
       - name: readelf/otool iguana examples
-        if: ${{ matrix.binding == 'cpp-gcc' || matrix.binding == 'cpp-clang' }}
+        if: ${{ matrix.id == 'cpp-gcc-release' || matrix.id == 'cpp-gcc-debug' || matrix.id == 'cpp-clang-release' || matrix.id == 'cpp-clang-debug' }}
         run: |
           binaries=$(find iguana/bin -type f -name "iguana-example-*")
           libraries=$(find iguana -type f -name "*.so")
@@ -175,13 +181,13 @@ jobs:
           tar czvf build-iguana{.tar.gz,}
       - uses: actions/upload-artifact@v4
         with:
-          name: install_iguana_${{ matrix.binding }}
+          name: install_iguana_${{ matrix.id }}
           retention-days: 1
           path: iguana.tar.gz
       - uses: actions/upload-artifact@v4
-        if: ${{ matrix.binding == 'cpp-gcc' || matrix.binding == 'cpp-clang' }}
+        if: ${{ matrix.id == 'cpp-gcc-release' || matrix.id == 'cpp-gcc-debug' || matrix.id == 'cpp-clang-release' || matrix.id == 'cpp-clang-debug' }}
         with:
-          name: build_iguana_${{ matrix.binding }}
+          name: build_iguana_${{ matrix.id }}
           retention-days: 1
           path: build-iguana.tar.gz
 
@@ -208,15 +214,16 @@ jobs:
           - san_memory
           - san_leak
         include:
-          - { mode: coverage,      CC: gcc,   CXX: g++     }
-          - { mode: san_address,   CC: clang, CXX: clang++ }
-          - { mode: san_thread,    CC: clang, CXX: clang++ }
-          - { mode: san_undefined, CC: clang, CXX: clang++ }
-          - { mode: san_memory,    CC: clang, CXX: clang++ }
-          - { mode: san_leak,      CC: clang, CXX: clang++ }
+          - { mode: coverage,      CC: gcc,   CXX: g++,     buildtype: release }
+          - { mode: san_address,   CC: clang, CXX: clang++, buildtype: release }
+          - { mode: san_thread,    CC: clang, CXX: clang++, buildtype: release }
+          - { mode: san_undefined, CC: clang, CXX: clang++, buildtype: release }
+          - { mode: san_memory,    CC: clang, CXX: clang++, buildtype: release }
+          - { mode: san_leak,      CC: clang, CXX: clang++, buildtype: release }
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
+      build_id: ${{ matrix.CC }}-${{ matrix.buildtype }}
     steps:
       ### setup
       - uses: actions/checkout@v4
@@ -231,7 +238,7 @@ jobs:
       - name: get iguana build dir
         uses: actions/download-artifact@v4
         with:
-          name: build_iguana_cpp-${{ env.CC }}
+          name: build_iguana_cpp-${{ env.build_id }}
       ### dependencies
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
@@ -300,10 +307,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        binding: [ cpp-gcc, python ]
+        id:
+          - cpp-gcc-release
+          - python
         include:
-          - { binding: cpp-gcc, extension: ''    }
-          - { binding: python,  extension: '.py' }
+          - { id: cpp-gcc-release, extension: ''    }
+          - { id: python,          extension: '.py' }
     steps:
       ### dependencies and test data
       - uses: actions/checkout@v4
@@ -320,7 +329,7 @@ jobs:
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: install_iguana_${{ matrix.binding }}
+          name: install_iguana_${{ matrix.id }}
       - name: get test data
         uses: actions/download-artifact@v4
         with:
@@ -333,7 +342,7 @@ jobs:
         run: tree
       ### setup python virtaul environment (for python binding tests)
       - name: install python binding runtime dependencies
-        if: ${{ matrix.binding == 'python' }}
+        if: ${{ matrix.id == 'python' }}
         run: |
           python -m venv .venv
           source .venv/bin/activate
@@ -341,13 +350,13 @@ jobs:
           python -m pip install -r iguana_src/bind/python/requirements.txt
       ### set env vars - depends on runner and binding
       - name: source environment for Linux and python
-        if: ${{ inputs.runner == 'ubuntu-latest' && matrix.binding == 'python' }}
+        if: ${{ inputs.runner == 'ubuntu-latest' && matrix.id == 'python' }}
         run: |
           source iguana/bin/this_iguana.sh verbose
           echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
           echo PYTHONPATH=$PYTHONPATH           >> $GITHUB_ENV
       - name: source environment for macOS and python
-        if: ${{ inputs.runner == 'macos-latest' && matrix.binding == 'python' }}
+        if: ${{ inputs.runner == 'macos-latest' && matrix.id == 'python' }}
         run: |
           source iguana/bin/this_iguana.sh verbose ld
           echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH     >> $GITHUB_ENV
@@ -360,10 +369,10 @@ jobs:
         run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 02
         run: iguana/bin/iguana-example-02-YAMLReader${{ matrix.extension }}
-        if: ${{ matrix.binding == 'cpp-gcc' }} #FIXME
+        if: ${{ matrix.id == 'cpp-gcc-release' }} #FIXME
       - name: test 03
         run: iguana/bin/iguana-example-03-zvertex-filter${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
-        if: ${{ matrix.binding == 'cpp-gcc' }} #FIXME
+        if: ${{ matrix.id == 'cpp-gcc-release' }} #FIXME
 
   test_consumer_builds:
     name: Test consumer builds
@@ -377,6 +386,8 @@ jobs:
       fail-fast: false
       matrix:
         tool: [ cmake, make, meson ]
+    env:
+      build_id: cpp-gcc-release
     steps:
       ### dependencies and test data
       - uses: actions/checkout@v4
@@ -390,7 +401,7 @@ jobs:
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: install_iguana_cpp-gcc
+          name: install_iguana_${{ env.build_id }}
       - name: get test data
         uses: actions/download-artifact@v4
         with:
