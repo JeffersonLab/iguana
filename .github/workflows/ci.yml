@@ -206,16 +206,9 @@ jobs:
           - san_undefined
           - san_memory
           - san_leak
-        include:
-          - { mode: coverage,      CC: gcc, CXX: g++ }  # TODO: use clang or g++?
-          - { mode: san_address,   CC: gcc, CXX: g++ }
-          - { mode: san_thread,    CC: gcc, CXX: g++ }
-          - { mode: san_undefined, CC: gcc, CXX: g++ }
-          - { mode: san_memory,    CC: gcc, CXX: g++ }
-          - { mode: san_leak,      CC: gcc, CXX: g++ }
     env:
-      CC: ${{ matrix.CC }}
-      CXX: ${{ matrix.CXX }}
+      CC: clang # prefer `clang` sanitizers
+      CXX: clang++
     steps:
       ### setup
       - uses: actions/checkout@v4
@@ -302,7 +295,7 @@ jobs:
       matrix:
         binding: [ cpp-gcc, python ]
         include:
-          - { binding: cpp-cpp, extension: ''    }
+          - { binding: cpp-gcc, extension: ''    }
           - { binding: python,  extension: '.py' }
     steps:
       ### dependencies and test data
