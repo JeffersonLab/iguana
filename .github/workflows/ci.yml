@@ -223,7 +223,7 @@ jobs:
       - name: get iguana build dir
         uses: actions/download-artifact@v4
         with:
-          name: build_iguana_cpp-${{ matrix.CC }}
+          name: build_iguana_cpp-${{ env.CC }}
       ### dependencies
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
