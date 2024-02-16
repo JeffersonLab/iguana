@@ -21,6 +21,9 @@ on:
         description: 'Test matrix for `test_iguana` job (JSON)'
         required: false
         type: string
+        # test coverage and sanitizers
+        # FIXME: `b_sanitize=memory` is not used because `libc++` needs to be re-compiled with `-fsanitize=memory`, otherwise
+        #        we are bothered by false positives (e.g., from `std::map` insertion)
         default: >-
           {
             "include": [
@@ -28,7 +31,6 @@ on:
               { "mode": "san_address",   "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
               { "mode": "san_thread",    "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
               { "mode": "san_undefined", "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "san_memory",    "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
               { "mode": "san_leak",      "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
             ]
           }
@@ -82,7 +84,7 @@ jobs:
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
-          cmake -S . -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+          cmake -S . -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIE build, for sanitizer readibility
           cmake --build build
           cmake --install build
           tar czvf hipo{.tar.gz,}
