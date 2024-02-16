@@ -13,10 +13,19 @@ test_exe = executable(
 if fs.is_file(get_option('test_data_file'))
   message('Test sample file provided; you may run tests with `meson test`')
   foreach algo, banks : algos_and_banks_for_unit_testing
+    bank_args = []
+    foreach bank : banks
+      bank_args += ['-b', bank]
+    endforeach
     test(
       test_exe_name + ' ' + algo.replace('::', '__'),
       test_exe,
-      args: [ get_option('test_data_file'), get_option('test_num_events'), algo ] + banks,
+      args: [
+        '-c', 'algorithm',
+        '-f', get_option('test_data_file'),
+        '-n', get_option('test_num_events'),
+        '-a', algo
+        ] + bank_args,
     )
   endforeach
 else
