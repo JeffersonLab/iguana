@@ -32,25 +32,6 @@ on:
               { "mode": "san_leak",      "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
             ]
           }
-        # default: >-
-        #   {
-        #     "mode": [
-        #       "coverage",
-        #       "san_address",
-        #       "san_thread",
-        #       "san_undefined",
-        #       "san_memory",
-        #       "san_leak"
-        #     ],
-        #     "include": [
-        #       { "mode": "coverage",      "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
-        #       { "mode": "san_address",   "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-        #       { "mode": "san_thread",    "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-        #       { "mode": "san_undefined", "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-        #       { "mode": "san_memory",    "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-        #       { "mode": "san_leak",      "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
-        #     ]
-        #   }
 
 defaults:
   run:
@@ -276,23 +257,26 @@ jobs:
             -Dtest_data_file=$(pwd)/test_data.hipo \
             -Dtest_num_events=1000                 \
             build-iguana
-          if [ "${{ matrix.mode }}" = "coverage" ]; then
-            meson configure     \
-              -Db_coverage=true \
-              build-iguana
-          else
-            san=$(echo ${{ matrix.mode }} | sed 's;^san_;;')
-            meson configure     \
-              -Db_sanitize=$san \
-              -Db_lundef=false  \
-              build-iguana
-          fi
+          case ${{ matrix.mode }} in
+            coverage)
+              meson configure     \
+                -Db_coverage=true \
+                build-iguana
+              ;;
+            san_*)
+              san=$(echo ${{ matrix.mode }} | sed 's;^san_;;')
+              meson configure     \
+                -Db_sanitize=$san \
+                -Db_lundef=false  \
+                build-iguana
+              ;;
+          esac
       - name: dump build options
         run: meson configure build-iguana | cat
       - name: meson install
         run: meson install -C build-iguana
       ### run tests
-      - name: TEST automatic tests and sanitizers
+      - name: TEST algorithms
         run: |
           echo -e "\e[1;35m[NOTE]: log files are found in artifact 'logs_build_iguana_${{ matrix.mode }}' \e[0m"
           meson test --print-errorlogs -C build-iguana
@@ -321,6 +305,9 @@ jobs:
           name: coverage-report
           retention-days: 7
           path: coverage-report
+
+  # run examples
+  #########################################################
 
   test_examples:
     name: Test Examples
@@ -399,6 +386,9 @@ jobs:
       - name: test 03
         run: iguana/bin/iguana-example-03-zvertex-filter${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'cpp-gcc-release' }} #FIXME
+
+  # test consumers
+  #########################################################
 
   test_consumer_builds:
     name: Test consumer builds

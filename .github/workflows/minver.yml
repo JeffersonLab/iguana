@@ -18,3 +18,9 @@ jobs:
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
       verset: minver
+      test_matrix: >-
+        {
+          "include": [
+            { "mode": "test", "CC": "gcc", "CXX": "g++", "buildtype": "release" }
+          ]
+        }
