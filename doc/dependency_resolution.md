@@ -10,6 +10,11 @@ Assuming a dependency is installed in `$prefix`, it uses one or more of the foll
 Take a look at each dependency's installation prefix to see which of these options
 are available.
 
+> [!NOTE]
+> Some installations will have libraries, and therefore `cmake/` and `pkgconfig/` directories, within
+> `$prefix/lib64`, or within `$prefix/lib/x86_64-linux-gnu`. For brevity in the documentation below, we assume
+> they are in `$prefix/lib`.
+
 ## Resolving Build Dependencies
 
 To use these dependencies with your software, they must be findable by its build system.
