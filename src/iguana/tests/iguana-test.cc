@@ -12,14 +12,17 @@ int main(int argc, char **argv) {
   const int         num_events = std::stoi(argv[2]);
   const std::string algo_name  = std::string(argv[3]);
   std::vector<std::string> bank_names;
+  bool verbose = false;
   for(int i=4; i<argc; i++)
     bank_names.push_back(std::string(argv[i]));
-  fmt::print("TEST IGUANA:\n");
-  fmt::print("  {:>20} = {}\n", "data_file", data_file);
-  fmt::print("  {:>20} = {}\n", "num_events", num_events);
-  fmt::print("  {:>20} = {}\n", "algo_name", algo_name);
-  fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names,", "));
-  fmt::print("\n");
+  if(verbose) {
+    fmt::print("TEST IGUANA:\n");
+    fmt::print("  {:>20} = {}\n", "data_file", data_file);
+    fmt::print("  {:>20} = {}\n", "num_events", num_events);
+    fmt::print("  {:>20} = {}\n", "algo_name", algo_name);
+    fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names,", "));
+    fmt::print("\n");
+  }
 
   // open the HIPO file; we use 2 readers, one for 'before' (i.e., not passed through iguana), and one for 'after'
   // (passed through iguana), so we may compare them
@@ -44,11 +47,13 @@ int main(int argc, char **argv) {
     // run the algorithm
     seq.Run(banks_after);
     // print the banks, before and after
-    for(decltype(bank_names)::size_type it_bank=0; it_bank < bank_names.size(); it_bank++) {
-      fmt::print("{:=^70}\n", fmt::format(" BEFORE: {} ", bank_names.at(it_bank)));
-      banks_before.at(it_bank).show();
-      fmt::print("{:=^70}\n", fmt::format(" AFTER: {} ", bank_names.at(it_bank)));
-      banks_after.at(it_bank).show();
+    if(verbose) {
+      for(decltype(bank_names)::size_type it_bank=0; it_bank < bank_names.size(); it_bank++) {
+        fmt::print("{:=^70}\n", fmt::format(" BEFORE: {} ", bank_names.at(it_bank)));
+        banks_before.at(it_bank).show();
+        fmt::print("{:=^70}\n", fmt::format(" AFTER: {} ", bank_names.at(it_bank)));
+        banks_after.at(it_bank).show();
+      }
     }
   }
 

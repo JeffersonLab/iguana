@@ -17,6 +17,40 @@ on:
         required: false
         type: string
         default: 'latest'
+      test_matrix:
+        description: 'Test matrix for `test_iguana` job (JSON)'
+        required: false
+        type: string
+        default: >-
+          {
+            "include": [
+              { "mode": "coverage",      "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
+              { "mode": "san_address",   "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "san_thread",    "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "san_undefined", "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "san_memory",    "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "san_leak",      "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
+            ]
+          }
+        # default: >-
+        #   {
+        #     "mode": [
+        #       "coverage",
+        #       "san_address",
+        #       "san_thread",
+        #       "san_undefined",
+        #       "san_memory",
+        #       "san_leak"
+        #     ],
+        #     "include": [
+        #       { "mode": "coverage",      "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
+        #       { "mode": "san_address",   "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+        #       { "mode": "san_thread",    "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+        #       { "mode": "san_undefined", "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+        #       { "mode": "san_memory",    "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+        #       { "mode": "san_leak",      "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
+        #     ]
+        #   }
 
 defaults:
   run:
@@ -205,21 +239,7 @@ jobs:
       image: ${{ inputs.container }}
     strategy:
       fail-fast: false
-      matrix:
-        mode:
-          - coverage
-          - san_address
-          - san_thread
-          - san_undefined
-          # - san_memory  # FIXME: not sure how to get meaningful stack traces
-          - san_leak
-        include:
-          - { mode: coverage,      CC: gcc,   CXX: g++,     buildtype: release }
-          - { mode: san_address,   CC: clang, CXX: clang++, buildtype: debug   }
-          - { mode: san_thread,    CC: clang, CXX: clang++, buildtype: debug   }
-          - { mode: san_undefined, CC: clang, CXX: clang++, buildtype: debug   }
-          # - { mode: san_memory,    CC: clang, CXX: clang++, buildtype: debug   }
-          - { mode: san_leak,      CC: clang, CXX: clang++, buildtype: debug   }
+      matrix: ${{ fromJson(inputs.test_matrix) }}
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}

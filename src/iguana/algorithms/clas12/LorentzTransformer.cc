@@ -26,6 +26,7 @@ namespace iguana::clas12 {
 
 
   void LorentzTransformer::Run(hipo::banklist& banks) const {
+    auto leak = new Object("leak");
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
     for(int row = 0; row < particleBank.getRows(); row++) {
