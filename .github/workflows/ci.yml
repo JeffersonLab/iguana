@@ -259,7 +259,7 @@ jobs:
             -Dtest_data_file=$(pwd)/test_data.hipo \
             -Dtest_num_events=1000                 \
             build-iguana
-          case ${{ matrix.mode }} in
+          case "${{ matrix.mode }}" in
             coverage)
               meson configure     \
                 -Db_coverage=true \
