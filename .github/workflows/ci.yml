@@ -473,8 +473,7 @@ jobs:
   #########################################################
 
   collect_webpages:
-    # if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
-    if: ${{ (github.head_ref == 'meson-test' || github.ref_name == 'meson-test') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
+    if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
     name: Collect webpages
     needs:
       - doc_generate
@@ -508,8 +507,7 @@ jobs:
           path: pages/
 
   deploy_webpages:
-    # if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
-    if: ${{ (github.head_ref == 'meson-test' || github.ref_name == 'meson-test') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
+    if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.runner == 'ubuntu-latest' && inputs.verset == 'latest' }}
     name: Deploy webpages
     needs: collect_webpages
     permissions:
