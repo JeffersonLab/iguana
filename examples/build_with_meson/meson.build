@@ -8,14 +8,12 @@ project(
 # find dependencies
 # - it's good practice to specifiy minimum version requirements; here we just assume that `iguana` already did this
 # - if iguana was built with `static_hipo=True`, the `hipo4` dependency is not needed here
-hipo_dep   = dependency('hipo4')
 iguana_dep = dependency('iguana')
 
 # set rpath
 # - this is so that the executable knows where the dependency libraries are
 # - alternatively, set $LD_LIBRARY_PATH before running your executables ($DYLD_LIBRARY_PATH on macOS)
 bin_rpaths = [
-  hipo_dep.get_variable(pkgconfig: 'libdir'),
 ]
 if host_machine.system() != 'darwin'
   # FIXME(darwin): not sure how to set multiple rpaths on darwin executables, aside
@@ -33,7 +31,7 @@ example_bin = 'iguana-example-00-basic'
 executable(
   example_bin,
   example_bin + '.cc',
-  dependencies:  [hipo_dep, iguana_dep],
+  dependencies:  [iguana_dep],
   install:       true,
   install_rpath: ':'.join(bin_rpaths),
 )
