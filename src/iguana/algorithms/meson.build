@@ -1,3 +1,4 @@
+# algorithm source files
 algo_sources = [
   'Algorithm.cc',
   'AlgorithmFactory.cc',
@@ -8,6 +9,7 @@ algo_sources = [
   'clas12/LorentzTransformer.cc',
 ]
 
+# algorithm headers
 algo_public_headers = [
   'Algorithm.h',
   'AlgorithmBoilerplate.h',
@@ -19,9 +21,18 @@ algo_public_headers = [
   'clas12/LorentzTransformer.h',
 ]
 
+# algorithm configurations
 algo_config_dirs = [
   'clas12/config',
 ]
+
+# algorithm unique names and required banks, for those we want to test automatically
+algos_and_banks_for_unit_testing = {
+  'example::ExampleAlgorithm':  ['REC::Particle'],
+  'clas12::EventBuilderFilter': ['REC::Particle'],
+  'clas12::ZVertexFilter':      ['REC::Particle'],
+  'clas12::LorentzTransformer': ['REC::Particle'],
+}
 
 algo_lib = shared_library(
   'IguanaAlgorithms',

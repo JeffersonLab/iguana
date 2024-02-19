@@ -8,12 +8,16 @@ set -e
 GENERAL_PACKAGE_LIST_LINUX=(
   python
   gcc
+  clang
   make
   cmake
   tree
   pkgconf
   ninja
   meson
+  gcovr           # for coverage
+  python-pygments # for coverage report syntax colors
+  llvm            # for `llvm-symbolizer`, for human-readable sanitizer results
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt

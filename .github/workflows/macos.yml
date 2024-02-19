@@ -16,3 +16,9 @@ jobs:
     uses: ./.github/workflows/ci.yml
     with:
       runner: macos-latest
+      test_matrix: >-
+        {
+          "include": [
+            { "mode": "test", "CC": "gcc", "CXX": "g++", "buildtype": "release" }
+          ]
+        }

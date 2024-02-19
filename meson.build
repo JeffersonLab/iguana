@@ -17,6 +17,10 @@ project(
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
 
+# meson modules
+pkg = import('pkgconfig')
+fs  = import('fs')
+
 # resolve dependencies
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
 fmt_dep = dependency(
@@ -62,6 +66,21 @@ project_pkg_vars  = [
   'dep_libdirs='       + ':'.join(dep_lib_paths),
 ]
 
+# executables' rpath
+project_exe_rpath = [
+  hipo_dep.get_variable(pkgconfig: 'libdir'),
+]
+if host_machine.system() != 'darwin'
+  # FIXME(darwin): not sure how to set multiple rpaths on darwin executables, aside
+  # from running `install_name_tool -add_rpath` post-installation; luckily,
+  # darwin-built examples only need `hipo_dep` libraries in the rpath and they
+  # don't need the `iguana` library path explictly included in the rpath, so
+  # this `if` block just keeps `project_exe_rpath` to only one element. If we need
+  # more rpath elements someday, either we need to use `install_name_tool` or,
+  # preferably, resolution of https://github.com/mesonbuild/meson/issues/5760
+  project_exe_rpath += '$ORIGIN' / '..' / get_option('libdir')
+endif
+
 # set preprocessor macros
 add_project_arguments(
   '-DIGUANA_ETC="' + get_option('prefix') / project_etc + '"',
@@ -71,6 +90,7 @@ add_project_arguments(
 # build and install shared libraries
 subdir('src/iguana/services')
 subdir('src/iguana/algorithms')
+subdir('src/iguana/tests')
 
 # build bindings
 if get_option('bind_python')
@@ -78,7 +98,6 @@ if get_option('bind_python')
 endif
 
 # generate pkg-config file
-pkg = import('pkgconfig')
 pkg.generate(
   name:        meson.project_name(),
   description: project_description,
