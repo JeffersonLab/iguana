@@ -40,7 +40,7 @@ defaults:
     shell: bash
 
 env:
-  hipo_version: 4.0.1
+  hipo_version: f40da676bbd1745398e9fdf233ff213ff98798f1
   num_events: 10
 
 jobs:
