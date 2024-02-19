@@ -107,19 +107,13 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        id:
-          # build C++-only version with various compilers and buildtypes
-          - cpp-gcc-release
-          - cpp-gcc-debug
-          - cpp-clang-release
-          - cpp-clang-debug
-          # build with bindings
-          - python
         include:
+          # build C++-only version with various compilers and buildtypes
           - { id: cpp-gcc-release,   CC: gcc,   CXX: g++,     buildtype: release, binding_opts: ''                   }
           - { id: cpp-gcc-debug,     CC: gcc,   CXX: g++,     buildtype: debug,   binding_opts: ''                   }
           - { id: cpp-clang-release, CC: clang, CXX: clang++, buildtype: release, binding_opts: ''                   }
           - { id: cpp-clang-debug,   CC: clang, CXX: clang++, buildtype: debug,   binding_opts: ''                   }
+          # build with bindings
           - { id: python,            CC: gcc,   CXX: g++,     buildtype: release, binding_opts: '-Dbind_python=True' }
     env:
       CC: ${{ matrix.CC }}
@@ -323,9 +317,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        id:
-          - cpp-gcc-release
-          - python
         include:
           - { id: cpp-gcc-release, extension: ''    }
           - { id: python,          extension: '.py' }
