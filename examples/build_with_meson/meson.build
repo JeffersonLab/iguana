@@ -14,7 +14,7 @@ iguana_dep = dependency('iguana')
 # - this is so that the executable knows where the dependency libraries are
 # - alternatively, set $LD_LIBRARY_PATH before running your executables ($DYLD_LIBRARY_PATH on macOS)
 bin_rpaths = [
-  hipo_dep.get_variable(pkgconfig: 'libdir'),
+  # hipo_dep.get_variable(pkgconfig: 'libdir'),
 ]
 if host_machine.system() != 'darwin'
   # FIXME(darwin): not sure how to set multiple rpaths on darwin executables, aside
