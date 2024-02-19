@@ -7,7 +7,7 @@ test_exe = executable(
   dependencies:        project_deps,
   link_with:           project_libs,
   install:             true,
-  # install_rpath:     # don't bother with rpath, since `meson test` will run it in the build directory
+  install_rpath:       ':'.join(project_exe_rpath),
 )
 
 if fs.is_file(get_option('test_data_file'))
