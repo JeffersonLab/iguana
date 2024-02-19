@@ -2,6 +2,7 @@
 
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
+#include <TTree.h>
 
 namespace iguana::clas12 {
 
@@ -42,6 +43,11 @@ namespace iguana::clas12 {
 
       /// Lorentz transformation function
       std::function<lorentz_vector_t(lorentz_vector_t)> m_transform;
+
+      /// test ROOT dependence
+      std::unique_ptr<TTree> tr;
+      /// test ROOT dependence
+      mutable int x;
 
   };
 

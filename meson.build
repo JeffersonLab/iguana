@@ -61,38 +61,59 @@ else
   warning('ROOT is not found; code which depends on ROOT will not be included in this build.')
 endif
 
+# ROOT has some issues being included as a dependency, so make another list without it:
+dep_list_full_NO_ROOT = []
+foreach dep : dep_list_full
+  if dep.name() != 'ROOT'
+    dep_list_full_NO_ROOT += dep
+  endif
+endforeach
+
 # handle dependency-detection-method-dependent stuff (pkg-config vs. cmake):
 # - copy the list of dependencies into dedicated lists: `dep_list_pkgconfig` and `dep_list_cmake`
-# - make a list of dependency libdirs, `dep_lib_paths`
+# - make a list of dependency library and include directories, `dep_lib_paths` and `dep_inc_paths`
 dep_list_pkgconfig = []
 dep_list_cmake     = []
 dep_lib_paths      = []
+dep_inc_paths      = []
 foreach dep : dep_list_full
+  ### pkg-config deps
   if dep.type_name() == 'pkgconfig'
     dep_list_pkgconfig += dep
     libdirs = [ dep.get_variable(pkgconfig: 'libdir') ]
+    incdirs = [ dep.get_variable(pkgconfig: 'includedir') ]
+  ### cmake deps
   elif dep.type_name() == 'cmake'
     dep_list_cmake += dep
     libdirs = []
     foreach lib : dep.get_variable(cmake: 'PACKAGE_LIBRARIES').split(';')
       libdirs += run_command('dirname', lib, check: true).stdout().strip()
     endforeach
+    incdirs = root_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
+  ### error, if unknown
   else
     error('Cannot determine how dependency "' + dep.name() + '" was found')
   endif
+  ### append to `dep_lib_paths` and `dep_inc_paths`
   foreach libdir : libdirs
     if not dep_lib_paths.contains(libdir)
       dep_lib_paths += libdir
     endif
   endforeach
+  foreach incdir : incdirs
+    if not dep_inc_paths.contains(incdir)
+      dep_inc_paths += incdir
+    endif
+  endforeach
 endforeach
-message('Dependency libdirs = [', ', '.join(dep_lib_paths), ']')
+message('Dependency library dirs = [', ', '.join(dep_lib_paths), ']')
+message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
 
 # general project vars
 project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
-project_deps      = declare_dependency(dependencies: dep_list_full)
+project_deps      = declare_dependency(dependencies: dep_list_full_NO_ROOT)
 project_etc       = get_option('sysconfdir') / meson.project_name()
 project_pkg_vars  = [
   'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),

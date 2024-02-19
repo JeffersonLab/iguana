@@ -6,6 +6,9 @@ namespace iguana::clas12 {
 
   void LorentzTransformer::Start(hipo::banklist& banks) {
 
+    tr = std::make_unique<TTree>("tr", "tr");
+    tr->Branch("x", &x, "x/I");
+
     CacheOption("frame", std::string{"mirror"}, o_frame);
     CacheBankIndex(banks, "REC::Particle", b_particle);
 
@@ -38,6 +41,8 @@ namespace iguana::clas12 {
       particleBank.putFloat("px", row, px);
       particleBank.putFloat("py", row, py);
       particleBank.putFloat("pz", row, pz);
+      x = (int) px;
+      tr->Fill();
     }
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
@@ -55,6 +60,7 @@ namespace iguana::clas12 {
 
 
   void LorentzTransformer::Stop() {
+    tr->Print();
   }
 
 }
