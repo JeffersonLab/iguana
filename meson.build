@@ -63,11 +63,15 @@ endif
 
 # ROOT has some issues being included as a dependency, so make another list without it:
 dep_list_full_NO_ROOT = []
-foreach dep : dep_list_full
-  if dep.name() != 'ROOT'
-    dep_list_full_NO_ROOT += dep
-  endif
-endforeach
+if dep_root.found()
+  foreach dep : dep_list_full
+    if dep.name() != 'ROOT'
+      dep_list_full_NO_ROOT += dep
+    endif
+  endforeach
+else
+  dep_list_full_NO_ROOT = dep_list_full
+endif
 
 # handle dependency-detection-method-dependent stuff (pkg-config vs. cmake):
 # - copy the list of dependencies into dedicated lists: `dep_list_pkgconfig` and `dep_list_cmake`
