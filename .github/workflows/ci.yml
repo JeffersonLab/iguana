@@ -27,11 +27,11 @@ on:
         default: >-
           {
             "include": [
-              { "mode": "coverage",      "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
-              { "mode": "san_address",   "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "san_thread",    "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "san_undefined", "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "san_leak",      "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
+              { "mode": "coverage",                     "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
+              { "mode": "address sanitizer",            "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "thread sanitizer",             "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "undefined behavior sanitizer", "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "leak sanitizer",               "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
             ]
           }
 
@@ -265,8 +265,8 @@ jobs:
                 -Db_coverage=true \
                 build-iguana
               ;;
-            san_*)
-              san=$(echo ${{ matrix.mode }} | sed 's;^san_;;')
+            *sanitizer)
+              san=$(echo ${{ matrix.mode }} | sed 's; .*;;g')
               meson configure     \
                 -Db_sanitize=$san \
                 -Db_lundef=false  \
