@@ -13,7 +13,6 @@ endif()
 
 # find dependencies
 # - using `PkgConfig` module imports pkg-config dependencies as targets prefixed with `PkgConfig::`
-# - if iguana was built with `static_hipo=True`, the `hipo4` target is not needed here
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(hipo4 REQUIRED IMPORTED_TARGET hipo4)
 pkg_check_modules(iguana REQUIRED IMPORTED_TARGET iguana)

@@ -7,7 +7,6 @@ project(
 
 # find dependencies
 # - it's good practice to specifiy minimum version requirements; here we just assume that `iguana` already did this
-# - if iguana was built with `static_hipo=True`, the `hipo4` dependency is not needed here
 hipo_dep   = dependency('hipo4')
 iguana_dep = dependency('iguana')
 
