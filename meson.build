@@ -68,17 +68,13 @@ project_pkg_vars  = [
 ]
 
 # executables' rpath
-project_exe_rpath = [
-  hipo_dep.get_variable(pkgconfig: 'libdir'),
-]
+project_exe_rpath = []
 if host_machine.system() != 'darwin'
-  # FIXME(darwin): not sure how to set multiple rpaths on darwin executables, aside
-  # from running `install_name_tool -add_rpath` post-installation; luckily,
-  # darwin-built examples only need `hipo_dep` libraries in the rpath and they
-  # don't need the `iguana` library path explictly included in the rpath, so
-  # this `if` block just keeps `project_exe_rpath` to only one element. If we need
-  # more rpath elements someday, either we need to use `install_name_tool` or,
-  # preferably, resolution of https://github.com/mesonbuild/meson/issues/5760
+  # FIXME(darwin): not sure how to set multiple rpaths on darwin executables,
+  # aside from running `install_name_tool -add_rpath` post-installation;
+  # luckily, darwin-built executables don't need the `iguana` library path
+  # explictly included in the rpath, so this `if` block just keeps
+  # `project_exe_rpath` minimal. See https://github.com/mesonbuild/meson/issues/5760
   project_exe_rpath += '$ORIGIN' / '..' / get_option('libdir')
 endif
 
