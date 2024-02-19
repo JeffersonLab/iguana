@@ -130,5 +130,6 @@ configure_file(
   configuration: {
     'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
     'python':  get_option('bind_python') ? 'true' : 'false',
+    'libdir':  get_option('libdir'),
   },
 )

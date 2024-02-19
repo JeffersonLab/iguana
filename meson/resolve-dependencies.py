@@ -37,11 +37,18 @@ pkg_config_path   = set()
 cmake_prefix_path = set()
 def use_system(dep):
     print_verbose(f'{dep}: {SYSTEM_ASSUMPTION}')
-def use_pkg_config(dep, arg, subdir='lib/pkgconfig'):
+def use_pkg_config(dep, pc_file, arg):
     if(arg != SYSTEM_ASSUMPTION):
-        path = os.path.realpath(arg) + '/' + subdir
-        print_verbose(f'{dep}: using pkg-config files from {path}')
-        pkg_config_path.add(path)
+        prefix = os.path.realpath(arg)
+        pc_path = ''
+        for root, dirs, files in os.walk(prefix):
+            if pc_file in files:
+                pc_path = root
+        if pc_path == '':
+            print(f'ERROR: cannot find "{pc_file}" in any subdirectory of {arg}', file=sys.stderr)
+            exit(1)
+        print_verbose(f'{dep}: using pkg-config files from {pc_path}')
+        pkg_config_path.add(pc_path)
     else:
         use_system(dep)
 def use_cmake(dep, path):
@@ -53,9 +60,9 @@ def use_cmake(dep, path):
         use_system(dep)
 
 # resolve dependencies #########################
-use_pkg_config('hipo', args.hipo)
-use_pkg_config('fmt',  args.fmt)
-use_pkg_config('yaml', args.yaml)
+use_pkg_config('hipo', 'hipo4.pc',    args.hipo)
+use_pkg_config('fmt',  'fmt.pc',      args.fmt)
+use_pkg_config('yaml', 'yaml-cpp.pc', args.yaml)
 ################################################
 
 
