@@ -18,6 +18,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   gcovr           # for coverage
   python-pygments # for coverage report syntax colors
   llvm            # for `llvm-symbolizer`, for human-readable sanitizer results
+  lz4             # so we have the static LZ4 libs
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
