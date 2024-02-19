@@ -157,8 +157,7 @@ jobs:
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       - name: meson setup
         run: |
-          echo CMAKE_PREFIX_PATH=/usr/lib/cmake/ROOT >> $GITHUB_ENV
-          meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo)
+          meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo) --cmake_prefix_path=/usr/lib
       - name: meson configure
         run: |
           meson configure                       \
