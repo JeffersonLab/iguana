@@ -39,28 +39,60 @@ hipo_dep = dependency(
   method:  'pkg-config',
   version: '>=4.0.1',
 )
+root_dep = dependency(
+  'ROOT',
+  method: 'cmake',
+  version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip(),
+  required: false,
+)
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
 # ordered such that the ones users are *least likely* to try to build
 # themselves are listed last (see FIXME in meson/this_iguana.sh.in)
-full_dep_list = [
+dep_list_full = [
   hipo_dep,
   fmt_dep,
   yamlcpp_dep,
 ]
+if root_dep.found()
+  dep_list_full += root_dep
+else
+  warning('ROOT is not found; code which depends on ROOT will not be included in this build.')
+endif
 
-# dependency libdirs
-dep_lib_paths = []
-foreach dep : full_dep_list
-  dep_lib_paths += dep.get_variable(pkgconfig: 'libdir')
+# handle dependency-detection-method-dependent stuff (pkg-config vs. cmake):
+# - copy the list of dependencies into dedicated lists: `dep_list_pkgconfig` and `dep_list_cmake`
+# - make a list of dependency libdirs, `dep_lib_paths`
+dep_list_pkgconfig = []
+dep_list_cmake     = []
+dep_lib_paths      = []
+foreach dep : dep_list_full
+  if dep.type_name() == 'pkgconfig'
+    dep_list_pkgconfig += dep
+    libdirs = [ dep.get_variable(pkgconfig: 'libdir') ]
+  elif dep.type_name() == 'cmake'
+    dep_list_cmake += dep
+    libdirs = []
+    foreach lib : dep.get_variable(cmake: 'PACKAGE_LIBRARIES').split(';')
+      libdirs += run_command('dirname', lib, check: true).stdout().strip()
+    endforeach
+  else
+    error('Cannot determine how dependency "' + dep.name() + '" was found')
+  endif
+  foreach libdir : libdirs
+    if not dep_lib_paths.contains(libdir)
+      dep_lib_paths += libdir
+    endif
+  endforeach
 endforeach
+message('Dependency libdirs = [', ', '.join(dep_lib_paths), ']')
 
 # general project vars
 project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
-project_deps      = declare_dependency(dependencies: full_dep_list)
+project_deps      = declare_dependency(dependencies: dep_list_full)
 project_etc       = get_option('sysconfdir') / meson.project_name()
 project_pkg_vars  = [
   'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
@@ -99,7 +131,7 @@ pkg.generate(
   name:        meson.project_name(),
   description: project_description,
   libraries:   project_libs,
-  requires:    full_dep_list,
+  requires:    dep_list_pkgconfig,
   variables:   project_pkg_vars,
 )
 
