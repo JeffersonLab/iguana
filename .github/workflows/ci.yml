@@ -80,7 +80,7 @@ jobs:
       - name: checkout hipo
         uses: actions/checkout@v4
         with:
-          repository: mholtrop/hipo
+          repository: gavalian/hipo
           ref: ${{ env.hipo_version }}
       - name: build
         run: |
