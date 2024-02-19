@@ -156,7 +156,9 @@ jobs:
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       - name: meson setup
-        run: meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo)
+        run: |
+          echo CMAKE_PREFIX_PATH=/usr/lib/cmake/ROOT >> $GITHUB_ENV
+          meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo)
       - name: meson configure
         run: |
           meson configure                       \
