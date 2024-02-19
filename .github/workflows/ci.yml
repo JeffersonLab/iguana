@@ -133,6 +133,10 @@ jobs:
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - run: root --version
+      - run: which root
+      - run: root-config --libdir
+      - name: tree root libdir
+        run: tree $(root-config --libdir)
       - name: get local dependencies
         uses: actions/download-artifact@v4
         with:
