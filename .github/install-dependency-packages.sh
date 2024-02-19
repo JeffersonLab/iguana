@@ -31,7 +31,6 @@ GENERAL_PACKAGE_LIST_MACOS=(
   tree
   ninja
   meson
-  gcovr
 )
 IGUANA_PACKAGE_LIST_MACOS=(
   fmt
