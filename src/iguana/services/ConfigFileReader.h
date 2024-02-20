@@ -48,7 +48,7 @@ namespace iguana {
       /// and ending with the given extension
       /// @param algo_name the algorithm name
       /// @param ext the file extension
-      /// @return the parent directory name
+      /// @return the config file name
       static std::string ConvertAlgoNameToConfigName(const std::string algo_name, const std::string ext);
 
     protected:
