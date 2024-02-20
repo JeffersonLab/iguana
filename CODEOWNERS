@@ -1,0 +1,9 @@
+* @c-dilks
+examples/config/ex2.yaml @rtysonCLAS12
+examples/iguana-example-02-YAMLReader.cc @rtysonCLAS12
+examples/iguana-example-03-zvertex-filter.cc @rtysonCLAS12
+src/iguana/algorithms/clas12/ZVertexFilter.cc @rtysonCLAS12
+src/iguana/algorithms/clas12/ZVertexFilter.h @rtysonCLAS12
+src/iguana/algorithms/clas12/ZVertexFilter.yaml @rtysonCLAS12
+src/iguana/services/YAMLReader.cc @rtysonCLAS12
+src/iguana/services/YAMLReader.h @rtysonCLAS12

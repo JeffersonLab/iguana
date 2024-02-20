@@ -24,5 +24,7 @@ Once you have generated your new algorithm, add it to the appropriate
 `meson.build` file (likely [`src/iguana/algorithms/meson.build`](../meson.build)),
 and get started coding!
 
+You should also add your algorithm files and your name (GitHub handle or email address) to the [`CODEOWNERS` file](/CODEOWNERS).
+
 > [!TIP]
 > Enable debugging symbols when building by setting the Iguana build option `buildtype` to `debug`.
