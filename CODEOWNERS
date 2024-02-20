@@ -1,3 +1,10 @@
+#################################################################################
+# GitHub Handle                Name
+# =============                ====
+# @c-dilks                     Christopher Dilks
+# @rtysonCLAS12                Richard Tyson
+#################################################################################
+
 * @c-dilks
 examples/config/ex2.yaml @rtysonCLAS12
 examples/iguana-example-02-YAMLReader.cc @rtysonCLAS12
