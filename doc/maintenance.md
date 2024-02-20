@@ -24,3 +24,7 @@ Keep the Python binding dependency versions reasonably up to date in the corresp
 We currently support up to the C++ standard defined in:
 - [`meson.build`](../meson.build)
 - example build configurations in [`examples/build_with_*` subdirectories](../examples)
+
+## Code Ownership
+
+We maintain a [`CODEOWNERS` file](/CODEOWNERS) to track who wrote and maintains each file. If you make significant contributions to any part of the code, please update `CODEOWNERS`. Pull requests that edit a file that you maintain will automatically request for your review, when marked as ready.
