@@ -5,21 +5,22 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "ConfigFileReader.h"
+
 namespace iguana
 {
 
     /// @brief A YAMLReader based on yaml-cpp
-    class YAMLReader
+    class YAMLReader : public ConfigFileReader
     {
 
     public:
-        /// @param file the file to be opened by YAMLReader
-        YAMLReader(const std::string file = "");
+        /// @param name of this reader (for `Logger`)
+        YAMLReader(const std::string name="config") : ConfigFileReader(name) {}
         ~YAMLReader() {}
 
-        /// Get the file name opened by YAMLReader
-        /// @returns the file name
-        std::string GetFileName() const;
+        /// Parse the YAML files added by `ConfigFileReader::AddFile`
+        void LoadFiles();
 
         /// Read a value from the opened YAML file which is at a given and key.
         /// This function can return in any C++ type used by Iguana.
@@ -92,10 +93,8 @@ namespace iguana
             );
 
     protected:
-        /// The file to be opened by YAMLReader
-        std::string m_file;
 
-        /// Node used to open file
-        YAML::Node m_config;
+        /// Stack of nodes used to open files
+        std::deque<YAML::Node> m_configs;
     };
 }

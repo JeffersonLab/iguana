@@ -21,9 +21,8 @@ algo_public_headers = [
   'clas12/LorentzTransformer.h',
 ]
 
-# algorithm configurations
-algo_config_dirs = [
-  'clas12/config',
+algo_config_files = [
+  'clas12/ZVertexFilter.yaml',
 ]
 
 # algorithm unique names and required banks, for those we want to test automatically
@@ -51,10 +50,10 @@ install_headers(
   preserve_path: true,
 )
 
-foreach algo_config_dir : algo_config_dirs
-  install_subdir(
-    algo_config_dir,
-    install_dir:     project_etc,
-    strip_directory: true,
+foreach algo_config_file : algo_config_files
+  install_data(
+    algo_config_file,
+    install_dir:   project_etc,
+    preserve_path: true,
   )
 endforeach

@@ -29,8 +29,7 @@ namespace iguana {
     m_algo_names.insert({algoName, m_sequence.size()});
     // prepend sequence name to algorithm name
     algo->SetName(m_name + "|" + algoName);
-    // use `this` config file manager in each of its algorithms (must be called AFTER `SetName`)
-    algo->SetConfigFileManager(GetConfigFileManager());
+    // append algorithm to the sequence
     m_sequence.push_back(std::move(algo));
     // check for duplicate algorithm name
     if(m_algo_names.size() < m_sequence.size()) {

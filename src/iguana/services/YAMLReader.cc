@@ -1,47 +1,49 @@
 #include "YAMLReader.h"
-#include <iostream>
 
 namespace iguana
 {
-
-    YAMLReader::YAMLReader(const std::string file) : m_file(file)
-    {
-        m_config = YAML::LoadFile(m_file);
-    }
-
-    std::string YAMLReader::GetFileName() const
-    {
-        return m_file;
+    void YAMLReader::LoadFiles() {
+      for(const auto& file : m_files) {
+        try {
+          m_configs.push_front(YAML::LoadFile(file));
+        }
+        catch (const YAML::Exception &e) {
+          m_log->Error("YAML Exception: {}", e.what());
+        }
+        catch (const std::exception &e) {
+          m_log->Error("Exception: {}", e.what());
+        }
+      }
     }
 
     template <typename T>
     T YAMLReader::readValue(const std::string &key, T defaultValue, const YAML::Node &node)
     {
+      for(const auto& config : m_configs) {
         try
         {
-            const YAML::Node &targetNode = node.IsNull() ? m_config : node;
+            const YAML::Node &targetNode = node.IsNull() ? config : node;
 
             if (targetNode[key])
             {
                 return targetNode[key].as<T>();
             }
-            else
-            {
-                return defaultValue;
-            }
         }
         catch (const YAML::Exception &e)
         {
             // Handle YAML parsing errors
-            std::cerr << "YAML Exception: " << e.what() << std::endl;
+            m_log->Error("YAML Exception: {}", e.what());
             return defaultValue;
         }
         catch (const std::exception &e)
         {
             // Handle other exceptions (e.g., conversion errors)
-            std::cerr << "Exception: " << e.what() << std::endl;
+            m_log->Error("Exception: {}", e.what());
             return defaultValue;
         }
+      }
+      // not found in any config
+      return defaultValue;
     }
 
     // Explicit instantiation for double
@@ -54,9 +56,10 @@ namespace iguana
     template <typename T>
     std::vector<T> YAMLReader::readArray(const std::string &key, const std::vector<T> &defaultValue, const YAML::Node &node)
     {
+      for(const auto& config : m_configs) {
         try
         {
-            const YAML::Node &targetNode = node.IsNull() ? m_config : node;
+            const YAML::Node &targetNode = node.IsNull() ? config : node;
 
             if (targetNode[key])
             {
@@ -68,23 +71,22 @@ namespace iguana
                 }
                 return value;
             }
-            else
-            {
-                return defaultValue;
-            }
         }
         catch (const YAML::Exception &e)
         {
             // Handle YAML parsing errors
-            std::cerr << "YAML Exception: " << e.what() << std::endl;
+            m_log->Error("YAML Exception: {}", e.what());
             return defaultValue;
         }
         catch (const std::exception &e)
         {
             // Handle other exceptions (e.g., conversion errors)
-            std::cerr << "Exception: " << e.what() << std::endl;
+            m_log->Error("Exception: {}", e.what());
             return defaultValue;
         }
+      }
+      // not found in any config
+      return defaultValue;
     }
 
     // Explicit instantiation for double
@@ -105,11 +107,9 @@ namespace iguana
         const T           defaultValue
         )
     {
-        T returnVal = defaultValue;
+      for(const auto& config : m_configs) {
         // Accessing the whole sequence of maps
-        const YAML::Node &cutsNode = m_config[cutKey];
-        //std::cout<<cutsNode<<std::endl;
-        //std::cout << cutsNode.IsSequence() << std::endl;
+        const YAML::Node &cutsNode = config[cutKey];
         if (cutsNode.IsSequence())
         {
             for (const auto &runNode : cutsNode)
@@ -118,22 +118,21 @@ namespace iguana
                 std::vector<int> runs = readArray<int>(runkey, {}, runNode);
                 if (runs.size() == 2 && runs[0] <= runnb && runs[1] >= runnb)
                 {
-                    //std::cout << runNode << std::endl;
                     if (runNode[pidkey].IsDefined())
                     {
                         const YAML::Node &pidNode = runNode[pidkey];
-                        returnVal = readValue<T>(std::to_string(pid), defaultValue, pidNode);
-                        break;
+                        return readValue<T>(std::to_string(pid), defaultValue, pidNode);
                     }
                     else
                     {
-                        returnVal = readValue<T>(key, defaultValue, runNode);
-                        break;
+                        return readValue<T>(key, defaultValue, runNode);
                     }
                 }
             }
         }
-        return returnVal;
+      }
+      // not found in any config
+      return defaultValue;
     }
 
     // Explicit instantiation for double
@@ -154,12 +153,10 @@ namespace iguana
         const std::vector<T> &defaultValue
         )
     {
-        std::vector<T> returnVal = defaultValue;
+      for(const auto& config : m_configs) {
         // Accessing the whole sequence of maps
 
-        const YAML::Node &cutsNode = m_config[cutKey];
-        //std::cout<<cutsNode<<std::endl;
-        //std::cout << cutsNode.IsSequence() << std::endl;
+        const YAML::Node &cutsNode = config[cutKey];
         if (cutsNode.IsSequence())
         {
             for (const auto &runNode : cutsNode)
@@ -168,22 +165,21 @@ namespace iguana
                 std::vector<int> runs = readArray<int>(runkey, {}, runNode);
                 if (runs.size() == 2 && runs[0] <= runnb && runs[1] >= runnb)
                 {
-                    //std::cout << runNode << std::endl;
                     if (runNode[pidkey].IsDefined())
                     {
                         const YAML::Node &pidNode = runNode[pidkey];
-                        returnVal = readArray<T>(std::to_string(pid), defaultValue, pidNode);
-                        break;
+                        return readArray<T>(std::to_string(pid), defaultValue, pidNode);
                     }
                     else
                     {
-                        returnVal = readArray<T>(key, defaultValue, runNode);
-                        break;
+                        return readArray<T>(key, defaultValue, runNode);
                     }
                 }
             }
         }
-        return returnVal;
+      }
+      // not found in any config
+      return defaultValue;
     }
 
     // Explicit instantiation for double
