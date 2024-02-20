@@ -1,5 +1,5 @@
 #include <iguana/algorithms/clas12/EventBuilderFilter.h>
-#include <iguana/algorithms/clas12/LorentzTransformer.h>
+// #include <iguana/algorithms/clas12/MomentumCorrection.h> // FIXME
 #include <hipo4/reader.h>
 
 int main(int argc, char **argv) {
@@ -18,19 +18,18 @@ int main(int argc, char **argv) {
 
   // create the algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
-  iguana::clas12::LorentzTransformer algo_lorentz_transformer;
+  // iguana::clas12::MomentumCorrection algo_momentum_correction; // FIXME
 
   // set log levels
   algo_eventbuilder_filter.SetOption("log", "debug");
-  algo_lorentz_transformer.SetOption("log", "debug");
+  // algo_momentum_correction.SetOption("log", "debug"); // FIXME
 
   // set algorithm options
   algo_eventbuilder_filter.SetOption<std::vector<int>>("pids", {11, 211, -211});
-  algo_lorentz_transformer.SetOption("frame", "mirror");
 
   // start the algorithms
   algo_eventbuilder_filter.Start();
-  algo_lorentz_transformer.Start();
+  // algo_momentum_correction.Start(); // FIXME
 
   // run the algorithm sequence on each event
   int iEvent = 0;
@@ -47,8 +46,9 @@ int main(int argc, char **argv) {
       auto pid = particleBank.getInt("pid", row);
       if(algo_eventbuilder_filter.Filter(pid)) {
 
-        // if accepted PID, transform its momentum with LorentzTransformer
-        auto [px, py, pz, e] = algo_lorentz_transformer.Transform(
+        // if accepted PID, correct its momentum
+        /* FIXME: need momentum correction algo
+        auto [px, py, pz, e] = algo_momentum_correction.Transform(
             particleBank.getFloat("px", row),
             particleBank.getFloat("py", row),
             particleBank.getFloat("pz", row),
@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
         printMomentum(particleBank.getFloat("px", row), px);
         printMomentum(particleBank.getFloat("py", row), py);
         printMomentum(particleBank.getFloat("pz", row), pz);
+        */
 
       }
     }
@@ -70,6 +71,6 @@ int main(int argc, char **argv) {
 
   // stop the algorithms
   algo_eventbuilder_filter.Stop();
-  algo_lorentz_transformer.Stop();
+  // algo_momentum_correction.Stop(); // FIXME
   return 0;
 }

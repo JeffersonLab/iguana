@@ -17,14 +17,13 @@ banks  = reader.getBanks(["REC::Particle", "REC::Calorimeter"]);
 
 seq = iguana.AlgorithmSequence('pyiguana')
 seq.Add('clas12::EventBuilderFilter')
-seq.Add('clas12::LorentzTransformer')
+# seq.Add('clas12::MomentumCorrection') # FIXME
 seq.PrintSequence()
 
-seq.SetOption('clas12::EventBuilderFilter', 'log',  'debug')
-seq.SetOption('clas12::LorentzTransformer', 'log',  'debug')
+seq.SetOption('clas12::EventBuilderFilter', 'log', 'debug')
+# seq.SetOption('clas12::MomentumCorrection', 'log', 'debug') # FIXME
 
 seq.SetOption('clas12::EventBuilderFilter', 'pids', [11, 211, -211])
-seq.SetOption('clas12::LorentzTransformer', 'frame', 'mirror')
 
 def prettyPrint(message, bank):
     print(f'{"="*30} {message} {"="*30}')

@@ -39,7 +39,7 @@ hipo_dep = dependency(
   method:  'pkg-config',
   version: '>=4.0.1',
 )
-root_dep = dependency(
+ROOT_dep = dependency(
   'ROOT',
   method: 'cmake',
   version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip(),
@@ -51,11 +51,9 @@ root_dep = dependency(
 # ordered such that the ones users are *least likely* to try to build
 # themselves are listed last (see FIXME in meson/this_iguana.sh.in)
 dep_list = []
-foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, root_dep ]
+foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, ROOT_dep ]
   if dep.found()
     dep_list += dep
-  else
-    warning(dep.name(), 'is not found; code which depends on it will not be included in this build')
   endif
 endforeach
 
@@ -73,7 +71,7 @@ foreach dep : dep_list
     foreach lib : dep.get_variable(cmake: 'PACKAGE_LIBRARIES').split(';')
       libdirs += run_command('dirname', lib, check: true).stdout().strip()
     endforeach
-    incdirs = root_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
+    incdirs = ROOT_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
   ### error, if unknown
   else
     error('Cannot determine how dependency "' + dep.name() + '" was found')
@@ -94,17 +92,17 @@ message('Dependency library dirs = [', ', '.join(dep_lib_paths), ']')
 message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
 
 # handle ROOT
-root_dep_inc_dirs  = []
-root_dep_link_args = []
-if root_dep.found()
-  root_config = {
+ROOT_dep_inc_dirs  = []
+ROOT_dep_link_args = []
+if ROOT_dep.found()
+  ROOT_config = {
     'incdir': run_command('root-config', '--incdir', check: true).stdout().strip(),
     'libs':   run_command('root-config', '--libs',   check: true).stdout().strip(),
   }
-  root_dep_inc_dirs += include_directories(root_config['incdir'])
-  foreach arg : root_config['libs'].split()
+  ROOT_dep_inc_dirs += include_directories(ROOT_config['incdir'])
+  foreach arg : ROOT_config['libs'].split()
     if not arg.contains('-rpath') # do not let `root-config` control the rpath
-      root_dep_link_args += arg
+      ROOT_dep_link_args += arg
     endif
   endforeach
 endif

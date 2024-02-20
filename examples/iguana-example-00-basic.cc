@@ -24,15 +24,14 @@ int main(int argc, char **argv) {
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID
-  seq.Add("clas12::LorentzTransformer"); // Lorentz transform the momenta
+  // seq.Add("clas12::MomentumCorrection"); // FIXME
 
   // set log levels
   seq.SetOption("clas12::EventBuilderFilter", "log", "debug");
-  seq.SetOption("clas12::LorentzTransformer", "log", "debug");
+  // seq.SetOption("clas12::MomentumCorrection", "log", "debug"); // FIXME
 
   // set algorithm options
   seq.SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", {11, 211, -211});
-  seq.SetOption("clas12::LorentzTransformer", "frame", "mirror");
 
   // start the algorithms
   seq.Start(banks);
