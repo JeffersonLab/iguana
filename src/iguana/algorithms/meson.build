@@ -33,6 +33,7 @@ algos_and_banks_for_unit_testing = {
   'clas12::EventBuilderFilter': ['REC::Particle'],
   'clas12::ZVertexFilter':      ['REC::Particle'],
   'clas12::LorentzTransformer': ['REC::Particle'],
+  'clas12::MomentumCorrection': ['REC::Particle', 'RUN::config'],
 }
 
 algo_lib = shared_library(
