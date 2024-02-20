@@ -136,9 +136,11 @@ jobs:
       - run: which root
       - run: root-config --libdir
       - run: tree /usr/lib
-      - name: find cmakes
+      - name: find cmakes in usr
         if: ${{ inputs.runner == 'ubuntu-latest' }}
         run: find /usr -name "*.cmake" | grep -i root
+      - name: find cmakes in root libdir
+        run: find $(root-config --libdir) -name "*.cmake" | grep -i root
       - name: get local dependencies
         uses: actions/download-artifact@v4
         with:
