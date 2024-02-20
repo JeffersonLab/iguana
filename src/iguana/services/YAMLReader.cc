@@ -4,10 +4,15 @@ namespace iguana
 {
     void YAMLReader::LoadFiles() {
       for(const auto& file : m_files) {
-        m_configs.push_front(YAML::LoadFile(file));
-        //
-        // FIXME: catch bad `LoadFile` result
-        //
+        try {
+          m_configs.push_front(YAML::LoadFile(file));
+        }
+        catch (const YAML::Exception &e) {
+          m_log->Error("YAML Exception: {}", e.what());
+        }
+        catch (const std::exception &e) {
+          m_log->Error("Exception: {}", e.what());
+        }
       }
     }
 
