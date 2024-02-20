@@ -63,7 +63,7 @@ endif
 
 # ROOT has some issues being included as a dependency, so make another list without it:
 dep_list_full_NO_ROOT = []
-if dep_root.found()
+if root_dep.found()
   foreach dep : dep_list_full
     if dep.name() != 'ROOT'
       dep_list_full_NO_ROOT += dep
