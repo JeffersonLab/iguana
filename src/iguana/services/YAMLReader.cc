@@ -31,13 +31,13 @@ namespace iguana
         catch (const YAML::Exception &e)
         {
             // Handle YAML parsing errors
-            // std::cerr << "YAML Exception: " << e.what() << std::endl; // FIXME
+            m_log->Error("YAML Exception: {}", e.what());
             return defaultValue;
         }
         catch (const std::exception &e)
         {
             // Handle other exceptions (e.g., conversion errors)
-            // std::cerr << "Exception: " << e.what() << std::endl; // FIXME
+            m_log->Error("Exception: {}", e.what());
             return defaultValue;
         }
     }
@@ -75,13 +75,13 @@ namespace iguana
         catch (const YAML::Exception &e)
         {
             // Handle YAML parsing errors
-            // std::cerr << "YAML Exception: " << e.what() << std::endl; // FIXME
+            m_log->Error("YAML Exception: {}", e.what());
             return defaultValue;
         }
         catch (const std::exception &e)
         {
             // Handle other exceptions (e.g., conversion errors)
-            // std::cerr << "Exception: " << e.what() << std::endl; // FIXME
+            m_log->Error("Exception: {}", e.what());
             return defaultValue;
         }
     }
