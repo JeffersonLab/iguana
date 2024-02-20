@@ -17,7 +17,6 @@
 /// @param ALGO_NAME the name of the algorithm class
 /// @param ALGO_FULL_NAME the full name of this algorithm, used by `iguana::AlgorithmFactory`
 #define IGUANA_ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME)  \
-                                                                    \
   using Algorithm::Start;                                           \
   static algo_t Creator() { return std::make_unique<ALGO_NAME>(); } \
   static std::string GetClassName() { return #ALGO_FULL_NAME; }     \
