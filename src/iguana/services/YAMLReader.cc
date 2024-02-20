@@ -19,7 +19,7 @@ namespace iguana
     template <typename T>
     T YAMLReader::readValue(const std::string &key, T defaultValue, const YAML::Node &node)
     {
-      auto config = m_configs.at(0); // FIXME: loop
+      for(const auto& config : m_configs) {
         try
         {
             const YAML::Node &targetNode = node.IsNull() ? config : node;
@@ -27,10 +27,6 @@ namespace iguana
             if (targetNode[key])
             {
                 return targetNode[key].as<T>();
-            }
-            else
-            {
-                return defaultValue;
             }
         }
         catch (const YAML::Exception &e)
@@ -45,6 +41,9 @@ namespace iguana
             m_log->Error("Exception: {}", e.what());
             return defaultValue;
         }
+      }
+      // not found in any config
+      return defaultValue;
     }
 
     // Explicit instantiation for double
@@ -57,7 +56,7 @@ namespace iguana
     template <typename T>
     std::vector<T> YAMLReader::readArray(const std::string &key, const std::vector<T> &defaultValue, const YAML::Node &node)
     {
-      auto config = m_configs.at(0); // FIXME: loop
+      for(const auto& config : m_configs) {
         try
         {
             const YAML::Node &targetNode = node.IsNull() ? config : node;
@@ -72,10 +71,6 @@ namespace iguana
                 }
                 return value;
             }
-            else
-            {
-                return defaultValue;
-            }
         }
         catch (const YAML::Exception &e)
         {
@@ -89,6 +84,9 @@ namespace iguana
             m_log->Error("Exception: {}", e.what());
             return defaultValue;
         }
+      }
+      // not found in any config
+      return defaultValue;
     }
 
     // Explicit instantiation for double
@@ -109,8 +107,7 @@ namespace iguana
         const T           defaultValue
         )
     {
-      auto config = m_configs.at(0); // FIXME: loop
-        T returnVal = defaultValue;
+      for(const auto& config : m_configs) {
         // Accessing the whole sequence of maps
         const YAML::Node &cutsNode = config[cutKey];
         if (cutsNode.IsSequence())
@@ -124,18 +121,18 @@ namespace iguana
                     if (runNode[pidkey].IsDefined())
                     {
                         const YAML::Node &pidNode = runNode[pidkey];
-                        returnVal = readValue<T>(std::to_string(pid), defaultValue, pidNode);
-                        break;
+                        return readValue<T>(std::to_string(pid), defaultValue, pidNode);
                     }
                     else
                     {
-                        returnVal = readValue<T>(key, defaultValue, runNode);
-                        break;
+                        return readValue<T>(key, defaultValue, runNode);
                     }
                 }
             }
         }
-        return returnVal;
+      }
+      // not found in any config
+      return defaultValue;
     }
 
     // Explicit instantiation for double
@@ -156,8 +153,7 @@ namespace iguana
         const std::vector<T> &defaultValue
         )
     {
-      auto config = m_configs.at(0); // FIXME: loop
-        std::vector<T> returnVal = defaultValue;
+      for(const auto& config : m_configs) {
         // Accessing the whole sequence of maps
 
         const YAML::Node &cutsNode = config[cutKey];
@@ -172,18 +168,18 @@ namespace iguana
                     if (runNode[pidkey].IsDefined())
                     {
                         const YAML::Node &pidNode = runNode[pidkey];
-                        returnVal = readArray<T>(std::to_string(pid), defaultValue, pidNode);
-                        break;
+                        return readArray<T>(std::to_string(pid), defaultValue, pidNode);
                     }
                     else
                     {
-                        returnVal = readArray<T>(key, defaultValue, runNode);
-                        break;
+                        return readArray<T>(key, defaultValue, runNode);
                     }
                 }
             }
         }
-        return returnVal;
+      }
+      // not found in any config
+      return defaultValue;
     }
 
     // Explicit instantiation for double
