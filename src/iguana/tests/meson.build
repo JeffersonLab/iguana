@@ -30,5 +30,5 @@ if fs.is_file(get_option('test_data_file'))
   endforeach
 else
   stat_file = get_option('test_data_file')=='' ? 'provided' : 'found'
-  message('Test sample file NOT ' + stat_file + '; you may run tests manually with `' + test_exe_name + '`')
+  message('Test sample file NOT ' + stat_file + '; you may run tests manually with `' + get_option('prefix') / get_option('bindir') / test_exe_name + '`')
 endif
