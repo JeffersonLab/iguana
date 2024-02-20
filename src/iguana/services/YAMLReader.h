@@ -15,7 +15,7 @@ namespace iguana
     {
 
     public:
-        /// @param name the file to be opened by YAMLReader
+        /// @param name of this reader (for `Logger`)
         YAMLReader(const std::string name="config") : ConfigFileReader(name) {}
         ~YAMLReader() {}
 
