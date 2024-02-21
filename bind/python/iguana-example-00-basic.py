@@ -13,7 +13,7 @@ inFile    = sys.argv[1]      if len(sys.argv)>1 else 'data.hipo'
 numEvents = int(sys.argv[2]) if len(sys.argv)>2 else 3
 
 reader = hipo.reader(inFile)
-banks  = reader.getBanks(["REC::Particle", "REC::Calorimeter"]);
+banks  = reader.getBanks(["REC::Particle", "RUN::config"]);
 
 seq = iguana.AlgorithmSequence('pyiguana')
 seq.Add('clas12::EventBuilderFilter')

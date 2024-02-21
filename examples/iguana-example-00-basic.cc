@@ -18,8 +18,8 @@ int main(int argc, char **argv) {
   hipo::reader reader(inFileName);
 
   // set banks
-  hipo::banklist banks = reader.getBanks({ "REC::Particle", "REC::Calorimeter" });
-  enum banks_enum { b_particle, b_calo }; // TODO: users shouldn't have to do this
+  hipo::banklist banks = reader.getBanks({ "REC::Particle", "RUN::config" });
+  enum banks_enum { b_particle, b_config }; // TODO: users shouldn't have to do this
 
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
