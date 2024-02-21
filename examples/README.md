@@ -1,6 +1,6 @@
 # Examples
 
-All of the examples (`*.cc`) in [this directory](/examples) may be built if the Iguana build
+All of the examples (`*.cc`) in [this `examples/` directory](/examples) may be built if the Iguana build
 option `examples` is set to `True`. They will be installed in the `bin/`
 subdirectory of your `iguana` installation.
 
