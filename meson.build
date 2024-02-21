@@ -41,9 +41,9 @@ hipo_dep = dependency(
 )
 ROOT_dep = dependency(
   'ROOT',
-  method: 'cmake',
-  version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip(),
   required: false,
+  method:   'cmake',
+  version:  '>=6.28'
 )
 
 # list of dependencies
