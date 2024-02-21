@@ -42,7 +42,8 @@ defaults:
 env:
   hipo_version: f40da676bbd1745398e9fdf233ff213ff98798f1
   num_events: 10
-  UBSAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1:print_stacktrace=1:suppressions=${{ github.workspace }}/.github/UBSAN.supp
+  # sanitizer options; NOTE: suppression path assumes the build directory is a subdirectory of the top-level repo directory
+  UBSAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1:print_stacktrace=1:suppressions=../.github/UBSAN.supp
   ASAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1
 
 
