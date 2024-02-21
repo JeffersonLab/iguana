@@ -132,15 +132,6 @@ jobs:
       ### dependencies
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      - run: root --version
-      - run: which root
-      - run: root-config --libdir
-      - run: tree /usr/lib
-      - name: find cmakes in usr
-        if: ${{ inputs.runner == 'ubuntu-latest' }}
-        run: find /usr -name "*.cmake" | grep -i root
-      # - name: find cmakes in root libdir
-      #   run: find $(root-config --libdir) -name "*.cmake" | grep -i root
       - name: get local dependencies
         uses: actions/download-artifact@v4
         with:
@@ -159,7 +150,7 @@ jobs:
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       - name: meson setup
-        run: meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo) --cmake-prefix-path=/usr
+        run: meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo)
       - name: meson configure
         run: |
           meson configure                       \
