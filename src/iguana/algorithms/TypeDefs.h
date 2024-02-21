@@ -11,4 +11,17 @@ namespace iguana {
   /// Generic Lorentz vector container type
   using lorentz_vector_t = std::tuple<lorentz_element_t, lorentz_element_t, lorentz_element_t, lorentz_element_t>;
 
+  /// Light-weight namespace for particle constants
+  namespace particle {
+
+    /// PDG codes
+    enum PDG {
+      electron = 11,
+      pi_plus  = 211,
+      pi_minus = -211,
+      proton   = 2212
+    };
+
+  }
+
 }
