@@ -17,11 +17,11 @@ banks  = reader.getBanks(["REC::Particle", "REC::Calorimeter"]);
 
 seq = iguana.AlgorithmSequence('pyiguana')
 seq.Add('clas12::EventBuilderFilter')
-# seq.Add('clas12::MomentumCorrection') # FIXME
+seq.Add('clas12::MomentumCorrection')
 seq.PrintSequence()
 
 seq.SetOption('clas12::EventBuilderFilter', 'log', 'debug')
-# seq.SetOption('clas12::MomentumCorrection', 'log', 'debug') # FIXME
+seq.SetOption('clas12::MomentumCorrection', 'log', 'debug')
 
 seq.SetOption('clas12::EventBuilderFilter', 'pids', [11, 211, -211])
 

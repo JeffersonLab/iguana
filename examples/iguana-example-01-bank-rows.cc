@@ -1,5 +1,5 @@
 #include <iguana/algorithms/clas12/EventBuilderFilter.h>
-// #include <iguana/algorithms/clas12/MomentumCorrection.h> // FIXME
+#include <iguana/algorithms/clas12/MomentumCorrection.h>
 #include <hipo4/reader.h>
 
 int main(int argc, char **argv) {
@@ -13,23 +13,23 @@ int main(int argc, char **argv) {
   hipo::reader reader(inFileName);
 
   // set banks
-  hipo::banklist banks = reader.getBanks({ "REC::Particle", "REC::Calorimeter" });
-  enum banks_enum { b_particle, b_calo }; // TODO: users shouldn't have to do this
+  hipo::banklist banks = reader.getBanks({ "REC::Particle", "RUN::config" });
+  enum banks_enum { b_particle, b_config }; // TODO: users shouldn't have to do this
 
   // create the algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
-  // iguana::clas12::MomentumCorrection algo_momentum_correction; // FIXME
+  iguana::clas12::MomentumCorrection algo_momentum_correction;
 
   // set log levels
   algo_eventbuilder_filter.SetOption("log", "debug");
-  // algo_momentum_correction.SetOption("log", "debug"); // FIXME
+  algo_momentum_correction.SetOption("log", "debug");
 
   // set algorithm options
   algo_eventbuilder_filter.SetOption<std::vector<int>>("pids", {11, 211, -211});
 
   // start the algorithms
   algo_eventbuilder_filter.Start();
-  // algo_momentum_correction.Start(); // FIXME
+  algo_momentum_correction.Start();
 
   // run the algorithm sequence on each event
   int iEvent = 0;
@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 
     // show the particle bank
     auto& particleBank = banks.at(b_particle);
+    auto& configBank   = banks.at(b_config);
     particleBank.show();
 
     // loop over bank rows
@@ -46,13 +47,16 @@ int main(int argc, char **argv) {
       auto pid = particleBank.getInt("pid", row);
       if(algo_eventbuilder_filter.Filter(pid)) {
 
+        int sector = 1; // FIXME: get the sector number
+
         // if accepted PID, correct its momentum
-        /* FIXME: need momentum correction algo
-        auto [px, py, pz, e] = algo_momentum_correction.Transform(
+        auto [px, py, pz] = algo_momentum_correction.Transform(
             particleBank.getFloat("px", row),
             particleBank.getFloat("py", row),
             particleBank.getFloat("pz", row),
-            0.0 // (ignoring the energy)
+            sector,
+            pid,
+            configBank.getFloat("torus", 0)
             );
 
         // then print the result
@@ -63,7 +67,6 @@ int main(int argc, char **argv) {
         printMomentum(particleBank.getFloat("px", row), px);
         printMomentum(particleBank.getFloat("py", row), py);
         printMomentum(particleBank.getFloat("pz", row), pz);
-        */
 
       }
     }
@@ -71,6 +74,6 @@ int main(int argc, char **argv) {
 
   // stop the algorithms
   algo_eventbuilder_filter.Stop();
-  // algo_momentum_correction.Stop(); // FIXME
+  algo_momentum_correction.Stop();
   return 0;
 }

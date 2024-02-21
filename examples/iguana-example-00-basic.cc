@@ -24,11 +24,11 @@ int main(int argc, char **argv) {
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID
-  // seq.Add("clas12::MomentumCorrection"); // FIXME
+  seq.Add("clas12::MomentumCorrection"); // momentum corrections
 
   // set log levels
   seq.SetOption("clas12::EventBuilderFilter", "log", "debug");
-  // seq.SetOption("clas12::MomentumCorrection", "log", "debug"); // FIXME
+  seq.SetOption("clas12::MomentumCorrection", "log", "debug");
 
   // set algorithm options
   seq.SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", {11, 211, -211});
