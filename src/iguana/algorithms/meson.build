@@ -37,7 +37,7 @@ algo_dict = {
     'unit_test':    { 'banks': ['REC::Particle'] },
     'needs_ROOT':   true,
   },
-  'clas12::MomentumCorrection' {
+  'clas12::MomentumCorrection': {
     'sources':      [ 'clas12/MomentumCorrection.cc' ],
     'headers':      [ 'clas12/MomentumCorrection.h' ],
     'unit_test':    { 'banks': ['REC::Particle', 'RUN::config'] },
