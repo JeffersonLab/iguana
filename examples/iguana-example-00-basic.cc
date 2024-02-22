@@ -1,25 +1,28 @@
-#include <iguana/algorithms/AlgorithmSequence.h>
 #include <hipo4/reader.h>
+#include <iguana/algorithms/AlgorithmSequence.h>
 
 // show a bank along with a header
-void prettyPrint(std::string header, hipo::bank& bank) {
-  fmt::print("{:=^70}\n", " "+header+" ");
+void prettyPrint(std::string header, hipo::bank& bank)
+{
+  fmt::print("{:=^70}\n", " " + header + " ");
   bank.show();
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
 
   // parse arguments
-  int argi = 1;
-  const char* inFileName = argc > argi ? argv[argi++]            : "data.hipo";
-  const int   numEvents  = argc > argi ? std::stoi(argv[argi++]) : 1;
+  int argi               = 1;
+  const char* inFileName = argc > argi ? argv[argi++] : "data.hipo";
+  const int numEvents    = argc > argi ? std::stoi(argv[argi++]) : 1;
 
   // read input file
   hipo::reader reader(inFileName);
 
   // set banks
-  hipo::banklist banks = reader.getBanks({ "REC::Particle", "RUN::config" });
-  enum banks_enum { b_particle, b_config }; // TODO: users shouldn't have to do this
+  hipo::banklist banks = reader.getBanks({"REC::Particle", "RUN::config"});
+  enum banks_enum { b_particle,
+                    b_config }; // TODO: users shouldn't have to do this
 
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
@@ -38,7 +41,7 @@ int main(int argc, char **argv) {
 
   // run the algorithm sequence on each event
   int iEvent = 0;
-  while(reader.next(banks) && (numEvents==0 || iEvent++ < numEvents)) {
+  while(reader.next(banks) && (numEvents == 0 || iEvent++ < numEvents)) {
     prettyPrint("BEFORE", banks.at(b_particle));
     seq.Run(banks);
     prettyPrint("AFTER", banks.at(b_particle));

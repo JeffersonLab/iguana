@@ -5,9 +5,10 @@
 namespace iguana::clas12 {
 
   /// @brief Filter the `REC::Particle` (or similar) bank by PID from the Event Builder
-  class EventBuilderFilter : public Algorithm {
+  class EventBuilderFilter : public Algorithm
+  {
 
-    DEFINE_IGUANA_ALGORITHM(EventBuilderFilter, clas12::EventBuilderFilter)
+      DEFINE_IGUANA_ALGORITHM(EventBuilderFilter, clas12::EventBuilderFilter)
 
     public:
 
@@ -27,7 +28,6 @@ namespace iguana::clas12 {
 
       /// Configuration options
       std::set<int> o_pids;
-
   };
 
 }

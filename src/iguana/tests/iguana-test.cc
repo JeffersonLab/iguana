@@ -1,18 +1,20 @@
 #include <getopt.h>
-#include <iguana/algorithms/AlgorithmSequence.h>
 #include <hipo4/reader.h>
+#include <iguana/algorithms/AlgorithmSequence.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
 
   // parse arguments
-  int                      opt;
-  std::string              command = "";
-  std::string              data_file = "";
-  int                      num_events = 10;
-  std::string              algo_name = "";
+  int opt;
+  std::string command   = "";
+  std::string data_file = "";
+  int num_events        = 10;
+  std::string algo_name = "";
   std::vector<std::string> bank_names;
   bool verbose = false;
-  auto Usage = [&]() {
+  auto Usage   = [&]()
+  {
     fmt::print(stderr, "\nUSAGE: {} [OPTIONS]...\n", argv[0]);
     fmt::print("\n");
     fmt::print("  OPTIONS:\n");
@@ -34,30 +36,30 @@ int main(int argc, char **argv) {
     fmt::print("\n");
     return 2;
   };
-  if(argc==1)
+  if(argc == 1)
     return Usage();
-  while((opt=getopt(argc, argv, "c:f:n:a:b:v|")) != -1) {
+  while((opt = getopt(argc, argv, "c:f:n:a:b:v|")) != -1) {
     switch(opt) {
-      case 'c':
-        command = std::string(optarg);
-        break;
-      case 'f':
-        data_file = std::string(optarg);
-        break;
-      case 'n':
-        num_events = std::stoi(optarg);
-        break;
-      case 'a':
-        algo_name = std::string(optarg);
-        break;
-      case 'b':
-        bank_names.push_back(std::string(optarg));
-        break;
-      case 'v':
-        verbose = true;
-        break;
-      default:
-        return Usage();
+    case 'c':
+      command = std::string(optarg);
+      break;
+    case 'f':
+      data_file = std::string(optarg);
+      break;
+    case 'n':
+      num_events = std::stoi(optarg);
+      break;
+    case 'a':
+      algo_name = std::string(optarg);
+      break;
+    case 'b':
+      bank_names.push_back(std::string(optarg));
+      break;
+    case 'v':
+      verbose = true;
+      break;
+    default:
+      return Usage();
     }
   }
   if(command == "" || algo_name == "" || bank_names.empty()) {
@@ -74,7 +76,7 @@ int main(int argc, char **argv) {
     fmt::print("  {:>20} = {}\n", "data_file", data_file);
     fmt::print("  {:>20} = {}\n", "num_events", num_events);
     fmt::print("  {:>20} = {}\n", "algo_name", algo_name);
-    fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names,", "));
+    fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names, ", "));
     fmt::print("\n");
   }
 
@@ -95,13 +97,13 @@ int main(int argc, char **argv) {
 
   // event loop
   int it_ev = 0;
-  while(reader_after.next(banks_after) && (num_events==0 || it_ev++ < num_events)) {
+  while(reader_after.next(banks_after) && (num_events == 0 || it_ev++ < num_events)) {
     // iterate the 'before' reader too
     reader_before.next(banks_before);
     // run the algorithm
-    if(command=="algorithm")
+    if(command == "algorithm")
       seq.Run(banks_after);
-    else if(command=="unit") {
+    else if(command == "unit") {
       fmt::print(stderr, "ERROR: unit tests are not yet implemented (TODO)\n");
       return 1;
     }
@@ -111,7 +113,7 @@ int main(int argc, char **argv) {
     }
     // print the banks, before and after
     if(verbose) {
-      for(decltype(bank_names)::size_type it_bank=0; it_bank < bank_names.size(); it_bank++) {
+      for(decltype(bank_names)::size_type it_bank = 0; it_bank < bank_names.size(); it_bank++) {
         fmt::print("{:=^70}\n", fmt::format(" BEFORE: {} ", bank_names.at(it_bank)));
         banks_before.at(it_bank).show();
         fmt::print("{:=^70}\n", fmt::format(" AFTER: {} ", bank_names.at(it_bank)));

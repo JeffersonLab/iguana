@@ -1,17 +1,18 @@
 #pragma once
 
-#include <deque>
 #include "Object.h"
+#include <deque>
 
 namespace iguana {
 
   /// @brief Configuration file manager
-  class ConfigFileReader : public Object {
+  class ConfigFileReader : public Object
+  {
 
     public:
 
       /// @param name the name of this configuration file handler
-      ConfigFileReader(const std::string name="config");
+      ConfigFileReader(const std::string name = "config");
 
       /// Get the config files' _fixed_ installation prefix
       /// @return the absolute path to the installed configuration file directory
@@ -27,7 +28,7 @@ namespace iguana {
 
       /// Print the list of directories (search path)
       /// @param level the log level
-      void PrintDirectories(const Logger::Level level=Logger::info);
+      void PrintDirectories(const Logger::Level level = Logger::info);
 
       /// Find a configuration file by name. You may either give just a file name, or specify the full path and filename.
       /// The following locations are searched, in order:
@@ -58,6 +59,5 @@ namespace iguana {
 
       /// Stack of file names to parse
       std::deque<std::string> m_files;
-
   };
 }
