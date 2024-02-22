@@ -38,4 +38,3 @@ then `meson` will create a `ninja` build target called `clang-format`, which you
 ```bash
 ninja -C <builddir> clang-format
 ```
-This is useful to do periodically (**TODO**: automate it).
