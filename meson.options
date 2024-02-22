@@ -1,3 +1,5 @@
-option('examples',      type: 'boolean', value: false, description: 'Build Iguana C++ examples')
-option('documentation', type: 'boolean', value: false, description: 'Generate API documentation (requires Doxygen)')
-option('bind_python',   type: 'boolean', value: false, description: 'Generate Python bindings and their examples')
+option('examples',        type: 'boolean', value: false, description: 'Build Iguana C++ examples')
+option('documentation',   type: 'boolean', value: false, description: 'Generate API documentation (requires Doxygen)')
+option('test_data_file',  type: 'string',  value: '',    description: 'Sample HIPO file for testing. Must be an absolute path or relative to the build directory. If unspecified, tests are not built')
+option('test_num_events', type: 'string',  value: '10',  description: 'Number of events from `test_data_file` to test')
+option('bind_python',     type: 'boolean', value: false, description: 'Generate Python bindings and their examples')

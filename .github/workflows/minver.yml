@@ -1,4 +1,4 @@
-name: Linux
+name: MinVer # minimum required-version of dependencies on Linux
 
 on:
   pull_request:
@@ -11,9 +11,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  linux:
-    name: Linux (latest)
+  Linux:
+    name: Linux (minver)
     uses: ./.github/workflows/ci.yml
     with:
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
+      verset: minver
+      test_matrix: >-
+        {
+          "include": [
+            { "mode": "test", "CC": "gcc", "CXX": "g++", "buildtype": "release" }
+          ]
+        }

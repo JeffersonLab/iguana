@@ -1,0 +1,58 @@
+#some random single values and arrays
+myIntVector:
+  - 1
+  - 2
+  - 3
+
+myDoubleVector:
+  - 1.1
+  - 2.2
+  - 3.3
+
+myStringVector:
+  - "apple"
+  - "banana"
+  - "cherry"
+
+myInt: 42
+myDouble: 3.14
+myString: "Hello, YAML!"
+
+# ZVertex Cut values for different run periods used as examples
+#If you want to have run period dependent cuts please stick to this format.
+cuts:
+  - runs: #RG-A fall2018 inbending
+      - 4760
+      - 5419
+    vals:
+      - -13.0
+      - 12.0
+
+  - runs: #RG-A fall2018 outbending
+      - 5420
+      - 5674
+    vals:
+      - -18.0
+      - 10.0
+
+  #Cuts below are just examples:
+  #No one defined pid/sector dependent cuts on vz
+  #No one defined RG-B specific cuts on vz
+  #single structure probably does not make send
+  - runs: #RG-B spring2019
+      - 6141
+      - 6606
+    pid:
+      11:
+        - -10.0
+        - 11.0
+      211:
+        - -15.0
+        - 20.0
+    sector:
+      5:
+        - -5
+        - 5
+    single: #single values instead of arrays
+      0: -6
+      1: 14

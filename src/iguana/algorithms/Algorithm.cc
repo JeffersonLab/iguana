@@ -8,6 +8,32 @@ namespace iguana {
     Start(no_banks);
   }
 
+  void Algorithm::SetName(const std::string name) {
+    Object::SetName(name);
+    if(m_yaml_config)
+      m_yaml_config->SetName("config|"+m_name);
+  }
+
+  void Algorithm::SetYAMLConfig(std::unique_ptr<YAMLReader>&& yaml_config) {
+    m_yaml_config = std::move(yaml_config);
+  }
+
+  void Algorithm::ParseYAMLConfig() {
+    if(!m_yaml_config) {
+      CacheOption("config_file", std::string{""}, o_user_config_file);
+      CacheOption("config_dir",  std::string{""}, o_user_config_dir);
+      m_log->Debug("Instantiating `YAMLReader`");
+      m_yaml_config = std::make_unique<YAMLReader>("config|"+m_name);
+      m_yaml_config->SetLogLevel(m_log->GetLevel());
+      m_yaml_config->AddDirectory(o_user_config_dir);
+      m_yaml_config->AddFile(m_default_config_file);
+      m_yaml_config->AddFile(o_user_config_file);
+    }
+    else
+      m_log->Debug("`YAMLReader` already instantiated for this algorithm; using that");
+    m_yaml_config->LoadFiles();
+  }
+
   void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const {
     if(m_rows_only)
       return;
@@ -31,6 +57,7 @@ namespace iguana {
       else if (const auto valPtr(std::get_if<double>(&val));        valPtr) return fmt::format("{} [{}]", *valPtr,                 "double");
       else if (const auto valPtr(std::get_if<std::string>(&val));   valPtr) return fmt::format("{} [{}]", *valPtr,                 "string");
       else if (const auto valPtr(std::get_if<std::vector<int>>(&val)); valPtr) return fmt::format("({}) [{}]", fmt::join(*valPtr,", "), "vector<int>");
+      else if (const auto valPtr(std::get_if<std::vector<double>>(&val)); valPtr) return fmt::format("({}) [{}]", fmt::join(*valPtr,", "), "vector<double>");
       else {
         m_log->Error("option '{}' type has no printer defined in Algorithm::PrintOptionValue", key);
         return "UNKNOWN";

@@ -1,0 +1,19 @@
+#################################################################################
+# GitHub Handle                Name
+# =============                ====
+# @c-dilks                     Christopher Dilks
+# @RichCap                     Richard Capobianco
+# @rtysonCLAS12                Richard Tyson
+#################################################################################
+
+* @c-dilks
+examples/config/ex2.yaml @rtysonCLAS12
+examples/iguana-example-02-YAMLReader.cc @rtysonCLAS12
+examples/iguana-example-03-zvertex-filter.cc @rtysonCLAS12
+src/iguana/algorithms/clas12/MomentumCorrection.cc @RichCap @c-dilks
+src/iguana/algorithms/clas12/MomentumCorrection.h @RichCap @c-dilks
+src/iguana/algorithms/clas12/ZVertexFilter.cc @rtysonCLAS12
+src/iguana/algorithms/clas12/ZVertexFilter.h @rtysonCLAS12
+src/iguana/algorithms/clas12/ZVertexFilter.yaml @rtysonCLAS12
+src/iguana/services/YAMLReader.cc @rtysonCLAS12
+src/iguana/services/YAMLReader.h @rtysonCLAS12

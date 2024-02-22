@@ -12,10 +12,9 @@ if(NOT "${CMAKE_CXX_STANDARD}")
 endif()
 
 # find dependencies
-# - iguana doesn't create a `iguanaConfig.cmake` file, but it does create a pkg-config `.pc` file;
-#   using `PkgConfig`, the iguana target will be imported as `PkgConfig::iguana`
-find_package(hipo4 REQUIRED)
+# - using `PkgConfig` module imports pkg-config dependencies as targets prefixed with `PkgConfig::`
 find_package(PkgConfig REQUIRED)
+pkg_check_modules(hipo4 REQUIRED IMPORTED_TARGET hipo4)
 pkg_check_modules(iguana REQUIRED IMPORTED_TARGET iguana)
 
 # set the rpath to use the link path
@@ -27,5 +26,5 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(EXAMPLE_BIN iguana-example-00-basic)
 add_executable(${EXAMPLE_BIN})
 target_sources(${EXAMPLE_BIN} PRIVATE ${EXAMPLE_BIN}.cc)
-target_link_libraries(${EXAMPLE_BIN} PUBLIC PkgConfig::iguana hipo4)
+target_link_libraries(${EXAMPLE_BIN} PUBLIC PkgConfig::iguana PkgConfig::hipo4)
 install(TARGETS ${EXAMPLE_BIN})

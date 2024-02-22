@@ -27,6 +27,17 @@ namespace iguana {
       /// Get the name of this object
       std::string GetName() const;
 
+      /// Set the log level to this level. Log messages with a lower level will not be printed.
+      /// @see `Logger::Level` for available levels.
+      /// @param lev the log level name
+      void SetLogLevel(const std::string lev);
+
+      /// Set the log level to this level. Log messages with a lower level will not be printed.
+      /// @see `Logger::Level` for available levels.
+      /// @param lev the log level
+      void SetLogLevel(const Logger::Level lev);
+
+
     protected:
 
       /// The name of this object

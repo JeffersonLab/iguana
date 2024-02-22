@@ -1,32 +1,48 @@
-example_sources = [
-  'iguana-example-00-basic.cc',
-  'iguana-example-01-bank-rows.cc',
-]
+# install config files
+example_config_file = fs.copyfile(
+  'config' / 'ex2.yaml',
+  'ex2.yaml',
+  install:     true,
+  install_dir: project_etc / 'examples',
+)
 
-# add dependencies' libraries to rpath
-example_rpaths = [
-  hipo_dep.get_variable(pkgconfig: 'libdir'),
-]
-if host_machine.system() != 'darwin'
-  # FIXME(darwin): not sure how to set multiple rpaths on darwin executables, aside
-  # from running `install_name_tool -add_rpath` post-installation; luckily,
-  # darwin-built examples only need `hipo_dep` libraries in the rpath and they
-  # don't need the `iguana` library path explictly included in the rpath, so
-  # this `if` block just keeps `example_rpaths` to only one element. If we need
-  # more rpath elements someday, either we need to use `install_name_tool` or,
-  # preferably, resolution of https://github.com/mesonbuild/meson/issues/5760
-  example_rpaths += '$ORIGIN' / '..' / get_option('libdir')
-endif
+# example source information
+example_sources = {
+  'iguana-example-00-basic': {
+    'sources': [ 'iguana-example-00-basic.cc' ],
+  },
+  'iguana-example-01-bank-rows': {
+    'sources': [ 'iguana-example-01-bank-rows.cc' ],
+  },
+  'iguana-example-02-YAMLReader': {
+    'sources':   [ 'iguana-example-02-YAMLReader.cc' ],
+    'test_args': [ example_config_file.full_path() ],
+  },
+  'iguana-example-03-zvertex-filter': {
+    'sources': [ 'iguana-example-03-zvertex-filter.cc' ],
+  },
+}
 
-# build executables
-foreach src : example_sources
-  executable(
-    src.split('.')[0],
-    src,
-    include_directories: project_inc,
+# build executables and test them
+foreach example, info : example_sources
+  example_exe = executable(
+    example,
+    sources:             info['sources'],
+    include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
     dependencies:        project_deps,
     link_with:           project_libs,
+    link_args:           ROOT_dep_link_args,
     install:             true,
-    install_rpath:       ':'.join(example_rpaths),
+    install_rpath:       ':'.join(project_exe_rpath),
   )
+  if fs.is_file(get_option('test_data_file'))
+    test(
+      example,
+      example_exe,
+      args: info.get(
+        'test_args',
+        [ get_option('test_data_file'), get_option('test_num_events') ]
+      ),
+    )
+  endif
 endforeach
