@@ -1,19 +1,20 @@
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "Logger.h"
 
 namespace iguana {
 
   /// @brief A named object with a `Logger` instance
-  class Object {
+  class Object
+  {
 
     public:
 
       /// @param name the name of this object
-      Object(const std::string name="");
+      Object(const std::string name = "");
       ~Object() {}
 
       /// Get the logger
@@ -45,6 +46,5 @@ namespace iguana {
 
       /// `Logger` instance for this object
       std::unique_ptr<Logger> m_log;
-
   };
 }

@@ -4,8 +4,8 @@
 #include "iguana/algorithms/TypeDefs.h"
 
 // ROOT
-#include <Math/Vector4D.h>
 #include <Math/Boost.h>
+#include <Math/Vector4D.h>
 
 namespace iguana::clas12 {
 
@@ -13,9 +13,10 @@ namespace iguana::clas12 {
   ///
   /// Available frames are:
   /// - `"beam_rest_frame"`: rest frame of the electron beam
-  class LorentzTransformer : public Algorithm {
+  class LorentzTransformer : public Algorithm
+  {
 
-    DEFINE_IGUANA_ALGORITHM(LorentzTransformer, clas12::LorentzTransformer)
+      DEFINE_IGUANA_ALGORITHM(LorentzTransformer, clas12::LorentzTransformer)
 
     public:
 
@@ -39,8 +40,7 @@ namespace iguana::clas12 {
           vector_element_t E,
           vector_element_t beta_x,
           vector_element_t beta_y,
-          vector_element_t beta_z
-          ) const;
+          vector_element_t beta_z) const;
 
     private:
 
@@ -56,7 +56,6 @@ namespace iguana::clas12 {
       enum e_transformation_type { e_boost };
       /// Transformation type
       e_transformation_type m_transformation_type;
-
   };
 
 }

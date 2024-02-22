@@ -2,29 +2,34 @@
 
 namespace iguana {
 
-  Object::Object(const std::string name) :
-    m_name(name),
-    m_log(std::make_unique<Logger>(m_name))
+  Object::Object(const std::string name)
+      : m_name(name)
+      , m_log(std::make_unique<Logger>(m_name))
   {}
 
-  std::unique_ptr<Logger>& Object::Log() {
+  std::unique_ptr<Logger>& Object::Log()
+  {
     return m_log;
   }
 
-  void Object::SetName(const std::string name) {
-    m_name = name;
+  void Object::SetName(const std::string name)
+  {
+    m_name        = name;
     m_log->m_name = name;
   }
 
-  std::string Object::GetName() const {
+  std::string Object::GetName() const
+  {
     return m_name;
   }
 
-  void Object::SetLogLevel(const std::string lev) {
+  void Object::SetLogLevel(const std::string lev)
+  {
     m_log->SetLevel(lev);
   }
 
-  void Object::SetLogLevel(const Logger::Level lev) {
+  void Object::SetLogLevel(const Logger::Level lev)
+  {
     m_log->SetLevel(lev);
   }
 

@@ -3,29 +3,37 @@
 
 namespace iguana {
 
-  ConfigFileReader::ConfigFileReader(const std::string name) : Object(name) {
+  ConfigFileReader::ConfigFileReader(const std::string name)
+      : Object(name)
+  {
     // add config files from installation prefix
     AddDirectory(GetConfigPrefix());
   }
 
-  std::string ConfigFileReader::GetConfigPrefix() {
+  std::string ConfigFileReader::GetConfigPrefix()
+  {
     return IGUANA_ETC;
   }
 
-  void ConfigFileReader::AddDirectory(const std::string dir) {
-    if(dir=="") return; // handle unset directory name
+  void ConfigFileReader::AddDirectory(const std::string dir)
+  {
+    if(dir == "")
+      return; // handle unset directory name
     m_log->Debug("Add directory {}", dir);
     m_directories.push_front(dir);
   }
 
-  void ConfigFileReader::AddFile(const std::string name) {
-    if(name=="") return; // handle unset file name
+  void ConfigFileReader::AddFile(const std::string name)
+  {
+    if(name == "")
+      return; // handle unset file name
     auto full_name = FindFile(name);
     m_log->Debug("  ===> Add file {}", full_name);
     m_files.push_front(full_name);
   }
 
-  void ConfigFileReader::PrintDirectories(const Logger::Level level) {
+  void ConfigFileReader::PrintDirectories(const Logger::Level level)
+  {
     if(m_log->GetLevel() <= level) {
       m_log->Print(level, "{:=^60}", " Configuration file search path order: ");
       m_log->Print(level, " - ./");
@@ -35,8 +43,10 @@ namespace iguana {
     }
   }
 
-  std::string ConfigFileReader::FindFile(const std::string name) {
-    if(name=="") return ""; // handle unset file name
+  std::string ConfigFileReader::FindFile(const std::string name)
+  {
+    if(name == "")
+      return ""; // handle unset file name
     m_log->Debug("Searching for file '{}' in:", name);
     // first try `./` or assume `name` is a relative or absolute path + filename
     auto found_local = std::filesystem::exists(name);
@@ -46,7 +56,7 @@ namespace iguana {
     // then search each entry of `m_directories`
     for(const auto& dir : m_directories) {
       std::string filename = dir + "/" + name;
-      auto found = std::filesystem::exists(filename);
+      auto found           = std::filesystem::exists(filename);
       m_log->Debug("  - {}{}", dir, found ? " - FOUND" : "");
       if(found)
         return filename;
@@ -57,15 +67,17 @@ namespace iguana {
     throw std::runtime_error("configuration file not found");
   }
 
-  std::string ConfigFileReader::DirName(const std::string name) {
+  std::string ConfigFileReader::DirName(const std::string name)
+  {
     auto result = std::filesystem::path{name}.parent_path().string();
-    if(result=="")
+    if(result == "")
       result = ".";
     return result;
   }
 
-  std::string ConfigFileReader::ConvertAlgoNameToConfigName(const std::string algo_name, const std::string ext) {
-    std::string result = algo_name;
+  std::string ConfigFileReader::ConvertAlgoNameToConfigName(const std::string algo_name, const std::string ext)
+  {
+    std::string result        = algo_name;
     std::string::size_type it = 0;
     while((it = result.find("::", it)) != std::string::npos)
       result.replace(it, 2, "/");

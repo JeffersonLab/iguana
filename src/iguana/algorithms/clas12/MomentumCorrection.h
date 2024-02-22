@@ -8,9 +8,10 @@ namespace iguana::clas12 {
   /// @brief Momentum Corrections
   ///
   /// Adapted from <https://clasweb.jlab.org/wiki/index.php/CLAS12_Momentum_Corrections#tab=Correction_Code>
-  class MomentumCorrection : public Algorithm {
+  class MomentumCorrection : public Algorithm
+  {
 
-    DEFINE_IGUANA_ALGORITHM(MomentumCorrection, clas12::MomentumCorrection)
+      DEFINE_IGUANA_ALGORITHM(MomentumCorrection, clas12::MomentumCorrection)
 
     public:
 
@@ -68,7 +69,6 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_particle;
       /// `hipo::banklist` index for the config bank
       hipo::banklist::size_type b_config;
-
   };
 
 }

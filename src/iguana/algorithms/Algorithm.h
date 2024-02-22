@@ -1,28 +1,27 @@
 #pragma once
 
-#include <variant>
-#include <vector>
-#include <set>
-#include <unordered_map>
 #include <algorithm>
 #include <functional>
+#include <set>
+#include <unordered_map>
+#include <variant>
+#include <vector>
 
 #include <hipo4/bank.h>
 
+#include "iguana/algorithms/AlgorithmBoilerplate.h"
 #include "iguana/services/Object.h"
 #include "iguana/services/YAMLReader.h"
-#include "iguana/algorithms/AlgorithmBoilerplate.h"
 
 namespace iguana {
 
   /// Option value variant type
   using option_t = std::variant<
-    int,
-    double,
-    std::string,
-    std::vector<int>,
-    std::vector<double>
-  >;
+      int,
+      double,
+      std::string,
+      std::vector<int>,
+      std::vector<double> >;
 
   /// @brief Base class for all algorithms to inherit from
   ///
@@ -32,17 +31,18 @@ namespace iguana {
   /// - override the methods `Algorithm::Start`, `Algorithm::Run` and `Algorithm::Stop`
   ///
   /// See existing algorithms for examples.
-  class Algorithm : public Object {
+  class Algorithm : public Object
+  {
 
     public:
 
       /// @param name the unique name for a derived class instance
       Algorithm(const std::string name)
-        : Object(name)
-        , m_rows_only(false)
-        , m_default_config_file("")
-        , o_user_config_file("")
-        , o_user_config_dir("")
+          : Object(name)
+          , m_rows_only(false)
+          , m_default_config_file("")
+          , o_user_config_file("")
+          , o_user_config_dir("")
       {}
       virtual ~Algorithm() {}
 
@@ -68,23 +68,22 @@ namespace iguana {
       /// @param key the name of the option
       /// @param val the value to set
       template <typename OPTION_TYPE>
-        void SetOption(const std::string key, const OPTION_TYPE val) {
-          if(key == "log") {
-            if constexpr(std::disjunction<
-                std::is_same<OPTION_TYPE, std::string>,
-                std::is_same<OPTION_TYPE, const char*>,
-                std::is_same<OPTION_TYPE, Logger::Level>
-                >::value
-                )
-              m_log->SetLevel(val);
-            else
-              m_log->Error("Option '{}' must be a string or a Logger::Level", key);
-          }
-          else {
-            m_opt[key] = val;
-            m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
-          }
+      void SetOption(const std::string key, const OPTION_TYPE val)
+      {
+        if(key == "log") {
+          if constexpr(std::disjunction<
+                           std::is_same<OPTION_TYPE, std::string>,
+                           std::is_same<OPTION_TYPE, const char*>,
+                           std::is_same<OPTION_TYPE, Logger::Level> >::value)
+            m_log->SetLevel(val);
+          else
+            m_log->Error("Option '{}' must be a string or a Logger::Level", key);
         }
+        else {
+          m_opt[key] = val;
+          m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
+        }
+      }
 
       /// Set the name of this algorithm
       /// @param name the new name
@@ -111,26 +110,28 @@ namespace iguana {
       /// @param[in] def the default value
       /// @param[out] val reference to the value of the option, to be cached by `Algorithm::Start`
       template <typename OPTION_TYPE>
-        void CacheOption(const std::string key, const OPTION_TYPE def, OPTION_TYPE& val) {
-          bool get_error = false;
-          if(auto it{m_opt.find(key)}; it != m_opt.end()) { // cache the user's option value
-            try { // get the expected type
-              val = std::get<OPTION_TYPE>(it->second);
-            } catch(const std::bad_variant_access& ex1) {
-              m_log->Error("user option '{}' set to '{}', which is the wrong type...", key, PrintOptionValue(key));
-              get_error = true;
-              val = def;
-            }
+      void CacheOption(const std::string key, const OPTION_TYPE def, OPTION_TYPE& val)
+      {
+        bool get_error = false;
+        if(auto it{m_opt.find(key)}; it != m_opt.end()) { // cache the user's option value
+          try { // get the expected type
+            val = std::get<OPTION_TYPE>(it->second);
           }
-          else { // cache the default option value
-            val = def;
+          catch(const std::bad_variant_access& ex1) {
+            m_log->Error("user option '{}' set to '{}', which is the wrong type...", key, PrintOptionValue(key));
+            get_error = true;
+            val       = def;
           }
-          // sync `m_opt` to match the cached value `val` (e.g., so we can use `PrintOptionValue` to print it)
-          m_opt[key] = val;
-          if(get_error)
-            m_log->Error("...using default value '{}' instead", PrintOptionValue(key));
-          m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
         }
+        else { // cache the default option value
+          val = def;
+        }
+        // sync `m_opt` to match the cached value `val` (e.g., so we can use `PrintOptionValue` to print it)
+        m_opt[key] = val;
+        if(get_error)
+          m_log->Error("...using default value '{}' instead", PrintOptionValue(key));
+        m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
+      }
 
       /// Cache an option of type `std::vector` and convert it to `std::set`
       /// @see `Algorithm::CacheOption`
@@ -138,11 +139,12 @@ namespace iguana {
       /// @param[in] def the default `std::vector`
       /// @param[out] val reference to the `std::set` option
       template <typename T>
-        void CacheOptionToSet(const std::string key, const std::vector<T> def, std::set<T>& val) {
-          std::vector<T> vec;
-          CacheOption(key, def, vec);
-          std::copy(vec.begin(), vec.end(), std::inserter(val, val.end()));
-        }
+      void CacheOptionToSet(const std::string key, const std::vector<T> def, std::set<T>& val)
+      {
+        std::vector<T> vec;
+        CacheOption(key, def, vec);
+        std::copy(vec.begin(), vec.end(), std::inserter(val, val.end()));
+      }
 
       /// Return a string with the value of an option along with its type
       /// @param key the name of the option
@@ -154,7 +156,7 @@ namespace iguana {
       /// @param idx the index of `banks` of the specified bank
       /// @param expectedBankName if specified, checks that the specified bank has this name
       /// @return a reference to the bank
-      hipo::bank& GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expectedBankName="") const noexcept(false);
+      hipo::bank& GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expectedBankName = "") const noexcept(false);
 
       /// Mask a row, setting all items to zero
       /// @param bank the bank to modify
@@ -165,13 +167,13 @@ namespace iguana {
       /// @param banks the banks to show
       /// @param message if specified, print a header message
       /// @param level the log level
-      void ShowBanks(hipo::banklist& banks, const std::string message="", const Logger::Level level=Logger::trace) const;
+      void ShowBanks(hipo::banklist& banks, const std::string message = "", const Logger::Level level = Logger::trace) const;
 
       /// Dump a single bank
       /// @param bank the bank to show
       /// @param message if specified, print a header message
       /// @param level the log level
-      void ShowBank(hipo::bank& bank, const std::string message="", const Logger::Level level=Logger::trace) const;
+      void ShowBank(hipo::bank& bank, const std::string message = "", const Logger::Level level = Logger::trace) const;
 
     protected: // members
 
@@ -196,7 +198,6 @@ namespace iguana {
       std::unique_ptr<YAMLReader> m_yaml_config;
 
     private:
-
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -205,7 +206,8 @@ namespace iguana {
   using algo_t = std::unique_ptr<Algorithm>;
 
   /// @brief Factory to create an algorithm.
-  class AlgorithmFactory {
+  class AlgorithmFactory
+  {
 
     public:
 
@@ -227,6 +229,5 @@ namespace iguana {
 
       /// Association between the algorithm names and their creators
       static std::unordered_map<std::string, algo_creator_t> s_creators;
-
   };
 }
