@@ -13,18 +13,17 @@ inFile    = sys.argv[1]      if len(sys.argv)>1 else 'data.hipo'
 numEvents = int(sys.argv[2]) if len(sys.argv)>2 else 3
 
 reader = hipo.reader(inFile)
-banks  = reader.getBanks(["REC::Particle", "REC::Calorimeter"]);
+banks  = reader.getBanks(["REC::Particle", "RUN::config"]);
 
 seq = iguana.AlgorithmSequence('pyiguana')
 seq.Add('clas12::EventBuilderFilter')
-seq.Add('clas12::LorentzTransformer')
+seq.Add('clas12::MomentumCorrection')
 seq.PrintSequence()
 
-seq.SetOption('clas12::EventBuilderFilter', 'log',  'debug')
-seq.SetOption('clas12::LorentzTransformer', 'log',  'debug')
+seq.SetOption('clas12::EventBuilderFilter', 'log', 'debug')
+seq.SetOption('clas12::MomentumCorrection', 'log', 'debug')
 
 seq.SetOption('clas12::EventBuilderFilter', 'pids', [11, 211, -211])
-seq.SetOption('clas12::LorentzTransformer', 'frame', 'mirror')
 
 def prettyPrint(message, bank):
     print(f'{"="*30} {message} {"="*30}')

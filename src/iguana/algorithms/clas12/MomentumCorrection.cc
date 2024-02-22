@@ -1,5 +1,4 @@
 #include "MomentumCorrection.h"
-#include "iguana/algorithms/TypeDefs.h"
 #include <cmath>
 
 namespace iguana::clas12 {
@@ -44,7 +43,7 @@ namespace iguana::clas12 {
   }
 
 
-  std::tuple<float,float,float> MomentumCorrection::Transform(float px, float py, float pz, int sec, int pid, float torus) const {
+  vector3_t MomentumCorrection::Transform(vector_element_t px, vector_element_t py, vector_element_t pz, int sec, int pid, float torus) const {
     // energy loss correction
     auto e_cor = torus < 0
       ? EnergyLossInbending(px, py, pz, pid)
@@ -54,7 +53,7 @@ namespace iguana::clas12 {
       ? CorrectionInbending(e_cor * px, e_cor * py, e_cor * pz, sec, pid)
       : CorrectionOutbending(e_cor * px, e_cor * py, e_cor * pz, sec, pid);
     // return the corrected momentum
-    return std::tuple<float,float,float>{
+    return {
       e_cor * p_cor * px,
       e_cor * p_cor * py,
       e_cor * p_cor * pz
@@ -62,7 +61,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::CorrectionInbending(const float Px, const float Py, const float Pz, const int sec, const int pid) const {
+  double MomentumCorrection::CorrectionInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int sec, const int pid) const {
 
     // skip the correction if it's not defined
     if(!( pid == particle::electron || pid == particle::pi_plus || pid == particle::pi_minus || pid == particle::proton ))
@@ -247,7 +246,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::CorrectionOutbending(const float Px, const float Py, const float Pz, const int sec, const int pid) const {
+  double MomentumCorrection::CorrectionOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int sec, const int pid) const {
 
     // skip the correction if it's not defined
     if(!( pid == particle::electron || pid == particle::pi_plus || pid == particle::pi_minus ))
@@ -361,7 +360,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::EnergyLossInbending(const float Px, const float Py, const float Pz, const int pid) const {
+  double MomentumCorrection::EnergyLossInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int pid) const {
 
     // The following code is for the Energy Loss Corrections for the proton
     if(pid != particle::proton)
@@ -382,7 +381,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::EnergyLossOutbending(const float Px, const float Py, const float Pz, const int pid) const {
+  double MomentumCorrection::EnergyLossOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int pid) const {
 
     // The following code is for the Energy Loss Corrections for the proton
     if(pid != particle::proton)

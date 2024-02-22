@@ -18,21 +18,20 @@ int main(int argc, char **argv) {
   hipo::reader reader(inFileName);
 
   // set banks
-  hipo::banklist banks = reader.getBanks({ "REC::Particle", "REC::Calorimeter" });
-  enum banks_enum { b_particle, b_calo }; // TODO: users shouldn't have to do this
+  hipo::banklist banks = reader.getBanks({ "REC::Particle", "RUN::config" });
+  enum banks_enum { b_particle, b_config }; // TODO: users shouldn't have to do this
 
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID
-  seq.Add("clas12::LorentzTransformer"); // Lorentz transform the momenta
+  seq.Add("clas12::MomentumCorrection"); // momentum corrections
 
   // set log levels
   seq.SetOption("clas12::EventBuilderFilter", "log", "debug");
-  seq.SetOption("clas12::LorentzTransformer", "log", "debug");
+  seq.SetOption("clas12::MomentumCorrection", "log", "debug");
 
   // set algorithm options
   seq.SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", {11, 211, -211});
-  seq.SetOption("clas12::LorentzTransformer", "frame", "mirror");
 
   // start the algorithms
   seq.Start(banks);

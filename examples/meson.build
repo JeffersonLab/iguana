@@ -10,9 +10,10 @@ foreach src : example_sources
   executable(
     src.split('.')[0],
     src,
-    include_directories: project_inc,
+    include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
     dependencies:        project_deps,
     link_with:           project_libs,
+    link_args:           ROOT_dep_link_args,
     install:             true,
     install_rpath:       ':'.join(project_exe_rpath),
   )

@@ -116,6 +116,7 @@ int main(int argc, char **argv) {
         banks_before.at(it_bank).show();
         fmt::print("{:=^70}\n", fmt::format(" AFTER: {} ", bank_names.at(it_bank)));
         banks_after.at(it_bank).show();
+        fmt::print("\n");
       }
     }
   }

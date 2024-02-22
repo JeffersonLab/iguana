@@ -5,11 +5,14 @@
 
 namespace iguana {
 
-  /// Lorentz vector element type, matching that of `REC::Particle` momentum components
-  using lorentz_element_t = float;
-
-  /// Generic Lorentz vector container type
-  using lorentz_vector_t = std::tuple<lorentz_element_t, lorentz_element_t, lorentz_element_t, lorentz_element_t>;
+  /// Vector element type
+  using vector_element_t = double;
+  /// 2-vector container type
+  using vector2_t = std::tuple<vector_element_t, vector_element_t>;
+  /// 3-vector container type
+  using vector3_t = std::tuple<vector_element_t, vector_element_t, vector_element_t>;
+  /// 4-vector container type
+  using vector4_t = std::tuple<vector_element_t, vector_element_t, vector_element_t, vector_element_t>;
 
   /// Light-weight namespace for particle constants
   namespace particle {

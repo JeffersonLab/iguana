@@ -12,6 +12,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   make
   cmake
   tree
+  which
   pkgconf
   ninja
   meson

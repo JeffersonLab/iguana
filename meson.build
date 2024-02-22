@@ -39,28 +39,76 @@ hipo_dep = dependency(
   method:  'pkg-config',
   version: '>=4.0.1',
 )
+ROOT_dep = dependency(
+  'ROOT',
+  required: false,
+  method:   'cmake',
+  version:  '>=6.28'
+)
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
 # ordered such that the ones users are *least likely* to try to build
 # themselves are listed last (see FIXME in meson/this_iguana.sh.in)
-full_dep_list = [
-  hipo_dep,
-  fmt_dep,
-  yamlcpp_dep,
-]
-
-# dependency libdirs
-dep_lib_paths = []
-foreach dep : full_dep_list
-  dep_lib_paths += dep.get_variable(pkgconfig: 'libdir')
+dep_list = []
+foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, ROOT_dep ]
+  if dep.found()
+    dep_list += dep
+  endif
 endforeach
+
+# make a list of dependency library and include directories
+dep_lib_paths = []
+dep_inc_paths = []
+foreach dep : dep_list
+  ### handle pkg-config deps
+  if dep.type_name() == 'pkgconfig'
+    libdirs = [ dep.get_variable(pkgconfig: 'libdir') ]
+    incdirs = [ dep.get_variable(pkgconfig: 'includedir') ]
+  ### handle cmake deps
+  elif dep.type_name() == 'cmake'
+    libdirs = []
+    foreach lib : dep.get_variable(cmake: 'PACKAGE_LIBRARIES').split(';')
+      libdirs += run_command('dirname', lib, check: true).stdout().strip()
+    endforeach
+    incdirs = ROOT_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
+  ### error, if unknown
+  else
+    error('Cannot determine how dependency "' + dep.name() + '" was found')
+  endif
+  ### append to `dep_lib_paths` and `dep_inc_paths`, omitting duplicates
+  foreach libdir : libdirs
+    if not dep_lib_paths.contains(libdir)
+      dep_lib_paths += libdir
+    endif
+  endforeach
+  foreach incdir : incdirs
+    if not dep_inc_paths.contains(incdir)
+      dep_inc_paths += incdir
+    endif
+  endforeach
+endforeach
+message('Dependency library dirs = [', ', '.join(dep_lib_paths), ']')
+message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
+
+# handle ROOT
+ROOT_dep_inc_dirs  = []
+ROOT_dep_link_args = []
+if ROOT_dep.found()
+  ROOT_dep_inc_dirs += include_directories(run_command('root-config', '--incdir', check: true).stdout().strip())
+  ROOT_dep_link_args += [
+    '-L' + run_command('root-config', '--libdir',   check: true).stdout().strip(),
+    # ROOT libraries that we need (safer than `root-config --libs`)
+    '-lCore',
+    '-lGenVector',
+  ]
+endif
 
 # general project vars
 project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
-project_deps      = declare_dependency(dependencies: full_dep_list)
+project_deps      = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ] ) # do NOT include ROOT here
 project_etc       = get_option('sysconfdir') / meson.project_name()
 project_pkg_vars  = [
   'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
@@ -99,7 +147,7 @@ pkg.generate(
   name:        meson.project_name(),
   description: project_description,
   libraries:   project_libs,
-  requires:    full_dep_list,
+  requires:    [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
   variables:   project_pkg_vars,
 )
 
