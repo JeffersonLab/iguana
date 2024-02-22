@@ -95,16 +95,13 @@ message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
 ROOT_dep_inc_dirs  = []
 ROOT_dep_link_args = []
 if ROOT_dep.found()
-  ROOT_config = {
-    'incdir': run_command('root-config', '--incdir', check: true).stdout().strip(),
-    'libs':   run_command('root-config', '--libs',   check: true).stdout().strip(),
-  }
-  ROOT_dep_inc_dirs += include_directories(ROOT_config['incdir'])
-  foreach arg : ROOT_config['libs'].split()
-    if not arg.contains('-rpath') # do not let `root-config` control the rpath
-      ROOT_dep_link_args += arg
-    endif
-  endforeach
+  ROOT_dep_inc_dirs += include_directories(run_command('root-config', '--incdir', check: true).stdout().strip())
+  ROOT_dep_link_args += [
+    '-L' + run_command('root-config', '--libdir',   check: true).stdout().strip(),
+    # ROOT libraries that we need (safer than `root-config --libs`)
+    '-lCore',
+    '-lGenVector',
+  ]
 endif
 
 # general project vars

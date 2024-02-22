@@ -21,13 +21,14 @@ if fs.is_file(get_option('test_data_file'))
           bank_args += ['-b', bank]
         endforeach
         test(
-          test_exe_name + ' ' + name.replace('::', '__'),
+          test_exe_name + '___' + name.replace('::', '-'),
           test_exe,
           args: [
             '-c', 'algorithm',
             '-f', get_option('test_data_file'),
             '-n', get_option('test_num_events'),
-            '-a', name
+            '-a', name,
+            '-v',
             ] + bank_args,
         )
       endif
