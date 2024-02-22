@@ -41,7 +41,7 @@ defaults:
 
 env:
   hipo_version: f40da676bbd1745398e9fdf233ff213ff98798f1
-  num_events: 10
+  num_events: 1000
   # sanitizer options; NOTE: suppression path assumes the build directory is a subdirectory of the top-level repo directory
   UBSAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1:print_stacktrace=1:suppressions=../.github/UBSAN.supp
   ASAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1
@@ -253,9 +253,9 @@ jobs:
       ### re-build iguana
       - name: meson configure
         run: |
-          meson configure                          \
-            -Dtest_data_file=$(pwd)/test_data.hipo \
-            -Dtest_num_events=1000                 \
+          meson configure                           \
+            -Dtest_data_file=$(pwd)/test_data.hipo  \
+            -Dtest_num_events=${{ env.num_events }} \
             build-iguana
           case "${{ matrix.mode }}" in
             coverage)
@@ -275,7 +275,7 @@ jobs:
       - name: dump build options
         run: meson configure build-iguana | cat
       - name: meson install
-        run: meson install -C build-iguana
+        run: meson install -C build-iguana # must install, so the config files are in the expected location
       ### run tests
       - name: TEST algorithms
         run: |
@@ -308,10 +308,12 @@ jobs:
           path: coverage-report
 
   # run examples
+  # - a bit redundant, with `meson test` from `test_iguana`, but this ensures
+  #   the _installation_ works (e.g., `rpath` handling)
   #########################################################
 
   test_examples:
-    name: Test Examples
+    name: Test Installed Examples
     needs:
       - download_validation_files
       - build_iguana
@@ -378,12 +380,6 @@ jobs:
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 01
         run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
-      - name: test 02
-        run: iguana/bin/iguana-example-02-YAMLReader${{ matrix.extension }}
-        if: ${{ matrix.id == 'cpp-gcc-release' }} #FIXME
-      - name: test 03
-        run: iguana/bin/iguana-example-03-zvertex-filter${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
-        if: ${{ matrix.id == 'cpp-gcc-release' }} #FIXME
 
   # test consumers
   #########################################################
