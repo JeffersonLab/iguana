@@ -275,7 +275,7 @@ jobs:
       - name: dump build options
         run: meson configure build-iguana | cat
       - name: meson install
-        run: meson install -C build-iguana
+        run: meson install -C build-iguana # must install, so the config files are in the expected location
       ### run tests
       - name: TEST algorithms
         run: |
