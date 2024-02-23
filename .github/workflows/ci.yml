@@ -250,7 +250,10 @@ jobs:
           merge-multiple: true
       - name: untar local dependencies
         run: ls *.tar.gz | xargs -I{} tar xzvf {}
-      ### re-build iguana
+      ### rebuild iguana
+      - name: meson wipe builddir for macOS re-link # macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
+        if: ${{ inputs.runner == 'macos-latest' }}
+        run: meson setup build-iguana --wipe
       - name: meson configure
         run: |
           meson configure                           \
