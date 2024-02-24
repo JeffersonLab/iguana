@@ -5,6 +5,7 @@
 #include <set>
 #include <unordered_map>
 #include <variant>
+#include <optional>
 #include <vector>
 
 #include <hipo4/bank.h>
@@ -85,6 +86,48 @@ namespace iguana {
         }
       }
 
+      template <typename OPTION_TYPE>
+      OPTION_TYPE GetOptionScalar(const std::string key, YAMLReader::node_path_t node_path = {})
+      {
+        try {
+          CompleteOptionNodePath(key, node_path);
+          auto val = GetLocalOption<OPTION_TYPE>(key).value_or(
+              m_yaml_config->GetScalar<OPTION_TYPE>(node_path));
+          m_opt[key] = val; // sync `m_opt` to match `val`, so we can use `PrintOptionValue` to print it
+          return val;
+        }
+        catch(const std::runtime_error& ex) {
+          m_log->Error("Failed to `GetOptionScalar` for key '{}'", key);
+          return {};
+        }
+      }
+
+      template <typename OPTION_TYPE>
+      std::vector<OPTION_TYPE> GetOptionVector(const std::string key, YAMLReader::node_path_t node_path = {})
+      {
+        try {
+          CompleteOptionNodePath(key, node_path);
+          auto val = GetLocalOption<OPTION_TYPE>(key).value_or(
+              m_yaml_config->GetVector<OPTION_TYPE>(node_path));
+          m_opt[key] = val; // sync `m_opt` to match `val`, so we can use `PrintOptionValue` to print it
+          return val;
+        }
+        catch(const std::runtime_error& ex) {
+          m_log->Error("Failed to `GetOptionVector` for key '{}'", key);
+          return {};
+        }
+      }
+
+      template <typename OPTION_TYPE>
+      std::set<OPTION_TYPE> GetOptionSet(const std::string key, YAMLReader::node_path_t node_path = {})
+      {
+        CompleteOptionNodePath(key, node_path);
+        auto val_vec = GetOptionVector<OPTION_TYPE>(key, node_path);
+        std::set<OPTION_TYPE> val_set;
+        std::copy(val_vec.begin(), val_vec.end(), std::inserter(val_set, val_set.end()));
+        return val_set;
+      }
+
       /// Set the name of this algorithm
       /// @param name the new name
       void SetName(const std::string name);
@@ -117,7 +160,7 @@ namespace iguana {
           try { // get the expected type
             val = std::get<OPTION_TYPE>(it->second);
           }
-          catch(const std::bad_variant_access& ex1) {
+          catch(const std::bad_variant_access& ex) {
             m_log->Error("user option '{}' set to '{}', which is the wrong type...", key, PrintOptionValue(key));
             get_error = true;
             val       = def;
@@ -175,7 +218,35 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank& bank, const std::string message = "", const Logger::Level level = Logger::trace) const;
 
+    private: // methods
+
+      template <typename OPTION_TYPE>
+      std::optional<OPTION_TYPE> GetLocalOption(const std::string key) const
+      {
+        if(auto it{m_opt.find(key)}; it != m_opt.end()) {
+          try { // get the expected type
+            return std::get<OPTION_TYPE>(it->second);
+          }
+          catch(const std::bad_variant_access& ex) {
+            m_log->Warn("user called SetOption for option '{}' and set it to '{}', which is the wrong type; IGNORING", key, PrintOptionValue(key));
+          }
+        }
+        return {};
+      }
+
+      void CompleteOptionNodePath(const std::string key, YAMLReader::node_path_t& node_path) const
+      {
+        // if `node_path` is empty, set it to `{ key }`
+        if(node_path.empty())
+          node_path.push_front(key);
+        // algorithm full name must be the first node's key
+        node_path.push_front(m_class_name);
+      }
+
     protected: // members
+
+      /// Class name of this algorithm
+      std::string m_class_name;
 
       /// Data structure to hold configuration options
       std::unordered_map<std::string, option_t> m_opt;

@@ -26,8 +26,7 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_particle;
 
       /// Configuration options
-      double o_zvertex_low;
-      double o_zvertex_high;
+      std::vector<double> o_zcuts;
   };
 
 }

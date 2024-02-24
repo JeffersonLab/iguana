@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <variant>
 
 #include <yaml-cpp/yaml.h>
 
@@ -14,6 +15,18 @@ namespace iguana {
   {
 
     public:
+
+      /// A function `f : Node A -> Node B` which searches `YAML::Node A` for a specific `YAML::Node B`, returning it
+      using node_finder_t = std::function<YAML::Node(const YAML::Node)>;
+
+      /// Variant for identifying a `YAML::Node`:
+      /// - `std::string`: the key name of the node
+      /// - `node_finder_t`: how to find the node
+      using node_id_t = std::variant<std::string, node_finder_t>;
+
+      /// Representation of a path of `YAML::Node`s in a `YAML::Node` tree, _e.g._, in a YAML file.
+      using node_path_t = std::deque<node_id_t>;
+
       /// @param name of this reader (for `Logger`)
       YAMLReader(const std::string name = "config")
           : ConfigFileReader(name)
@@ -22,6 +35,139 @@ namespace iguana {
 
       /// Parse the YAML files added by `ConfigFileReader::AddFile`
       void LoadFiles();
+
+
+
+
+
+      YAML::Node FindNode(YAML::Node node, node_path_t node_path) {
+
+        // if `node_path` is empty, we are likely at the end of the node path; end recursion and return `node`
+        if(node_path.empty()) {
+          m_log->Trace("... found");
+          return node;
+        }
+
+        // find the next node using the first `node_id_t` in `node_path`
+        auto node_id_visitor = [&node, &m_log = this->m_log](auto&& arg) -> YAML::Node {
+          using arg_t = std::decay_t<decltype(arg)>;
+          // find a node by key name
+          if constexpr(std::is_same_v<arg_t,std::string>) {
+            m_log->Trace("... by key '{}'", arg);
+            return node[arg];
+          }
+          // find a node using a `node_finder_t`
+          else {
+            m_log->Trace("... by node finder function");
+            return arg(node);
+          }
+        };
+        auto result = std::visit(node_id_visitor, node_path.front());
+
+        // if the resulting node is not defined, complain and return an empty node
+        if(!result.IsDefined()) {
+          m_log->Error("Failed to find YAML node");
+          throw std::runtime_error("Failed to find YAML node");
+        }
+
+        // recurse to the next element of `node_path`
+        node_path.pop_front();
+        return FindNode(result, node_path);
+      }
+
+
+
+      template <typename SCALAR>
+      SCALAR GetScalar(YAML::Node node) {
+        if(node.IsDefined()) {
+          try {
+            return node.as<SCALAR>();
+          }
+          catch(const YAML::Exception& e) {
+            m_log->Error("YAML Parsing Exception: {}", e.what());
+          }
+          catch(const std::exception& e) {
+            m_log->Error("YAML Misc. Exception: {}", e.what());
+          }
+        }
+        throw std::runtime_error("Failed `GetScalar`");
+      }
+
+      template <typename SCALAR>
+      SCALAR GetScalar(node_path_t node_path) {
+        for(const auto& [config, filename] : m_configs) {
+          auto node = FindNode(config, node_path);
+          if(node.IsDefined())
+            return GetScalar<SCALAR>(node);
+        }
+        throw std::runtime_error("Failed `GetScalar`");
+      }
+
+      template <typename SCALAR>
+      std::vector<SCALAR> GetVector(YAML::Node node) {
+        if(node.IsDefined()) {
+          try {
+            std::vector<SCALAR> result;
+            for(const auto& element : node)
+              result.push_back(element.as<SCALAR>());
+            return result;
+          }
+          catch(const YAML::Exception& e) {
+            m_log->Error("YAML Parsing Exception: {}", e.what());
+          }
+          catch(const std::exception& e) {
+            m_log->Error("YAML Misc. Exception: {}", e.what());
+          }
+        }
+        throw std::runtime_error("Failed `GetVector`");
+      }
+
+      template <typename SCALAR>
+      std::vector<SCALAR> GetVector(node_path_t node_path) {
+        for(const auto& [config, filename] : m_configs) {
+          auto node = FindNode(config, node_path);
+          if(node.IsDefined())
+            return GetVector<SCALAR>(node);
+        }
+        throw std::runtime_error("Failed `GetVector`");
+      }
+
+
+
+
+      template <typename SCALAR>
+      node_finder_t InRange(std::string key, SCALAR val) {
+        return [this, &key, &val](YAML::Node node) -> YAML::Node {
+          if(!node.IsSequence()) {
+            m_log->Error("YAML node path expected a sequence at current node");
+            throw std::runtime_error("Failed `InRange`");
+          }
+          // search each sub-node for one with `val` with in the range at `key`
+          for(const auto& sub_node : node) {
+            auto bounds_node = sub_node[key];
+            if(bounds_node.IsDefined()) {
+              auto bounds = GetVector<SCALAR>(bounds_node);
+              if(bounds.size() == 2 && bounds[0] <= val && bounds[1] >= val)
+                return sub_node;
+            }
+          }
+          // fallback to the default node
+          for(const auto& sub_node : node) {
+            if(sub_node["default"].IsDefined())
+              return sub_node;
+          }
+          // if no default found, return empty
+          m_log->Error("No default node for `InRange('{}',{})`", key, val);
+          throw std::runtime_error("Failed `InRange`");
+        };
+      }
+
+
+
+
+
+
+
 
       /// Read a value from the opened YAML file which is at a given and key.
       /// This function can return in any C++ type used by Iguana.
