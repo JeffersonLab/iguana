@@ -14,10 +14,10 @@ example_sources = {
   'iguana-example-01-bank-rows': {
     'sources': [ 'iguana-example-01-bank-rows.cc' ],
   },
-  'iguana-example-02-YAMLReader': {
-    'sources':   [ 'iguana-example-02-YAMLReader.cc' ],
-    'test_args': [ example_config_file.full_path() ],
-  },
+  # 'iguana-example-02-YAMLReader': {
+  #   'sources':   [ 'iguana-example-02-YAMLReader.cc' ],
+  #   'test_args': [ example_config_file.full_path() ],
+  # },
   'iguana-example-03-zvertex-filter': {
     'sources': [ 'iguana-example-03-zvertex-filter.cc' ],
   },

@@ -8,7 +8,8 @@ namespace iguana::clas12 {
   {
 
     // define options, their default values, and cache them
-    CacheOptionToSet("pids", {11, 211}, o_pids);
+    ParseYAMLConfig();
+    CacheOptionToSet("pids", m_yaml_config->findArray<int>("pids"), o_pids); // FIXME: what if `pids:` is found in another config file?
 
     // cache expected bank indices
     CacheBankIndex(banks, "REC::Particle", b_particle);

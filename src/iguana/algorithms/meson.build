@@ -23,6 +23,7 @@ algo_dict = {
   'clas12::EventBuilderFilter': {
     'sources':      [ 'clas12/EventBuilderFilter.cc' ],
     'headers':      [ 'clas12/EventBuilderFilter.h' ],
+    'configs':      [ 'clas12/EventBuilderFilter.yaml' ],
     'unit_test':    { 'banks': ['REC::Particle'] },
   },
   'clas12::ZVertexFilter': {

@@ -90,7 +90,9 @@ int main(int argc, char** argv)
   // define the algorithm
   iguana::AlgorithmSequence seq;
   seq.Add(algo_name);
-  seq.SetOption(algo_name, "log", verbose ? "debug" : "info");
+  seq.SetOption(algo_name, "log", verbose ? "trace" : "info");
+  seq.SetOption(algo_name, "config_dir", ".."); // FOR TESTING OVERRIDES
+  seq.SetOption(algo_name, "config_file", "ZVertexFilter.yaml"); // FOR TESTING OVERRIDES
 
   // start the algorithm
   seq.Start(banks_after);

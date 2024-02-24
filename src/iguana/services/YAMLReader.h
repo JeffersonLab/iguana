@@ -36,22 +36,28 @@ namespace iguana {
       /// Read an array from the opened YAML file which is at a given key.
       /// This function can return in any C++ type used by Iguana.
       /// @param key the array's key in the YAML file.
-      /// @param defaultValue the function will default to this if the key does not exist.
       /// @param node the node to read, defaults to the config file opened when the class is instantiated
       /// but this also allows to read from a node within the config file.
+      /// @param throw_msg if non-empty, will throw a runtime exception with this message, if the key's value cannot be found
       /// @returns the array at the key in the YAML file returned as a `std::vector`.
       template <typename T>
-      std::vector<T> readArray(const std::string& key, const std::vector<T>& defaultValue, const YAML::Node& node = YAML::Node());
+      std::vector<T> readArray(const std::string& key, const YAML::Node& node = YAML::Node(), const std::string throw_msg="");
+
+      template <typename T>
+      std::vector<T> findArray(const std::string& key)
+      {
+        return readArray<T>(key, {}, fmt::format("cannot find array for key '{}' in any config file", key));
+      }
 
       /// Iterate over the opened YAML file until the run number corresponds to a node.
       /// The correspondance is found by checking that the run number is greater than
-      /// or lesser than the first and second element of the node at key `runkey`.
-      /// If the node has a `pidkey` entry, the value is read for the specified pid.
+      /// or lesser than the first and second element of the node at key `runKey`.
+      /// If the node has a `pidKey` entry, the value is read for the specified pid.
       /// Otherwise the value is read for the run range.
       /// This function can return in any C++ type used by Iguana.
       /// @param cutKey the key that relates to the array of cut values.
-      /// @param runkey the key related to the run number range.
-      /// @param pidkey the key related to pids.
+      /// @param runKey the key related to the run number range.
+      /// @param pidKey the key related to pids.
       /// @param key the value's key in the YAML file for a given run number.
       /// @param runnb the run number used to find correct key.
       /// @param pid the pid to look for.
@@ -60,8 +66,8 @@ namespace iguana {
       template <typename T>
       T findKeyAtRunAndPID(
           const std::string& cutKey,
-          const std::string& runkey,
-          const std::string& pidkey,
+          const std::string& runKey,
+          const std::string& pidKey,
           const std::string& key,
           const int runnb,
           const int pid,
@@ -69,31 +75,29 @@ namespace iguana {
 
       /// Iterate over the opened YAML file until the run number corresponds to a node.
       /// The correspondance is found by checking that the run number is greater than
-      /// or lesser than the first and second element of the node at key `runkey`.
-      /// If the node has a `pidkey` entry, the array is read for the specified pid.
+      /// or lesser than the first and second element of the node at key `runKey`.
+      /// If the node has a `pidKey` entry, the array is read for the specified pid.
       /// Otherwise the array is read for the run range.
       /// This function can return in any C++ type used by Iguana.
       /// @param cutKey the key that relates to the array of cut values.
-      /// @param runkey the key related to the run number range.
-      /// @param pidkey the key related to pids.
+      /// @param runKey the key related to the run number range.
+      /// @param pidKey the key related to pids.
       /// @param key the array's key in the YAML file for a given run number.
       /// @param runnb the run number used to find correct key.
       /// @param pid the pid to look for.
-      /// @param defaultValue the function will default to this if the key does not exist.
       /// @returns the array at the key in the YAML file returned as a std::vector.
       template <typename T>
       std::vector<T> findKeyAtRunAndPIDVector(
           const std::string& cutKey,
-          const std::string& runkey,
-          const std::string& pidkey,
+          const std::string& runKey,
+          const std::string& pidKey,
           const std::string& key,
           int runnb,
-          int pid,
-          const std::vector<T>& defaultValue);
+          int pid);
 
     protected:
 
-      /// Stack of nodes used to open files
-      std::deque<YAML::Node> m_configs;
+      /// Stack of `YAML::Node`s used to open files, together with their file names
+      std::deque<std::pair<YAML::Node, std::string>> m_configs;
   };
 }

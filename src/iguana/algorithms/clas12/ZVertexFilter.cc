@@ -8,16 +8,16 @@ namespace iguana::clas12 {
   {
 
     // FIXME: need a way of passing in run numbers and pid values
-    int runnb = 4768; // default to RG-A fall2018 inbending for now
+    int runnb = 10000; // default to RG-A fall2018 inbending for now
     int pid   = 0; // no PID needed for this filter
 
     // Read YAML config file with cuts for a given run number.
     ParseYAMLConfig();
-    std::vector<double> defaultValues = m_yaml_config->findKeyAtRunAndPIDVector<double>("cuts", "runs", "pid", "vals", runnb, pid, {-20.0, 20.0});
+    std::vector<double> z_cuts = m_yaml_config->findKeyAtRunAndPIDVector<double>("cuts", "runs", "pid", "vals", runnb, pid);
 
     // define options, their default values, and cache them
-    CacheOption("low", defaultValues.at(0), o_zvertex_low);
-    CacheOption("high", defaultValues.at(1), o_zvertex_high);
+    CacheOption("low", z_cuts.at(0), o_zvertex_low);
+    CacheOption("high", z_cuts.at(1), o_zvertex_high);
 
     // cache expected bank indices
     CacheBankIndex(banks, "REC::Particle", b_particle);
