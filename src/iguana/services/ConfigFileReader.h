@@ -16,7 +16,7 @@ namespace iguana {
 
       /// Get the config files' _fixed_ installation prefix
       /// @return the absolute path to the installed configuration file directory
-      static std::string GetConfigPrefix();
+      static std::string GetConfigInstallationPrefix();
 
       /// Add a directory to the configuration files' search paths.
       /// @param dir the directory, which may be relative or absolute

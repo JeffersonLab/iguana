@@ -29,6 +29,7 @@ namespace iguana::example {
     // # - this function "caches" the option values into the `o_*` members, to
     // #   avoid looking them up in the `Algorithm::Run` method
     // ############################################################################
+    ParseYAMLConfig();
     CacheOption("exampleInt", 8, o_exampleInt);
     CacheOption("exampleFloat", 7.0, o_exampleFloat);
     // ############################################################################

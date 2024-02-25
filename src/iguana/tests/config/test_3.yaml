@@ -1,0 +1,38 @@
+example::ExampleAlgorithm:
+
+  # test node-finding with `InRange`
+  tree1:
+    - test_range: [ 1, 5 ]
+      val: 3
+    - test_range: [ 5, 10 ]
+      val: 4
+    - test_range: [ 3, 10 ]
+      val: 5
+    - default:
+      val: 0
+
+  # test nested `InRange`
+  tree2:
+    - test_range: [ 1.8, 2.0 ]
+      subtree:
+        lizard: iguana
+        number: 7
+    - test_range: [ 3.0, 3.5 ]
+      subtree:
+      - sub_range: [ 1, 5 ]
+        val: 7
+      - sub_range: [ 5, 10 ]
+        val: 8
+      - sub_range: [ 3, 10 ]
+        val: 9
+      - default:
+        val: 1
+    - default:
+      subtree: 10
+
+  # test `InRange` with no default
+  tree3:
+    - test_range: [ 1, 5 ]
+      val: 3
+    - test_range: [ 5, 10 ]
+      val: 4

@@ -7,10 +7,10 @@ namespace iguana {
       : Object(name)
   {
     // add config files from installation prefix
-    AddDirectory(GetConfigPrefix());
+    AddDirectory(GetConfigInstallationPrefix());
   }
 
-  std::string ConfigFileReader::GetConfigPrefix()
+  std::string ConfigFileReader::GetConfigInstallationPrefix()
   {
     return IGUANA_ETC;
   }
