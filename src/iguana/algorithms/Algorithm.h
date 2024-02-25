@@ -93,7 +93,8 @@ namespace iguana {
           CompleteOptionNodePath(key, node_path);
           auto val = GetLocalOption<OPTION_TYPE>(key).value_or(
               m_yaml_config->GetScalar<OPTION_TYPE>(node_path));
-          m_opt[key] = val; // sync `m_opt` to match `val`, so we can use `PrintOptionValue` to print it
+          m_opt[key] = val;
+          m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
           return val;
         }
         catch(const std::runtime_error& ex) {
@@ -109,7 +110,8 @@ namespace iguana {
           CompleteOptionNodePath(key, node_path);
           auto val = GetLocalOption<OPTION_TYPE>(key).value_or(
               m_yaml_config->GetVector<OPTION_TYPE>(node_path));
-          m_opt[key] = val; // sync `m_opt` to match `val`, so we can use `PrintOptionValue` to print it
+          m_opt[key] = val;
+          m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
           return val;
         }
         catch(const std::runtime_error& ex) {
