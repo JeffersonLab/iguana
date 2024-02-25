@@ -81,7 +81,7 @@ namespace iguana {
             m_log->Error("Option '{}' must be a string or a Logger::Level", key);
         }
         else {
-          m_opt[key] = val;
+          m_option_cache[key] = val;
           m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
         }
       }
@@ -91,9 +91,9 @@ namespace iguana {
       {
         try {
           CompleteOptionNodePath(key, node_path);
-          auto val = GetLocalOption<OPTION_TYPE>(key).value_or(
+          auto val = GetCachedOption<OPTION_TYPE>(key).value_or(
               m_yaml_config->GetScalar<OPTION_TYPE>(node_path));
-          m_opt[key] = val;
+          m_option_cache[key] = val;
           m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
           return val;
         }
@@ -108,9 +108,9 @@ namespace iguana {
       {
         try {
           CompleteOptionNodePath(key, node_path);
-          auto val = GetLocalOption<OPTION_TYPE>(key).value_or(
+          auto val = GetCachedOption<OPTION_TYPE>(key).value_or(
               m_yaml_config->GetVector<OPTION_TYPE>(node_path));
-          m_opt[key] = val;
+          m_option_cache[key] = val;
           m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
           return val;
         }
@@ -158,7 +158,7 @@ namespace iguana {
       void CacheOption(const std::string key, const OPTION_TYPE def, OPTION_TYPE& val)
       {
         bool get_error = false;
-        if(auto it{m_opt.find(key)}; it != m_opt.end()) { // cache the user's option value
+        if(auto it{m_option_cache.find(key)}; it != m_option_cache.end()) { // cache the user's option value
           try { // get the expected type
             val = std::get<OPTION_TYPE>(it->second);
           }
@@ -171,8 +171,8 @@ namespace iguana {
         else { // cache the default option value
           val = def;
         }
-        // sync `m_opt` to match the cached value `val` (e.g., so we can use `PrintOptionValue` to print it)
-        m_opt[key] = val;
+        // sync `m_option_cache` to match the cached value `val` (e.g., so we can use `PrintOptionValue` to print it)
+        m_option_cache[key] = val;
         if(get_error)
           m_log->Error("...using default value '{}' instead", PrintOptionValue(key));
         m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
@@ -223,9 +223,9 @@ namespace iguana {
     private: // methods
 
       template <typename OPTION_TYPE>
-      std::optional<OPTION_TYPE> GetLocalOption(const std::string key) const
+      std::optional<OPTION_TYPE> GetCachedOption(const std::string key) const
       {
-        if(auto it{m_opt.find(key)}; it != m_opt.end()) {
+        if(auto it{m_option_cache.find(key)}; it != m_option_cache.end()) {
           try { // get the expected type
             return std::get<OPTION_TYPE>(it->second);
           }
@@ -251,7 +251,7 @@ namespace iguana {
       std::string m_class_name;
 
       /// Data structure to hold configuration options
-      std::unordered_map<std::string, option_t> m_opt;
+      std::unordered_map<std::string, option_t> m_option_cache;
 
       /// If true, algorithm can only operate on bank _rows_; `Algorithm::GetBank`, and therefore `Algorithm::Run`, cannot be called
       bool m_rows_only;
