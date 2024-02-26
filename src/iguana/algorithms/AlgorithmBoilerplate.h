@@ -5,10 +5,10 @@
 /// @param ALGO_NAME the name of the algorithm class
 #define CONSTRUCT_IGUANA_ALGORITHM(ALGO_NAME)         \
   ALGO_NAME(std::string name = "")                    \
-      : m_class_name(GetClassName())                  \
-      , Algorithm(name == "" ? GetClassName() : name) \
+      : Algorithm(name == "" ? GetClassName() : name) \
   {                                                   \
     m_default_config_file = GetDefaultConfigFile();   \
+    m_class_name = GetClassName();                    \
   }
 
 /// Generate an algorithm destructor

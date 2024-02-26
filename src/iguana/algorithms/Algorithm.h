@@ -108,7 +108,7 @@ namespace iguana {
       {
         try {
           CompleteOptionNodePath(key, node_path);
-          auto val = GetCachedOption<OPTION_TYPE>(key).value_or(
+          auto val = GetCachedOption<std::vector<OPTION_TYPE>>(key).value_or(
               m_yaml_config->GetVector<OPTION_TYPE>(node_path));
           m_option_cache[key] = val;
           m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
