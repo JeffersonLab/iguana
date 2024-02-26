@@ -87,6 +87,10 @@ namespace iguana {
         }
       }
 
+      /// Get the value of a scalar option
+      /// @param key the unique key name of this option
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @returns the scalar option
       template <typename OPTION_TYPE>
       OPTION_TYPE GetOptionScalar(const std::string key, YAMLReader::node_path_t node_path = {})
       {
@@ -104,6 +108,10 @@ namespace iguana {
         }
       }
 
+      /// Get the value of a vector option
+      /// @param key the unique key name of this option
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @returns the vector option
       template <typename OPTION_TYPE>
       std::vector<OPTION_TYPE> GetOptionVector(const std::string key, YAMLReader::node_path_t node_path = {})
       {
@@ -121,6 +129,10 @@ namespace iguana {
         }
       }
 
+      /// Get the value of a vector option, and convert it to `std::set`
+      /// @param key the unique key name of this option
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @returns the vector option converted to `std::set`
       template <typename OPTION_TYPE>
       std::set<OPTION_TYPE> GetOptionSet(const std::string key, YAMLReader::node_path_t node_path = {})
       {

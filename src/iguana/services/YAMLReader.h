@@ -36,10 +36,111 @@ namespace iguana {
       /// Parse the YAML files added by `ConfigFileReader::AddFile`
       void LoadFiles();
 
+      /// Read a scalar value from a `YAML::Node`
+      /// @param node the `YAML::Node` to read
+      /// @return the scalar
+      template <typename SCALAR>
+      SCALAR GetScalar(YAML::Node node) {
+        if(node.IsDefined() && !node.IsNull()) {
+          try {
+            return node.as<SCALAR>();
+          }
+          catch(const YAML::Exception& e) {
+            m_log->Error("YAML Parsing Exception: {}", e.what());
+          }
+          catch(const std::exception& e) {
+            m_log->Error("YAML Misc. Exception: {}", e.what());
+          }
+        }
+        throw std::runtime_error("Failed `GetScalar`");
+      }
 
+      /// Read a scalar value from a `YAML::Node` path; searches all currently loaded config files.
+      /// @param node_path the `YAML::Node` path
+      /// @return the scalar
+      template <typename SCALAR>
+      SCALAR GetScalar(node_path_t node_path) {
+        for(const auto& [config, filename] : m_configs) {
+          auto node = FindNode(config, node_path);
+          if(node.IsDefined() && !node.IsNull())
+            return GetScalar<SCALAR>(node);
+        }
+        throw std::runtime_error("Failed `GetScalar`");
+      }
 
+      /// Read a vector value from a `YAML::Node`
+      /// @param node the `YAML::Node` to read
+      /// @return the vector
+      template <typename SCALAR>
+      std::vector<SCALAR> GetVector(YAML::Node node) {
+        if(node.IsDefined() && !node.IsNull() && node.IsSequence()) {
+          try {
+            std::vector<SCALAR> result;
+            for(const auto& element : node)
+              result.push_back(element.as<SCALAR>());
+            return result;
+          }
+          catch(const YAML::Exception& e) {
+            m_log->Error("YAML Parsing Exception: {}", e.what());
+          }
+          catch(const std::exception& e) {
+            m_log->Error("YAML Misc. Exception: {}", e.what());
+          }
+        }
+        throw std::runtime_error("Failed `GetVector`");
+      }
 
+      /// Read a vector value from a `YAML::Node` path; searches all currently loaded config files.
+      /// @param node_path the `YAML::Node` path
+      /// @return the vector
+      template <typename SCALAR>
+      std::vector<SCALAR> GetVector(node_path_t node_path) {
+        for(const auto& [config, filename] : m_configs) {
+          auto node = FindNode(config, node_path);
+          if(node.IsDefined() && !node.IsNull())
+            return GetVector<SCALAR>(node);
+        }
+        throw std::runtime_error("Failed `GetVector`");
+      }
 
+      /// Create a function to search a `YAML::Node` for a sub-`YAML::Node` such that
+      /// the scalar `val` is within a range specified by `key`
+      /// @param key the key of the sub-`YAML::Node` to use as the range (its value must be a 2-vector)
+      /// @param val the scalar value to check
+      /// @returns the search function
+      template <typename SCALAR>
+      node_finder_t InRange(std::string key, SCALAR val) {
+        return [this, &key, &val](YAML::Node node) -> YAML::Node {
+          if(!node.IsSequence()) {
+            m_log->Error("YAML node path expected a sequence at current node");
+            throw std::runtime_error("Failed `InRange`");
+          }
+          // search each sub-node for one with `val` with in the range at `key`
+          for(const auto& sub_node : node) {
+            auto bounds_node = sub_node[key];
+            if(bounds_node.IsDefined()) {
+              auto bounds = GetVector<SCALAR>(bounds_node);
+              if(bounds.size() == 2 && bounds[0] <= val && bounds[1] >= val)
+                return sub_node;
+            }
+          }
+          // fallback to the default node
+          for(const auto& sub_node : node) {
+            if(sub_node["default"].IsDefined())
+              return sub_node;
+          }
+          // if no default found, return empty
+          m_log->Error("No default node for `InRange('{}',{})`", key, val);
+          throw std::runtime_error("Failed `InRange`");
+        };
+      }
+
+    private:
+
+      /// Search a tree of `YAML::Node`s for a node specified by a `node_path_t`
+      /// @param node the root `YAML::Node`
+      /// @param node_path the path of `YAML::Node` identifiers
+      /// @returns either the found `YAML::Node`, or an empty (null) `YAML::Node` if one is not found
       YAML::Node FindNode(YAML::Node node, node_path_t node_path) {
 
         // if `node_path` is empty, we are likely at the end of the node path; end recursion and return `node`
@@ -72,174 +173,6 @@ namespace iguana {
         node_path.pop_front();
         return FindNode(result, node_path);
       }
-
-
-
-      template <typename SCALAR>
-      SCALAR GetScalar(YAML::Node node) {
-        if(node.IsDefined() && !node.IsNull()) {
-          try {
-            return node.as<SCALAR>();
-          }
-          catch(const YAML::Exception& e) {
-            m_log->Error("YAML Parsing Exception: {}", e.what());
-          }
-          catch(const std::exception& e) {
-            m_log->Error("YAML Misc. Exception: {}", e.what());
-          }
-        }
-        throw std::runtime_error("Failed `GetScalar`");
-      }
-
-      template <typename SCALAR>
-      SCALAR GetScalar(node_path_t node_path) {
-        for(const auto& [config, filename] : m_configs) {
-          auto node = FindNode(config, node_path);
-          if(node.IsDefined() && !node.IsNull())
-            return GetScalar<SCALAR>(node);
-        }
-        throw std::runtime_error("Failed `GetScalar`");
-      }
-
-      template <typename SCALAR>
-      std::vector<SCALAR> GetVector(YAML::Node node) {
-        if(node.IsDefined() && !node.IsNull() && node.IsSequence()) {
-          try {
-            std::vector<SCALAR> result;
-            for(const auto& element : node)
-              result.push_back(element.as<SCALAR>());
-            return result;
-          }
-          catch(const YAML::Exception& e) {
-            m_log->Error("YAML Parsing Exception: {}", e.what());
-          }
-          catch(const std::exception& e) {
-            m_log->Error("YAML Misc. Exception: {}", e.what());
-          }
-        }
-        throw std::runtime_error("Failed `GetVector`");
-      }
-
-      template <typename SCALAR>
-      std::vector<SCALAR> GetVector(node_path_t node_path) {
-        for(const auto& [config, filename] : m_configs) {
-          auto node = FindNode(config, node_path);
-          if(node.IsDefined() && !node.IsNull())
-            return GetVector<SCALAR>(node);
-        }
-        throw std::runtime_error("Failed `GetVector`");
-      }
-
-
-
-
-      template <typename SCALAR>
-      node_finder_t InRange(std::string key, SCALAR val) {
-        return [this, &key, &val](YAML::Node node) -> YAML::Node {
-          if(!node.IsSequence()) {
-            m_log->Error("YAML node path expected a sequence at current node");
-            throw std::runtime_error("Failed `InRange`");
-          }
-          // search each sub-node for one with `val` with in the range at `key`
-          for(const auto& sub_node : node) {
-            auto bounds_node = sub_node[key];
-            if(bounds_node.IsDefined()) {
-              auto bounds = GetVector<SCALAR>(bounds_node);
-              if(bounds.size() == 2 && bounds[0] <= val && bounds[1] >= val)
-                return sub_node;
-            }
-          }
-          // fallback to the default node
-          for(const auto& sub_node : node) {
-            if(sub_node["default"].IsDefined())
-              return sub_node;
-          }
-          // if no default found, return empty
-          m_log->Error("No default node for `InRange('{}',{})`", key, val);
-          throw std::runtime_error("Failed `InRange`");
-        };
-      }
-
-
-
-
-
-
-
-
-      /// Read a value from the opened YAML file which is at a given and key.
-      /// This function can return in any C++ type used by Iguana.
-      /// @param key the value's key in the YAML file.
-      /// @param defaultValue the function will default to this if the key does not exist.
-      /// @param node the node to read, defaults to the config file opened when the class is instantiated
-      /// but this also allows to read from a node within the config file.
-      /// @returns the value at the key in the YAML file.
-      template <typename T>
-      T readValue(const std::string& key, T defaultValue, const YAML::Node& node = YAML::Node());
-
-      /// Read an array from the opened YAML file which is at a given key.
-      /// This function can return in any C++ type used by Iguana.
-      /// @param key the array's key in the YAML file.
-      /// @param node the node to read, defaults to the config file opened when the class is instantiated
-      /// but this also allows to read from a node within the config file.
-      /// @param throw_msg if non-empty, will throw a runtime exception with this message, if the key's value cannot be found
-      /// @returns the array at the key in the YAML file returned as a `std::vector`.
-      template <typename T>
-      std::vector<T> readArray(const std::string& key, const YAML::Node& node = YAML::Node(), const std::string throw_msg="");
-
-      template <typename T>
-      std::vector<T> findArray(const std::string& key)
-      {
-        return readArray<T>(key, {}, fmt::format("cannot find array for key '{}' in any config file", key));
-      }
-
-      /// Iterate over the opened YAML file until the run number corresponds to a node.
-      /// The correspondance is found by checking that the run number is greater than
-      /// or lesser than the first and second element of the node at key `runKey`.
-      /// If the node has a `pidKey` entry, the value is read for the specified pid.
-      /// Otherwise the value is read for the run range.
-      /// This function can return in any C++ type used by Iguana.
-      /// @param cutKey the key that relates to the array of cut values.
-      /// @param runKey the key related to the run number range.
-      /// @param pidKey the key related to pids.
-      /// @param key the value's key in the YAML file for a given run number.
-      /// @param runnb the run number used to find correct key.
-      /// @param pid the pid to look for.
-      /// @param defaultValue the function will default to this if the key does not exist.
-      /// @returns the value at the key in the YAML file returned.
-      template <typename T>
-      T findKeyAtRunAndPID(
-          const std::string& cutKey,
-          const std::string& runKey,
-          const std::string& pidKey,
-          const std::string& key,
-          const int runnb,
-          const int pid,
-          const T defaultValue);
-
-      /// Iterate over the opened YAML file until the run number corresponds to a node.
-      /// The correspondance is found by checking that the run number is greater than
-      /// or lesser than the first and second element of the node at key `runKey`.
-      /// If the node has a `pidKey` entry, the array is read for the specified pid.
-      /// Otherwise the array is read for the run range.
-      /// This function can return in any C++ type used by Iguana.
-      /// @param cutKey the key that relates to the array of cut values.
-      /// @param runKey the key related to the run number range.
-      /// @param pidKey the key related to pids.
-      /// @param key the array's key in the YAML file for a given run number.
-      /// @param runnb the run number used to find correct key.
-      /// @param pid the pid to look for.
-      /// @returns the array at the key in the YAML file returned as a std::vector.
-      template <typename T>
-      std::vector<T> findKeyAtRunAndPIDVector(
-          const std::string& cutKey,
-          const std::string& runKey,
-          const std::string& pidKey,
-          const std::string& key,
-          int runnb,
-          int pid);
-
-    protected:
 
       /// Stack of `YAML::Node`s used to open files, together with their file names
       std::deque<std::pair<YAML::Node, std::string>> m_configs;
