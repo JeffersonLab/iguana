@@ -3,7 +3,7 @@
 #include <hipo4/reader.h>
 #include <iguana/algorithms/AlgorithmSequence.h>
 
-int TestAlgorithm(
+inline int TestAlgorithm(
     std::string command,
     std::string algo_name,
     std::vector<std::string> bank_names,

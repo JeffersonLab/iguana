@@ -64,11 +64,9 @@ namespace iguana {
         };
         auto result = std::visit(node_id_visitor, node_path.front());
 
-        // if the resulting node is not defined, complain and return an empty node
-        if(!result.IsDefined()) {
-          m_log->Error("Failed to find YAML node");
-          throw std::runtime_error("Failed to find YAML node");
-        }
+        // if the resulting node is not defined, return an empty node; callers must check the result
+        if(!result.IsDefined())
+          return {};
 
         // recurse to the next element of `node_path`
         node_path.pop_front();
@@ -79,7 +77,7 @@ namespace iguana {
 
       template <typename SCALAR>
       SCALAR GetScalar(YAML::Node node) {
-        if(node.IsDefined()) {
+        if(node.IsDefined() && !node.IsNull()) {
           try {
             return node.as<SCALAR>();
           }
@@ -97,7 +95,7 @@ namespace iguana {
       SCALAR GetScalar(node_path_t node_path) {
         for(const auto& [config, filename] : m_configs) {
           auto node = FindNode(config, node_path);
-          if(node.IsDefined())
+          if(node.IsDefined() && !node.IsNull())
             return GetScalar<SCALAR>(node);
         }
         throw std::runtime_error("Failed `GetScalar`");
@@ -105,7 +103,7 @@ namespace iguana {
 
       template <typename SCALAR>
       std::vector<SCALAR> GetVector(YAML::Node node) {
-        if(node.IsDefined() && node.IsSequence()) {
+        if(node.IsDefined() && !node.IsNull() && node.IsSequence()) {
           try {
             std::vector<SCALAR> result;
             for(const auto& element : node)
@@ -126,7 +124,7 @@ namespace iguana {
       std::vector<SCALAR> GetVector(node_path_t node_path) {
         for(const auto& [config, filename] : m_configs) {
           auto node = FindNode(config, node_path);
-          if(node.IsDefined())
+          if(node.IsDefined() && !node.IsNull())
             return GetVector<SCALAR>(node);
         }
         throw std::runtime_error("Failed `GetVector`");

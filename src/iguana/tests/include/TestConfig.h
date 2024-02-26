@@ -1,8 +1,9 @@
-// test algorithm configuration
+// test configuration
 
 #include <cassert>
+#include <iguana/algorithms/Algorithm.h>
 
-int TestConfig(int test_num, bool verbose)
+inline int TestConfig(int test_num, bool verbose)
 {
   if(test_num == 0) {
     fmt::print(stderr, "ERROR: need a test number\n");

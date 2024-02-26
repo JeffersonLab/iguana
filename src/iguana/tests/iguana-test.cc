@@ -1,7 +1,4 @@
-#include <cassert>
 #include <getopt.h>
-#include <hipo4/reader.h>
-#include <iguana/algorithms/AlgorithmSequence.h>
 
 #include "TestAlgorithm.h"
 #include "TestConfig.h"
