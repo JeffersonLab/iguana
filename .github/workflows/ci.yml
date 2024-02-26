@@ -281,7 +281,9 @@ jobs:
         run: meson install -C build-iguana # must install, so the config files are in the expected location
       ### run tests
       - name: meson test
-        run: stdbuf -o0 meson test --print-errorlogs --verbose --no-stdsplit -C build-iguana
+        run: |
+          meson test --print-errorlogs -C build-iguana # terse
+          # stdbuf -o0 meson test --print-errorlogs --verbose --no-stdsplit -C build-iguana # verbose
       - name: coverage
         if: ${{ matrix.mode == 'coverage' }}
         run: |
