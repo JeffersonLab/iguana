@@ -10,10 +10,8 @@ test_exe = executable(
   install_rpath:       ':'.join(project_exe_rpath),
 )
 
+# test algorithms
 if fs.is_file(get_option('test_data_file'))
-  message('Test sample file provided; you may run tests with `meson test`')
-
-  # test algorithms
   foreach name, info : algo_dict
     if info.has_key('unit_test')
       needs_ROOT = info.get('needs_ROOT', false)
@@ -36,15 +34,14 @@ if fs.is_file(get_option('test_data_file'))
       endif
     endif
   endforeach
-
-  # test config files
-  foreach test_num : [ '1', '2', '3' ]
-    config_file_name = 'test_' + test_num + '.yaml'
-    config_file = fs.copyfile('config' / config_file_name, 'config' / 'test' / config_file_name)
-    test('config-test_' + test_num, test_exe, args: [ '-c', 'config', '-n', test_num ])
-  endforeach
-
 else
   stat_file = get_option('test_data_file')=='' ? 'provided' : 'found'
-  message('Test sample file NOT ' + stat_file + '; you may run tests manually with `' + get_option('prefix') / get_option('bindir') / test_exe_name + '`')
+  message('Test sample file NOT ' + stat_file + '; you may run algorithm tests manually with `' + get_option('prefix') / get_option('bindir') / test_exe_name + '`')
 endif
+
+# test config files
+foreach test_num : [ '1', '2', '3' ]
+  config_file_name = 'test_' + test_num + '.yaml'
+  config_file = fs.copyfile('config' / config_file_name, config_file_name)
+  test('config-test_' + test_num, test_exe, args: [ '-c', 'config', '-n', test_num ])
+endforeach

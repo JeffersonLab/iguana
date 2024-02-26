@@ -82,7 +82,6 @@ int TestConfig(int test_num) {
     return Usage(1);
   }
   auto algo = iguana::AlgorithmFactory::Create("example::ExampleAlgorithm");
-  algo->SetOption("config_dir", "config/test");
   algo->SetOption("config_file", fmt::format("test_{}.yaml", test_num));
   algo->Start();
 
