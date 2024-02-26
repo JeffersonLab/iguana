@@ -18,6 +18,7 @@ algo_dict = {
   'example::ExampleAlgorithm': {
     'sources':      [ 'example/ExampleAlgorithm.cc' ],
     'headers':      [ 'example/ExampleAlgorithm.h' ],
+    'configs':      [ 'example/ExampleAlgorithm.yaml' ],
     'unit_test':    { 'banks': ['REC::Particle'] },
   },
   'clas12::EventBuilderFilter': {

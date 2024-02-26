@@ -105,7 +105,7 @@ namespace iguana {
 
       template <typename SCALAR>
       std::vector<SCALAR> GetVector(YAML::Node node) {
-        if(node.IsDefined()) {
+        if(node.IsDefined() && node.IsSequence()) {
           try {
             std::vector<SCALAR> result;
             for(const auto& element : node)

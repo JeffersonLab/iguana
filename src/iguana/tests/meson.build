@@ -1,9 +1,10 @@
 test_exe_name = 'iguana-test'
+test_exe_inc = include_directories('include')
 
 test_exe = executable(
   test_exe_name,
   test_exe_name + '.cc',
-  include_directories: project_inc,
+  include_directories: [ test_exe_inc, project_inc ],
   dependencies:        project_deps,
   link_with:           project_libs,
   install:             false,
@@ -43,5 +44,5 @@ endif
 foreach test_num : [ '1', '2', '3' ]
   config_file_name = 'test_' + test_num + '.yaml'
   config_file = fs.copyfile('config' / config_file_name, config_file_name)
-  test('config-test_' + test_num, test_exe, args: [ '-c', 'config', '-n', test_num ])
+  test('config-test_' + test_num, test_exe, args: [ '-c', 'config', '-t', test_num, '-v' ])
 endforeach

@@ -91,16 +91,16 @@ namespace iguana::example {
       // # configuration options
       // # - their type may be:
       // #   - one of the allowed types in `option_t`, which is a `std::variant`
-      // #   - `std::set`, used by `Algorithm::CacheOptionToSet`, which converts
+      // #   - `std::set`, used by `Algorithm::GetOptionSet`, which converts
       // #     a user's `std::vector` option to a `std::set`
       // #   - your own type, but you will have to set it in the `Start()` method
-      // # - here we show example `int` and `float` options
+      // # - here we show example `int` and `double` options
       // # - convention: they should start with `o_`
       // ############################################################################
       /// Example integer configuration option
       int o_exampleInt;
-      /// Example float configuration option
-      double o_exampleFloat;
+      /// Example double configuration option
+      double o_exampleDouble;
   };
 
 }

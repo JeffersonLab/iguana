@@ -24,14 +24,11 @@ namespace iguana::example {
   void ExampleAlgorithm::Start(hipo::banklist& banks)
   {
     // ############################################################################
-    // # define configuration options, their default values, and cache them
-    // # - see `Algorithm.h` for more details
-    // # - this function "caches" the option values into the `o_*` members, to
-    // #   avoid looking them up in the `Algorithm::Run` method
+    // # get configuration options
     // ############################################################################
     ParseYAMLConfig();
-    CacheOption("exampleInt", 8, o_exampleInt);
-    CacheOption("exampleFloat", 7.0, o_exampleFloat);
+    o_exampleInt    = GetOptionScalar<int>("exampleInt");
+    o_exampleDouble = GetOptionScalar<double>("exampleDouble");
     // ############################################################################
     // # cache expected bank indices
     // # - here we make sure that parameter `banks` includes the banks that are

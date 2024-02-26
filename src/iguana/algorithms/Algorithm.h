@@ -100,7 +100,7 @@ namespace iguana {
         }
         catch(const std::runtime_error& ex) {
           m_log->Error("Failed to `GetOptionScalar` for key '{}'", key);
-          return {};
+          throw std::runtime_error("config file parsing issue");
         }
       }
 
@@ -117,14 +117,13 @@ namespace iguana {
         }
         catch(const std::runtime_error& ex) {
           m_log->Error("Failed to `GetOptionVector` for key '{}'", key);
-          return {};
+          throw std::runtime_error("config file parsing issue");
         }
       }
 
       template <typename OPTION_TYPE>
       std::set<OPTION_TYPE> GetOptionSet(const std::string key, YAMLReader::node_path_t node_path = {})
       {
-        CompleteOptionNodePath(key, node_path);
         auto val_vec = GetOptionVector<OPTION_TYPE>(key, node_path);
         std::set<OPTION_TYPE> val_set;
         std::copy(val_vec.begin(), val_vec.end(), std::inserter(val_set, val_set.end()));

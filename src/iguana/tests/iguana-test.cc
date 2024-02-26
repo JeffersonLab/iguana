@@ -3,131 +3,9 @@
 #include <hipo4/reader.h>
 #include <iguana/algorithms/AlgorithmSequence.h>
 
-bool verbose          = false;
-std::function<int(int)> Usage;
+#include "TestAlgorithm.h"
+#include "TestConfig.h"
 
-// test an iguana algorithm
-// ------------------------------------------------------------------------------
-int TestAlgorithm(
-    std::string command,
-    std::string algo_name,
-    std::vector<std::string> bank_names,
-    std::string data_file,
-    int num_events)
-{
-
-  // check arguments
-  if(algo_name == "" || bank_names.empty()) {
-    fmt::print(stderr, "ERROR: need algorithm name and banks\n");
-    return Usage(1);
-  }
-  if(command == "algorithm" && data_file == "") {
-    fmt::print(stderr, "ERROR: need a data file for command 'algorithm'\n");
-    return Usage(1);
-  }
-
-  // open the HIPO file; we use 2 readers, one for 'before' (i.e., not passed through iguana), and one for 'after'
-  // (passed through iguana), so we may compare them
-  hipo::reader reader_before(data_file.c_str()); // NOTE: not copy-constructable, so make two separate readers
-  hipo::reader reader_after(data_file.c_str());
-  auto banks_before = reader_before.getBanks(bank_names);
-  auto banks_after  = reader_after.getBanks(bank_names);
-
-  // define the algorithm
-  iguana::AlgorithmSequence seq;
-  seq.Add(algo_name);
-  seq.SetOption(algo_name, "log", verbose ? "trace" : "info");
-
-  // start the algorithm
-  seq.Start(banks_after);
-
-  // event loop
-  int it_ev = 0;
-  while(reader_after.next(banks_after) && (num_events == 0 || it_ev++ < num_events)) {
-    // iterate the 'before' reader too
-    reader_before.next(banks_before);
-    // run the algorithm
-    if(command == "algorithm")
-      seq.Run(banks_after);
-    else if(command == "unit") {
-      fmt::print(stderr, "ERROR: unit tests are not yet implemented (TODO)\n");
-      return 1;
-    }
-    else {
-      fmt::print(stderr, "ERROR: unknown command '{}'\n", command);
-      return 1;
-    }
-    // print the banks, before and after
-    if(verbose) {
-      for(decltype(bank_names)::size_type it_bank = 0; it_bank < bank_names.size(); it_bank++) {
-        fmt::print("{:=^70}\n", fmt::format(" BEFORE: {} ", bank_names.at(it_bank)));
-        banks_before.at(it_bank).show();
-        fmt::print("{:=^70}\n", fmt::format(" AFTER: {} ", bank_names.at(it_bank)));
-        banks_after.at(it_bank).show();
-        fmt::print("\n");
-      }
-    }
-  }
-
-  // stop the algorithm
-  seq.Stop();
-  return 0;
-}
-
-// test algorithm configuration
-// ------------------------------------------------------------------------------
-int TestConfig(int test_num) {
-  if(test_num == 0) {
-    fmt::print(stderr, "ERROR: need a test number\n");
-    return Usage(1);
-  }
-  auto algo = iguana::AlgorithmFactory::Create("example::ExampleAlgorithm");
-  algo->SetOption("config_file", fmt::format("test_{}.yaml", test_num));
-  algo->Start();
-
-  switch(test_num) {
-
-    case 1:
-    {
-      // test `GetOptionScalar`
-      assert((algo->GetOptionScalar<int>("scalar_int") == 1));
-      assert((algo->GetOptionScalar<double>("scalar_double") == 2.5));
-      assert((algo->GetOptionScalar<std::string>("scalar_string") == "lizard"));
-      // test `GetOptionVector`
-      assert((algo->GetOptionVector<int>("vector_int") == std::vector<int>{1, 2, 3}));
-      assert((algo->GetOptionVector<double>("vector_double") == std::vector<double>{1.5, 2.5}));
-      assert((algo->GetOptionVector<std::string>("vector_string") == std::vector<std::string>{"bat", "chameleon", "spider"}));
-      // test `GetOptionSet`
-      auto s = algo->GetOptionSet<std::string>("vector_string");
-      assert((s.find("spider") != s.end()));
-      assert((s.find("bee") == s.end()));
-      // test empty access
-      try {
-        algo->GetOptionScalar<int>("scalar_empty");
-        throw std::runtime_error("accessing 'scalar_empty' did not throw exception");
-      }
-      catch(const std::exception& ex) {
-        // do nothing, since we expect an exception
-      }
-      try {
-        algo->GetOptionVector<int>("vector_empty");
-        throw std::runtime_error("accessing 'vector_empty' did not throw exception");
-      }
-      catch(const std::exception& ex) {
-        // do nothing, since we expect an exception
-      }
-      break;
-    }
-
-    default:
-      fmt::print(stderr, "ERROR: unknown test number '{}'", test_num);
-      return 1;
-  }
-  return 0;
-}
-
-// main
-// ------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
   // user parameters
@@ -136,10 +14,11 @@ int main(int argc, char** argv)
   int num_events        = 10;
   std::string algo_name = "";
   int test_num          = 0;
+  bool verbose          = false;
   std::vector<std::string> bank_names;
 
   // usage
-  Usage = [&](int exit_code)
+  auto Usage = [&](int exit_code)
   {
     fmt::print(stderr, "\nUSAGE: {} [OPTIONS]...\n", argv[0]);
     fmt::print("\n");
@@ -211,10 +90,10 @@ int main(int argc, char** argv)
 
   // run test
   if(command == "algorithm" || command == "unit") {
-    return TestAlgorithm(command, algo_name, bank_names, data_file, num_events);
+    return TestAlgorithm(command, algo_name, bank_names, data_file, num_events, verbose);
   }
   else if(command == "config") {
-    return TestConfig(test_num);
+    return TestConfig(test_num, verbose);
   }
   else {
     fmt::print(stderr, "ERROR: need at least a command\n");
