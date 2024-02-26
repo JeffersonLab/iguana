@@ -22,7 +22,8 @@ namespace iguana {
       double,
       std::string,
       std::vector<int>,
-      std::vector<double> >;
+      std::vector<double>,
+      std::vector<std::string> >;
 
   /// @brief Base class for all algorithms to inherit from
   ///
