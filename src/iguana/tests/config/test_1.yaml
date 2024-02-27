@@ -9,6 +9,7 @@ example::ExampleAlgorithm:
   vector_int: [ 1, 2, 3]
   vector_double: [ 1.5, 2.5 ]
   vector_string:
+    - spider
     - bat
     - chameleon
     - spider

@@ -88,7 +88,7 @@ namespace iguana {
       }
 
       /// Get the value of a scalar option
-      /// @param key the unique key name of this option
+      /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the scalar option
       template <typename OPTION_TYPE>
@@ -96,10 +96,12 @@ namespace iguana {
       {
         try {
           CompleteOptionNodePath(key, node_path);
-          auto val = GetCachedOption<OPTION_TYPE>(key).value_or(
-              m_yaml_config->GetScalar<OPTION_TYPE>(node_path));
-          m_option_cache[key] = val;
-          m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
+          auto opt = GetCachedOption<OPTION_TYPE>(key);
+          auto val = opt ? opt.value() : m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
+          if(key != "") {
+            m_option_cache[key] = val;
+            m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
+          }
           return val;
         }
         catch(const std::runtime_error& ex) {
@@ -109,7 +111,7 @@ namespace iguana {
       }
 
       /// Get the value of a vector option
-      /// @param key the unique key name of this option
+      /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the vector option
       template <typename OPTION_TYPE>
@@ -117,10 +119,12 @@ namespace iguana {
       {
         try {
           CompleteOptionNodePath(key, node_path);
-          auto val = GetCachedOption<std::vector<OPTION_TYPE>>(key).value_or(
-              m_yaml_config->GetVector<OPTION_TYPE>(node_path));
-          m_option_cache[key] = val;
-          m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
+          auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
+          auto val = opt ? opt.value() : m_yaml_config->GetVector<OPTION_TYPE>(node_path);
+          if(key != "") {
+            m_option_cache[key] = val;
+            m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
+          }
           return val;
         }
         catch(const std::runtime_error& ex) {
@@ -237,6 +241,8 @@ namespace iguana {
       template <typename OPTION_TYPE>
       std::optional<OPTION_TYPE> GetCachedOption(const std::string key) const
       {
+        if(key == "")
+          return {};
         if(auto it{m_option_cache.find(key)}; it != m_option_cache.end()) {
           try { // get the expected type
             return std::get<OPTION_TYPE>(it->second);

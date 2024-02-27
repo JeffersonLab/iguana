@@ -17,5 +17,5 @@ example::ExampleAlgorithm:
       - -4
       - 5
 
-  vector3:
+  vector1:
     - bee
