@@ -49,22 +49,6 @@ namespace iguana {
     m_enable_style = false;
   }
 
-  void Logger::AddTag(std::string tag)
-  {
-    m_tags.push_back(tag);
-  }
-
-  void Logger::RemoveLastTag()
-  {
-    if(!m_tags.empty())
-      m_tags.pop_back();
-  }
-
-  void Logger::ClearTags()
-  {
-    m_tags.clear();
-  }
-
   std::string Logger::Header(const std::string message, const int width)
   {
     return fmt::format("{:=^{}}", " " + message + " ", width);

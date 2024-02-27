@@ -66,16 +66,6 @@ namespace iguana {
       /// Disable styled log printout color and emphasis
       void DisableStyle();
 
-      /// Add an additional tag for this logger; all tags will be printed with each message.
-      /// @param tag the new tag
-      void AddTag(std::string tag);
-
-      /// Remove the last tag which was added by `Logger::AddTag`
-      void RemoveLastTag();
-
-      /// Remove all tags which were added by `Logger::AddTag`
-      void ClearTags();
-
       /// Generate a header for a printout
       /// @param message the header message
       /// @param width the width of the header in number of characters
@@ -127,8 +117,6 @@ namespace iguana {
               }
             }
             prefix = fmt::format("{} {} ", style(it->second), style(m_name));
-            for(const auto& tag : m_tags)
-              prefix += fmt::format("{} ", style(tag));
             fmt::print(
                 lev >= warn ? stderr : stdout,
                 fmt::runtime(prefix + message + "\n"),
@@ -154,8 +142,5 @@ namespace iguana {
 
       /// If true, style the printouts
       bool m_enable_style;
-
-      /// Additional tags, for more fine-grained logging
-      std::vector<std::string> m_tags;
   };
 }
