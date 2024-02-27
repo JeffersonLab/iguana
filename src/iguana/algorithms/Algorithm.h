@@ -69,8 +69,9 @@ namespace iguana {
       /// owned by this algorithm will be changed to the specified value.
       /// @param key the name of the option
       /// @param val the value to set
+      /// @returns the value that has been set (if needed, _e.g._, when `val` is an rvalue)
       template <typename OPTION_TYPE>
-      void SetOption(const std::string key, const OPTION_TYPE val)
+      OPTION_TYPE SetOption(const std::string key, const OPTION_TYPE val)
       {
         if(key == "log") {
           if constexpr(std::disjunction<
@@ -83,8 +84,9 @@ namespace iguana {
         }
         else {
           m_option_cache[key] = val;
-          m_log->Debug("User set option '{}' = {}", key, PrintOptionValue(key));
+          m_log->Debug("  USER OPTION: {:>20} = {}", key, PrintOptionValue(key));
         }
+        return val;
       }
 
       /// Get the value of a scalar option
@@ -158,58 +160,24 @@ namespace iguana {
       /// @param yaml_config the custom `YAMLReader` instance
       void SetConfig(std::unique_ptr<YAMLReader>&& yaml_config);
 
+      /// Set a custom configuration file for this algorithm; see also `Algorithm::SetConfigDirectory`
+      /// @param name the configuration file name
+      void SetConfigFile(std::string name);
+
+      /// Set a custom configuration file directory for this algorithm; see also `Algorithm::SetConfigFile`
+      /// @param name the directory name
+      void SetConfigDirectory(std::string name);
+
     protected: // methods
 
       /// Parse YAML configuration files. Sets `m_yaml_config`.
       void ParseYAMLConfig();
 
-      /// Cache the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
-      /// @param[in] banks the list of banks this algorithm will use
-      /// @param[in] bankName the name of the bank
-      /// @param[out] idx a reference to the `hipo::banklist` index of the bank
-      void CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const noexcept(false);
-
-      /// Cache an option specified by the user, and define its default value. If the user-specified
-      /// option has the wrong type, an error will be printed and the default value will be used instead.
-      /// @param[in] key the name of the option
-      /// @param[in] def the default value
-      /// @param[out] val reference to the value of the option, to be cached by `Algorithm::Start`
-      template <typename OPTION_TYPE>
-      void CacheOption(const std::string key, const OPTION_TYPE def, OPTION_TYPE& val)
-      {
-        bool get_error = false;
-        if(auto it{m_option_cache.find(key)}; it != m_option_cache.end()) { // cache the user's option value
-          try { // get the expected type
-            val = std::get<OPTION_TYPE>(it->second);
-          }
-          catch(const std::bad_variant_access& ex) {
-            m_log->Error("user option '{}' set to '{}', which is the wrong type...", key, PrintOptionValue(key));
-            get_error = true;
-            val       = def;
-          }
-        }
-        else { // cache the default option value
-          val = def;
-        }
-        // sync `m_option_cache` to match the cached value `val` (e.g., so we can use `PrintOptionValue` to print it)
-        m_option_cache[key] = val;
-        if(get_error)
-          m_log->Error("...using default value '{}' instead", PrintOptionValue(key));
-        m_log->Debug("OPTION: {:>20} = {}", key, PrintOptionValue(key));
-      }
-
-      /// Cache an option of type `std::vector` and convert it to `std::set`
-      /// @see `Algorithm::CacheOption`
-      /// @param[in] key the name of the option
-      /// @param[in] def the default `std::vector`
-      /// @param[out] val reference to the `std::set` option
-      template <typename T>
-      void CacheOptionToSet(const std::string key, const std::vector<T> def, std::set<T>& val)
-      {
-        std::vector<T> vec;
-        CacheOption(key, def, vec);
-        std::copy(vec.begin(), vec.end(), std::inserter(val, val.end()));
-      }
+      /// Get the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
+      /// @param banks the list of banks this algorithm will use
+      /// @param bankName the name of the bank
+      /// returns the `hipo::banklist` index of the bank
+      hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, const std::string bankName) const noexcept(false);
 
       /// Return a string with the value of an option along with its type
       /// @param key the name of the option
@@ -240,8 +208,9 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank& bank, const std::string message = "", const Logger::Level level = Logger::trace) const;
 
-    private: // methods
-
+      /// Get an option from the option cache
+      /// @param key the key name associated with this option
+      /// @returns the option value, if found (using `std::optional`)
       template <typename OPTION_TYPE>
       std::optional<OPTION_TYPE> GetCachedOption(const std::string key) const
       {
@@ -258,12 +227,15 @@ namespace iguana {
         return {};
       }
 
+    private: // methods
+
+      /// Prepend `node_path` with the full algorithm name. If `node_path` is empty, set it to `{key}`.
+      /// @param key the key name for this option
+      /// @param node_path the `YAMLReader::node_path_t` to prepend
       void CompleteOptionNodePath(const std::string key, YAMLReader::node_path_t& node_path) const
       {
-        // if `node_path` is empty, set it to `{ key }`
         if(node_path.empty())
           node_path.push_front(key);
-        // algorithm full name must be the first node's key
         node_path.push_front(m_class_name);
       }
 
@@ -282,11 +254,11 @@ namespace iguana {
       std::string m_default_config_file;
 
       /// User's configuration file name, which may override the default configuration file, `m_default_config_file`.
-      /// Set with `Algorithm::SetOption` using key `"config_file"`.
+      /// Set it with `Algorithm::SetConfigFile`
       std::string o_user_config_file;
 
       /// User's configuration file directory.
-      /// Set with `Algorithm::SetOption` using key `"config_dir"`.
+      /// Set it with `Algorithm::SetConfigDirectory`
       std::string o_user_config_dir;
 
     private: // members

@@ -7,7 +7,9 @@ namespace iguana::clas12 {
   void LorentzTransformer::Start(hipo::banklist& banks)
   {
 
-    CacheOption("frame", std::string{"beam_rest_frame"}, o_frame);
+    // define options, their default values, and cache them
+    ParseYAMLConfig();
+    o_frame = GetOptionScalar<std::string>("frame");
 
     // define transformation function
     // TODO: add more useful frames, e.g., Breit, but they require other momenta, such as q;
@@ -15,14 +17,14 @@ namespace iguana::clas12 {
     // requires the beam energy
     if(o_frame == "beam_rest_frame") { // beam electron rest frame
       m_transformation_type = e_boost;
-      CacheOption("beam_energy", 10.6, o_beam_energy);
+      o_beam_energy = GetCachedOption<double>("beam_energy").value_or(10.6); // FIXME
     }
     else {
       m_log->Error("unknown frame '{}'", o_frame);
       throw std::runtime_error("cannot Start LorentzTransformer algorithm");
     }
 
-    CacheBankIndex(banks, "REC::Particle", b_particle);
+    b_particle = GetBankIndex(banks, "REC::Particle");
   }
 
 

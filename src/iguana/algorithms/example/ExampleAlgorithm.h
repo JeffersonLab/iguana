@@ -80,7 +80,7 @@ namespace iguana::example {
 
       // ############################################################################
       // # indices for the banks needed for this algorithm
-      // # - see `Algorithm::CacheBankIndex` for details
+      // # - see `Algorithm::GetBankIndex` for details
       // # - here, we just define one for the `REC::Particle` bank
       // # - convention: they should start with `b_`
       // ############################################################################

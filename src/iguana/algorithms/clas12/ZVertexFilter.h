@@ -21,11 +21,21 @@ namespace iguana::clas12 {
       /// @returns `true` if `zvertex` is within specified bounds
       bool Filter(const double zvertex) const;
 
+      /// @returns the current run number
+      int GetRunNum() const;
+      /// @returns the current z-vertex lower cut
+      double GetZcutLower() const;
+      /// @returns the current z-vertex upper cut
+      double GetZcutUpper() const;
+
     private:
       /// `hipo::banklist` index for the particle bank
       hipo::banklist::size_type b_particle;
 
-      /// Configuration options
+      /// Run number
+      int o_runnum;
+
+      /// Z-vertex cut
       std::vector<double> o_zcuts;
   };
 

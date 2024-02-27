@@ -11,7 +11,8 @@ inline int TestConfig(int test_num, bool verbose)
   }
   auto algo = iguana::AlgorithmFactory::Create("example::ExampleAlgorithm");
   algo->SetOption("log", verbose ? "debug" : "info");
-  algo->SetOption("config_file", fmt::format("src/iguana/tests/test_{}.yaml", test_num)); // must be relative to build directory
+  algo->SetConfigDirectory("src/iguana/tests"); // must be relative to build directory
+  algo->SetConfigFile(fmt::format("test_{}.yaml", test_num));
   algo->Start();
 
   switch(test_num) {

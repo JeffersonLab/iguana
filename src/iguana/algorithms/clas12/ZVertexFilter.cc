@@ -7,19 +7,17 @@ namespace iguana::clas12 {
   void ZVertexFilter::Start(hipo::banklist& banks)
   {
 
-    // FIXME: need a way of passing in run numbers and pid values
-    int runnb = 5000; // default to RG-A fall2018 inbending for now
-
     // Read YAML config file with cuts for a given run number.
     ParseYAMLConfig();
-    o_zcuts = GetOptionVector<double>("zcuts", { GetConfig()->InRange("runs", runnb), "cuts" });
+    o_runnum = GetCachedOption<int>("runnum").value_or(0); // FIXME: should be set form RUN::config
+    o_zcuts  = GetOptionVector<double>("zcuts", { GetConfig()->InRange("runs", o_runnum), "cuts" });
     if(o_zcuts.size() != 2) {
       m_log->Error("configuration option 'zcuts' must be an array of size 2, but it is {}", PrintOptionValue("zcuts"));
       throw std::runtime_error("bad configuration");
     }
 
-    // cache expected bank indices
-    CacheBankIndex(banks, "REC::Particle", b_particle);
+    // get expected bank indices
+    b_particle = GetBankIndex(banks, "REC::Particle");
   }
 
   void ZVertexFilter::Run(hipo::banklist& banks) const
@@ -47,7 +45,19 @@ namespace iguana::clas12 {
 
   bool ZVertexFilter::Filter(const double zvertex) const
   {
-    return (zvertex > o_zcuts[0]) && (zvertex < o_zcuts[1]);
+    return zvertex > GetZcutLower() && zvertex < GetZcutUpper();
+  }
+
+  int ZVertexFilter::GetRunNum() const {
+    return o_runnum;
+  }
+
+  double ZVertexFilter::GetZcutLower() const {
+    return o_zcuts.at(0);
+  }
+
+  double ZVertexFilter::GetZcutUpper() const {
+    return o_zcuts.at(1);
   }
 
   void ZVertexFilter::Stop()

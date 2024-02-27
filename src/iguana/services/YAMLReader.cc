@@ -4,10 +4,10 @@ namespace iguana {
 
   void YAMLReader::LoadFiles()
   {
-    m_log->Debug("Called YAMLReader::LoadFiles()");
+    m_log->Debug("YAMLReader::LoadFiles():");
     for(const auto& file : m_files) {
       try {
-        m_log->Debug(" - Loading YAML file: {}", file);
+        m_log->Debug(" - load: {}", file);
         m_configs.push_back({YAML::LoadFile(file), file}); // m_config must be the same ordering as m_files, so `push_back`
       }
       catch(const YAML::Exception& e) {

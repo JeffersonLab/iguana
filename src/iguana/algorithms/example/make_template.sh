@@ -39,7 +39,7 @@ for ext in h cc; do
     sed "s;example::;$namespace::;g" |\
     sed "s;::example;::$namespace;g" |\
     sed "s;iguana::iguana;iguana;g" |\
-    grep -v '//#' \
+    grep -v '// #' \
     > $outFile
   echo Created $outFile
 done

@@ -19,7 +19,7 @@ namespace iguana {
   {
     if(dir == "")
       return; // handle unset directory name
-    m_log->Debug("Add directory {}", dir);
+    m_log->Trace("Add directory {}", dir);
     m_directories.push_front(dir);
   }
 
@@ -28,7 +28,7 @@ namespace iguana {
     if(name == "")
       return; // handle unset file name
     auto full_name = FindFile(name);
-    m_log->Debug("  ===> Add file {}", full_name);
+    m_log->Trace("  ===> Add file {}", full_name);
     m_files.push_front(full_name);
   }
 
@@ -47,17 +47,17 @@ namespace iguana {
   {
     if(name == "")
       return ""; // handle unset file name
-    m_log->Debug("Searching for file '{}' in:", name);
+    m_log->Trace("Searching for file '{}' in:", name);
     // first try `./` or assume `name` is a relative or absolute path + filename
     auto found_local = std::filesystem::exists(name);
-    m_log->Debug("  - ./{}", found_local ? " - FOUND" : "");
+    m_log->Trace("  - ./{}", found_local ? " - FOUND" : "");
     if(found_local)
       return name;
     // then search each entry of `m_directories`
     for(const auto& dir : m_directories) {
       std::string filename = dir + "/" + name;
       auto found           = std::filesystem::exists(filename);
-      m_log->Debug("  - {}{}", dir, found ? " - FOUND" : "");
+      m_log->Trace("  - {}{}", dir, found ? " - FOUND" : "");
       if(found)
         return filename;
     }
@@ -81,7 +81,7 @@ namespace iguana {
     std::string::size_type it = 0;
     while((it = result.find("::", it)) != std::string::npos)
       result.replace(it, 2, "/");
-    return result + "." + ext;
+    return "algorithms/" + result + "." + ext;
   }
 
 }

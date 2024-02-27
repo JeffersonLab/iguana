@@ -1,0 +1,57 @@
+example::ExampleAlgorithm:
+  #some random single values and arrays
+  myIntVector:
+    - 1
+    - 2
+    - 3
+
+  myDoubleVector:
+    - 1.1
+    - 2.2
+    - 3.3
+
+  myStringVector:
+    - "apple"
+    - "banana"
+    - "cherry"
+
+  myInt: 42
+  myDouble: 3.14
+  myString: "Hello, YAML!"
+
+clas12::ZVertexFilter:
+
+  # default cuts
+  - default:
+    cuts: [ -33.0, 11.0 ]
+
+  #RG-A fall2018 inbending
+  - runs: [ 4760, 5419 ]
+    cuts: [ -13.0, 12.0 ]
+
+   #RG-A fall2018 outbending
+  - runs: [ 5420, 5674 ]
+    cuts: [ -18.0, 10.0 ]
+
+another::Algorithm:
+  #Cuts below are just examples:
+  #No one defined pid/sector dependent cuts on vz
+  #No one defined RG-B specific cuts on vz
+  #single structure probably does not make send
+  - runs: #RG-B spring2019
+      - 6141
+      - 6606
+    pid:
+      11:
+        - -10.0
+        - 11.0
+      211:
+        - -15.0
+        - 20.0
+    sector:
+      5:
+        - -5
+        - 5
+    single: #single values instead of arrays
+      0: -6
+      1: 14

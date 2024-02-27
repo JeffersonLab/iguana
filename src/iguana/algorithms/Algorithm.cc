@@ -25,11 +25,20 @@ namespace iguana {
     m_yaml_config = std::move(yaml_config);
   }
 
+  void Algorithm::SetConfigFile(std::string name)
+  {
+    o_user_config_file = SetOption("config_file", name);
+  }
+
+  void Algorithm::SetConfigDirectory(std::string name) {
+    o_user_config_dir = SetOption("config_dir", name);
+  }
+
   void Algorithm::ParseYAMLConfig()
   {
     if(!m_yaml_config) {
-      CacheOption("config_file", std::string{""}, o_user_config_file);
-      CacheOption("config_dir", std::string{""}, o_user_config_dir);
+      o_user_config_file = GetCachedOption<std::string>("config_file").value_or("");
+      o_user_config_dir  = GetCachedOption<std::string>("config_dir").value_or("");
       m_log->Debug("Instantiating `YAMLReader`");
       m_yaml_config = std::make_unique<YAMLReader>("config|" + m_name);
       m_yaml_config->SetLogLevel(m_log->GetLevel());
@@ -42,10 +51,10 @@ namespace iguana {
     m_yaml_config->LoadFiles();
   }
 
-  void Algorithm::CacheBankIndex(hipo::banklist& banks, const std::string bankName, hipo::banklist::size_type& idx) const
+  hipo::banklist::size_type Algorithm::GetBankIndex(hipo::banklist& banks, const std::string bankName) const
   {
     if(m_rows_only)
-      return;
+      return 0;
     auto it = std::find_if(
         banks.begin(),
         banks.end(),
@@ -55,8 +64,9 @@ namespace iguana {
       m_log->Error("required input bank '{}' not found; cannot `Start` algorithm '{}'", bankName, m_name);
       throw std::runtime_error("cannot cache bank index");
     }
-    idx = std::distance(banks.begin(), it);
+    auto idx = std::distance(banks.begin(), it);
     m_log->Debug("cached index of bank '{}' is {}", bankName, idx);
+    return idx;
   }
 
   std::string Algorithm::PrintOptionValue(const std::string key) const
