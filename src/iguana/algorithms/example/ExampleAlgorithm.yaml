@@ -1,3 +1,8 @@
+# Very simple configuration file example
+# - For better examples, showing more features, take a look at configuration
+#   files from other algorithms
+# - See also the test configuration files in ../../tests/config and how they
+#   may be accessed in ../../tests/include/TestConfig.h
 example::ExampleAlgorithm:
   exampleInt: 8
   exampleDouble: 7.5

@@ -25,6 +25,8 @@ namespace iguana::example {
   {
     // ############################################################################
     // # get configuration options
+    // # - by default, this will read `ExampleAlgorithm.yaml`, unless the algorithm
+    // #   user has specified to use a different configuration file or directory
     // ############################################################################
     ParseYAMLConfig();
     o_exampleInt    = GetOptionScalar<int>("exampleInt");
