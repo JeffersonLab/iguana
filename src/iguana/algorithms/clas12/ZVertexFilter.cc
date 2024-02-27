@@ -8,11 +8,15 @@ namespace iguana::clas12 {
   {
 
     // FIXME: need a way of passing in run numbers and pid values
-    int runnb = 10000; // default to RG-A fall2018 inbending for now
+    int runnb = 5000; // default to RG-A fall2018 inbending for now
 
     // Read YAML config file with cuts for a given run number.
     ParseYAMLConfig();
-    auto o_zcuts = GetOptionVector<double>("zcuts", { GetConfig()->InRange("runs", runnb), "cuts" });
+    o_zcuts = GetOptionVector<double>("zcuts", { GetConfig()->InRange("runs", runnb), "cuts" });
+    if(o_zcuts.size() != 2) {
+      m_log->Error("configuration option 'zcuts' must be an array of size 2, but it is {}", PrintOptionValue("zcuts"));
+      throw std::runtime_error("bad configuration");
+    }
 
     // cache expected bank indices
     CacheBankIndex(banks, "REC::Particle", b_particle);
