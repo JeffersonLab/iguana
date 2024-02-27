@@ -49,7 +49,7 @@ namespace iguana {
       /// @param algo_name the algorithm name
       /// @param ext the file extension
       /// @return the config file name
-      static std::string ConvertAlgoNameToConfigName(const std::string algo_name, const std::string ext="yaml");
+      static std::string ConvertAlgoNameToConfigName(const std::string algo_name, const std::string ext = "yaml");
 
     protected:
 

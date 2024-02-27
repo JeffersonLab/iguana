@@ -16,7 +16,8 @@ namespace iguana {
       m_yaml_config->SetName("config|" + m_name);
   }
 
-  std::unique_ptr<YAMLReader>& Algorithm::GetConfig() {
+  std::unique_ptr<YAMLReader>& Algorithm::GetConfig()
+  {
     return m_yaml_config;
   }
 
@@ -30,7 +31,8 @@ namespace iguana {
     o_user_config_file = SetOption("config_file", name);
   }
 
-  void Algorithm::SetConfigDirectory(std::string name) {
+  void Algorithm::SetConfigDirectory(std::string name)
+  {
     o_user_config_dir = SetOption("config_dir", name);
   }
 

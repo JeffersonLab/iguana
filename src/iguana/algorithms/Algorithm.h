@@ -2,10 +2,10 @@
 
 #include <algorithm>
 #include <functional>
+#include <optional>
 #include <set>
 #include <unordered_map>
 #include <variant>
-#include <optional>
 #include <vector>
 
 #include <hipo4/bank.h>
@@ -23,7 +23,7 @@ namespace iguana {
       std::string,
       std::vector<int>,
       std::vector<double>,
-      std::vector<std::string> >;
+      std::vector<std::string>>;
 
   /// @brief Base class for all algorithms to inherit from
   ///
@@ -77,7 +77,7 @@ namespace iguana {
           if constexpr(std::disjunction<
                            std::is_same<OPTION_TYPE, std::string>,
                            std::is_same<OPTION_TYPE, const char*>,
-                           std::is_same<OPTION_TYPE, Logger::Level> >::value)
+                           std::is_same<OPTION_TYPE, Logger::Level>>::value)
             m_log->SetLevel(val);
           else
             m_log->Error("Option '{}' must be a string or a Logger::Level", key);
@@ -265,7 +265,6 @@ namespace iguana {
 
       /// YAML reader
       std::unique_ptr<YAMLReader> m_yaml_config;
-
   };
 
   //////////////////////////////////////////////////////////////////////////////

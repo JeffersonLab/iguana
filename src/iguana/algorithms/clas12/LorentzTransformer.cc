@@ -17,7 +17,7 @@ namespace iguana::clas12 {
     // requires the beam energy
     if(o_frame == "beam_rest_frame") { // beam electron rest frame
       m_transformation_type = e_boost;
-      o_beam_energy = GetCachedOption<double>("beam_energy").value_or(10.6); // FIXME
+      o_beam_energy         = GetCachedOption<double>("beam_energy").value_or(10.6); // FIXME
     }
     else {
       m_log->Error("unknown frame '{}'", o_frame);

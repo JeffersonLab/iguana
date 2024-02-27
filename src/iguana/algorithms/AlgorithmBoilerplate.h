@@ -8,7 +8,7 @@
       : Algorithm(name == "" ? GetClassName() : name) \
   {                                                   \
     m_default_config_file = GetDefaultConfigFile();   \
-    m_class_name = GetClassName();                    \
+    m_class_name          = GetClassName();           \
   }
 
 /// Generate an algorithm destructor

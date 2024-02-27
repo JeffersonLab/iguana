@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <variant>
+#include <vector>
 
 #include <yaml-cpp/yaml.h>
 
@@ -40,7 +40,8 @@ namespace iguana {
       /// @param node the `YAML::Node` to read
       /// @return the scalar
       template <typename SCALAR>
-      SCALAR GetScalar(YAML::Node node) {
+      SCALAR GetScalar(YAML::Node node)
+      {
         if(node.IsDefined() && !node.IsNull()) {
           try {
             return node.as<SCALAR>();
@@ -59,7 +60,8 @@ namespace iguana {
       /// @param node_path the `YAML::Node` path
       /// @return the scalar
       template <typename SCALAR>
-      SCALAR GetScalar(node_path_t node_path) {
+      SCALAR GetScalar(node_path_t node_path)
+      {
         for(const auto& [config, filename] : m_configs) {
           auto node = FindNode(config, node_path);
           if(node.IsDefined() && !node.IsNull())
@@ -72,7 +74,8 @@ namespace iguana {
       /// @param node the `YAML::Node` to read
       /// @return the vector
       template <typename SCALAR>
-      std::vector<SCALAR> GetVector(YAML::Node node) {
+      std::vector<SCALAR> GetVector(YAML::Node node)
+      {
         if(node.IsDefined() && !node.IsNull() && node.IsSequence()) {
           try {
             std::vector<SCALAR> result;
@@ -94,7 +97,8 @@ namespace iguana {
       /// @param node_path the `YAML::Node` path
       /// @return the vector
       template <typename SCALAR>
-      std::vector<SCALAR> GetVector(node_path_t node_path) {
+      std::vector<SCALAR> GetVector(node_path_t node_path)
+      {
         for(const auto& [config, filename] : m_configs) {
           auto node = FindNode(config, node_path);
           if(node.IsDefined() && !node.IsNull())
@@ -109,8 +113,10 @@ namespace iguana {
       /// @param val the scalar value to check
       /// @returns the search function
       template <typename SCALAR>
-      node_finder_t InRange(std::string key, SCALAR val) {
-        return [this, key, val](YAML::Node node) -> YAML::Node {
+      node_finder_t InRange(std::string key, SCALAR val)
+      {
+        return [this, key, val](YAML::Node node) -> YAML::Node
+        {
           if(!node.IsSequence()) {
             m_log->Error("YAML node path expected a sequence at current node");
             throw std::runtime_error("Failed `InRange`");
@@ -141,7 +147,8 @@ namespace iguana {
       /// @param node the root `YAML::Node`
       /// @param node_path the path of `YAML::Node` identifiers
       /// @returns either the found `YAML::Node`, or an empty (null) `YAML::Node` if one is not found
-      YAML::Node FindNode(YAML::Node node, node_path_t node_path) {
+      YAML::Node FindNode(YAML::Node node, node_path_t node_path)
+      {
 
         // if `node_path` is empty, we are likely at the end of the node path; end recursion and return `node`
         if(node_path.empty()) {
@@ -150,10 +157,11 @@ namespace iguana {
         }
 
         // find the next node using the first `node_id_t` in `node_path`
-        auto node_id_visitor = [&node, &m_log = this->m_log](auto&& arg) -> YAML::Node {
+        auto node_id_visitor = [&node, &m_log = this->m_log](auto&& arg) -> YAML::Node
+        {
           using arg_t = std::decay_t<decltype(arg)>;
           // find a node by key name
-          if constexpr(std::is_same_v<arg_t,std::string>) {
+          if constexpr(std::is_same_v<arg_t, std::string>) {
             m_log->Trace("... by key '{}'", arg);
             return node[arg];
           }
