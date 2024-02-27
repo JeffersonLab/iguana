@@ -9,6 +9,98 @@ namespace iguana {
     Start(no_banks);
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename OPTION_TYPE>
+  OPTION_TYPE Algorithm::SetOption(const std::string key, const OPTION_TYPE val)
+  {
+    if(key == "log") {
+      if constexpr(std::disjunction<
+                       std::is_same<OPTION_TYPE, std::string>,
+                       std::is_same<OPTION_TYPE, const char*>,
+                       std::is_same<OPTION_TYPE, Logger::Level>>::value)
+        m_log->SetLevel(val);
+      else
+        m_log->Error("Option '{}' must be a string or a Logger::Level", key);
+    }
+    else {
+      m_option_cache[key] = val;
+      m_log->Debug("  USER OPTION: {:>20} = {}", key, PrintOptionValue(key));
+    }
+    return val;
+  }
+  template int Algorithm::SetOption(const std::string key, const int val);
+  template double Algorithm::SetOption(const std::string key, const double val);
+  template std::string Algorithm::SetOption(const std::string key, const std::string val);
+  template const char* Algorithm::SetOption(const std::string key, const char* val);
+  template std::vector<int> Algorithm::SetOption(const std::string key, const std::vector<int> val);
+  template std::vector<double> Algorithm::SetOption(const std::string key, const std::vector<double> val);
+  template std::vector<std::string> Algorithm::SetOption(const std::string key, const std::vector<std::string> val);
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename OPTION_TYPE>
+  OPTION_TYPE Algorithm::GetOptionScalar(const std::string key, YAMLReader::node_path_t node_path)
+  {
+    try {
+      CompleteOptionNodePath(key, node_path);
+      auto opt = GetCachedOption<OPTION_TYPE>(key);
+      auto val = opt ? opt.value() : m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
+      if(key != "") {
+        m_option_cache[key] = val;
+        m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
+      }
+      return val;
+    }
+    catch(const std::runtime_error& ex) {
+      m_log->Error("Failed to `GetOptionScalar` for key '{}'", key);
+      throw std::runtime_error("config file parsing issue");
+    }
+  }
+  template int Algorithm::GetOptionScalar(const std::string key, YAMLReader::node_path_t node_path);
+  template double Algorithm::GetOptionScalar(const std::string key, YAMLReader::node_path_t node_path);
+  template std::string Algorithm::GetOptionScalar(const std::string key, YAMLReader::node_path_t node_path);
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename OPTION_TYPE>
+  std::vector<OPTION_TYPE> Algorithm::GetOptionVector(const std::string key, YAMLReader::node_path_t node_path)
+  {
+    try {
+      CompleteOptionNodePath(key, node_path);
+      auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
+      auto val = opt ? opt.value() : m_yaml_config->GetVector<OPTION_TYPE>(node_path);
+      if(key != "") {
+        m_option_cache[key] = val;
+        m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
+      }
+      return val;
+    }
+    catch(const std::runtime_error& ex) {
+      m_log->Error("Failed to `GetOptionVector` for key '{}'", key);
+      throw std::runtime_error("config file parsing issue");
+    }
+  }
+  template std::vector<int> Algorithm::GetOptionVector(const std::string key, YAMLReader::node_path_t node_path);
+  template std::vector<double> Algorithm::GetOptionVector(const std::string key, YAMLReader::node_path_t node_path);
+  template std::vector<std::string> Algorithm::GetOptionVector(const std::string key, YAMLReader::node_path_t node_path);
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename OPTION_TYPE>
+  std::set<OPTION_TYPE> Algorithm::GetOptionSet(const std::string key, YAMLReader::node_path_t node_path)
+  {
+    auto val_vec = GetOptionVector<OPTION_TYPE>(key, node_path);
+    std::set<OPTION_TYPE> val_set;
+    std::copy(val_vec.begin(), val_vec.end(), std::inserter(val_set, val_set.end()));
+    return val_set;
+  }
+  template std::set<int> Algorithm::GetOptionSet(const std::string key, YAMLReader::node_path_t node_path);
+  template std::set<double> Algorithm::GetOptionSet(const std::string key, YAMLReader::node_path_t node_path);
+  template std::set<std::string> Algorithm::GetOptionSet(const std::string key, YAMLReader::node_path_t node_path);
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::SetName(const std::string name)
   {
     Object::SetName(name);
@@ -16,25 +108,35 @@ namespace iguana {
       m_yaml_config->SetName("config|" + m_name);
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   std::unique_ptr<YAMLReader>& Algorithm::GetConfig()
   {
     return m_yaml_config;
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   void Algorithm::SetConfig(std::unique_ptr<YAMLReader>&& yaml_config)
   {
     m_yaml_config = std::move(yaml_config);
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::SetConfigFile(std::string name)
   {
     o_user_config_file = SetOption("config_file", name);
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::SetConfigDirectory(std::string name)
   {
     o_user_config_dir = SetOption("config_dir", name);
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   void Algorithm::ParseYAMLConfig()
   {
@@ -53,6 +155,8 @@ namespace iguana {
     m_yaml_config->LoadFiles();
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   hipo::banklist::size_type Algorithm::GetBankIndex(hipo::banklist& banks, const std::string bankName) const
   {
     if(m_rows_only)
@@ -70,6 +174,8 @@ namespace iguana {
     m_log->Debug("cached index of bank '{}' is {}", bankName, idx);
     return idx;
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   std::string Algorithm::PrintOptionValue(const std::string key) const
   {
@@ -101,6 +207,8 @@ namespace iguana {
     return "UNKNOWN";
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expectedBankName) const
   {
     if(m_rows_only) {
@@ -121,12 +229,16 @@ namespace iguana {
     throw std::runtime_error("GetBank failed");
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::MaskRow(hipo::bank& bank, const int row) const
   {
     // TODO: need https://github.com/gavalian/hipo/issues/35
     // until then, just set the PID to -1
     bank.putInt("pid", row, -1);
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   void Algorithm::ShowBanks(hipo::banklist& banks, const std::string message, const Logger::Level level) const
   {
@@ -138,6 +250,8 @@ namespace iguana {
     }
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::ShowBank(hipo::bank& bank, const std::string message, const Logger::Level level) const
   {
     if(m_log->GetLevel() <= level) {
@@ -147,4 +261,36 @@ namespace iguana {
     }
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename OPTION_TYPE>
+  std::optional<OPTION_TYPE> Algorithm::GetCachedOption(const std::string key) const
+  {
+    if(key == "")
+      return {};
+    if(auto it{m_option_cache.find(key)}; it != m_option_cache.end()) {
+      try { // get the expected type
+        return std::get<OPTION_TYPE>(it->second);
+      }
+      catch(const std::bad_variant_access& ex) {
+        m_log->Warn("user called SetOption for option '{}' and set it to '{}', which is the wrong type; IGNORING", key, PrintOptionValue(key));
+      }
+    }
+    return {};
+  }
+  template std::optional<int> Algorithm::GetCachedOption(const std::string key) const;
+  template std::optional<double> Algorithm::GetCachedOption(const std::string key) const;
+  template std::optional<std::string> Algorithm::GetCachedOption(const std::string key) const;
+  template std::optional<std::vector<int>> Algorithm::GetCachedOption(const std::string key) const;
+  template std::optional<std::vector<double>> Algorithm::GetCachedOption(const std::string key) const;
+  template std::optional<std::vector<std::string>> Algorithm::GetCachedOption(const std::string key) const;
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void Algorithm::CompleteOptionNodePath(const std::string key, YAMLReader::node_path_t& node_path) const
+  {
+    if(node_path.empty())
+      node_path.push_front(key);
+    node_path.push_front(m_class_name);
+  }
 }

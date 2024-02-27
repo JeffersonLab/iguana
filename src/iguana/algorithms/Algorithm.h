@@ -17,6 +17,12 @@
 namespace iguana {
 
   /// Option value variant type
+  /* NOTE: if you modify this, you also must modify:
+   * - [ ] `PrintOptionValue`
+   * - [ ] Template specializations in this class
+   * - [ ] Template specializations in `YAMLReader` or `ConfigFileReader`
+   * - [ ] Add new tests, if you added new types
+   */
   using option_t = std::variant<
       int,
       double,
@@ -71,82 +77,28 @@ namespace iguana {
       /// @param val the value to set
       /// @returns the value that has been set (if needed, _e.g._, when `val` is an rvalue)
       template <typename OPTION_TYPE>
-      OPTION_TYPE SetOption(const std::string key, const OPTION_TYPE val)
-      {
-        if(key == "log") {
-          if constexpr(std::disjunction<
-                           std::is_same<OPTION_TYPE, std::string>,
-                           std::is_same<OPTION_TYPE, const char*>,
-                           std::is_same<OPTION_TYPE, Logger::Level>>::value)
-            m_log->SetLevel(val);
-          else
-            m_log->Error("Option '{}' must be a string or a Logger::Level", key);
-        }
-        else {
-          m_option_cache[key] = val;
-          m_log->Debug("  USER OPTION: {:>20} = {}", key, PrintOptionValue(key));
-        }
-        return val;
-      }
+      OPTION_TYPE SetOption(const std::string key, const OPTION_TYPE val);
 
       /// Get the value of a scalar option
       /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the scalar option
       template <typename OPTION_TYPE>
-      OPTION_TYPE GetOptionScalar(const std::string key, YAMLReader::node_path_t node_path = {})
-      {
-        try {
-          CompleteOptionNodePath(key, node_path);
-          auto opt = GetCachedOption<OPTION_TYPE>(key);
-          auto val = opt ? opt.value() : m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
-          if(key != "") {
-            m_option_cache[key] = val;
-            m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
-          }
-          return val;
-        }
-        catch(const std::runtime_error& ex) {
-          m_log->Error("Failed to `GetOptionScalar` for key '{}'", key);
-          throw std::runtime_error("config file parsing issue");
-        }
-      }
+      OPTION_TYPE GetOptionScalar(const std::string key, YAMLReader::node_path_t node_path = {});
 
       /// Get the value of a vector option
       /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the vector option
       template <typename OPTION_TYPE>
-      std::vector<OPTION_TYPE> GetOptionVector(const std::string key, YAMLReader::node_path_t node_path = {})
-      {
-        try {
-          CompleteOptionNodePath(key, node_path);
-          auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
-          auto val = opt ? opt.value() : m_yaml_config->GetVector<OPTION_TYPE>(node_path);
-          if(key != "") {
-            m_option_cache[key] = val;
-            m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
-          }
-          return val;
-        }
-        catch(const std::runtime_error& ex) {
-          m_log->Error("Failed to `GetOptionVector` for key '{}'", key);
-          throw std::runtime_error("config file parsing issue");
-        }
-      }
+      std::vector<OPTION_TYPE> GetOptionVector(const std::string key, YAMLReader::node_path_t node_path = {});
 
       /// Get the value of a vector option, and convert it to `std::set`
       /// @param key the unique key name of this option
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the vector option converted to `std::set`
       template <typename OPTION_TYPE>
-      std::set<OPTION_TYPE> GetOptionSet(const std::string key, YAMLReader::node_path_t node_path = {})
-      {
-        auto val_vec = GetOptionVector<OPTION_TYPE>(key, node_path);
-        std::set<OPTION_TYPE> val_set;
-        std::copy(val_vec.begin(), val_vec.end(), std::inserter(val_set, val_set.end()));
-        return val_set;
-      }
+      std::set<OPTION_TYPE> GetOptionSet(const std::string key, YAMLReader::node_path_t node_path = {});
 
       /// Set the name of this algorithm
       /// @param name the new name
@@ -212,32 +164,14 @@ namespace iguana {
       /// @param key the key name associated with this option
       /// @returns the option value, if found (using `std::optional`)
       template <typename OPTION_TYPE>
-      std::optional<OPTION_TYPE> GetCachedOption(const std::string key) const
-      {
-        if(key == "")
-          return {};
-        if(auto it{m_option_cache.find(key)}; it != m_option_cache.end()) {
-          try { // get the expected type
-            return std::get<OPTION_TYPE>(it->second);
-          }
-          catch(const std::bad_variant_access& ex) {
-            m_log->Warn("user called SetOption for option '{}' and set it to '{}', which is the wrong type; IGNORING", key, PrintOptionValue(key));
-          }
-        }
-        return {};
-      }
+      std::optional<OPTION_TYPE> GetCachedOption(const std::string key) const;
 
     private: // methods
 
       /// Prepend `node_path` with the full algorithm name. If `node_path` is empty, set it to `{key}`.
       /// @param key the key name for this option
       /// @param node_path the `YAMLReader::node_path_t` to prepend
-      void CompleteOptionNodePath(const std::string key, YAMLReader::node_path_t& node_path) const
-      {
-        if(node_path.empty())
-          node_path.push_front(key);
-        node_path.push_front(m_class_name);
-      }
+      void CompleteOptionNodePath(const std::string key, YAMLReader::node_path_t& node_path) const;
 
     protected: // members
 
