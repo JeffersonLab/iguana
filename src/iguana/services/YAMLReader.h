@@ -110,7 +110,7 @@ namespace iguana {
       /// @returns the search function
       template <typename SCALAR>
       node_finder_t InRange(std::string key, SCALAR val) {
-        return [this, &key, &val](YAML::Node node) -> YAML::Node {
+        return [this, key, val](YAML::Node node) -> YAML::Node {
           if(!node.IsSequence()) {
             m_log->Error("YAML node path expected a sequence at current node");
             throw std::runtime_error("Failed `InRange`");

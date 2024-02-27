@@ -16,7 +16,11 @@ namespace iguana {
       m_yaml_config->SetName("config|" + m_name);
   }
 
-  void Algorithm::SetYAMLConfig(std::unique_ptr<YAMLReader>&& yaml_config)
+  std::unique_ptr<YAMLReader>& Algorithm::GetConfig() {
+    return m_yaml_config;
+  }
+
+  void Algorithm::SetConfig(std::unique_ptr<YAMLReader>&& yaml_config)
   {
     m_yaml_config = std::move(yaml_config);
   }

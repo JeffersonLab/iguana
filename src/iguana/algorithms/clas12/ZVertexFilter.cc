@@ -12,7 +12,7 @@ namespace iguana::clas12 {
 
     // Read YAML config file with cuts for a given run number.
     ParseYAMLConfig();
-    auto o_zcuts = GetOptionVector<double>("zcuts", { m_yaml_config->InRange("runs", runnb), "cuts" });
+    auto o_zcuts = GetOptionVector<double>("zcuts", { GetConfig()->InRange("runs", runnb), "cuts" });
 
     // cache expected bank indices
     CacheBankIndex(banks, "REC::Particle", b_particle);

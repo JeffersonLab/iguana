@@ -99,6 +99,37 @@ inline int TestConfig(int test_num, bool verbose)
       break;
     }
 
+    case 3:
+    {
+      // test InRange tree1
+      assert((algo->GetOptionScalar<int>("t1a", {"tree1", algo->GetConfig()->InRange("test_range", 1), "val"}) == 3));
+      assert((algo->GetOptionScalar<int>("t1b", {"tree1", algo->GetConfig()->InRange("test_range", 3), "val"}) == 3));
+      assert((algo->GetOptionScalar<int>("t1c", {"tree1", algo->GetConfig()->InRange("test_range", 5), "val"}) == 3)); // at a border
+      assert((algo->GetOptionScalar<int>("t1d", {"tree1", algo->GetConfig()->InRange("test_range", 6), "val"}) == 4));
+      assert((algo->GetOptionScalar<int>("t1e", {"tree1", algo->GetConfig()->InRange("test_range", 10), "val"}) == 4));
+      assert((algo->GetOptionScalar<int>("t1f", {"tree1", algo->GetConfig()->InRange("test_range", 11), "val"}) == 0)); // default fallback
+      assert((algo->GetOptionScalar<int>("t1g", {"tree1", algo->GetConfig()->InRange("test_range", 10.1), "val"}) == 0)); // wrong type
+      assert((algo->GetOptionScalar<int>("t1h", {"tree1", algo->GetConfig()->InRange("test_range", 3.7), "val"}) == 3)); // wrong type
+      // test InRange tree2
+      assert((algo->GetOptionScalar<std::string>("t2a", {"tree2", algo->GetConfig()->InRange("test_range", 1.9), "subtree", "lizard"}) == "iguana"));
+      assert((algo->GetOptionScalar<int>("t2b", {"tree2", algo->GetConfig()->InRange("test_range", 1.9), "subtree", "number"}) == 7));
+      assert((algo->GetOptionScalar<int>("t2c", {"tree2", algo->GetConfig()->InRange("test_range", 3.0), "subtree", algo->GetConfig()->InRange("sub_range", 1), "val"}) == 7));
+      assert((algo->GetOptionScalar<int>("t2d", {"tree2", algo->GetConfig()->InRange("test_range", 3.0), "subtree", algo->GetConfig()->InRange("sub_range", 8), "val"}) == 8));
+      assert((algo->GetOptionScalar<int>("t2e", {"tree2", algo->GetConfig()->InRange("test_range", 3.5), "subtree", algo->GetConfig()->InRange("sub_range", 11), "val"}) == 1));
+      assert((algo->GetOptionScalar<int>("t2f", {"tree2", algo->GetConfig()->InRange("test_range", 4.0), "subtree"}) == 10));
+      // test InRange tree3
+      assert((algo->GetOptionScalar<int>("t3a", {"tree3", algo->GetConfig()->InRange("test_range", 3), "val"}) == 3));
+      try {
+        assert((algo->GetOptionScalar<int>("t3b", {"tree3", algo->GetConfig()->InRange("test_range", 11), "val"}) == 0));
+        fmt::print(stderr, "ERROR: accessing a missing default value for `InRange` did not throw exception\n");
+        return 1;
+      }
+      catch(const std::exception& ex) {
+        fmt::print("SUCCESS: accessing a missing default value for `InRange` threw expected exception\n");
+      }
+      break;
+    }
+
     default:
       fmt::print(stderr, "ERROR: unknown test number '{}'", test_num);
       return 1;

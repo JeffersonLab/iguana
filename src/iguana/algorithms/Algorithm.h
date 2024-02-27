@@ -150,9 +150,13 @@ namespace iguana {
       /// @param name the new name
       void SetName(const std::string name);
 
+      /// Get a reference to this algorithm's configuration (`YAMLReader`)
+      /// @returns the configuration
+      std::unique_ptr<YAMLReader>& GetConfig();
+
       /// Set a custom `YAMLReader` to use for this algorithm
       /// @param yaml_config the custom `YAMLReader` instance
-      void SetYAMLConfig(std::unique_ptr<YAMLReader>&& yaml_config);
+      void SetConfig(std::unique_ptr<YAMLReader>&& yaml_config);
 
     protected: // methods
 
@@ -285,10 +289,11 @@ namespace iguana {
       /// Set with `Algorithm::SetOption` using key `"config_dir"`.
       std::string o_user_config_dir;
 
+    private: // members
+
       /// YAML reader
       std::unique_ptr<YAMLReader> m_yaml_config;
 
-    private:
   };
 
   //////////////////////////////////////////////////////////////////////////////
