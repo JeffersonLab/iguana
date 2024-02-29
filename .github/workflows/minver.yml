@@ -15,6 +15,7 @@ jobs:
     name: Linux (minver)
     uses: ./.github/workflows/ci.yml
     with:
+      id: linux-minver
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
       verset: minver

@@ -15,6 +15,7 @@ jobs:
     name: macOS (latest)
     uses: ./.github/workflows/ci.yml
     with:
+      id: macOS
       runner: macos-latest
       test_matrix: >-
         {
