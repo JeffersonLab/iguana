@@ -155,7 +155,7 @@ jobs:
           key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
           path: hipo.tar.zst
       - name: untar local dependencies
-        run: ls *.tar.zst | xargs -I{} tar xavf {}
+        run: ls *.tar.zst | xargs -I{} tar xvf {}
       - name: tree local dependencies
         run: tree hipo
       - name: summarize dependencies
@@ -267,7 +267,7 @@ jobs:
           key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
           path: hipo.tar.zst
       - name: untar local dependencies
-        run: ls *.tar.zst | xargs -I{} tar xavf {}
+        run: ls *.tar.zst | xargs -I{} tar xvf {}
       ### rebuild iguana
       - name: meson wipe builddir for macOS re-link # macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
         if: ${{ inputs.runner == 'macos-latest' }}
@@ -371,7 +371,7 @@ jobs:
           path: validation_files.tar.zst
       - name: untar artifacts
         run: |
-          ls *.tar.zst | xargs -I{} tar xavf {}
+          ls *.tar.zst | xargs -I{} tar xvf {}
           rm -v *.tar.zst
       - name: tree artifacts
         run: tree
@@ -441,7 +441,7 @@ jobs:
           path: validation_files.tar.zst
       - name: untar artifacts
         run: |
-          ls *.tar.zst | xargs -I{} tar xavf {}
+          ls *.tar.zst | xargs -I{} tar xvf {}
           rm -v *.tar.zst
       ### set env vars
       - name: set cmake prefix path
