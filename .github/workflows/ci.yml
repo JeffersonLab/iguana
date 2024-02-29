@@ -64,14 +64,15 @@ jobs:
       - uses: actions/cache@v4
         id: cache
         with:
-          key: validation_files
-          path: validation_files.tar.zst
+          key: test_data
+          path: test_data.hipo
           lookup-only: true
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
           wget -nv --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files_${{ env.type }}.tar.zst
-          mv -v validation_files{_${{ env.type }},}.tar.zst
+          tar xvf validation_files_${{ env.type }}.tar.zst
+          mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
 
   # dependencies
   #########################################################
@@ -252,8 +253,8 @@ jobs:
       - name: get test data
         uses: actions/cache/restore@v4
         with:
-          key: validation_files
-          path: validation_files.tar.zst
+          key: test_data
+          path: test_data.hipo
       - name: get iguana build dir
         uses: actions/download-artifact@v4
         with:
@@ -367,8 +368,8 @@ jobs:
       - name: get test data
         uses: actions/cache/restore@v4
         with:
-          key: validation_files
-          path: validation_files.tar.zst
+          key: test_data
+          path: test_data.hipo
       - name: untar artifacts
         run: |
           ls *.tar.zst | xargs -I{} tar xvf {}
@@ -437,8 +438,8 @@ jobs:
       - name: get test data
         uses: actions/cache/restore@v4
         with:
-          key: validation_files
-          path: validation_files.tar.zst
+          key: test_data
+          path: test_data.hipo
       - name: untar artifacts
         run: |
           ls *.tar.zst | xargs -I{} tar xvf {}
