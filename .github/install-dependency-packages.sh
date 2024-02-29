@@ -49,6 +49,9 @@ verset=$2
 summary_file=pkg_summary.md
 > $summary_file
 
+this_script=${BASH_SOURCE[0]:-$0}
+this_dir=$(cd $(dirname $this_script)/.. && pwd -P)
+
 case $verset in
   latest) echo "[+] Prefer latest version for iguana-specific dependencies" ;;
   minver) echo "[+] Prefer minimum required version for iguana-specific dependencies" ;;
@@ -87,7 +90,7 @@ case $runner in
       echo "[+] INSTALLING PACKAGE $pkg"
       case $verset in
         latest) pacman -S --noconfirm $pkg ;;
-        minver) pacman -U --noconfirm $(meson/minimum-version.sh $pkg ALA) ;;
+        minver) pacman -U --noconfirm $($this_dir/meson/minimum-version.sh $pkg ALA) ;;
       esac
       info_pacman $pkg
     done
