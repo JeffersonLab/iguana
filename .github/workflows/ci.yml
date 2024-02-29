@@ -3,6 +3,10 @@ name: CI
 on:
   workflow_call:
     inputs:
+      id:
+        description: 'ID'
+        required: true
+        type: string
       runner:
         description: 'GitHub runner'
         required: true
@@ -52,21 +56,22 @@ jobs:
   # download test data
   #########################################################
 
-  download_validation_files:
-    name: Download validation files
-    runs-on: ${{ inputs.runner }}
+  download_test_data:
+    runs-on: ubuntu-latest
+    env:
+      type: physics
     steps:
-      - name: download
-        run: wget --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files.tar.gz
-      - name: untar
-        run: tar xzvf validation_files.tar.gz
-      - name: select one file
-        run: mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
-      - uses: actions/upload-artifact@v4
+      - uses: actions/cache@v4
+        id: cache
         with:
-          name: validation_files
-          retention-days: 1
-          path: test_data.hipo
+          key: validation_files
+          path: validation_files.tar.zst
+          lookup-only: true
+      - name: download
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          wget -nv --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files_${{ env.type }}.tar.zst
+          mv -v validation_files{_${{ env.type }},}.tar.zst
 
   # dependencies
   #########################################################
@@ -77,26 +82,29 @@ jobs:
     container:
       image: ${{ inputs.container }}
     steps:
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          path: hipo.tar.zst
+          lookup-only: true
       - name: checkout iguana for dependency installation script
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/checkout@v4
-      - name: install dependency packages
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: checkout hipo
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/checkout@v4
         with:
           repository: gavalian/hipo
           ref: ${{ env.hipo_version }}
       - name: build
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
+          .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
           cmake -S . -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIE build, for sanitizer readibility
           cmake --build build
           cmake --install build
-          tar czvf hipo{.tar.gz,}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: install_deps_hipo
-          retention-days: 1
-          path: hipo.tar.gz
+          tar cavf hipo{.tar.zst,}
 
   # build
   #########################################################
@@ -132,13 +140,13 @@ jobs:
       ### dependencies
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      - name: get local dependencies
-        uses: actions/download-artifact@v4
+      - name: get local dependency `hipo`
+        uses: actions/cache/restore@v4
         with:
-          pattern: install_deps_*
-          merge-multiple: true
+          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          path: hipo.tar.zst
       - name: untar local dependencies
-        run: ls *.tar.gz | xargs -I{} tar xzvf {}
+        run: ls *.tar.zst | xargs -I{} tar xavf {}
       - name: tree local dependencies
         run: tree hipo
       - name: summarize dependencies
@@ -192,19 +200,19 @@ jobs:
       ### upload artifacts
       - name: tar
         run: |
-          tar czvf iguana{.tar.gz,}
-          tar czvf build-iguana{.tar.gz,}
+          tar cavf iguana{.tar.zst,}
+          tar cavf build-iguana{.tar.zst,}
       - uses: actions/upload-artifact@v4
         with:
           name: install_iguana_${{ matrix.id }}
           retention-days: 1
-          path: iguana.tar.gz
+          path: iguana.tar.zst
       - uses: actions/upload-artifact@v4
         if: ${{ matrix.id == 'cpp-gcc-release' || matrix.id == 'cpp-gcc-debug' || matrix.id == 'cpp-clang-release' || matrix.id == 'cpp-clang-debug' }}
         with:
           name: build_iguana_${{ matrix.id }}
           retention-days: 1
-          path: build-iguana.tar.gz
+          path: build-iguana.tar.zst
 
   # run tests
   #########################################################
@@ -213,7 +221,7 @@ jobs:
     name: Test Iguana
     needs:
       - build_hipo
-      - download_validation_files
+      - download_test_data
       - build_iguana
     runs-on: ${{ inputs.runner }}
     container:
@@ -233,9 +241,10 @@ jobs:
           fetch-tags: true
           fetch-depth: 0
       - name: get test data
-        uses: actions/download-artifact@v4
+        uses: actions/cache/restore@v4
         with:
-          name: validation_files
+          key: validation_files
+          path: validation_files.tar.zst
       - name: get iguana build dir
         uses: actions/download-artifact@v4
         with:
@@ -243,13 +252,13 @@ jobs:
       ### dependencies
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      - name: get local dependencies
-        uses: actions/download-artifact@v4
+      - name: get local dependency `hipo`
+        uses: actions/cache/restore@v4
         with:
-          pattern: install_deps_*
-          merge-multiple: true
+          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          path: hipo.tar.zst
       - name: untar local dependencies
-        run: ls *.tar.gz | xargs -I{} tar xzvf {}
+        run: ls *.tar.zst | xargs -I{} tar xavf {}
       ### rebuild iguana
       - name: meson wipe builddir for macOS re-link # macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
         if: ${{ inputs.runner == 'macos-latest' }}
@@ -318,7 +327,7 @@ jobs:
   test_examples:
     name: Test Installed Examples
     needs:
-      - download_validation_files
+      - download_test_data
       - build_iguana
     runs-on: ${{ inputs.runner }}
     container:
@@ -337,23 +346,24 @@ jobs:
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
         working-directory: iguana_src
-      - name: get dependency build artifacts
-        uses: actions/download-artifact@v4
+      - name: get local dependency `hipo`
+        uses: actions/cache/restore@v4
         with:
-          pattern: install_deps_*
-          merge-multiple: true
+          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          path: hipo.tar.zst
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
           name: install_iguana_${{ matrix.id }}
       - name: get test data
-        uses: actions/download-artifact@v4
+        uses: actions/cache/restore@v4
         with:
-          name: validation_files
+          key: validation_files
+          path: validation_files.tar.zst
       - name: untar artifacts
         run: |
-          ls *.tar.gz | xargs -I{} tar xzvf {}
-          rm -v *.tar.gz
+          ls *.tar.zst | xargs -I{} tar xavf {}
+          rm -v *.tar.zst
       - name: tree artifacts
         run: tree
       ### setup python virtaul environment (for python binding tests)
@@ -390,7 +400,7 @@ jobs:
   test_consumer_builds:
     name: Test consumer builds
     needs:
-      - download_validation_files
+      - download_test_data
       - build_iguana
     runs-on: ${{ inputs.runner }}
     container:
@@ -406,23 +416,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: install dependency packages
         run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      - name: get dependency build artifacts
-        uses: actions/download-artifact@v4
+      - name: get local dependency `hipo`
+        uses: actions/cache/restore@v4
         with:
-          pattern: install_deps_*
-          merge-multiple: true
+          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          path: hipo.tar.zst
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
           name: install_iguana_${{ env.build_id }}
       - name: get test data
-        uses: actions/download-artifact@v4
+        uses: actions/cache/restore@v4
         with:
-          name: validation_files
+          key: validation_files
+          path: validation_files.tar.zst
       - name: untar artifacts
         run: |
-          ls *.tar.gz | xargs -I{} tar xzvf {}
-          rm -v *.tar.gz
+          ls *.tar.zst | xargs -I{} tar xavf {}
+          rm -v *.tar.zst
       ### set env vars
       - name: set cmake prefix path
         if: ${{ matrix.tool == 'cmake' }}

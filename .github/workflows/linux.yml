@@ -15,5 +15,6 @@ jobs:
     name: Linux (latest)
     uses: ./.github/workflows/ci.yml
     with:
+      id: linux-latest
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
