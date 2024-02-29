@@ -91,17 +91,20 @@ jobs:
       - name: checkout iguana for dependency installation script
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/checkout@v4
+        with:
+          path: iguana_src
       - name: checkout hipo
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/checkout@v4
         with:
           repository: gavalian/hipo
           ref: ${{ env.hipo_version }}
+          path: hipo_src
       - name: build
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-          cmake -S . -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIE build, for sanitizer readibility
+          iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
+          cmake -S hipo_src -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIE build, for sanitizer readibility
           cmake --build build
           cmake --install build
           tar cavf hipo{.tar.zst,}
