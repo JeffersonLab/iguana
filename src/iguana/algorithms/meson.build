@@ -18,11 +18,13 @@ algo_dict = {
   'example::ExampleAlgorithm': {
     'sources':      [ 'example/ExampleAlgorithm.cc' ],
     'headers':      [ 'example/ExampleAlgorithm.h' ],
+    'configs':      [ 'example/ExampleAlgorithm.yaml' ],
     'unit_test':    { 'banks': ['REC::Particle'] },
   },
   'clas12::EventBuilderFilter': {
     'sources':      [ 'clas12/EventBuilderFilter.cc' ],
     'headers':      [ 'clas12/EventBuilderFilter.h' ],
+    'configs':      [ 'clas12/EventBuilderFilter.yaml' ],
     'unit_test':    { 'banks': ['REC::Particle'] },
   },
   'clas12::ZVertexFilter': {
@@ -34,6 +36,7 @@ algo_dict = {
   'clas12::LorentzTransformer': {
     'sources':      [ 'clas12/LorentzTransformer.cc' ],
     'headers':      [ 'clas12/LorentzTransformer.h' ],
+    'configs':      [ 'clas12/LorentzTransformer.yaml' ],
     'unit_test':    { 'banks': ['REC::Particle'] },
     'needs_ROOT':   true,
   },
@@ -81,7 +84,7 @@ install_headers(
 foreach algo_config : algo_configs
   install_data(
     algo_config,
-    install_dir:   project_etc,
+    install_dir:   project_etc / 'algorithms',
     preserve_path: true,
   )
 endforeach

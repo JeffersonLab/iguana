@@ -16,7 +16,7 @@ namespace iguana {
 
       /// Get the config files' _fixed_ installation prefix
       /// @return the absolute path to the installed configuration file directory
-      static std::string GetConfigPrefix();
+      static std::string GetConfigInstallationPrefix();
 
       /// Add a directory to the configuration files' search paths.
       /// @param dir the directory, which may be relative or absolute
@@ -45,12 +45,11 @@ namespace iguana {
       /// @return the parent directory name
       static std::string DirName(const std::string name);
 
-      /// Convert a full algorithm name to a config file name, by replacing `::` with `/`
-      /// and ending with the given extension
+      /// Convert a full algorithm name to its corresponding default config file name
       /// @param algo_name the algorithm name
       /// @param ext the file extension
       /// @return the config file name
-      static std::string ConvertAlgoNameToConfigName(const std::string algo_name, const std::string ext);
+      static std::string ConvertAlgoNameToConfigName(const std::string algo_name, const std::string ext = "yaml");
 
     protected:
 

@@ -1,10 +1,6 @@
 # install config files
-example_config_file = fs.copyfile(
-  'config' / 'ex2.yaml',
-  'ex2.yaml',
-  install:     true,
-  install_dir: project_etc / 'examples',
-)
+example_config_files_prefix = project_etc / 'examples'
+install_subdir('config', install_dir: example_config_files_prefix, strip_directory: true)
 
 # example source information
 example_sources = {
@@ -14,12 +10,9 @@ example_sources = {
   'iguana-example-01-bank-rows': {
     'sources': [ 'iguana-example-01-bank-rows.cc' ],
   },
-  'iguana-example-02-YAMLReader': {
-    'sources':   [ 'iguana-example-02-YAMLReader.cc' ],
-    'test_args': [ example_config_file.full_path() ],
-  },
-  'iguana-example-03-zvertex-filter': {
-    'sources': [ 'iguana-example-03-zvertex-filter.cc' ],
+  'iguana-example-02-config-files': {
+    'sources':   [ 'iguana-example-02-config-files.cc' ],
+    'test_args': [ get_option('prefix') / example_config_files_prefix ],
   },
 }
 

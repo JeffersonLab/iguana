@@ -24,21 +24,21 @@ namespace iguana::example {
   void ExampleAlgorithm::Start(hipo::banklist& banks)
   {
     // ############################################################################
-    // # define configuration options, their default values, and cache them
-    // # - see `Algorithm.h` for more details
-    // # - this function "caches" the option values into the `o_*` members, to
-    // #   avoid looking them up in the `Algorithm::Run` method
+    // # get configuration options
+    // # - by default, this will read `ExampleAlgorithm.yaml`, unless the algorithm
+    // #   user has specified to use a different configuration file or directory
     // ############################################################################
-    CacheOption("exampleInt", 8, o_exampleInt);
-    CacheOption("exampleFloat", 7.0, o_exampleFloat);
+    ParseYAMLConfig();
+    o_exampleInt    = GetOptionScalar<int>("exampleInt");
+    o_exampleDouble = GetOptionScalar<double>("exampleDouble");
     // ############################################################################
-    // # cache expected bank indices
+    // # get expected bank indices
     // # - here we make sure that parameter `banks` includes the banks that are
     // #   required to run this algorithm
-    // # - this function "caches" the bank index values into the `b_*` members, to
+    // # - we set the bank index values into the `b_*` members, to
     // #   avoid looking them up in the `Algorithm::Run` method
     // ############################################################################
-    CacheBankIndex(banks, "REC::Particle", b_particle);
+    b_particle = GetBankIndex(banks, "REC::Particle");
   }
 
 

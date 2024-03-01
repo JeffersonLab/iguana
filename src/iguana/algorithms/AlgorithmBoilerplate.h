@@ -8,6 +8,7 @@
       : Algorithm(name == "" ? GetClassName() : name) \
   {                                                   \
     m_default_config_file = GetDefaultConfigFile();   \
+    m_class_name          = GetClassName();           \
   }
 
 /// Generate an algorithm destructor
@@ -18,13 +19,13 @@
 /// Define the public members of an algorithm
 /// @param ALGO_NAME the name of the algorithm class
 /// @param ALGO_FULL_NAME the full name of this algorithm, used by `iguana::AlgorithmFactory`
-#define IGUANA_ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME)                 \
-  using Algorithm::Start;                                                          \
-  static algo_t Creator() { return std::make_unique<ALGO_NAME>(); }                \
-  static std::string GetClassName() { return #ALGO_FULL_NAME; }                    \
-  static std::string GetDefaultConfigFile()                                        \
-  {                                                                                \
-    return ConfigFileReader::ConvertAlgoNameToConfigName(#ALGO_FULL_NAME, "yaml"); \
+#define IGUANA_ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME)         \
+  using Algorithm::Start;                                                  \
+  static algo_t Creator() { return std::make_unique<ALGO_NAME>(); }        \
+  static std::string GetClassName() { return #ALGO_FULL_NAME; }            \
+  static std::string GetDefaultConfigFile()                                \
+  {                                                                        \
+    return ConfigFileReader::ConvertAlgoNameToConfigName(#ALGO_FULL_NAME); \
   }
 
 /// Define the private members of an algorithm

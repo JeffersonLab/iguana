@@ -7,20 +7,17 @@ namespace iguana::clas12 {
   void ZVertexFilter::Start(hipo::banklist& banks)
   {
 
-    // FIXME: need a way of passing in run numbers and pid values
-    int runnb = 4768; // default to RG-A fall2018 inbending for now
-    int pid   = 0; // no PID needed for this filter
-
     // Read YAML config file with cuts for a given run number.
     ParseYAMLConfig();
-    std::vector<double> defaultValues = m_yaml_config->findKeyAtRunAndPIDVector<double>("cuts", "runs", "pid", "vals", runnb, pid, {-20.0, 20.0});
+    o_runnum = GetCachedOption<int>("runnum").value_or(0); // FIXME: should be set form RUN::config
+    o_zcuts  = GetOptionVector<double>("zcuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
+    if(o_zcuts.size() != 2) {
+      m_log->Error("configuration option 'zcuts' must be an array of size 2, but it is {}", PrintOptionValue("zcuts"));
+      throw std::runtime_error("bad configuration");
+    }
 
-    // define options, their default values, and cache them
-    CacheOption("low", defaultValues.at(0), o_zvertex_low);
-    CacheOption("high", defaultValues.at(1), o_zvertex_high);
-
-    // cache expected bank indices
-    CacheBankIndex(banks, "REC::Particle", b_particle);
+    // get expected bank indices
+    b_particle = GetBankIndex(banks, "REC::Particle");
   }
 
   void ZVertexFilter::Run(hipo::banklist& banks) const
@@ -48,8 +45,22 @@ namespace iguana::clas12 {
 
   bool ZVertexFilter::Filter(const double zvertex) const
   {
-    // std::cout << "low " << o_zvertex_low << " high " << o_zvertex_high << std::endl;
-    return (zvertex > o_zvertex_low) && (zvertex < o_zvertex_high);
+    return zvertex > GetZcutLower() && zvertex < GetZcutUpper();
+  }
+
+  int ZVertexFilter::GetRunNum() const
+  {
+    return o_runnum;
+  }
+
+  double ZVertexFilter::GetZcutLower() const
+  {
+    return o_zcuts.at(0);
+  }
+
+  double ZVertexFilter::GetZcutUpper() const
+  {
+    return o_zcuts.at(1);
   }
 
   void ZVertexFilter::Stop()

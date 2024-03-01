@@ -7,8 +7,8 @@ namespace iguana::clas12 {
 
   void MomentumCorrection::Start(hipo::banklist& banks)
   {
-    CacheBankIndex(banks, "REC::Particle", b_particle);
-    CacheBankIndex(banks, "RUN::config", b_config);
+    b_particle = GetBankIndex(banks, "REC::Particle");
+    b_config   = GetBankIndex(banks, "RUN::config");
   }
 
 

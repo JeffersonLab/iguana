@@ -8,10 +8,11 @@ namespace iguana::clas12 {
   {
 
     // define options, their default values, and cache them
-    CacheOptionToSet("pids", {11, 211}, o_pids);
+    ParseYAMLConfig();
+    o_pids = GetOptionSet<int>("pids");
 
-    // cache expected bank indices
-    CacheBankIndex(banks, "REC::Particle", b_particle);
+    // get expected bank indices
+    b_particle = GetBankIndex(banks, "REC::Particle");
   }
 
 
