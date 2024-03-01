@@ -123,12 +123,9 @@ jobs:
       image: ${{ inputs.container }}
     steps:
       - uses: cvmfs-contrib/github-action-cvmfs@v4
-        run: |
-          ls /cvmfs/sft.cern.ch
-          echo "==="
-          ls /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.28.10/x86_64-ubuntu22-gcc114-opt
-          echo "==="
-          ls /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.28.10/x86_64-mac127-clang140-opt
+      - run: ls /cvmfs/sft.cern.ch
+      - run: ls /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.28.10/x86_64-ubuntu22-gcc114-opt
+      - run: ls /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.28.10/x86_64-mac127-clang140-opt
 
   # build
   #########################################################
