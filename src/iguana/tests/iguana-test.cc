@@ -1,19 +1,19 @@
 #include <getopt.h>
 
 #include "TestAlgorithm.h"
-#include "TestValidator.h"
 #include "TestConfig.h"
+#include "TestValidator.h"
 
 int main(int argc, char** argv)
 {
   // user parameters
-  std::string command   = "";
-  std::string data_file = "";
-  int num_events        = 10;
-  std::string algo_name = "";
-  int test_num          = 0;
+  std::string command    = "";
+  std::string data_file  = "";
+  int num_events         = 10;
+  std::string algo_name  = "";
+  int test_num           = 0;
   std::string output_dir = "";
-  bool verbose          = false;
+  bool verbose           = false;
   std::vector<std::string> bank_names;
 
   // usage

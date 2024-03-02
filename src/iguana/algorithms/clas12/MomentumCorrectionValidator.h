@@ -26,14 +26,12 @@ namespace iguana::clas12 {
       const int nBins     = 100;
       const double momMax = 12.0;
 
-      const std::vector<std::pair<TString,TString>> momStrings = {
-        { "px", "p_{x}" },
-        { "py", "p_{y}" },
-        { "pz", "p_{z}" }
-      };
+      const std::vector<std::pair<TString, TString>> momStrings = {
+          {"px", "p_{x}"},
+          {"py", "p_{y}"},
+          {"pz", "p_{z}"}};
 
       std::vector<TH2D*> after_vs_before;
-
   };
 
 }
