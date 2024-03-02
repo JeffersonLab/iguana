@@ -14,11 +14,11 @@ test_exe = executable(
 # test algorithms
 if fs.is_file(get_option('test_data_file'))
   foreach name, info : algo_dict
-    if info.has_key('unit_test')
-      needs_ROOT = info.get('needs_ROOT', false)
-      if (needs_ROOT and ROOT_dep.found()) or not needs_ROOT
+    if info.has_key('test_args')
+      algo_needs_ROOT = info.get('algorithm').get('algo_needs_ROOT', false)
+      if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
         bank_args = []
-        foreach bank : info['unit_test'].get('banks', [])
+        foreach bank : info['test_args'].get('banks', [])
           bank_args += ['-b', bank]
         endforeach
         test(

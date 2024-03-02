@@ -3,47 +3,75 @@
 #  example:
 #  ========
 #   ALGORITHM_FULL_NAME: {
-#     'sources':      LIST_OF_SOURCE FILES,
-#     'headers':      LIST_OF_HEADER_FILES,
-#     'configs':      LIST_OF_CONFIG_FILES,
-#     'unit_test':    DICTIONARY_FOR_UNIT_TESTING_ARGS,  # if excluded, unit tests won't run for this algorithm
-#     'needs_ROOT':   BOOLEAN,  # whether this algorithm needs ROOT or not (default=false)
+#     'algorithm': {
+#       'sources':      LIST_OF_ALGORITHM_SOURCE FILES,
+#       'headers':      LIST_OF_ALGORITHM_HEADER_FILES,
+#       'needs_ROOT':   BOOLEAN,  # whether this algorithm needs ROOT or not (default=false)
+#     },
+#     'validator': {    # if excluded, a validator test will not be built for this algorithm
+#       'sources':      LIST_OF_VALIDATOR_SOURCE FILES,
+#       'headers':      LIST_OF_VALIDATOR_HEADER_FILES,
+#       'needs_ROOT':   BOOLEAN,  # whether this validator needs ROOT or not (default=false)
+#     },
+#     'configs':        LIST_OF_ALGORITHM_CONFIG_FILES,
+#     'test_args':      DICTIONARY_FOR_TESTING_ARGS,  # if excluded, tests won't run for this algorithm
 #   }
 #
 algo_dict = {
   'main': {
-    'sources': [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ],
-    'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
+    'algorithm': {
+      'sources': [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ],
+      'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
+    },
+    'validator': {
+      'sources': [ 'Validator.cc', 'ValidatorFactory.cc' ],
+      'headers': [ 'Validator.h', 'ValidatorBoilerplate.h' ],
+    },
   },
   'example::ExampleAlgorithm': {
-    'sources':      [ 'example/ExampleAlgorithm.cc' ],
-    'headers':      [ 'example/ExampleAlgorithm.h' ],
-    'configs':      [ 'example/ExampleAlgorithm.yaml' ],
-    'unit_test':    { 'banks': ['REC::Particle'] },
+    'algorithm': {
+      'sources': [ 'example/ExampleAlgorithm.cc' ],
+      'headers': [ 'example/ExampleAlgorithm.h' ],
+    },
+    'configs':   [ 'example/ExampleAlgorithm.yaml' ],
+    'test_args': { 'banks': ['REC::Particle'] },
   },
   'clas12::EventBuilderFilter': {
-    'sources':      [ 'clas12/EventBuilderFilter.cc' ],
-    'headers':      [ 'clas12/EventBuilderFilter.h' ],
-    'configs':      [ 'clas12/EventBuilderFilter.yaml' ],
-    'unit_test':    { 'banks': ['REC::Particle'] },
+    'algorithm': {
+      'sources': [ 'clas12/EventBuilderFilter.cc' ],
+      'headers': [ 'clas12/EventBuilderFilter.h' ],
+    },
+    'configs':   [ 'clas12/EventBuilderFilter.yaml' ],
+    'test_args': { 'banks': ['REC::Particle'] },
   },
   'clas12::ZVertexFilter': {
-    'sources':      [ 'clas12/ZVertexFilter.cc' ],
-    'headers':      [ 'clas12/ZVertexFilter.h' ],
-    'configs':      [ 'clas12/ZVertexFilter.yaml' ],
-    'unit_test':    { 'banks': ['REC::Particle'] },
+    'algorithm': {
+      'sources': [ 'clas12/ZVertexFilter.cc' ],
+      'headers': [ 'clas12/ZVertexFilter.h' ],
+    },
+    'configs':   [ 'clas12/ZVertexFilter.yaml' ],
+    'test_args': { 'banks': ['REC::Particle'] },
   },
   'clas12::LorentzTransformer': {
-    'sources':      [ 'clas12/LorentzTransformer.cc' ],
-    'headers':      [ 'clas12/LorentzTransformer.h' ],
-    'configs':      [ 'clas12/LorentzTransformer.yaml' ],
-    'unit_test':    { 'banks': ['REC::Particle'] },
-    'needs_ROOT':   true,
+    'algorithm': {
+      'sources': [ 'clas12/LorentzTransformer.cc' ],
+      'headers': [ 'clas12/LorentzTransformer.h' ],
+      'needs_ROOT': true,
+    },
+    'configs':   [ 'clas12/LorentzTransformer.yaml' ],
+    'test_args': { 'banks': ['REC::Particle'] },
   },
   'clas12::MomentumCorrection': {
-    'sources':      [ 'clas12/MomentumCorrection.cc' ],
-    'headers':      [ 'clas12/MomentumCorrection.h' ],
-    'unit_test':    { 'banks': ['REC::Particle', 'RUN::config'] },
+    'algorithm': {
+      'sources': [ 'clas12/MomentumCorrection.cc' ],
+      'headers': [ 'clas12/MomentumCorrection.h' ],
+    },
+    'validator': {
+      'sources': [ 'clas12/MomentumCorrectionValidator.cc' ],
+      'headers': [ 'clas12/MomentumCorrectionValidator.h' ],
+      'needs_ROOT': true,
+    },
+    'test_args': { 'banks': ['REC::Particle', 'RUN::config'] },
   },
 }
 
@@ -51,18 +79,31 @@ algo_dict = {
 algo_sources = []
 algo_headers = []
 algo_configs = []
+vdor_sources = []
+vdor_headers = []
 foreach name, info : algo_dict
-  needs_ROOT = info.get('needs_ROOT', false)
-  if (needs_ROOT and ROOT_dep.found()) or not needs_ROOT
-    algo_sources += info.get('sources', [])
-    algo_headers += info.get('headers', [])
+  # algorithms:
+  info_algo = info.get('algorithm')
+  algo_needs_ROOT = info_algo.get('needs_ROOT', false)
+  if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
+    algo_sources += info_algo.get('sources', [])
+    algo_headers += info_algo.get('headers', [])
     algo_configs += info.get('configs', [])
   else
     warning('Excluding algorithm "' + name + '", which depends on ROOT')
   endif
+  # validators:
+  if get_option('validators') and info.has_key('validator')
+    info_vdor = info.get('validator')
+    vdor_needs_ROOT = info_vdor.get('needs_ROOT', false)
+    if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
+      vdor_sources += info_vdor.get('sources', [])
+      vdor_headers += info_vdor.get('headers', [])
+    endif
+  endif
 endforeach
 
-# build and install
+# build and install algorithms
 algo_lib = shared_library(
   'IguanaAlgorithms',
   algo_sources,
@@ -73,14 +114,33 @@ algo_lib = shared_library(
   install:             true,
   install_rpath:       project_lib_rpath,
 )
-project_libs += algo_lib
-
 install_headers(
   algo_headers,
   subdir:        meson.project_name() / 'algorithms',
   preserve_path: true,
 )
+project_libs += algo_lib
 
+# build and install validators
+if get_option('validators')
+  vdor_lib = shared_library(
+    'IguanaValidators',
+    vdor_sources,
+    include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
+    dependencies:        project_deps,
+    link_with:           [ services_lib, algo_lib ],
+    link_args:           ROOT_dep_link_args,
+    install:             true,
+    install_rpath:       project_lib_rpath,
+  )
+  install_headers(
+    vdor_headers,
+    subdir:        meson.project_name() / 'algorithms',
+    preserve_path: true,
+  )
+endif
+
+# install config files
 foreach algo_config : algo_configs
   install_data(
     algo_config,
