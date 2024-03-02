@@ -6,6 +6,13 @@ namespace iguana::clas12 {
 
   void MomentumCorrectionValidator::Start(hipo::banklist& banks)
   {
+    for(const auto& [momName, momTitle] : momStrings) {
+      after_vs_before.push_back(new TH2D(
+            "after_vs_before_" + momName,
+            momTitle + " momentum correction;" + momTitle + "^{before} [GeV];" + momTitle + "^{after} [GeV]",
+            nBins, 0, momMax,
+            nBins, 0, momMax));
+    }
   }
 
 

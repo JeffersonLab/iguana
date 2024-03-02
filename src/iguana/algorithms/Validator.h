@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include <hipo4/bank.h>
 
 #include "iguana/algorithms/ValidatorBoilerplate.h"
@@ -25,6 +27,7 @@ namespace iguana {
       /// Initialize a validator before any events are processed
       /// @param banks the list of banks this validator will use, so that `Validator::Run` can cache the indices
       ///        of the banks that it needs
+      /// @param output_dir if non-empty, validator output files will be written to this directory
       virtual void Start(hipo::banklist& banks) = 0;
 
       /// Run a validator for an event. Note that unlike `iguana::Algorithm::Run`, this is *NOT* `const` qualified,
@@ -34,6 +37,19 @@ namespace iguana {
 
       /// Finalize a validator after all events are processed, _e.g._, write output files
       virtual void Stop() = 0;
+
+      /// Set this validator's output directory
+      /// @param output_dir the output directory
+      void SetOutputDirectory(std::string output_dir);
+
+      /// Get this validator's output directory
+      /// @returns an `optional`, which is set if the output directory is defined
+      std::optional<std::string> GetOutputDirectory();
+
+    private:
+
+      /// output directory
+      std::string m_output_dir;
 
   };
 

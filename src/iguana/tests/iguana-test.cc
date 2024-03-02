@@ -1,6 +1,7 @@
 #include <getopt.h>
 
 #include "TestAlgorithm.h"
+#include "TestValidator.h"
 #include "TestConfig.h"
 
 int main(int argc, char** argv)
@@ -11,6 +12,7 @@ int main(int argc, char** argv)
   int num_events        = 10;
   std::string algo_name = "";
   int test_num          = 0;
+  std::string output_dir = "";
   bool verbose          = false;
   std::vector<std::string> bank_names;
 
@@ -23,6 +25,7 @@ int main(int argc, char** argv)
     fmt::print("\n");
     fmt::print("    {:<20} {}\n\n", "-c COMMAND", "which test command to use:");
     fmt::print("    {:<20} {:<15} {}\n", "", "algorithm", "call `Run` on an algorithm");
+    fmt::print("    {:<20} {:<15} {}\n", "", "validator", "run an algorithm's validator");
     fmt::print("    {:<20} {:<15} {}\n", "", "unit", "call `Test` on an algorithm, for unit tests");
     fmt::print("    {:<20} {:<15} {}\n", "", "config", "test config file parsing");
     fmt::print("\n");
@@ -37,6 +40,8 @@ int main(int argc, char** argv)
     fmt::print("\n");
     fmt::print("    {:<20} {}\n", "-t TESTNUM", "test number, for commands that need one");
     fmt::print("\n");
+    fmt::print("    {:<20} {}\n", "-o OUTPUT_DIR", "if specified, validators will write to this directory");
+    fmt::print("\n");
     fmt::print("    {:<20} {}\n", "-v", "increase verbosity");
     fmt::print("\n");
     return exit_code;
@@ -46,7 +51,7 @@ int main(int argc, char** argv)
 
   // parse arguments
   int opt;
-  while((opt = getopt(argc, argv, "c:f:n:a:b:t:v|")) != -1) {
+  while((opt = getopt(argc, argv, "c:f:n:a:b:t:o:v|")) != -1) {
     switch(opt) {
     case 'c':
       command = std::string(optarg);
@@ -65,6 +70,9 @@ int main(int argc, char** argv)
       break;
     case 't':
       test_num = std::stoi(optarg);
+      break;
+    case 'o':
+      output_dir = std::string(optarg);
       break;
     case 'v':
       verbose = true;
@@ -88,6 +96,9 @@ int main(int argc, char** argv)
   // run test
   if(command == "algorithm" || command == "unit") {
     return TestAlgorithm(command, algo_name, bank_names, data_file, num_events, verbose);
+  }
+  else if(command == "validator") {
+    return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, verbose);
   }
   else if(command == "config") {
     return TestConfig(test_num, verbose);

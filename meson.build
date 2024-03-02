@@ -102,6 +102,11 @@ if ROOT_dep.found()
     '-lCore',
     '-lGenVector',
   ]
+  if get_option('validators')
+    ROOT_dep_link_args += [
+      '-lHist',
+    ]
+  endif
 endif
 
 # general project vars

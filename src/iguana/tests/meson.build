@@ -1,12 +1,16 @@
 test_exe_name = 'iguana-test'
 test_exe_inc = include_directories('include')
+test_exe_links = project_libs
+if get_option('validators')
+  test_exe_links += vdor_lib
+endif
 
 test_exe = executable(
   test_exe_name,
   test_exe_name + '.cc',
   include_directories: [ test_exe_inc, project_inc ],
   dependencies:        project_deps,
-  link_with:           project_libs,
+  link_with:           test_exe_links,
   install:             false,
   install_rpath:       ':'.join(project_exe_rpath),
 )
