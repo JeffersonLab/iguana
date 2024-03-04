@@ -13,6 +13,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   cmake
   tree
   wget
+  git
   which
   pkgconf
   ninja
