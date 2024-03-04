@@ -93,7 +93,7 @@ foreach name, info : algo_dict
     warning('Excluding algorithm "' + name + '", which depends on ROOT')
   endif
   # validators:
-  if get_option('validators') and info.has_key('validator')
+  if info.has_key('validator')
     info_vdor = info.get('validator')
     vdor_needs_ROOT = info_vdor.get('needs_ROOT', false)
     if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
@@ -122,23 +122,21 @@ install_headers(
 project_libs += algo_lib
 
 # build and install validators
-if get_option('validators')
-  vdor_lib = shared_library(
-    'IguanaValidators',
-    vdor_sources,
-    include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
-    dependencies:        project_deps,
-    link_with:           [ services_lib, algo_lib ],
-    link_args:           ROOT_dep_link_args,
-    install:             true,
-    install_rpath:       project_lib_rpath,
-  )
-  install_headers(
-    vdor_headers,
-    subdir:        meson.project_name() / 'algorithms',
-    preserve_path: true,
-  )
-endif
+vdor_lib = shared_library(
+  'IguanaValidators',
+  vdor_sources,
+  include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
+  dependencies:        project_deps,
+  link_with:           [ services_lib, algo_lib ],
+  link_args:           ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
+  install:             true,
+  install_rpath:       project_lib_rpath,
+)
+install_headers(
+  vdor_headers,
+  subdir:        meson.project_name() / 'algorithms',
+  preserve_path: true,
+)
 
 # install config files
 foreach algo_config : algo_configs

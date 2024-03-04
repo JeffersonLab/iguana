@@ -5,6 +5,7 @@
 
 #include <TFile.h>
 #include <TH2.h>
+#include <TCanvas.h>
 
 namespace iguana::clas12 {
 
@@ -33,6 +34,7 @@ namespace iguana::clas12 {
         particle::PDG::pi_minus,
         particle::PDG::proton};
 
+      TString m_output_file_basename;
       TFile* m_output_file;
       mutable std::unordered_map<int, TH2D*> u_after_vs_before;
   };

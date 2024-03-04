@@ -34,8 +34,6 @@ inline int TestValidator(
   vdor->Start(banks);
   int it_ev = 0;
   while(reader.next(banks) && (num_events == 0 || it_ev++ < num_events)) {
-    if(it_ev % 10000 == 0)
-      fmt::print("Read {} events\n", it_ev);
     vdor->Run(banks);
   }
   vdor->Stop();

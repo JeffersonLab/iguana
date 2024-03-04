@@ -18,8 +18,10 @@ namespace iguana::clas12 {
 
     // set an output file
     auto output_dir = GetOutputDirectory();
-    if(output_dir)
-      m_output_file = new TFile(TString(output_dir.value()) + "/momentum_corrections.root", "RECREATE");
+    if(output_dir) {
+      m_output_file_basename = output_dir.value() + "/momentum_corrections";
+      m_output_file = new TFile(m_output_file_basename + ".root", "RECREATE");
+    }
 
     // define plots
     for(const auto& pdg : u_pdg_list) {
@@ -74,6 +76,17 @@ namespace iguana::clas12 {
   void MomentumCorrectionValidator::Stop()
   {
     if(GetOutputDirectory()) {
+      int n_cols = 2;
+      int n_rows = (u_after_vs_before.size() + n_cols - 1) / n_cols;
+      auto canv = new TCanvas("canv", "canv", n_cols * 800, n_rows * 600);
+      canv->Divide(n_cols, n_rows);
+      int pad = 0;
+      for(const auto& plot : u_after_vs_before) {
+        canv->cd(++pad);
+        canv->GetPad(pad)->SetGrid(1,1);
+        plot.second->Draw("colz");
+      }
+      canv->SaveAs(m_output_file_basename + ".png");
       m_output_file->Write();
       m_log->Info("Wrote output file {}", m_output_file->GetName());
       m_output_file->Close();

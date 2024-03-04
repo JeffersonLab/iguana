@@ -94,20 +94,23 @@ message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
 # handle ROOT
 ROOT_dep_inc_dirs  = []
 ROOT_dep_link_args = []
+ROOT_dep_link_args_for_validators = []
 if ROOT_dep.found()
   ROOT_dep_inc_dirs += include_directories(run_command('root-config', '--incdir', check: true).stdout().strip())
+  ROOT_libdir = run_command('root-config', '--libdir', check: true).stdout().strip()
   ROOT_dep_link_args += [
-    '-L' + run_command('root-config', '--libdir',   check: true).stdout().strip(),
     # ROOT libraries that we need (safer than `root-config --libs`)
+    '-L' + ROOT_libdir,
     '-lCore',
     '-lGenVector',
   ]
-  if get_option('validators')
-    ROOT_dep_link_args += [
-      '-lHist',
-      '-lRIO',
-    ]
-  endif
+  ROOT_dep_link_args_for_validators = [
+    # additional ROOT libraries for validators (namely, graphics libraries)
+    '-L' + ROOT_libdir,
+    '-lRIO',
+    '-lHist',
+    '-lGpad',
+  ]
 endif
 
 # general project vars
