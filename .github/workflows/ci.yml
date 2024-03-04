@@ -144,6 +144,8 @@ jobs:
       - name: build ROOT
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
+          echo "[+] INSTALL DEPENDENCIES"
+          iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
           srcURL=$(iguana_src/meson/minimum-version.sh root src)
           echo "[+] DOWNLOADING ROOT SOURCE CODE FROM: $srcURL"
           wget -nv --no-check-certificate $srcURL
