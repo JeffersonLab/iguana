@@ -1,10 +1,10 @@
 // test an iguana algorithm validator
 
 #include <hipo4/reader.h>
-#include <iguana/algorithms/Validator.h>
+#include <iguana/algorithms/AlgorithmFactory.h>
 
 inline int TestValidator(
-    std::string algo_name,
+    std::string vdor_name,
     std::vector<std::string> bank_names,
     std::string data_file,
     int num_events,
@@ -13,8 +13,8 @@ inline int TestValidator(
 {
 
   // check arguments
-  if(algo_name == "" || bank_names.empty()) {
-    fmt::print(stderr, "ERROR: need algorithm name and banks\n");
+  if(vdor_name == "" || bank_names.empty()) {
+    fmt::print(stderr, "ERROR: need validator name and banks\n");
     return 1;
   }
   if(data_file == "") {
@@ -27,7 +27,7 @@ inline int TestValidator(
   auto banks = reader.getBanks(bank_names);
 
   // define the validator
-  auto vdor = iguana::ValidatorFactory::Create(algo_name);
+  auto vdor = iguana::AlgorithmFactory::Create(vdor_name);
   vdor->SetOutputDirectory(output_dir);
 
   // event loop

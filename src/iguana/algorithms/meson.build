@@ -24,8 +24,8 @@ algo_dict = {
       'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
     },
     'validator': {
-      'sources': [ 'Validator.cc', 'ValidatorFactory.cc' ],
-      'headers': [ 'Validator.h', 'ValidatorBoilerplate.h' ],
+      'sources': [ 'Validator.cc' ],
+      'headers': [ 'Validator.h' ],
     },
   },
   'example::ExampleAlgorithm': {
