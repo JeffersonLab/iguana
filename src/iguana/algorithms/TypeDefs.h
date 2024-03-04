@@ -28,6 +28,7 @@ namespace iguana {
       proton   = 2212
     };
 
+    /// Particle names
     const std::unordered_map<PDG, std::string> name{
       { electron, "electron" },
       { pi_plus,  "pi_plus"  },
@@ -35,6 +36,7 @@ namespace iguana {
       { proton,   "proton"   }
     };
 
+    /// Particle titles
     const std::unordered_map<PDG, std::string> title{
       { electron, "e^{-}"   },
       { pi_plus,  "#pi^{+}" },
