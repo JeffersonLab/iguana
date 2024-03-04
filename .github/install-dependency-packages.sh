@@ -19,6 +19,14 @@ GENERAL_PACKAGE_LIST_LINUX=(
   gcovr           # for coverage
   python-pygments # for coverage report syntax colors
   llvm            # for `llvm-symbolizer`, for human-readable sanitizer results
+  ### ROOT dependencies
+  binutils
+  libx11
+  libxpm
+  libxft
+  libxext
+  openssl
+  gsl
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
@@ -32,6 +40,14 @@ GENERAL_PACKAGE_LIST_MACOS=(
   tree
   ninja
   meson
+  ### ROOT dependencies
+  binutils
+  libx11
+  libxpm
+  libxft
+  libxext
+  openssl
+  gsl
 )
 IGUANA_PACKAGE_LIST_MACOS=(
   fmt

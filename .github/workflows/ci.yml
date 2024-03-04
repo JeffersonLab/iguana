@@ -82,11 +82,15 @@ jobs:
     runs-on: ${{ inputs.runner }}
     container:
       image: ${{ inputs.container }}
+    outputs:
+      key: ${{ steps.key.outputs.key }}
     steps:
+      - id: key
+        run: echo key=hipo-${{ inputs.id }}-${{ env.hipo_version }} >> $GITHUB_OUTPUT
       - uses: actions/cache/restore@v4
         id: cache
         with:
-          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          key: ${{ steps.key.outputs.key }}
           path: hipo.tar.zst
           lookup-only: true
       - name: checkout iguana for dependency installation script
@@ -113,19 +117,50 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         id: cache_save
         with:
-          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          key: ${{ steps.key.outputs.key }}
           path: hipo.tar.zst
 
-  test_root:
-    name: test ROOT
+  build_root:
+    name: Build ROOT
     runs-on: ${{ inputs.runner }}
     container:
       image: ${{ inputs.container }}
+    outputs:
+      key: ${{ steps.key.outputs.key }}
     steps:
-      - uses: cvmfs-contrib/github-action-cvmfs@v4
-      - run: ls /cvmfs/sft.cern.ch
-      - run: ls /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.28.10/x86_64-ubuntu22-gcc114-opt
-      - run: ls /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.28.10/x86_64-mac127-clang140-opt
+      - id: key
+        run: echo key=root-${{ inputs.id }}-$(date +%Y-wk%V) >> $GITHUB_OUTPUT  # suffix: <YEAR>-wk<WEEKNUMBER>
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          key: ${{ steps.key.outputs.key }}
+          path: root.tar.zst
+          lookup-only: true
+      - name: checkout iguana for dependency installation script
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/checkout@v4
+        with:
+          path: iguana_src
+      - name: build ROOT
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run:
+          srcURL=$(iguana_src/meson/minimum-version.sh root src)
+          echo "[+] DOWNLOADING ROOT SOURCE CODE FROM: $srcURL"
+          wget -nv --no-check-certificate $srcURL
+          tar xvf root_*.tar.gz
+          mv -v $(ls -d root_* | head -n1) root_src
+          echo "[+] BUILDING ROOT"
+          cmake -S root_src -B build -G Ninja --install-prefix $(pwd)/root
+          cmake --build build
+          cmake --install build
+          echo "[+] MAKE TARBALL"
+          tar cavf root{.tar.zst,}
+      - uses: actions/cache/save@v4
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        id: cache_save
+        with:
+          key: ${{ steps.key.outputs.key }}
+          path: root.tar.zst
 
   # build
   #########################################################
@@ -164,7 +199,7 @@ jobs:
       - name: get local dependency `hipo`
         uses: actions/cache/restore@v4
         with:
-          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          key: ${{ needs.build_hipo.outputs.key }}
           path: hipo.tar.zst
       - name: untar local dependencies
         run: ls *.tar.zst | xargs -I{} tar xvf {}
@@ -276,7 +311,7 @@ jobs:
       - name: get local dependency `hipo`
         uses: actions/cache/restore@v4
         with:
-          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          key: ${{ needs.build_hipo.outputs.key }}
           path: hipo.tar.zst
       - name: untar local dependencies
         run: ls *.tar.zst | xargs -I{} tar xvf {}
@@ -349,6 +384,7 @@ jobs:
     name: Test Installed Examples
     needs:
       - download_test_data
+      - build_hipo
       - build_iguana
     runs-on: ${{ inputs.runner }}
     container:
@@ -370,7 +406,7 @@ jobs:
       - name: get local dependency `hipo`
         uses: actions/cache/restore@v4
         with:
-          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          key: ${{ needs.build_hipo.outputs.key }}
           path: hipo.tar.zst
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
@@ -422,6 +458,7 @@ jobs:
     name: Test consumer builds
     needs:
       - download_test_data
+      - build_hipo
       - build_iguana
     runs-on: ${{ inputs.runner }}
     container:
@@ -440,7 +477,7 @@ jobs:
       - name: get local dependency `hipo`
         uses: actions/cache/restore@v4
         with:
-          key: hipo-${{ inputs.id }}-${{ env.hipo_version }}
+          key: ${{ needs.build_hipo.outputs.key }}
           path: hipo.tar.zst
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4

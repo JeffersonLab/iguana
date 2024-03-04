@@ -43,7 +43,7 @@ ROOT_dep = dependency(
   'ROOT',
   required: false,
   method:   'cmake',
-  version:  '>=6.28'
+  version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip()
 )
 
 # list of dependencies
