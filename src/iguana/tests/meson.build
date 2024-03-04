@@ -12,28 +12,62 @@ test_exe = executable(
   install_rpath:       ':'.join(project_exe_rpath),
 )
 
-# test algorithms
+# test algorithms and validators
 if fs.is_file(get_option('test_data_file'))
   foreach name, info : algo_dict
     if info.has_key('test_args')
-      algo_needs_ROOT = info.get('algorithm').get('algo_needs_ROOT', false)
+
+      # get list of banks
+      bank_args = []
+      foreach bank : info['test_args'].get('banks', [])
+        bank_args += ['-b', bank]
+      endforeach
+
+      # test names cannot have colons
+      test_name_algo = name.replace('::', '-')
+
+      # test algorithm
+      algo_needs_ROOT = info.get('algorithm').get('needs_ROOT', false)
       if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
-        bank_args = []
-        foreach bank : info['test_args'].get('banks', [])
-          bank_args += ['-b', bank]
-        endforeach
+        test_args = [
+          '-c', 'algorithm',
+          '-f', get_option('test_data_file'),
+          '-n', get_option('test_num_events'),
+          '-a', name,
+          '-v',
+        ] + bank_args
         test(
-          'algorithm-' + name.replace('::', '-'),
+          'algorithm-' + test_name_algo,
           test_exe,
-          args: [
-            '-c', 'algorithm',
-            '-f', get_option('test_data_file'),
-            '-n', get_option('test_num_events'),
-            '-a', name,
-            '-v',
-            ] + bank_args,
+          args: test_args,
         )
       endif
+
+      # test validator
+      if info.has_key('validator')
+        vdor_needs_ROOT = info.get('validator').get('needs_ROOT', false)
+        test_name_vdor = test_name_algo + 'Validator'
+        if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
+          test_args = [
+            '-c', 'validator',
+            '-f', get_option('test_data_file'),
+            '-n', get_option('test_num_events'),
+            '-a', name + 'Validator',
+            '-v',
+          ] + bank_args
+          if get_option('test_output_dir') != ''
+            vdor_output_dir = get_option('test_output_dir') / test_name_vdor
+            run_command('mkdir', '-p', vdor_output_dir, check: true)
+            test_args += [ '-o', vdor_output_dir ]
+          endif
+          test(
+            'validator-' + test_name_vdor,
+            test_exe,
+            args: test_args,
+          )
+        endif
+      endif
+
     endif
   endforeach
 else

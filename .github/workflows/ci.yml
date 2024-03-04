@@ -175,7 +175,6 @@ jobs:
             --prefix=$(pwd)/iguana              \
             -Dbuildtype=${{ matrix.buildtype }} \
             -Dexamples=True                     \
-            -Dvalidators=True                   \
             -Ddocumentation=False               \
             ${{ matrix.binding_opts }}          \
             build-iguana
@@ -276,9 +275,10 @@ jobs:
         run: meson setup build-iguana --wipe
       - name: meson configure
         run: |
-          meson configure                           \
-            -Dtest_data_file=$(pwd)/test_data.hipo  \
-            -Dtest_num_events=${{ env.num_events }} \
+          meson configure                               \
+            -Dtest_data_file=$(pwd)/test_data.hipo      \
+            -Dtest_num_events=${{ env.num_events }}     \
+            -Dtest_output_dir=$(pwd)/validation_results \
             build-iguana
           case "${{ matrix.mode }}" in
             coverage)
@@ -329,6 +329,12 @@ jobs:
           name: coverage-report
           retention-days: 7
           path: coverage-report
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.mode == 'coverage' }}
+        with:
+          name: _validation_results
+          retention-days: 7
+          path: validation_results
 
   # run examples
   # - a bit redundant, with `meson test` from `test_iguana`, but this ensures

@@ -9,3 +9,5 @@
 
 # data files
 *.hipo
+*.root
+*.png
