@@ -143,7 +143,7 @@ jobs:
           path: iguana_src
       - name: build ROOT
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run:
+        run: |
           srcURL=$(iguana_src/meson/minimum-version.sh root src)
           echo "[+] DOWNLOADING ROOT SOURCE CODE FROM: $srcURL"
           wget -nv --no-check-certificate $srcURL
