@@ -148,7 +148,7 @@ jobs:
           echo "[+] DOWNLOADING ROOT SOURCE CODE FROM: $srcURL"
           wget -nv --no-check-certificate $srcURL
           tar xvf root_*.tar.gz
-          mv -v $(ls -d root_* | head -n1) root_src
+          mv -v $(ls -d root-* | head -n1) root_src
           echo "[+] BUILDING ROOT"
           cmake -S root_src -B build -G Ninja --install-prefix $(pwd)/root
           cmake --build build
