@@ -105,6 +105,7 @@ if ROOT_dep.found()
   if get_option('validators')
     ROOT_dep_link_args += [
       '-lHist',
+      '-lRIO',
     ]
   endif
 endif

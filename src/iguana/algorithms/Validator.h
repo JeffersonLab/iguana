@@ -44,7 +44,7 @@ namespace iguana {
       std::unique_ptr<AlgorithmSequence> m_algo_seq;
 
       /// Mutex for locking procedures such as histogram filling in `Validator::Run`
-      std::mutex m_mutex;
+      mutable std::mutex m_mutex;
 
     private:
 

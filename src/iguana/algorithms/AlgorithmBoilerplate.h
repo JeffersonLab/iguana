@@ -17,7 +17,6 @@
   VDOR_NAME(std::string name = "")                    \
       : Validator(name == "" ? GetClassName() : name) \
   {                                                   \
-    m_output_dir = "";                                \
   }
 
 /// Generate an algorithm destructor

@@ -3,6 +3,7 @@
 #include "iguana/algorithms/Validator.h"
 #include "iguana/algorithms/TypeDefs.h"
 
+#include <TFile.h>
 #include <TH2.h>
 
 namespace iguana::clas12 {
@@ -32,12 +33,8 @@ namespace iguana::clas12 {
         particle::PDG::pi_minus,
         particle::PDG::proton};
 
-      const std::vector<std::pair<TString, TString>> u_mom_strings = {
-          {"px", "p_{x}"},
-          {"py", "p_{y}"},
-          {"pz", "p_{z}"}};
-
-      mutable std::unordered_map<int, std::vector<TH2D*>> u_after_vs_before;
+      TFile* m_output_file;
+      mutable std::unordered_map<int, TH2D*> u_after_vs_before;
   };
 
 }

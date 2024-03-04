@@ -1,7 +1,7 @@
 // test an iguana algorithm validator
 
 #include <hipo4/reader.h>
-#include <iguana/algorithms/AlgorithmFactory.h>
+#include <iguana/algorithms/Validator.h>
 
 inline int TestValidator(
     std::string vdor_name,
@@ -28,7 +28,7 @@ inline int TestValidator(
 
   // define the validator
   auto vdor = iguana::AlgorithmFactory::Create(vdor_name);
-  vdor->SetOutputDirectory(output_dir);
+  static_cast<iguana::Validator*>(vdor.get())->SetOutputDirectory(output_dir);
 
   // event loop
   vdor->Start(banks);

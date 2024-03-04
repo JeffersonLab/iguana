@@ -2,6 +2,8 @@
 /// @brief Type definitions for common objects used in algorithms
 
 #include <tuple>
+#include <string>
+#include <unordered_map>
 
 namespace iguana {
 
@@ -16,6 +18,7 @@ namespace iguana {
 
   /// Light-weight namespace for particle constants
   namespace particle {
+    // clang-format off
 
     /// PDG codes
     enum PDG {
@@ -25,6 +28,21 @@ namespace iguana {
       proton   = 2212
     };
 
+    const std::unordered_map<PDG, std::string> name{
+      { electron, "electron" },
+      { pi_plus,  "pi_plus"  },
+      { pi_minus, "pi_minus" },
+      { proton,   "proton"   }
+    };
+
+    const std::unordered_map<PDG, std::string> title{
+      { electron, "e^{-}"   },
+      { pi_plus,  "#pi^{+}" },
+      { pi_minus, "#pi^{-}" },
+      { proton,   "p"       }
+    };
+
+    // clang-format on
   }
 
 }
