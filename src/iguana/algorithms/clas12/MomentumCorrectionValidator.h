@@ -1,11 +1,11 @@
 #pragma once
 
-#include "iguana/algorithms/Validator.h"
 #include "iguana/algorithms/TypeDefs.h"
+#include "iguana/algorithms/Validator.h"
 
+#include <TCanvas.h>
 #include <TFile.h>
 #include <TH2.h>
-#include <TCanvas.h>
 
 namespace iguana::clas12 {
 
@@ -29,10 +29,10 @@ namespace iguana::clas12 {
       const double m_mom_max = 12.0;
 
       const std::vector<int> u_pdg_list = {
-        particle::PDG::electron,
-        particle::PDG::pi_plus,
-        particle::PDG::pi_minus,
-        particle::PDG::proton};
+          particle::PDG::electron,
+          particle::PDG::pi_plus,
+          particle::PDG::pi_minus,
+          particle::PDG::proton};
 
       TString m_output_file_basename;
       TFile* m_output_file;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <optional>
 #include <mutex>
+#include <optional>
 
 #include <hipo4/bank.h>
 
@@ -20,15 +20,15 @@ namespace iguana {
     public:
 
       /// @param name the unique name for a derived class instance
-      Validator(const std::string name="validator")
+      Validator(const std::string name = "validator")
           : Algorithm(name)
           , m_output_dir("")
       {}
       virtual ~Validator() {}
 
-      void Start(hipo::banklist& banks) override {};
-      void Run(hipo::banklist& banks) const override {};
-      void Stop() override {};
+      void Start(hipo::banklist& banks) override{};
+      void Run(hipo::banklist& banks) const override{};
+      void Stop() override{};
 
       /// Set this validator's output directory
       /// @param output_dir the output directory

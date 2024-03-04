@@ -20,18 +20,18 @@ namespace iguana::clas12 {
     auto output_dir = GetOutputDirectory();
     if(output_dir) {
       m_output_file_basename = output_dir.value() + "/momentum_corrections";
-      m_output_file = new TFile(m_output_file_basename + ".root", "RECREATE");
+      m_output_file          = new TFile(m_output_file_basename + ".root", "RECREATE");
     }
 
     // define plots
     for(const auto& pdg : u_pdg_list) {
       TString particle_name  = particle::name.at(particle::PDG(pdg));
       TString particle_title = particle::title.at(particle::PDG(pdg));
-      auto after_vs_before = new TH2D(
-            "after_vs_before_" + particle_name,
-            particle_title + " momentum correction;p_{before} [GeV];p_{after} [GeV]",
-            m_num_bins, 0, m_mom_max,
-            m_num_bins, 0, m_mom_max);
+      auto after_vs_before   = new TH2D(
+          "after_vs_before_" + particle_name,
+          particle_title + " momentum correction;p_{before} [GeV];p_{after} [GeV]",
+          m_num_bins, 0, m_mom_max,
+          m_num_bins, 0, m_mom_max);
       u_after_vs_before.insert({pdg, after_vs_before});
     }
   }
@@ -78,12 +78,12 @@ namespace iguana::clas12 {
     if(GetOutputDirectory()) {
       int n_cols = 2;
       int n_rows = (u_after_vs_before.size() + n_cols - 1) / n_cols;
-      auto canv = new TCanvas("canv", "canv", n_cols * 800, n_rows * 600);
+      auto canv  = new TCanvas("canv", "canv", n_cols * 800, n_rows * 600);
       canv->Divide(n_cols, n_rows);
       int pad = 0;
       for(const auto& plot : u_after_vs_before) {
         canv->cd(++pad);
-        canv->GetPad(pad)->SetGrid(1,1);
+        canv->GetPad(pad)->SetGrid(1, 1);
         plot.second->Draw("colz");
       }
       canv->SaveAs(m_output_file_basename + ".png");

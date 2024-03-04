@@ -1,8 +1,8 @@
 /// @file
 /// @brief Type definitions for common objects used in algorithms
 
-#include <tuple>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 
 namespace iguana {
