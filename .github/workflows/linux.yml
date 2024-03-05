@@ -5,16 +5,41 @@ on:
   push:
     branches: [ main ]
     tags: [ '*' ]
+  schedule:
+    - cron: '15 7 * * 0' # Sundays at 0715Z
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  WORKFLOW_ID: linux-latest
+
 jobs:
+
   linux:
     name: Linux (latest)
     uses: ./.github/workflows/ci.yml
     with:
-      id: linux-latest
+      id: ${{ env.WORKFLOW_ID }}
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
+
+  issue_bot:
+    name: Issue bot
+    # if: ${{ github.event_name == 'schedule' && ( cancelled() || failure() ) }}
+    runs-on: ubuntu-latest
+    needs: [ linux ]
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_ID: ${{ env.WORKFLOW_ID }}
+          RUN_ID: ${{ github.run_id }}
+          REPO_URL: ${{ github.event.repository.html_url }}
+        with:
+          filename: .github/schedule-issue.md
