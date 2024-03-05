@@ -250,7 +250,7 @@ jobs:
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
       - name: readelf/otool iguana examples
-        if: ${{ matrix.binding_opts = '' }}
+        if: ${{ matrix.binding_opts == '' }}
         run: |
           binaries=$(find iguana/bin -type f -name "iguana-example-*")
           libraries=$(find iguana -type f -name "*.so")
