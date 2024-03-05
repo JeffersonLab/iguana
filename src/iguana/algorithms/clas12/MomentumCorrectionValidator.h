@@ -25,8 +25,9 @@ namespace iguana::clas12 {
 
       hipo::banklist::size_type b_particle;
 
-      const int m_num_bins   = 100;
-      const double m_mom_max = 12.0;
+      const double m_p_max       = 12.0;
+      const double m_deltaP_max  = 1.0;
+      const double m_deltaP_zoom = 0.2;
 
       const std::vector<int> u_pdg_list = {
           particle::PDG::electron,
@@ -36,7 +37,7 @@ namespace iguana::clas12 {
 
       TString m_output_file_basename;
       TFile* m_output_file;
-      mutable std::unordered_map<int, TH2D*> u_after_vs_before;
+      mutable std::unordered_map<int, TH2D*> u_deltaPvsP; // FIXME: needs sector dependence
   };
 
 }

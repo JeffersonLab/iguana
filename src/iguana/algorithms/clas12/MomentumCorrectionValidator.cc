@@ -1,5 +1,8 @@
 #include "MomentumCorrectionValidator.h"
 
+#include <TProfile.h>
+#include <TStyle.h>
+
 namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(MomentumCorrectionValidator);
@@ -24,15 +27,16 @@ namespace iguana::clas12 {
     }
 
     // define plots
+    gStyle->SetOptStat(0);
     for(const auto& pdg : u_pdg_list) {
       TString particle_name  = particle::name.at(particle::PDG(pdg));
       TString particle_title = particle::title.at(particle::PDG(pdg));
-      auto after_vs_before   = new TH2D(
-          "after_vs_before_" + particle_name,
-          particle_title + " momentum correction;p_{before} [GeV];p_{after} [GeV]",
-          m_num_bins, 0, m_mom_max,
-          m_num_bins, 0, m_mom_max);
-      u_after_vs_before.insert({pdg, after_vs_before});
+      auto deltaPvsP         = new TH2D(
+          "deltaPvsP_" + particle_name,
+          particle_title + " momentum correction;p [GeV];#Delta p [GeV]",
+          30, 0, m_p_max,
+          100, -m_deltaP_max, m_deltaP_max);
+      u_deltaPvsP.insert({pdg, deltaPvsP});
     }
   }
 
@@ -42,13 +46,13 @@ namespace iguana::clas12 {
     // get the momenta before
     // FIXME: will need to refactor this once we have HIPO iterators
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
-    std::unordered_map<int, double> mom_before;
+    std::unordered_map<int, double> p_measured;
     for(int row = 0; row < particle_bank.getRows(); row++) {
       double mom = std::hypot(
           particle_bank.getFloat("px", row),
           particle_bank.getFloat("py", row),
           particle_bank.getFloat("pz", row));
-      mom_before.insert({row, mom});
+      p_measured.insert({row, mom});
     }
 
     // run the momentum corrections
@@ -64,11 +68,12 @@ namespace iguana::clas12 {
       if(pdg == -1)
         continue; // FIXME: will need to refactor this once we have HIPO iterators
 
-      double mom = std::hypot(
+      double p_corrected = std::hypot(
           particle_bank.getFloat("px", row),
           particle_bank.getFloat("py", row),
           particle_bank.getFloat("pz", row));
-      u_after_vs_before.at(pdg)->Fill(mom_before.at(row), mom);
+      auto delta_p = p_corrected - p_measured.at(row);
+      u_deltaPvsP.at(pdg)->Fill(p_corrected, delta_p);
     }
   }
 
@@ -77,14 +82,24 @@ namespace iguana::clas12 {
   {
     if(GetOutputDirectory()) {
       int n_cols = 2;
-      int n_rows = (u_after_vs_before.size() + n_cols - 1) / n_cols;
+      int n_rows = (u_deltaPvsP.size() + n_cols - 1) / n_cols;
       auto canv  = new TCanvas("canv", "canv", n_cols * 800, n_rows * 600);
       canv->Divide(n_cols, n_rows);
-      int pad = 0;
-      for(const auto& plot : u_after_vs_before) {
-        canv->cd(++pad);
-        canv->GetPad(pad)->SetGrid(1, 1);
-        plot.second->Draw("colz");
+      int pad_num = 0;
+      for(const auto& [_, plot] : u_deltaPvsP) {
+        auto pad = canv->GetPad(++pad_num);
+        pad->cd();
+        pad->SetGrid(1, 1);
+        pad->SetLogz();
+        pad->SetLeftMargin(0.12);
+        pad->SetRightMargin(0.12);
+        pad->SetBottomMargin(0.12);
+        plot->Draw("colz");
+        plot->GetYaxis()->SetRangeUser(-m_deltaP_zoom, m_deltaP_zoom);
+        auto prof = plot->ProfileX("_pfx", 1, -1, "s");
+        prof->SetLineColor(kBlack);
+        prof->SetLineWidth(5);
+        prof->Draw("same");
       }
       canv->SaveAs(m_output_file_basename + ".png");
       m_output_file->Write();
