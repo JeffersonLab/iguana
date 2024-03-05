@@ -252,7 +252,10 @@ jobs:
             build-iguana
       - name: require ROOT
         if: ${{ matrix.build_id != 'cpp-gcc-release-noROOT' }}
-        run: meson configure -Drequire_ROOT=true build-iguana
+        run: |
+          meson configure -Drequire_ROOT=true build-iguana
+          source root/bin/thisroot.sh
+          echo PATH=$PATH >> $GITHUB_ENV # add `root-config` to PATH
       - name: dump build options
         run: meson configure build-iguana | cat
       - name: meson install
