@@ -12,16 +12,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  WORKFLOW_ID: macOS
-
 jobs:
 
   macOS:
     name: macOS (latest)
     uses: ./.github/workflows/ci.yml
     with:
-      id: ${{ env.WORKFLOW_ID }}
+      id: macOS
       runner: macos-latest
       test_matrix: >-
         {
@@ -44,7 +41,7 @@ jobs:
       - uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WORKFLOW_ID: ${{ env.WORKFLOW_ID }}
+          WORKFLOW_ID: macOS
           RUN_ID: ${{ github.run_id }}
           REPO_URL: ${{ github.event.repository.html_url }}
         with:

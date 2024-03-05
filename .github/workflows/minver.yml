@@ -8,16 +8,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  WORKFLOW_ID: linux-minver
-
 jobs:
 
   linux:
     name: Linux (minver)
     uses: ./.github/workflows/ci.yml
     with:
-      id: ${{ env.WORKFLOW_ID }}
+      id: linux-minver
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
       verset: minver
@@ -42,7 +39,7 @@ jobs:
       - uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WORKFLOW_ID: ${{ env.WORKFLOW_ID }}
+          WORKFLOW_ID: linux-minver
           RUN_ID: ${{ github.run_id }}
           REPO_URL: ${{ github.event.repository.html_url }}
         with:

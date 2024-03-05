@@ -12,16 +12,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  WORKFLOW_ID: linux-latest
-
 jobs:
 
   linux:
     name: Linux (latest)
     uses: ./.github/workflows/ci.yml
     with:
-      id: ${{ env.WORKFLOW_ID }}
+      id: linux-latest
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
 
@@ -38,7 +35,7 @@ jobs:
       - uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WORKFLOW_ID: ${{ env.WORKFLOW_ID }}
+          WORKFLOW_ID: linux-latest
           RUN_ID: ${{ github.run_id }}
           REPO_URL: ${{ github.event.repository.html_url }}
         with:
