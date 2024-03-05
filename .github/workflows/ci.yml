@@ -558,7 +558,7 @@ jobs:
       ### build test
       - name: build
         run: |
-          source iguana/bin/this_iguana.sh verbose
+          source iguana/bin/this_iguana.sh verbose ld # `ld` is needed for ROOT
           .github/test-consumer-build.sh ${{ matrix.tool }}
       - name: readelf/otool executable
         run: |
