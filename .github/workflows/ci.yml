@@ -233,15 +233,14 @@ jobs:
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       - name: meson setup
-        run: meson setup build-iguana $(meson/resolve-dependencies.py --cli --hipo ./hipo)
-        # run: |
-        #   resolve_args=(--cli)
-        #   resolve_args+=(--hipo ./hipo)
-        #   [ "${{ matrix.build_id }}" != "cpp-gcc-release-noROOT" ] && resolve_args+=(--root ./root)
-        #   build_args=$(meson/resolve-dependencies.py ${resolve_args[@]})
-        #   echo "resolve_args = ${resolve_args[@]}"
-        #   echo "build_args   = $build_args"
-        #   meson setup build-iguana $build_args
+        run: |
+          resolve_args=(--cli)
+          resolve_args+=(--hipo ./hipo)
+          [ "${{ matrix.build_id }}" != "cpp-gcc-release-noROOT" ] && resolve_args+=(--root ./root)
+          build_args=$(meson/resolve-dependencies.py ${resolve_args[@]})
+          echo "resolve_args = ${resolve_args[@]}"
+          echo "build_args   = $build_args"
+          meson setup build-iguana $build_args
       - name: meson configure
         run: |
           meson configure                       \
