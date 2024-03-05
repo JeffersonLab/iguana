@@ -86,7 +86,8 @@ jobs:
     outputs:
       key: ${{ steps.key.outputs.key }}
     steps:
-      - id: key
+      - name: key
+        id: key
         run: echo key=hipo---${{ inputs.id }}---${{ env.hipo_version }}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
       - uses: actions/cache/restore@v4
         id: cache
@@ -134,7 +135,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: iguana_src
-      - id: key
+      - name: key
+        id: key
         run: |
           root_version=$(iguana_src/meson/minimum-version.sh root src | sed 's;.*/;;' | sed 's;\.tar\.gz;;')
           echo key=root---${{ inputs.id }}---${root_version}---$(date +%Y-week%U) >> $GITHUB_OUTPUT

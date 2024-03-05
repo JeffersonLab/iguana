@@ -28,7 +28,7 @@ jobs:
 
   issue_bot:
     name: Issue bot
-    # if: ${{ github.event_name == 'schedule' && ( cancelled() || failure() ) }}
+    if: ${{ github.event_name == 'schedule' && ( cancelled() || failure() ) }}
     runs-on: ubuntu-latest
     needs: [ linux ]
     permissions:
