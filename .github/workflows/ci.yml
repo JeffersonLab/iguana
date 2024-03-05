@@ -220,11 +220,6 @@ jobs:
         with:
           key: ${{ needs.build_root.outputs.key }}
           path: root.tar.zst
-      - name: add `ROOT` to `PATH`
-        if: ${{ matrix.build_id != 'cpp-gcc-release-noROOT' }}
-        run: |
-          source root/bin/thisroot.sh
-          echo PATH=$PATH >> $GITHUB_ENV # needed for `root-config`
       - name: untar local dependencies
         run: ls *.tar.zst | xargs -I{} tar xvf {}
       - name: tree local dependencies
@@ -237,6 +232,12 @@ jobs:
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
+      ### build
+      - name: add `ROOT` to `PATH`
+        if: ${{ matrix.build_id != 'cpp-gcc-release-noROOT' }}
+        run: |
+          source root/bin/thisroot.sh
+          echo PATH=$PATH >> $GITHUB_ENV # needed for `root-config`
       - name: meson setup
         run: |
           resolve_args=(--cli)
