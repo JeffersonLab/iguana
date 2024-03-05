@@ -495,7 +495,7 @@ jobs:
           echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
           echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV  # for cppyy on macOS to be able to find dynamic libs
       - name: source environment for ROOT
-        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `ld` path
+        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld python # needed for `ld` path and PYTHONPATH
       ### run tests
       - name: test 00
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}

@@ -9,7 +9,8 @@ if [ $# -lt 2 ]; then
   USAGE: $0 [path/to/root] [runner] [OPTIONS]...
 
   OPTIONS:
-             ld   append ld path
+             ld          append (DY)LD_LIBRARY_PATH
+             python      append PYTHONPATH
 
   NOTE: this should only be used on the CI
   """
@@ -20,8 +21,12 @@ runner=$2
 shift
 shift
 set_ld_path=false
+set_python_path=false
 for arg in "$@"; do
-  [ "$arg" = "ld" ] && set_ld_path=true
+  case "$arg" in
+    ld)     set_ld_path=true     ;;
+    python) set_python_path=true ;;
+  esac
 done
 
 thisroot=$root_path/bin/thisroot.sh
@@ -33,9 +38,14 @@ fi
 source $thisroot
 
 echo PATH=$PATH >> $GITHUB_ENV
+
 if $set_ld_path; then
   case "$runner" in
     macos-latest) echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV ;;
     *)            echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH     >> $GITHUB_ENV ;;
   esac
+fi
+
+if $set_python_path; then
+  echo PYTHONPATH=$PYTHONPATH >> $GITHUB_ENV
 fi
