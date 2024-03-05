@@ -358,6 +358,11 @@ jobs:
       - name: untar local dependencies
         run: ls *.tar.zst | xargs -I{} tar xvf {}
       ### rebuild iguana
+      - name: add `ROOT` to `PATH`
+        if: ${{ matrix.mode != 'noROOT' }}
+        run: |
+          source root/bin/thisroot.sh
+          echo PATH=$PATH >> $GITHUB_ENV # needed for `root-config`
       - name: meson wipe builddir for macOS re-link # macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
         if: ${{ inputs.runner == 'macos-latest' }}
         run: meson setup build-iguana --wipe
