@@ -331,6 +331,7 @@ jobs:
           clean: false
           fetch-tags: true
           fetch-depth: 0
+          path: iguana_src
       - name: get test data
         uses: actions/cache/restore@v4
         with:
@@ -342,7 +343,7 @@ jobs:
           name: build_iguana_${{ matrix.build_id }}
       ### dependencies
       - name: install dependency packages
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
+        run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: get local dependency `hipo`
         uses: actions/cache/restore@v4
         with:
@@ -492,6 +493,13 @@ jobs:
           echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH     >> $GITHUB_ENV
           echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
           echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV  # for cppyy on macOS to be able to find dynamic libs
+      - name: source environment for ROOT
+        run: |
+          source root/bin/thisroot.sh
+          case "${{ inputs.runner }}" in
+            macos-latest) echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV ;;
+            *)            echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> $GITHUB_ENV ;;
+          esac
       ### run tests
       - name: test 00
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
