@@ -236,9 +236,7 @@ jobs:
       ### build
       - name: add `ROOT` to `PATH`
         if: ${{ matrix.build_id != 'cpp-gcc-release-noROOT' }}
-        run: |
-          source root/bin/thisroot.sh
-          echo PATH=$PATH >> $GITHUB_ENV # needed for `root-config`
+        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} # needed for `root-config`
       - name: meson setup
         run: |
           resolve_args=(--cli)
@@ -358,11 +356,9 @@ jobs:
       - name: untar local dependencies
         run: ls *.tar.zst | xargs -I{} tar xvf {}
       ### rebuild iguana
-      - name: add `ROOT` to `PATH`
+      - name: add `ROOT` to `PATH` and `ld` path
         if: ${{ matrix.mode != 'noROOT' }}
-        run: |
-          source root/bin/thisroot.sh
-          echo PATH=$PATH >> $GITHUB_ENV # needed for `root-config`
+        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `root-config` and `ld` path
       - name: meson wipe builddir for macOS re-link # macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
         if: ${{ inputs.runner == 'macos-latest' }}
         run: meson setup build-iguana --wipe
@@ -499,12 +495,7 @@ jobs:
           echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
           echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV  # for cppyy on macOS to be able to find dynamic libs
       - name: source environment for ROOT
-        run: |
-          source root/bin/thisroot.sh
-          case "${{ inputs.runner }}" in
-            macos-latest) echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV ;;
-            *)            echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> $GITHUB_ENV ;;
-          esac
+        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `ld` path
       ### run tests
       - name: test 00
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
