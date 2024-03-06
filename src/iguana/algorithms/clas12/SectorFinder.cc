@@ -64,16 +64,32 @@ namespace iguana::clas12 {
           sectors.push_back(0);
         } 
       } else{
+          int trackSector=0;
           if(trackBank.getRows()>0){
-            sectors.push_back(getSector(trackBank,row));
-          } else if(scintBank.getRows()>0){
-            sectors.push_back(getSector(scintBank,row));
-          } else if(calBank.getRows()>0){
-            sectors.push_back(getSector(calBank,row));
-          } else{
-            //banks may be empty
-            sectors.push_back(0);
+            trackSector=getSector(trackBank,row);
+          } 
+          
+          int scintSector=0;
+          if(scintBank.getRows()>0){
+            scintSector=getSector(scintBank,row);
           }
+          
+          int calSector=0;
+          if(calBank.getRows()>0){
+            calSector=getSector(calBank,row);
+          } 
+          
+          if(trackSector!=0){
+            sectors.push_back(trackSector);
+          } else if(scintSector!=0){
+            sectors.push_back(scintSector);
+          } else{
+            //add even if calSector is 0
+            //need an entry per pindex
+            //can happen that particle not in FD
+            //ie sector is 0
+            sectors.push_back(calSector);
+          } 
           
         }
     }
