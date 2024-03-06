@@ -555,10 +555,12 @@ jobs:
       - name: set cmake prefix path
         if: ${{ matrix.tool == 'cmake' }}
         run: echo CMAKE_PREFIX_PATH=$(pwd)/hipo >> $GITHUB_ENV
+      - name: source environment for ROOT
+        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `ld` path
       ### build test
       - name: build
         run: |
-          source iguana/bin/this_iguana.sh verbose ld # `ld` is needed for ROOT
+          source iguana/bin/this_iguana.sh verbose
           .github/test-consumer-build.sh ${{ matrix.tool }}
       - name: readelf/otool executable
         run: |
