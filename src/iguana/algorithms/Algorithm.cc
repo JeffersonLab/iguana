@@ -12,34 +12,6 @@ namespace iguana {
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
-  OPTION_TYPE Algorithm::SetOption(const std::string key, const OPTION_TYPE val)
-  {
-    if(key == "log") {
-      if constexpr(std::disjunction<
-                       std::is_same<OPTION_TYPE, std::string>,
-                       std::is_same<OPTION_TYPE, const char*>,
-                       std::is_same<OPTION_TYPE, Logger::Level>>::value)
-        m_log->SetLevel(val);
-      else
-        m_log->Error("Option '{}' must be a string or a Logger::Level", key);
-    }
-    else {
-      m_option_cache[key] = val;
-      m_log->Debug("  USER OPTION: {:>20} = {}", key, PrintOptionValue(key));
-    }
-    return val;
-  }
-  template int Algorithm::SetOption(const std::string key, const int val);
-  template double Algorithm::SetOption(const std::string key, const double val);
-  template std::string Algorithm::SetOption(const std::string key, const std::string val);
-  template const char* Algorithm::SetOption(const std::string key, const char* val);
-  template std::vector<int> Algorithm::SetOption(const std::string key, const std::vector<int> val);
-  template std::vector<double> Algorithm::SetOption(const std::string key, const std::vector<double> val);
-  template std::vector<std::string> Algorithm::SetOption(const std::string key, const std::vector<std::string> val);
-
-  ///////////////////////////////////////////////////////////////////////////////
-
-  template <typename OPTION_TYPE>
   OPTION_TYPE Algorithm::GetOptionScalar(const std::string key, YAMLReader::node_path_t node_path)
   {
     try {
