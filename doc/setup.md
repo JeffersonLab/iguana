@@ -60,8 +60,8 @@ cmake --install build-hipo
   method is [building it from source](https://root.cern/install/build_from_source/)
   - You may need to set the C++ standard to match that used in `iguana`, which is currently 17; to do so,
     use the build option `-DCMAKE_CXX_STANDARD=17`
-  - Depending on ROOT's installation prefix, you may also need to set your environment so ROOT may be found;
-    this is typically done by `source /path/to/root/bin/thisroot.sh`
+- After installation, depending on ROOT's installation prefix you may also need to set your environment so
+  ROOT may be found; this is typically done by `source /path/to/root/bin/thisroot.sh`
 
 <a name="building"></a>
 ## 🟠 Building and Installing
