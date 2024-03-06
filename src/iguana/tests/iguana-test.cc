@@ -17,7 +17,8 @@ int main(int argc, char** argv)
   std::vector<std::string> bank_names;
 
   // get the command
-  auto UsageCommands = [&](int exit_code) {
+  auto UsageCommands = [&](int exit_code)
+  {
     fmt::print(stderr, "\nUSAGE: {} [COMMAND] [OPTIONS]...\n", argv[0]);
     fmt::print("\n  COMMANDS:\n\n");
     fmt::print("    {:<20} {}\n", "algorithm", "call `Run` on an algorithm");
@@ -40,37 +41,44 @@ int main(int argc, char** argv)
   auto UsageOptions = [&](int exit_code)
   {
     std::unordered_map<std::string, std::function<void()>> print_option = {
-      {"f", [&]() {
-                    fmt::print("    {:<20} {}\n", "-f FILE", "input data file");
-                  }},
-      {"n", [&]() {
-                    fmt::print("    {:<20} {}\n", "-n NUM_EVENTS", "number of events from the data file");
-                    fmt::print("    {:<20} set to 0 to process ALL events\n", "");
-                    fmt::print("    {:<20} default: {}\n", "", num_events);
-                  }},
+        {"f", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-f FILE", "input data file");
+         }},
+        {"n", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-n NUM_EVENTS", "number of events from the data file");
+           fmt::print("    {:<20} set to 0 to process ALL events\n", "");
+           fmt::print("    {:<20} default: {}\n", "", num_events);
+         }},
 
-      {"a-algo", [&]() {
-                    fmt::print("    {:<20} {}\n", "-a ALGORITHM", "the name of the algorithm");
-                  }},
-      {"a-vdor", [&]() {
-                    fmt::print("    {:<20} {}\n", "-a VALIDATOR", "the name of the validator");
-                  }},
-      {"b", [&]() {
-                    fmt::print("    {:<20} {}\n", "-b BANKS", "add a single bank to process");
-                    fmt::print("    {:<20} you may add as many banks as you need (-b BANK1 -b BANK2 ...)\n", "");
-                    fmt::print("    {:<20} default: if you do not add any banks, ALL of them will be used\n", "");
-                  }},
+        {"a-algo", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-a ALGORITHM", "the name of the algorithm");
+         }},
+        {"a-vdor", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-a VALIDATOR", "the name of the validator");
+         }},
+        {"b", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-b BANKS", "add a single bank to process");
+           fmt::print("    {:<20} you may add as many banks as you need (-b BANK1 -b BANK2 ...)\n", "");
+           fmt::print("    {:<20} default: if you do not add any banks, ALL of them will be used\n", "");
+         }},
 
-      {"t", [&]() {
-                    fmt::print("    {:<20} {}\n", "-t TESTNUM", "test number");
-                  }},
-      {"o", [&]() {
-                    fmt::print("    {:<20} {}\n", "-o OUTPUT_DIR", "if specified, validators will write to this directory");
-                  }},
-      {"v", [&]() {
-                    fmt::print("    {:<20} {}\n", "-v", "increase verbosity");
-                  }}
-    };
+        {"t", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-t TESTNUM", "test number");
+         }},
+        {"o", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-o OUTPUT_DIR", "if specified, validators will write to this directory");
+         }},
+        {"v", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-v", "increase verbosity");
+         }}};
     std::vector<std::string> available_options;
     if(command == "algorithm" || command == "unit") {
       available_options = {"f", "n", "a-algo", "b"};
@@ -135,23 +143,20 @@ int main(int argc, char** argv)
   // list of ALL banks needed by the algorithms and validators; we need all of them here,
   // so that the caller does not have to specifiy the banks
   const std::vector<std::string> all_bank_names = {
-    "RUN::config",
-    "REC::Particle"
-  };
+      "RUN::config",
+      "REC::Particle"};
   if(bank_names.empty())
     bank_names = all_bank_names;
 
-  if(verbose) {
-    fmt::print("TEST IGUANA:\n");
-    fmt::print("  {:>20} = {}\n", "command", command);
-    fmt::print("  {:>20} = {}\n", "data_file", data_file);
-    fmt::print("  {:>20} = {}\n", "num_events", num_events);
-    fmt::print("  {:>20} = {}\n", "algo_name", algo_name);
-    fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names, ", "));
-    fmt::print("  {:>20} = {}\n", "test_num", test_num);
-    fmt::print("  {:>20} = {}\n", "output_dir", output_dir);
-    fmt::print("\n");
-  }
+  fmt::print("TEST IGUANA:\n");
+  fmt::print("  {:>20} = {}\n", "command", command);
+  fmt::print("  {:>20} = {}\n", "data_file", data_file);
+  fmt::print("  {:>20} = {}\n", "num_events", num_events);
+  fmt::print("  {:>20} = {}\n", "algo_name", algo_name);
+  fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names, ", "));
+  fmt::print("  {:>20} = {}\n", "test_num", test_num);
+  fmt::print("  {:>20} = {}\n", "output_dir", output_dir);
+  fmt::print("\n");
 
   // run test
   if(command == "algorithm" || command == "unit") {
