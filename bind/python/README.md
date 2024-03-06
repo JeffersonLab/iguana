@@ -29,6 +29,10 @@ For Python to be able to find and use these bindings, you need to set some envir
 > - on Linux: `source iguana/bin/this_iguana.sh`
 > - on macOS: `source iguana/bin/this_iguana.sh ld` (where `ld` is needed to set `DYLD_LIBRARY_PATH`)
 
+> [!IMPORTANT]
+> If you have ROOT, you likely already have `cppyy` as part of its installation. Be sure that `$PYTHONPATH`
+> prioritizes ROOT's installation, so the "correct" `cppyy` is used
+
 ## Running the Examples
 
 Example Python scripts are found in this directory as `iguana-example-*.py`; they will be installed in the `bin/` subdirectory.

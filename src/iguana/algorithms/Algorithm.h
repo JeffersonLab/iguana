@@ -76,7 +76,24 @@ namespace iguana {
       /// @param val the value to set
       /// @returns the value that has been set (if needed, _e.g._, when `val` is an rvalue)
       template <typename OPTION_TYPE>
-      OPTION_TYPE SetOption(const std::string key, const OPTION_TYPE val);
+      OPTION_TYPE SetOption(const std::string key, const OPTION_TYPE val)
+      {
+        // FIXME: this template is not specialized, to be friendlier to python `cppyy` bindings
+        if(key == "log") {
+          if constexpr(std::disjunction<
+                           std::is_same<OPTION_TYPE, std::string>,
+                           std::is_same<OPTION_TYPE, const char*>,
+                           std::is_same<OPTION_TYPE, Logger::Level>>::value)
+            m_log->SetLevel(val);
+          else
+            m_log->Error("Option '{}' must be a string or a Logger::Level", key);
+        }
+        else {
+          m_option_cache[key] = val;
+          m_log->Debug("  USER OPTION: {:>20} = {}", key, PrintOptionValue(key));
+        }
+        return val;
+      }
 
       /// Get the value of a scalar option
       /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
