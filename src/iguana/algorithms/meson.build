@@ -37,7 +37,7 @@ algo_dict = {
     'sources':      [ 'clas12/SectorFinder.cc' ],
     'headers':      [ 'clas12/SectorFinder.h' ],
     'configs':      [ 'clas12/SectorFinder.yaml' ],
-    'unit_test':    { 'banks': ['REC::Particle','REC::Calorimeter','REC::Track','REC::SCintillator','REC::Cherenkov'] },
+    'unit_test':    { 'banks': ['REC::Particle','REC::Calorimeter','REC::Track','REC::Scintillator','REC::Cherenkov'] },
   },
   'clas12::LorentzTransformer': {
     'sources':      [ 'clas12/LorentzTransformer.cc' ],

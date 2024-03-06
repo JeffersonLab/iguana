@@ -14,16 +14,13 @@ namespace iguana::clas12 {
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
     if(o_bankname!="default"){
-        b_nondefault=GetBankIndex(banks, o_bankname);
-        b_calorimeter=0;
-        b_track=0;
-        b_scint=0;
-
+        b_user=GetBankIndex(banks, o_bankname);
+        userSpecifiedBank=true;
     } else{
         b_calorimeter=GetBankIndex(banks, "REC::Calorimeter");
         b_track=GetBankIndex(banks, "REC::Track");
         b_scint=GetBankIndex(banks, "REC::Scintillator");
-        b_nondefault=0;
+        userSpecifiedBank=false;
     }
   }
 
@@ -48,17 +45,17 @@ namespace iguana::clas12 {
     std::vector<int> sectors;
     // get the banks
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto& nondefaultBank=GetBank(banks, b_nondefault);
+    auto& userBank=GetBank(banks, b_user);
     auto& calBank=GetBank(banks, b_calorimeter);
     auto& scintBank=GetBank(banks,b_scint);
     auto& trackBank=GetBank(banks,b_track);
 
     // filter the input bank for requested PDG code(s)
     for(int row = 0; row < particleBank.getRows(); row++) {
-      if(o_bankname!="default"){
-        //if user specified a secific bank
-        if(nondefaultBank.getRows()>0){
-          sectors.push_back(getSector(nondefaultBank,row));
+      if(userSpecifiedBank){
+        //if user specified a specific bank
+        if(userBank.getRows()>0){
+          sectors.push_back(getSector(userBank,row));
         } else{
           //bank may be empty
           sectors.push_back(0);
@@ -73,7 +70,7 @@ namespace iguana::clas12 {
           if(scintBank.getRows()>0){
             scintSector=getSector(scintBank,row);
           }
-          
+
           int calSector=0;
           if(calBank.getRows()>0){
             calSector=getSector(calBank,row);

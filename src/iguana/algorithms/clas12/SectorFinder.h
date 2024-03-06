@@ -34,7 +34,8 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_calorimeter;
       hipo::banklist::size_type b_track;
       hipo::banklist::size_type b_scint;
-      hipo::banklist::size_type b_nondefault;
+      hipo::banklist::size_type b_user;
+      bool userSpecifiedBank{false};
 
       /// Configuration options
       std::string o_bankname;
