@@ -34,7 +34,6 @@ if fs.is_file(get_option('test_data_file'))
           '-f', get_option('test_data_file'),
           '-n', get_option('test_num_events'),
           '-a', name,
-          '-v',
         ] + bank_args
         test(
           'algorithm-' + test_name_algo,
@@ -53,7 +52,6 @@ if fs.is_file(get_option('test_data_file'))
             '-f', get_option('test_data_file'),
             '-n', get_option('test_num_events'),
             '-a', name + 'Validator',
-            '-v',
           ]
           if get_option('test_output_dir') != ''
             vdor_output_dir = get_option('test_output_dir') / test_name_vdor
