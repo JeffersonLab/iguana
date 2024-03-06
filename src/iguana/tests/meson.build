@@ -8,7 +8,7 @@ test_exe = executable(
   include_directories: [ test_exe_inc, project_inc ],
   dependencies:        project_deps,
   link_with:           test_exe_links,
-  install:             false,
+  install:             true,
   install_rpath:       ':'.join(project_exe_rpath),
 )
 
@@ -30,7 +30,7 @@ if fs.is_file(get_option('test_data_file'))
       algo_needs_ROOT = info.get('algorithm').get('needs_ROOT', false)
       if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
         test_args = [
-          '-c', 'algorithm',
+          'algorithm',
           '-f', get_option('test_data_file'),
           '-n', get_option('test_num_events'),
           '-a', name,
@@ -49,12 +49,12 @@ if fs.is_file(get_option('test_data_file'))
         test_name_vdor = test_name_algo + 'Validator'
         if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
           test_args = [
-            '-c', 'validator',
+            'validator',
             '-f', get_option('test_data_file'),
             '-n', get_option('test_num_events'),
             '-a', name + 'Validator',
             '-v',
-          ] + bank_args
+          ]
           if get_option('test_output_dir') != ''
             vdor_output_dir = get_option('test_output_dir') / test_name_vdor
             run_command('mkdir', '-p', vdor_output_dir, check: true)
@@ -79,5 +79,5 @@ endif
 foreach test_num : [ '1', '2', '3' ]
   config_file_name = 'test_' + test_num + '.yaml'
   config_file = fs.copyfile('config' / config_file_name, config_file_name)
-  test('config-test_' + test_num, test_exe, args: [ '-c', 'config', '-t', test_num, '-v' ])
+  test('config-test_' + test_num, test_exe, args: [ 'config', '-t', test_num, '-v' ])
 endforeach

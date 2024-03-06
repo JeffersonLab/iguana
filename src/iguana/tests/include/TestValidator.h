@@ -29,6 +29,7 @@ inline int TestValidator(
   // define the validator
   auto vdor = iguana::AlgorithmFactory::Create(vdor_name);
   static_cast<iguana::Validator*>(vdor.get())->SetOutputDirectory(output_dir);
+  vdor->SetOption("log", verbose ? "trace" : "info");
 
   // event loop
   vdor->Start(banks);
