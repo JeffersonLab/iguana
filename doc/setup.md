@@ -12,7 +12,7 @@
 The following sections (🔶) list the dependencies and how to obtain them.
 
 > [!TIP]
-> It's generally better to use your a package manager to install dependencies, _e.g._:
+> It's generally better to use your a package manager to install most dependencies, _e.g._:
 > - macOS Homebrew: `brew install <package>`
 > - Linux (depends on distribution) examples: `apt install <package>`, `dnf install <package>`, `pacman -S <package>`
 > - The name of the package may be different for different package managers; search for and read about the package before installing it
@@ -51,6 +51,17 @@ cmake -S /path/to/hipo_source_code -B build-hipo -DCMAKE_INSTALL_PREFIX=/path/to
 cmake --build build-hipo
 cmake --install build-hipo
 ```
+
+### 🔶 Optional: `ROOT`: Data analysis framework
+<https://root.cern.ch/>
+- ROOT is an **optional** dependency: some algorithms and test code depends on ROOT, but if you do not
+  have ROOT on your system, `iguana` will build everything _except_ ROOT-dependent code
+- It is **NOT recommended** to use your package manager to install ROOT; the most reliable installation
+  method is [building it from source](https://root.cern/install/build_from_source/)
+  - You may need to set the C++ standard to match that used in `iguana`, which is currently 17; to do so,
+    use the build option `-DCMAKE_CXX_STANDARD=17`
+  - Depending on ROOT's installation prefix, you may also need to set your environment so ROOT may be found;
+    this is typically done by `source /path/to/root/bin/thisroot.sh`
 
 <a name="building"></a>
 ## 🟠 Building and Installing
