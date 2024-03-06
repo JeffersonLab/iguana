@@ -361,7 +361,7 @@ jobs:
         run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `root-config` and `ld` path
       - name: meson wipe builddir for macOS re-link # macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
         if: ${{ inputs.runner == 'macos-latest' }}
-        run: meson setup build-iguana --wipe
+        run: meson setup build-iguana iguana_src --wipe
       - name: meson configure
         run: |
           meson configure                           \
