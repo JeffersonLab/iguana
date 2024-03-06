@@ -556,7 +556,7 @@ jobs:
         if: ${{ matrix.tool == 'cmake' }}
         run: echo CMAKE_PREFIX_PATH=$(pwd)/hipo >> $GITHUB_ENV
       - name: source environment for ROOT
-        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `ld` path
+        run: .github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `ld` path
       ### build test
       - name: build
         run: |
