@@ -36,6 +36,9 @@ int main(int argc, char** argv)
   command = std::string(argv[1]);
   if(command == "--help" || command == "-h")
     return UsageCommands(2);
+  // omit the command, for getopt
+  argv++;
+  argc--;
 
   // usage options
   auto UsageOptions = [&](int exit_code)
