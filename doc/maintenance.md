@@ -24,6 +24,7 @@ Keep the Python binding dependency versions reasonably up to date in the corresp
 We currently support up to the C++ standard defined in:
 - [`meson.build`](/meson.build)
 - example build configurations in [`examples/build_with_*` subdirectories](/examples)
+- in the [main CI workflow](/.github/workflows/ci.yml), the standard used for the ROOT build (`CMAKE_CXX_STANDARD`)
 
 ## Code Ownership
 

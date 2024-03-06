@@ -161,7 +161,7 @@ jobs:
       - name: build ROOT
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          cmake -S root_src -B build -G Ninja --install-prefix $(pwd)/root
+          cmake -S root_src -B build -G Ninja --install-prefix $(pwd)/root -DCMAKE_CXX_STANDARD=17
           cmake --build build
           cmake --install build
           tar caf root{.tar.zst,}
