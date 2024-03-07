@@ -525,7 +525,7 @@ jobs:
     env:
       CC: gcc
       CXX: g++
-      build_id: cpp-gcc-release
+      build_id: cpp-gcc-release-noROOT # FIXME: ROOT libs sporadically can't be found on some runners; for now use `noROOT` build
     steps:
       ### dependencies and test data
       - uses: actions/checkout@v4
