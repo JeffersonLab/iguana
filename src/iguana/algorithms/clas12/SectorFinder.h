@@ -5,6 +5,9 @@
 namespace iguana::clas12 {
 
   /// @brief Find the sector for all rows in REC::Particle
+  ///
+  /// **WARNING**: this algorithm has no action functions, since it requires
+  /// _full_ bank information to run
   class SectorFinder : public Algorithm
   {
 
@@ -16,7 +19,7 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// **Action function**: finds the sector for all rows in REC::Particle
+      /// finds the sector for all rows in REC::Particle
       /// @param banks the list of banks to process
       /// @returns std::vector of sector numbers
       std::vector<int> Find(hipo::banklist& banks) const;

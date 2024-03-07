@@ -49,7 +49,9 @@ int main(int argc, char** argv)
       auto pid = particleBank.getInt("pid", row);
       if(algo_eventbuilder_filter.Filter(pid)) {
 
-        int sector = 1; // FIXME: get the sector number; requires https://github.com/JeffersonLab/iguana/issues/127
+        int sector = 1; // FIXME: get the sector number. The algorithm `clas12::SectorFinder` can do this, however
+                        // it requires reading full `hipo::bank` objects, whereas this example is meant to demonstrate
+                        // `iguana` usage operating _only_ on bank row elements
 
         // if accepted PID, correct its momentum
         auto [px, py, pz] = algo_momentum_correction.Transform(

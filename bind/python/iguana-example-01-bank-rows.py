@@ -42,7 +42,9 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
         pid = particleBank.getInt('pid', row)
         if(algo_eventbuilder_filter.Filter(pid)):
 
-            sector = 1 # FIXME: get the sector number; requires https://github.com/JeffersonLab/iguana/issues/127
+            sector = 1 # FIXME: get the sector number. The algorithm `clas12::SectorFinder` can do this, however
+                       # it requires reading full `hipo::bank` objects, whereas this example is meant to demonstrate
+                       # `iguana` usage operating _only_ on bank row elements
 
             px, py, pz, = algo_momentum_correction.Transform(
                     particleBank.getFloat("px", row),
