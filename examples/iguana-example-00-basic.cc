@@ -20,12 +20,11 @@ int main(int argc, char** argv)
   hipo::reader reader(inFileName);
 
   // set banks
-  hipo::banklist banks = reader.getBanks({
-      "RUN::config",
-      "REC::Particle",
-      "REC::Calorimeter",
-      "REC::Track",
-      "REC::Scintillator"});
+  hipo::banklist banks = reader.getBanks({"RUN::config",
+                                          "REC::Particle",
+                                          "REC::Calorimeter",
+                                          "REC::Track",
+                                          "REC::Scintillator"});
   enum banks_enum { b_config,
                     b_particle }; // TODO: users shouldn't have to do this
 

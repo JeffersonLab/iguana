@@ -82,7 +82,7 @@ namespace iguana::clas12 {
         continue; // FIXME: will need to refactor this once we have HIPO iterators
 
       // skip central particle, or unknown sector
-      if(sector==0)
+      if(sector == 0)
         continue;
 
       double p_corrected = std::hypot(
@@ -90,7 +90,7 @@ namespace iguana::clas12 {
           particle_bank.getFloat("py", row),
           particle_bank.getFloat("pz", row));
       auto delta_p = p_corrected - p_measured.at(row);
-      u_deltaPvsP.at(pdg).at(sector-1)->Fill(p_corrected, delta_p);
+      u_deltaPvsP.at(pdg).at(sector - 1)->Fill(p_corrected, delta_p);
     }
   }
 
@@ -99,8 +99,8 @@ namespace iguana::clas12 {
   {
     if(GetOutputDirectory()) {
       for(const auto& [pdg, plots] : u_deltaPvsP) {
-        int n_cols = 3;
-        int n_rows = 2;
+        int n_cols        = 3;
+        int n_rows        = 2;
         TString canv_name = Form("canv%d", pdg);
         auto canv         = new TCanvas(canv_name, canv_name, n_cols * 800, n_rows * 600);
         canv->Divide(n_cols, n_rows);
