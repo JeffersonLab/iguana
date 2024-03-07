@@ -121,6 +121,7 @@ algo_lib = shared_library(
   link_args:           ROOT_dep_link_args,
   install:             true,
   install_rpath:       project_lib_rpath,
+  build_rpath:         ROOT_dep_rpath,
 )
 install_headers(
   algo_headers,
@@ -139,6 +140,7 @@ vdor_lib = shared_library(
   link_args:           ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
   install:             true,
   install_rpath:       project_lib_rpath,
+  build_rpath:         ROOT_dep_rpath,
 )
 install_headers(
   vdor_headers,

@@ -11,6 +11,7 @@ test_exe = executable(
   link_args:           ROOT_dep_link_args,
   install:             true,
   install_rpath:       ':'.join(project_exe_rpath),
+  build_rpath:         ROOT_dep_rpath,
 )
 
 # test algorithms and validators

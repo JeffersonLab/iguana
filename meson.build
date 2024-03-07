@@ -95,6 +95,7 @@ message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
 ROOT_dep_inc_dirs  = []
 ROOT_dep_link_args = []
 ROOT_dep_link_args_for_validators = []
+ROOT_dep_rpath = ''
 if ROOT_dep.found()
   ROOT_dep_inc_dirs += include_directories(run_command('root-config', '--incdir', check: true).stdout().strip())
   ROOT_libdir = run_command('root-config', '--libdir', check: true).stdout().strip()
@@ -111,6 +112,7 @@ if ROOT_dep.found()
     '-lHist',
     '-lGpad',
   ]
+  ROOT_dep_rpath = ROOT_libdir
 endif
 
 # general project vars
