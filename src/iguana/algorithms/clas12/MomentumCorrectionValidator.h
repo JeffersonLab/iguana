@@ -2,6 +2,7 @@
 
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/algorithms/Validator.h"
+#include "iguana/algorithms/clas12/SectorFinder.h"
 
 #include <TCanvas.h>
 #include <TFile.h>
@@ -25,6 +26,8 @@ namespace iguana::clas12 {
 
       hipo::banklist::size_type b_particle;
 
+      std::unique_ptr<SectorFinder> m_sector_finder;
+
       const double m_p_max       = 12.0;
       const double m_deltaP_max  = 1.0;
       const double m_deltaP_zoom = 0.2;
@@ -37,7 +40,7 @@ namespace iguana::clas12 {
 
       TString m_output_file_basename;
       TFile* m_output_file;
-      mutable std::unordered_map<int, TH2D*> u_deltaPvsP; // FIXME: needs sector dependence
+      mutable std::unordered_map<int, std::vector<TH2D*>> u_deltaPvsP;
   };
 
 }
