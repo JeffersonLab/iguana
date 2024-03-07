@@ -8,6 +8,7 @@ test_exe = executable(
   include_directories: [ test_exe_inc, project_inc ],
   dependencies:        project_deps,
   link_with:           test_exe_links,
+  link_args:           ROOT_dep_link_args,
   install:             true,
   install_rpath:       ':'.join(project_exe_rpath),
 )

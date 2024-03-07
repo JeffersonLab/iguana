@@ -3,4 +3,5 @@ option('documentation',   type: 'boolean', value: false, description: 'Generate 
 option('test_data_file',  type: 'string',  value: '',    description: 'Sample HIPO file for testing. Must be an absolute path. If unspecified, tests are not built')
 option('test_num_events', type: 'string',  value: '10',  description: 'Number of events from `test_data_file` to test')
 option('test_output_dir', type: 'string',  value: '',    description: 'Output directory for tests. Must be an absolute path. If unspecified, tests will still run, but will not produce output files.')
+option('require_ROOT',    type: 'boolean', value: false, description: 'If false, ROOT is only used if it is found; if true, ROOT is REQUIRED and the build will fail if ROOT is not found')
 option('bind_python',     type: 'boolean', value: false, description: 'Generate Python bindings and their examples')

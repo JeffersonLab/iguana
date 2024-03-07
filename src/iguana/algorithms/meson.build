@@ -52,6 +52,12 @@ algo_dict = {
     'configs':   [ 'clas12/ZVertexFilter.yaml' ],
     'test_args': { 'banks': ['REC::Particle'] },
   },
+  'clas12::SectorFinder': {
+    'sources':      [ 'clas12/SectorFinder.cc' ],
+    'headers':      [ 'clas12/SectorFinder.h' ],
+    'configs':      [ 'clas12/SectorFinder.yaml' ],
+    'unit_test':    { 'banks': ['REC::Particle','REC::Calorimeter','REC::Track','REC::Scintillator','REC::Cherenkov'] },
+  },
   'clas12::LorentzTransformer': {
     'algorithm': {
       'sources': [ 'clas12/LorentzTransformer.cc' ],
