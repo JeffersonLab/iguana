@@ -121,10 +121,27 @@ project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ] ) # do NOT include ROOT here
 project_etc       = get_option('sysconfdir') / meson.project_name()
+project_test_env  = environment()
 project_pkg_vars  = [
   'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
   'dep_libdirs='       + ':'.join(dep_lib_paths),
 ]
+
+# sanitizer settings
+project_test_env.set(
+  'UBSAN_OPTIONS',
+  'halt_on_error=1',
+  'abort_on_error=1',
+  'print_summary=1',
+  'print_stacktrace=1',
+  'suppressions=' + meson.project_source_root() / 'meson' / 'ubsan.supp',
+)
+project_test_env.set(
+  'ASAN_OPTIONS',
+  'halt_on_error=1',
+  'abort_on_error=1',
+  'print_summary=1',
+)
 
 # executables' rpath
 project_exe_rpath = []

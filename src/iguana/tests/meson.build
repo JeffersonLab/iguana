@@ -41,6 +41,7 @@ if fs.is_file(get_option('test_data_file'))
           'algorithm-' + test_name_algo,
           test_exe,
           args: test_args,
+          env: project_test_env,
         )
       endif
 
@@ -64,6 +65,7 @@ if fs.is_file(get_option('test_data_file'))
             'validator-' + test_name_vdor,
             test_exe,
             args: test_args,
+            env: project_test_env,
           )
         endif
       endif
@@ -79,5 +81,10 @@ endif
 foreach test_num : [ '1', '2', '3' ]
   config_file_name = 'test_' + test_num + '.yaml'
   config_file = fs.copyfile('config' / config_file_name, config_file_name)
-  test('config-test_' + test_num, test_exe, args: [ 'config', '-t', test_num, '-v' ])
+  test(
+    'config-test_' + test_num,
+    test_exe,
+    args: [ 'config', '-t', test_num, '-v' ],
+    env: project_test_env,
+    )
 endforeach
