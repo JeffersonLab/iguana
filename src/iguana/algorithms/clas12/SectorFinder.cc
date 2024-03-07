@@ -32,7 +32,7 @@ namespace iguana::clas12 {
   {
   }
 
-  int SectorFinder::getSector(hipo::bank& bank, int pindex) const
+  int SectorFinder::GetSector(const hipo::bank& bank, const int pindex) const
   {
     int sector = 0;
     for(int row = 0; row < bank.getRows(); row++) {
@@ -46,14 +46,14 @@ namespace iguana::clas12 {
   std::vector<int> SectorFinder::Find(hipo::banklist& banks) const
   {
     std::vector<int> sectors;
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
+    const auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
 
     // filter the input bank for requested PDG code(s)
     if(userSpecifiedBank) { // if user specified a specific bank
-      auto& userBank = GetBank(banks, b_user);
+      const auto& userBank = GetBank(banks, b_user);
       for(int row = 0; row < particleBank.getRows(); row++) {
         if(userBank.getRows() > 0) {
-          sectors.push_back(getSector(userBank, row));
+          sectors.push_back(GetSector(userBank, row));
         }
         else {
           // bank may be empty
@@ -62,23 +62,23 @@ namespace iguana::clas12 {
       }
     }
     else { // use the standard method
-      auto& calBank   = GetBank(banks, b_calorimeter);
-      auto& scintBank = GetBank(banks, b_scint);
-      auto& trackBank = GetBank(banks, b_track);
+      const auto& calBank   = GetBank(banks, b_calorimeter);
+      const auto& scintBank = GetBank(banks, b_scint);
+      const auto& trackBank = GetBank(banks, b_track);
       for(int row = 0; row < particleBank.getRows(); row++) {
         int trackSector = 0;
         if(trackBank.getRows() > 0) {
-          trackSector = getSector(trackBank, row);
+          trackSector = GetSector(trackBank, row);
         }
 
         int scintSector = 0;
         if(scintBank.getRows() > 0) {
-          scintSector = getSector(scintBank, row);
+          scintSector = GetSector(scintBank, row);
         }
 
         int calSector = 0;
         if(calBank.getRows() > 0) {
-          calSector = getSector(calBank, row);
+          calSector = GetSector(calBank, row);
         }
 
         if(trackSector != 0) {
@@ -88,7 +88,7 @@ namespace iguana::clas12 {
           sectors.push_back(scintSector);
         }
         else {
-          // add even if calSector is 0
+          // FIXME: add even if calSector is 0
           // need an entry per pindex
           // can happen that particle not in FD
           // ie sector is 0
