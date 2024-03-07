@@ -111,7 +111,7 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
           iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-          cmake -S hipo_src -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIE build, for sanitizer readibility
+          cmake -S hipo_src -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIC build, for sanitizer readibility
           cmake --build build
           cmake --install build
           tar cavf hipo{.tar.zst,}
@@ -139,7 +139,7 @@ jobs:
         id: key
         run: |
           root_version=$(iguana_src/meson/minimum-version.sh root src | sed 's;.*/;;' | sed 's;\.tar\.gz;;')
-          echo key=root---${{ inputs.id }}---${root_version}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
+          echo key=root---${{ inputs.id }}---${root_version}---PICbuild---$(date +%Y-week%U) >> $GITHUB_OUTPUT
       - uses: actions/cache/restore@v4
         id: cache
         with:
@@ -161,7 +161,7 @@ jobs:
       - name: build ROOT
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          cmake -S root_src -B build -G Ninja --install-prefix $(pwd)/root -DCMAKE_CXX_STANDARD=17
+          cmake -S root_src -B build -G Ninja --install-prefix $(pwd)/root -DCMAKE_CXX_STANDARD=17 -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIC build, for sanitizer readibility
           cmake --build build
           cmake --install build
           tar caf root{.tar.zst,}
