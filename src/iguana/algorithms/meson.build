@@ -58,7 +58,7 @@ algo_dict = {
       'headers': [ 'clas12/SectorFinder.h' ],
     },
     'configs':   [ 'clas12/SectorFinder.yaml' ],
-    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator', 'REC::Cherenkov'] },
+    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator'] },
   },
   'clas12::LorentzTransformer': {
     'algorithm': {
@@ -79,7 +79,7 @@ algo_dict = {
       'headers': [ 'clas12/MomentumCorrectionValidator.h' ],
       'needs_ROOT': true,
     },
-    'test_args': { 'banks': ['REC::Particle', 'RUN::config'] },
+    'test_args': { 'banks': ['RUN::config', 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator'] },
   },
 }
 

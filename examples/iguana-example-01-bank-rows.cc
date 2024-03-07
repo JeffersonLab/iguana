@@ -49,7 +49,7 @@ int main(int argc, char** argv)
       auto pid = particleBank.getInt("pid", row);
       if(algo_eventbuilder_filter.Filter(pid)) {
 
-        int sector = 1; // FIXME: get the sector number
+        int sector = 1; // FIXME: get the sector number; requires https://github.com/JeffersonLab/iguana/issues/127
 
         // if accepted PID, correct its momentum
         auto [px, py, pz] = algo_momentum_correction.Transform(

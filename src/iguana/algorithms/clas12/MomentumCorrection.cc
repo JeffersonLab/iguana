@@ -9,6 +9,12 @@ namespace iguana::clas12 {
   {
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
+
+    m_sector_finder = std::make_unique<SectorFinder>();
+    if(m_rows_only)
+      m_sector_finder->Start();
+    else
+      m_sector_finder->Start(banks);
   }
 
 
@@ -18,21 +24,16 @@ namespace iguana::clas12 {
     auto& configBank   = GetBank(banks, b_config, "RUN::config");
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
-    auto torus = configBank.getFloat("torus", 0);
+    auto torus   = configBank.getFloat("torus", 0);
+    auto sectors = m_sector_finder->Find(banks);
 
     for(int row = 0; row < particleBank.getRows(); row++) {
-
-      //////////////////////////////////
-      //////////////////////////////////
-      int sector = 1; // FIXME: get the true sector
-      //////////////////////////////////
-      //////////////////////////////////
 
       auto [px, py, pz] = Transform(
           particleBank.getFloat("px", row),
           particleBank.getFloat("py", row),
           particleBank.getFloat("pz", row),
-          sector,
+          sectors.at(row),
           particleBank.getInt("pid", row),
           torus);
       particleBank.putFloat("px", row, px);

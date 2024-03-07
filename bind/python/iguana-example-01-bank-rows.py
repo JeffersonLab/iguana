@@ -42,7 +42,7 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
         pid = particleBank.getInt('pid', row)
         if(algo_eventbuilder_filter.Filter(pid)):
 
-            sector = 1 # FIXME: get the sector number
+            sector = 1 # FIXME: get the sector number; requires https://github.com/JeffersonLab/iguana/issues/127
 
             px, py, pz, = algo_momentum_correction.Transform(
                     particleBank.getFloat("px", row),

@@ -147,7 +147,10 @@ int main(int argc, char** argv)
   // so that the caller does not have to specifiy the banks
   const std::vector<std::string> all_bank_names = {
       "RUN::config",
-      "REC::Particle"};
+      "REC::Particle",
+      "REC::Calorimeter",
+      "REC::Track",
+      "REC::Scintillator"};
   if(bank_names.empty())
     bank_names = all_bank_names;
 

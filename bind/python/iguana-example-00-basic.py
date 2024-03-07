@@ -13,7 +13,12 @@ inFile    = sys.argv[1]      if len(sys.argv)>1 else 'data.hipo'
 numEvents = int(sys.argv[2]) if len(sys.argv)>2 else 3
 
 reader = hipo.reader(inFile)
-banks  = reader.getBanks(["REC::Particle", "RUN::config"]);
+banks  = reader.getBanks([
+    "RUN::config",
+    "REC::Particle",
+    "REC::Calorimeter",
+    "REC::Track",
+    "REC::Scintillator"])
 
 seq = iguana.AlgorithmSequence('pyiguana')
 seq.Add('clas12::EventBuilderFilter')
@@ -33,8 +38,8 @@ iEvent = 0
 seq.Start(banks)
 while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     iEvent += 1
-    prettyPrint("BEFORE", banks[0])
+    prettyPrint("BEFORE", banks[1])
     seq.Run(banks)
-    prettyPrint("AFTER", banks[0])
+    prettyPrint("AFTER", banks[1])
 
 seq.Stop()
