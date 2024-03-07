@@ -142,6 +142,10 @@ project_test_env.set(
   'abort_on_error=1',
   'print_summary=1',
 )
+project_test_env.set(
+  'LSAN_OPTIONS',
+  'suppressions=' + meson.project_source_root() / 'meson' / 'lsan.supp',
+)
 
 # executables' rpath
 project_exe_rpath = []
