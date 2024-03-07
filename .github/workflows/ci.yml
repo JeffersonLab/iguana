@@ -49,8 +49,7 @@ env:
   num_events: 1000
   # sanitizer options; NOTE: suppression path assumes the build directory is a subdirectory of the top-level repo directory
   UBSAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1:print_stacktrace=1:suppressions=../iguana_src/.github/UBSAN.supp
-  ASAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1
-  LSAN_OPTIONS: suppressions=../root/etc/lsan-root.supp # LSAN suppressions for ROOT
+  ASAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1:suppressions=../root/etc/lsan-root.supp # LSAN suppressions for ROOT
 
 jobs:
 
