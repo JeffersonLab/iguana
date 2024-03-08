@@ -27,6 +27,7 @@ foreach example, info : example_sources
     link_args:           ROOT_dep_link_args,
     install:             true,
     install_rpath:       ':'.join(project_exe_rpath),
+    build_rpath:         ROOT_dep_rpath,
   )
   if fs.is_file(get_option('test_data_file'))
     test(
@@ -36,6 +37,7 @@ foreach example, info : example_sources
         'test_args',
         [ get_option('test_data_file'), get_option('test_num_events') ]
       ),
+      env: project_test_env,
     )
   endif
 endforeach

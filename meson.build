@@ -94,14 +94,25 @@ message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
 # handle ROOT
 ROOT_dep_inc_dirs  = []
 ROOT_dep_link_args = []
+ROOT_dep_link_args_for_validators = []
+ROOT_dep_rpath = ''
 if ROOT_dep.found()
   ROOT_dep_inc_dirs += include_directories(run_command('root-config', '--incdir', check: true).stdout().strip())
+  ROOT_libdir = run_command('root-config', '--libdir', check: true).stdout().strip()
   ROOT_dep_link_args += [
-    '-L' + run_command('root-config', '--libdir',   check: true).stdout().strip(),
     # ROOT libraries that we need (safer than `root-config --libs`)
+    '-L' + ROOT_libdir,
     '-lCore',
     '-lGenVector',
   ]
+  ROOT_dep_link_args_for_validators = [
+    # additional ROOT libraries for validators (namely, graphics libraries)
+    '-L' + ROOT_libdir,
+    '-lRIO',
+    '-lHist',
+    '-lGpad',
+  ]
+  ROOT_dep_rpath = ROOT_libdir
 endif
 
 # general project vars
@@ -110,10 +121,31 @@ project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ] ) # do NOT include ROOT here
 project_etc       = get_option('sysconfdir') / meson.project_name()
+project_test_env  = environment()
 project_pkg_vars  = [
   'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
   'dep_libdirs='       + ':'.join(dep_lib_paths),
 ]
+
+# sanitizer settings
+project_test_env.set(
+  'UBSAN_OPTIONS',
+  'halt_on_error=1',
+  'abort_on_error=1',
+  'print_summary=1',
+  'print_stacktrace=1',
+  'suppressions=' + meson.project_source_root() / 'meson' / 'ubsan.supp',
+)
+project_test_env.set(
+  'ASAN_OPTIONS',
+  'halt_on_error=1',
+  'abort_on_error=1',
+  'print_summary=1',
+)
+project_test_env.set(
+  'LSAN_OPTIONS',
+  'suppressions=' + meson.project_source_root() / 'meson' / 'lsan.supp',
+)
 
 # executables' rpath
 project_exe_rpath = []
