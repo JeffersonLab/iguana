@@ -1,5 +1,9 @@
 #include "LorentzTransformer.h"
 
+// ROOT
+#include <Math/Boost.h>
+#include <Math/Vector4D.h>
+
 namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(LorentzTransformer);

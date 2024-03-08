@@ -1,5 +1,8 @@
 #include "InclusiveKinematics.h"
 
+// ROOT
+#include <Math/Vector4D.h>
+
 namespace iguana::physics {
 
   REGISTER_IGUANA_ALGORITHM(InclusiveKinematics);
@@ -16,15 +19,18 @@ namespace iguana::physics {
     o_beam_energy          = GetOptionScalar<double>("beam_energy", {"initial_state", GetConfig()->InRange("runs", o_runnum), "beam_energy"});
     o_beam_particle        = GetOptionScalar<std::string>("beam_particle", {"initial_state", GetConfig()->InRange("runs", o_runnum), "beam_particle"});
     o_target_particle      = GetOptionScalar<std::string>("target_particle", {"initial_state", GetConfig()->InRange("runs", o_runnum), "target_particle"});
+    m_beam_particle_pdg    = 0;
     m_beam_particle_mass   = -1.0;
     m_target_particle_mass = -1.0;
     for(const auto& [pdg, name] : particle::name) {
-      if(name == o_beam_particle)
+      if(name == o_beam_particle) {
+        m_beam_particle_pdg  = pdg;
         m_beam_particle_mass = particle::mass.at(pdg);
+      }
       if(name == o_target_particle)
         m_target_particle_mass = particle::mass.at(pdg);
     }
-    if(m_beam_particle_mass < 0.0) {
+    if(m_beam_particle_pdg == 0) {
       m_log->Error("Unknown beam particle {:?}", o_beam_particle);
       throw std::runtime_error("Start failed");
     }
@@ -79,7 +85,7 @@ namespace iguana::physics {
         0.0,
         0.0,
         1.0,
-        m_beam_particle_mass
+        m_beam_particle_pdg
         );
 
     // TODO: create a new bank with these variables
@@ -89,8 +95,35 @@ namespace iguana::physics {
 
   int InclusiveKinematics::FindScatteredLepton(const hipo::bank& particle_bank) const
   {
-    // TODO
-    return 0;
+    int lepton_row = -1;
+
+    switch(o_method_lepton_finder) {
+      case method_lepton_finder::highest_energy_FD_trigger:
+        {
+          // find highest energy lepton
+          double lepton_energy = 0;
+          for(int row = 0; row < particle_bank.getRows(); row++) {
+            if(particle_bank.getInt("pid", row) == m_beam_particle_pdg) {
+              double px = particle_bank.getInt("px", row);
+              double py = particle_bank.getInt("py", row);
+              double pz = particle_bank.getInt("pz", row);
+              double en = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(m_beam_particle_mass, 2));
+              if(en > lepton_energy) {
+                lepton_row    = row;
+                lepton_energy = en;
+              }
+            }
+          }
+          // require it to be in the FD trigger
+          if(lepton_row >= 0) {
+            auto status = particle_bank.getShort("status", lepton_row);
+            if(status <= -3000 || status > -2000)
+              lepton_row = -1;
+          }
+          break;
+        }
+    }
+    return lepton_row;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -104,7 +137,7 @@ namespace iguana::physics {
       vector_element_t beam_dir_x,
       vector_element_t beam_dir_y,
       vector_element_t beam_dir_z,
-      double lepton_M
+      double lepton_pdg
       ) const
   {
     // TODO

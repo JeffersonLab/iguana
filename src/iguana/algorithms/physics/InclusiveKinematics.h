@@ -36,7 +36,7 @@ namespace iguana::physics {
       // therefore, callers that do not have access to `hipo::bank` objects are
       // responsible for finding the scattered lepton.
       // @param particle_bank the particle bank to search
-      // @returns the bank row of the scattered lepton
+      // @returns the bank row of the scattered lepton, or `-1` if not found
       int FindScatteredLepton(const hipo::bank& particle_bank) const;
 
       /// **Action function**: compute kinematics from the scattered lepton.
@@ -48,7 +48,7 @@ namespace iguana::physics {
       /// @param beam_dir_x beam lepton @f$x@f$ direction
       /// @param beam_dir_y beam lepton @f$y@f$ direction
       /// @param beam_dir_z beam lepton @f$z@f$ direction
-      /// @param lepton_M lepton mass (GeV)
+      /// @param lepton_pdg lepton PDG
       /// @returns the reconstructed inclusive kinematics in a `iguana::physics::InclusiveKinematicsVars` instance
       InclusiveKinematicsVars ComputeFromLepton(
           vector_element_t lepton_px,
@@ -59,7 +59,7 @@ namespace iguana::physics {
           vector_element_t beam_dir_x = 0.0,
           vector_element_t beam_dir_y = 0.0,
           vector_element_t beam_dir_z = 1.0,
-          double lepton_M = particle::mass.at(particle::PDG::electron)
+          double lepton_pdg = particle::PDG::electron
           ) const;
 
     private:
@@ -75,6 +75,7 @@ namespace iguana::physics {
       method_reconstruction o_method_reconstruction;
       method_lepton_finder o_method_lepton_finder;
 
+      int m_beam_particle_pdg;
       double m_beam_particle_mass;
       double m_target_particle_mass;
   };
