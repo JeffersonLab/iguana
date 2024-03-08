@@ -3,6 +3,7 @@
 This directory includes a fully documented, simple example algorithm:
 - [`ExampleAlgorithm.h`](ExampleAlgorithm.h)
 - [`ExampleAlgorithm.cc`](ExampleAlgorithm.cc)
+- [`ExampleAlgorithm.yaml`](ExampleAlgorithm.yaml)
 
 In this code, the following comment styles are used:
 - `// #`: this is a comment which describes in detail what each line of the code does; you probably
@@ -10,7 +11,7 @@ In this code, the following comment styles are used:
 - `///`: this is a `docstring` for [Doxygen](https://www.doxygen.nl/), for automated documentation generation;
   you'll need to use these when documenting your algorithm
 
-To generate a template algorithm (without the `//#` comments) so you may get
+To generate a template algorithm (without the `// #` comments) so you may get
 started coding, run the `make_template.sh` script here:
 ```bash
 # run with no arguments to see usage
