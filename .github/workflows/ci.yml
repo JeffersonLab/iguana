@@ -46,7 +46,7 @@ defaults:
 
 env:
   hipo_version: f40da676bbd1745398e9fdf233ff213ff98798f1
-  num_events: 1000
+  num_events: 0
 
 jobs:
 
@@ -415,7 +415,7 @@ jobs:
           retention-days: 7
           path: coverage-report
       - uses: actions/upload-artifact@v4
-        if: ${{ matrix.mode == 'coverage' }}
+        if: ${{ matrix.mode == 'coverage' }} # select one job-matrix element, since we only need one copy of this artifact
         with:
           name: _validation_results
           retention-days: 7
