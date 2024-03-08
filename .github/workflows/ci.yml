@@ -46,7 +46,7 @@ defaults:
 
 env:
   hipo_version: f40da676bbd1745398e9fdf233ff213ff98798f1
-  num_events: 0
+  num_events: 1000
 
 jobs:
 
