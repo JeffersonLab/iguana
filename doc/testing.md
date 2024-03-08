@@ -29,7 +29,7 @@ meson test --help
 > - if you are testing on a _large_ data set, you may need to increase the timeout with the `-t` option
 >   and parallelize with the `-j` option
 > - if a test is failing, use `--print-errorlogs` to see the `stderr` stream and add `--no-stdsplit` if you need to see the `stdout` stream;
->   if the streams' outputs are mixed up, try prepending `stdbuf` as:
+>   if the streams' outputs are mixed up or not appearing, try prepending `stdbuf` as:
 >   ```bash
 >   stdbuf -o0 meson test [OPTIONS]...
 >   ```
