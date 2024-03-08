@@ -55,14 +55,12 @@ namespace iguana::clas12 {
     // get the momenta before
     // FIXME: will need to refactor this once we have HIPO iterators
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
-    std::unordered_map<int, double> p_measured;
-    for(int row = 0; row < particle_bank.getRows(); row++) {
-      double mom = std::hypot(
+    std::vector<double> p_measured;
+    for(int row = 0; row < particle_bank.getRows(); row++)
+      p_measured.push_back(std::hypot(
           particle_bank.getFloat("px", row),
           particle_bank.getFloat("py", row),
-          particle_bank.getFloat("pz", row));
-      p_measured.insert({row, mom});
-    }
+          particle_bank.getFloat("pz", row)));
 
     // run the momentum corrections
     m_algo_seq->Run(banks);
