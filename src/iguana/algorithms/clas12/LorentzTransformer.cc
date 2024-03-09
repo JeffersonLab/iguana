@@ -86,7 +86,7 @@ namespace iguana::clas12 {
     }
 
     // boost
-    ROOT::Math::PxPyPzE4D p_in(p_x, p_y, p_z, E);
+    ROOT::Math::PxPyPzEVector p_in(p_x, p_y, p_z, E);
     ROOT::Math::Boost beta(beta_x, beta_y, beta_z);
     auto p_out = beta(p_in);
 
