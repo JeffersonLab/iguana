@@ -222,10 +222,11 @@ namespace iguana {
     }
     hipo::schema bank_schema(bank_name.c_str(), group_id, item_id);
     bank_schema.parse(std::accumulate(
-          std::next(schema_def.begin()),
-          schema_def.end(),
-          schema_def[0],
-          [](std::string a, std::string b){ return a + "," + b; }));
+        std::next(schema_def.begin()),
+        schema_def.end(),
+        schema_def[0],
+        [](std::string a, std::string b)
+        { return a + "," + b; }));
     banks.push_back({bank_schema});
     return GetBankIndex(banks, bank_name);
   }

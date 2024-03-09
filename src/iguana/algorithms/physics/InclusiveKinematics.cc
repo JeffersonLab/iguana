@@ -83,7 +83,7 @@ namespace iguana::physics {
     }
     else {
       m_log->Error("Beam direction magnitude is not > 0");
-      throw::std::runtime_error("Start failed");
+      throw ::std::runtime_error("Start failed");
     }
     m_target.px = 0.0;
     m_target.py = 0.0;
@@ -107,7 +107,7 @@ namespace iguana::physics {
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
     auto lepton_pindex = FindScatteredLepton(particle_bank);
-    auto result_vars = ComputeFromLepton(
+    auto result_vars   = ComputeFromLepton(
         particle_bank.getFloat("px", lepton_pindex),
         particle_bank.getFloat("py", lepton_pindex),
         particle_bank.getFloat("pz", lepton_pindex),
@@ -115,8 +115,7 @@ namespace iguana::physics {
         m_beam.py,
         m_beam.pz,
         m_target.mass,
-        m_beam.pdg
-        );
+        m_beam.pdg);
 
     int idx = 0;
     result_bank.putDouble(idx++, 0, result_vars.Q2);
@@ -137,30 +136,29 @@ namespace iguana::physics {
     int lepton_row = -1;
 
     switch(o_method_lepton_finder) {
-      case method_lepton_finder::highest_energy_FD_trigger:
-        {
-          // find highest energy lepton
-          double lepton_energy = 0;
-          for(int row = 0; row < particle_bank.getRows(); row++) {
-            if(particle_bank.getInt("pid", row) == m_beam.pdg) {
-              double px = particle_bank.getInt("px", row);
-              double py = particle_bank.getInt("py", row);
-              double pz = particle_bank.getInt("pz", row);
-              double en = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(m_beam.mass, 2));
-              if(en > lepton_energy) {
-                lepton_row    = row;
-                lepton_energy = en;
-              }
-            }
+    case method_lepton_finder::highest_energy_FD_trigger: {
+      // find highest energy lepton
+      double lepton_energy = 0;
+      for(int row = 0; row < particle_bank.getRows(); row++) {
+        if(particle_bank.getInt("pid", row) == m_beam.pdg) {
+          double px = particle_bank.getInt("px", row);
+          double py = particle_bank.getInt("py", row);
+          double pz = particle_bank.getInt("pz", row);
+          double en = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(m_beam.mass, 2));
+          if(en > lepton_energy) {
+            lepton_row    = row;
+            lepton_energy = en;
           }
-          // require it to be in the FD trigger
-          if(lepton_row >= 0) {
-            auto status = particle_bank.getShort("status", lepton_row);
-            if(status <= -3000 || status > -2000)
-              lepton_row = -1;
-          }
-          break;
         }
+      }
+      // require it to be in the FD trigger
+      if(lepton_row >= 0) {
+        auto status = particle_bank.getShort("status", lepton_row);
+        if(status <= -3000 || status > -2000)
+          lepton_row = -1;
+      }
+      break;
+    }
     }
     return lepton_row;
   }
@@ -175,8 +173,7 @@ namespace iguana::physics {
       vector_element_t beam_py,
       vector_element_t beam_pz,
       double target_mass,
-      double lepton_pdg
-      ) const
+      double lepton_pdg) const
   {
     if(target_mass <= 0) {
       m_log->Error("target mass is not > 0");
@@ -192,7 +189,7 @@ namespace iguana::physics {
     auto vec_q = vec_beam - vec_lepton;
     result.q   = {vec_q.Px(), vec_q.Py(), vec_q.Pz(), vec_q.E()};
     result.Q2  = -1 * vec_q.M2();
-    result.x   = result.Q2 / ( 2 * vec_q.Dot(vec_target) );
+    result.x   = result.Q2 / (2 * vec_q.Dot(vec_target));
     result.y   = vec_target.Dot(vec_q) / vec_target.Dot(vec_beam);
     result.W   = (vec_beam + vec_target - vec_lepton).M();
     result.nu  = vec_target.Dot(vec_q) / target_mass;

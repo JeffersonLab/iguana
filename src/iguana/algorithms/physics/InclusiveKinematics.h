@@ -7,18 +7,18 @@ namespace iguana::physics {
 
   /// Set of inclusive kinematics variables
   struct InclusiveKinematicsVars {
-    /// @f$q=(q_x,q_y,q_z,q_E)@f$
-    vector4_t q;
-    /// @f$Q2@f$ (GeV@f$^2@f$)
-    double Q2;
-    /// @f$x_B@f$
-    double x;
-    /// @f$y@f$
-    double y;
-    /// @f$W@f$ (GeV)
-    double W;
-    /// @f$\nu@f$
-    double nu;
+      /// @f$q=(q_x,q_y,q_z,q_E)@f$
+      vector4_t q;
+      /// @f$Q2@f$ (GeV@f$^2@f$)
+      double Q2;
+      /// @f$x_B@f$
+      double x;
+      /// @f$y@f$
+      double y;
+      /// @f$W@f$ (GeV)
+      double W;
+      /// @f$\nu@f$
+      double nu;
   };
 
   /// @brief Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
@@ -59,8 +59,7 @@ namespace iguana::physics {
           vector_element_t beam_py,
           vector_element_t beam_pz,
           double target_mass = particle::mass.at(particle::PDG::proton),
-          double lepton_pdg = particle::PDG::electron
-          ) const;
+          double lepton_pdg  = particle::PDG::electron) const;
 
     private:
 
@@ -78,11 +77,11 @@ namespace iguana::physics {
       method_lepton_finder o_method_lepton_finder;
 
       struct particle_t {
-        int pdg;
-        double mass;
-        double px;
-        double py;
-        double pz;
+          int pdg;
+          double mass;
+          double px;
+          double py;
+          double pz;
       };
       particle_t m_beam;
       particle_t m_target;
