@@ -164,6 +164,15 @@ namespace iguana {
       /// @param row the row to mask
       void MaskRow(hipo::bank& bank, const int row) const;
 
+      /// Create a new bank and push it to the bank list
+      /// @param banks the `hipo::banklist` onto which the new bank will be pushed
+      /// @param bank_name the new bank name
+      /// @param schema_def a list of variables for the schema
+      /// @param group_id the group ID for the schema
+      /// @param item_id the item ID for the schema
+      /// @returns the index to the newly created bank
+      hipo::banklist::size_type CreateBank(hipo::banklist& banks, std::string bank_name, std::vector<std::string> schema_def, int group_id, int item_id) const noexcept(false);
+
       /// Dump all banks in a `hipo::banklist`
       /// @param banks the banks to show
       /// @param message if specified, print a header message

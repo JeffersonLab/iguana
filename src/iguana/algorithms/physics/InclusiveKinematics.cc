@@ -11,8 +11,17 @@ namespace iguana::physics {
   {
     b_particle = GetBankIndex(banks, "REC::Particle");
 
-    ParseYAMLConfig();
+    // create the output bank
+    // FIXME: generalize the groupid and itemid
+    b_result = CreateBank(
+        banks,
+        GetClassName(),
+        {"Q2/D", "x/D", "y/D", "W/D", "nu/D", "qx/D", "qy/D", "qz/D", "qE/D"},
+        0xF000,
+        1);
 
+    // parse config file
+    ParseYAMLConfig();
     o_runnum = GetCachedOption<int>("runnum").value_or(0); // FIXME: should be set from RUN::conig
 
     // get initial state configuration
@@ -94,6 +103,7 @@ namespace iguana::physics {
   void InclusiveKinematics::Run(hipo::banklist& banks) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
+    auto& result_bank   = GetBank(banks, b_result, GetClassName());
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
     auto lepton_pindex = FindScatteredLepton(particle_bank);
@@ -108,7 +118,16 @@ namespace iguana::physics {
         m_beam.pdg
         );
 
-    // TODO: create a new bank with these variables
+    int idx = 0;
+    result_bank.putDouble(idx++, 0, result_vars.Q2);
+    result_bank.putDouble(idx++, 0, result_vars.x);
+    result_bank.putDouble(idx++, 0, result_vars.y);
+    result_bank.putDouble(idx++, 0, result_vars.W);
+    result_bank.putDouble(idx++, 0, result_vars.nu);
+    result_bank.putDouble(idx++, 0, std::get<0>(result_vars.q));
+    result_bank.putDouble(idx++, 0, std::get<1>(result_vars.q));
+    result_bank.putDouble(idx++, 0, std::get<2>(result_vars.q));
+    result_bank.putDouble(idx++, 0, std::get<3>(result_vars.q));
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -173,7 +192,7 @@ namespace iguana::physics {
     auto vec_q = vec_beam - vec_lepton;
     result.q   = {vec_q.Px(), vec_q.Py(), vec_q.Pz(), vec_q.E()};
     result.Q2  = -1 * vec_q.M2();
-    result.xB  = result.Q2 / ( 2 * vec_q.Dot(vec_target) );
+    result.x   = result.Q2 / ( 2 * vec_q.Dot(vec_target) );
     result.y   = vec_target.Dot(vec_q) / vec_target.Dot(vec_beam);
     result.W   = (vec_beam + vec_target - vec_lepton).M();
     result.nu  = vec_target.Dot(vec_q) / target_mass;

@@ -12,7 +12,7 @@ namespace iguana::physics {
     /// @f$Q2@f$ (GeV@f$^2@f$)
     double Q2;
     /// @f$x_B@f$
-    double xB;
+    double x;
     /// @f$y@f$
     double y;
     /// @f$W@f$ (GeV)
@@ -65,6 +65,7 @@ namespace iguana::physics {
     private:
 
       hipo::banklist::size_type b_particle;
+      hipo::banklist::size_type b_result;
 
       int o_runnum;
       double o_beam_energy;
