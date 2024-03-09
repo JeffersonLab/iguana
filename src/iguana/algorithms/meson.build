@@ -87,6 +87,11 @@ algo_dict = {
       'headers': [ 'physics/InclusiveKinematics.h' ],
       'needs_ROOT': true,
     },
+    'validator': {
+      'sources': [ 'physics/InclusiveKinematicsValidator.cc' ],
+      'headers': [ 'physics/InclusiveKinematicsValidator.h' ],
+      'needs_ROOT': true,
+    },
     'configs': [ 'physics/InclusiveKinematics.yaml' ],
     'test_args': { 'banks': ['REC::Particle'] },
   },
