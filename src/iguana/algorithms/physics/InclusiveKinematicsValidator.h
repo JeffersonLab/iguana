@@ -5,6 +5,7 @@
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TH2.h>
+#include <TH1.h>
 
 namespace iguana::physics {
 
@@ -24,7 +25,10 @@ namespace iguana::physics {
 
       hipo::banklist::size_type b_result;
 
-      mutable TH2D* Q2vsX;
+      mutable TH2D* Q2_vs_x;
+      mutable TH2D* Q2_vs_W;
+      mutable TH1D* y_dist;
+      mutable TH1D* nu_dist;
 
       TString m_output_file_basename;
       TFile* m_output_file;
