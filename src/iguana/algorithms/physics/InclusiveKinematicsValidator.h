@@ -23,8 +23,13 @@ namespace iguana::physics {
 
     private:
 
+      hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_result;
 
+      mutable TH1D* lepton_p_dist;
+      mutable TH1D* lepton_theta_dist;
+      mutable TH1D* lepton_phi_dist;
+      mutable TH1D* lepton_vz_dist;
       mutable TH2D* Q2_vs_x;
       mutable TH2D* Q2_vs_W;
       mutable TH1D* y_dist;

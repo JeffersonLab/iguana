@@ -169,7 +169,6 @@ namespace iguana {
       /// @param [out] bank_idx the `hipo::banklist` index of the new bank
       /// @param [in] bank_name the new bank name
       /// @param [in] schema_def a list of variables for the schema
-      /// @param [in] num_rows the number of rows
       /// @param [in] group_id the group ID for the schema
       /// @param [in] item_id the item ID for the schema
       /// @returns the bank's schema
@@ -178,7 +177,6 @@ namespace iguana {
           hipo::banklist::size_type& bank_idx,
           std::string bank_name,
           std::vector<std::string> schema_def,
-          int num_rows, // FIXME: can this be be removed, so banks are dynamically filled?
           int group_id, // FIXME: generalize group_id and item_id setting
           int item_id) const noexcept(false);
 

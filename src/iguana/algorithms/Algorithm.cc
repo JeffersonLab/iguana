@@ -219,7 +219,6 @@ namespace iguana {
       hipo::banklist::size_type& bank_idx,
       std::string bank_name,
       std::vector<std::string> schema_def,
-      int num_rows,
       int group_id,
       int item_id) const
   {
@@ -234,7 +233,7 @@ namespace iguana {
         schema_def[0],
         [](std::string a, std::string b)
         { return a + "," + b; }));
-    banks.push_back({bank_schema, num_rows});
+    banks.push_back({bank_schema});
     bank_idx = GetBankIndex(banks, bank_name);
     return bank_schema;
   }

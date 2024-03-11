@@ -45,21 +45,11 @@ namespace iguana::physics {
       /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)
       /// @param lepton_py scattered lepton momentum component @f$p_y@f$ (GeV)
       /// @param lepton_pz scattered lepton momentum component @f$p_z@f$ (GeV)
-      /// @param beam_px beam momentum component @f$p_x@f$ (GeV)
-      /// @param beam_py beam momentum component @f$p_y@f$ (GeV)
-      /// @param beam_pz beam momentum component @f$p_z@f$ (GeV)
-      /// @param target_mass target mass (GeV)
-      /// @param lepton_pdg lepton PDG
       /// @returns the reconstructed inclusive kinematics in a `iguana::physics::InclusiveKinematicsVars` instance
       InclusiveKinematicsVars ComputeFromLepton(
           vector_element_t lepton_px,
           vector_element_t lepton_py,
-          vector_element_t lepton_pz,
-          vector_element_t beam_px,
-          vector_element_t beam_py,
-          vector_element_t beam_pz,
-          double target_mass = particle::mass.at(particle::PDG::proton),
-          double lepton_pdg  = particle::PDG::electron) const;
+          vector_element_t lepton_pz) const;
 
     private:
 
@@ -68,6 +58,7 @@ namespace iguana::physics {
       hipo::banklist::size_type b_result;
 
       // `b_result` bank item indices
+      int i_pindex;
       int i_Q2;
       int i_x;
       int i_y;

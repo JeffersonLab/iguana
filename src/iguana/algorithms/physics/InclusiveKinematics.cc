@@ -17,19 +17,19 @@ namespace iguana::physics {
         banks,
         b_result,
         GetClassName(),
-        {"Q2/D", "x/D", "y/D", "W/D", "nu/D", "qx/D", "qy/D", "qz/D", "qE/D"},
-        1,
+        {"pindex/S", "Q2/D", "x/D", "y/D", "W/D", "nu/D", "qx/D", "qy/D", "qz/D", "qE/D"},
         0xF000,
         1);
-    i_Q2 = result_schema.getEntryOrder("Q2");
-    i_x  = result_schema.getEntryOrder("x");
-    i_y  = result_schema.getEntryOrder("y");
-    i_W  = result_schema.getEntryOrder("W");
-    i_nu = result_schema.getEntryOrder("nu");
-    i_qx = result_schema.getEntryOrder("qx");
-    i_qy = result_schema.getEntryOrder("qy");
-    i_qz = result_schema.getEntryOrder("qz");
-    i_qE = result_schema.getEntryOrder("qE");
+    i_pindex = result_schema.getEntryOrder("pindex");
+    i_Q2     = result_schema.getEntryOrder("Q2");
+    i_x      = result_schema.getEntryOrder("x");
+    i_y      = result_schema.getEntryOrder("y");
+    i_W      = result_schema.getEntryOrder("W");
+    i_nu     = result_schema.getEntryOrder("nu");
+    i_qx     = result_schema.getEntryOrder("qx");
+    i_qy     = result_schema.getEntryOrder("qy");
+    i_qz     = result_schema.getEntryOrder("qz");
+    i_qE     = result_schema.getEntryOrder("qE");
 
     // parse config file
     ParseYAMLConfig();
@@ -118,21 +118,18 @@ namespace iguana::physics {
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
     auto lepton_pindex = FindScatteredLepton(particle_bank);
-    if(lepton_pindex < 0)
+    if(lepton_pindex < 0) {
+      ShowBank(result_bank, Logger::Header("CREATED BANK IS EMPTY"));
       return;
+    }
 
     auto result_vars = ComputeFromLepton(
         particle_bank.getFloat("px", lepton_pindex),
         particle_bank.getFloat("py", lepton_pindex),
-        particle_bank.getFloat("pz", lepton_pindex),
-        m_beam.px,
-        m_beam.py,
-        m_beam.pz,
-        m_target.mass,
-        m_beam.pdg);
+        particle_bank.getFloat("pz", lepton_pindex));
 
-    m_log->Error("RESULT: Q2 = {}, x = {}, W = {}", result_vars.Q2, result_vars.x, result_vars.y);
-
+    result_bank.setRows(1);
+    result_bank.putShort(i_pindex, 0, static_cast<int16_t>(lepton_pindex));
     result_bank.putDouble(i_Q2, 0, result_vars.Q2);
     result_bank.putDouble(i_x, 0, result_vars.x);
     result_bank.putDouble(i_y, 0, result_vars.y);
@@ -142,7 +139,8 @@ namespace iguana::physics {
     result_bank.putDouble(i_qy, 0, std::get<1>(result_vars.q));
     result_bank.putDouble(i_qz, 0, std::get<2>(result_vars.q));
     result_bank.putDouble(i_qE, 0, std::get<3>(result_vars.q));
-    m_log->Error("num_rows: {}", result_bank.getRows());
+
+    ShowBank(result_bank, Logger::Header("CREATED BANK"));
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -188,21 +186,13 @@ namespace iguana::physics {
   InclusiveKinematicsVars InclusiveKinematics::ComputeFromLepton(
       vector_element_t lepton_px,
       vector_element_t lepton_py,
-      vector_element_t lepton_pz,
-      vector_element_t beam_px,
-      vector_element_t beam_py,
-      vector_element_t beam_pz,
-      double target_mass,
-      double lepton_pdg) const
+      vector_element_t lepton_pz) const
   {
-    if(target_mass <= 0) {
-      m_log->Error("target mass is not > 0");
-      throw std::runtime_error("Run failed");
-    }
-
     InclusiveKinematicsVars result;
 
-    ROOT::Math::PxPyPzMVector vec_beam(m_beam.px, m_beam.px, m_beam.px, m_beam.mass);
+    m_log->Debug("Reconstruct inclusive kinematics from lepton with p=({}, {}, {})", lepton_px, lepton_py, lepton_pz);
+
+    ROOT::Math::PxPyPzMVector vec_beam(m_beam.px, m_beam.py, m_beam.pz, m_beam.mass);
     ROOT::Math::PxPyPzMVector vec_target(m_target.px, m_target.py, m_target.pz, m_target.mass);
     ROOT::Math::PxPyPzMVector vec_lepton(lepton_px, lepton_py, lepton_pz, m_beam.mass);
 
@@ -212,7 +202,7 @@ namespace iguana::physics {
     result.x   = result.Q2 / (2 * vec_q.Dot(vec_target));
     result.y   = vec_target.Dot(vec_q) / vec_target.Dot(vec_beam);
     result.W   = (vec_beam + vec_target - vec_lepton).M();
-    result.nu  = vec_target.Dot(vec_q) / target_mass;
+    result.nu  = vec_target.Dot(vec_q) / m_target.mass;
 
     return result;
   }
