@@ -1,7 +1,7 @@
 #include "InclusiveKinematicsValidator.h"
 
-#include <TStyle.h>
 #include <Math/Vector3D.h>
+#include <TStyle.h>
 
 namespace iguana::physics {
 
@@ -17,7 +17,7 @@ namespace iguana::physics {
 
     // get bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
-    b_result = GetBankIndex(banks, "physics::InclusiveKinematics");
+    b_result   = GetBankIndex(banks, "physics::InclusiveKinematics");
 
     // set an output file
     auto output_dir = GetOutputDirectory();
@@ -42,8 +42,8 @@ namespace iguana::physics {
 
     // format plots
     for(auto hist : {lepton_p_dist, lepton_theta_dist, lepton_phi_dist, lepton_vz_dist}) {
-      hist->SetLineColor(kYellow+2);
-      hist->SetFillColor(kYellow+2);
+      hist->SetLineColor(kYellow + 2);
+      hist->SetFillColor(kYellow + 2);
     }
     for(auto hist : {y_dist, nu_dist}) {
       hist->SetLineColor(kBlue);
@@ -57,7 +57,7 @@ namespace iguana::physics {
     // calculate kinematics
     m_algo_seq->Run(banks);
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
-    auto& result_bank = GetBank(banks, b_result, "physics::InclusiveKinematics");
+    auto& result_bank   = GetBank(banks, b_result, "physics::InclusiveKinematics");
 
     if(result_bank.getRows() == 0) {
       m_log->Debug("skip this event, since it has no inclusive kinematics results");
@@ -68,11 +68,11 @@ namespace iguana::physics {
     }
 
     auto pindex = result_bank.getShort("pindex", 0);
-    auto Q2 = result_bank.getDouble("Q2", 0);
-    auto x  = result_bank.getDouble("x", 0);
-    auto W  = result_bank.getDouble("W", 0);
-    auto y  = result_bank.getDouble("y", 0);
-    auto nu = result_bank.getDouble("nu", 0);
+    auto Q2     = result_bank.getDouble("Q2", 0);
+    auto x      = result_bank.getDouble("x", 0);
+    auto W      = result_bank.getDouble("W", 0);
+    auto y      = result_bank.getDouble("y", 0);
+    auto nu     = result_bank.getDouble("nu", 0);
 
     ROOT::Math::XYZVector vec_lepton(
         particle_bank.getFloat("px", pindex),
@@ -82,8 +82,10 @@ namespace iguana::physics {
     auto lepton_theta = vec_lepton.Theta() * 180.0 / M_PI;
     auto lepton_phi   = vec_lepton.Phi() * 180.0 / M_PI;
     auto lepton_vz    = particle_bank.getFloat("vz", pindex);
-    while(lepton_phi > 180) lepton_phi -= 360;
-    while(lepton_phi < -180) lepton_phi += 360;
+    while(lepton_phi > 180)
+      lepton_phi -= 360;
+    while(lepton_phi < -180)
+      lepton_phi += 360;
 
     // lock mutex and fill the plots
     std::scoped_lock<std::mutex> lock(m_mutex);

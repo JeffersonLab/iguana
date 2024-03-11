@@ -147,7 +147,7 @@ namespace iguana::physics {
 
   int InclusiveKinematics::FindScatteredLepton(const hipo::bank& particle_bank) const
   {
-    int lepton_row = -1;
+    int lepton_row       = -1;
     double lepton_energy = 0;
 
     switch(o_method_lepton_finder) {
