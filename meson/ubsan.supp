@@ -1,1 +1,2 @@
 alignment:hipo::structure::getFloatAt
+alignment:hipo::structure::getShortAt
