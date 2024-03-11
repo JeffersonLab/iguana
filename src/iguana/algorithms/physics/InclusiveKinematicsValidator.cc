@@ -70,6 +70,7 @@ namespace iguana::physics {
       canv->Divide(n_cols, n_rows);
       for(int pad_num = 1; pad_num <= n_rows * n_cols; pad_num++) {
         auto pad = canv->GetPad(pad_num);
+        pad->cd();
         pad->SetGrid(1, 1);
         pad->SetLeftMargin(0.12);
         pad->SetRightMargin(0.12);
