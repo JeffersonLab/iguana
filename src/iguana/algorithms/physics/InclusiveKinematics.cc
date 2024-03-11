@@ -141,9 +141,9 @@ namespace iguana::physics {
       double lepton_energy = 0;
       for(int row = 0; row < particle_bank.getRows(); row++) {
         if(particle_bank.getInt("pid", row) == m_beam.pdg) {
-          double px = particle_bank.getInt("px", row);
-          double py = particle_bank.getInt("py", row);
-          double pz = particle_bank.getInt("pz", row);
+          double px = particle_bank.getFloat("px", row);
+          double py = particle_bank.getFloat("py", row);
+          double pz = particle_bank.getFloat("pz", row);
           double en = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(m_beam.mass, 2));
           if(en > lepton_energy) {
             lepton_row    = row;
