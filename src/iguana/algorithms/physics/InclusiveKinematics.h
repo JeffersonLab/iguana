@@ -63,9 +63,22 @@ namespace iguana::physics {
 
     private:
 
+      // banklist indices
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_result;
 
+      // `b_result` bank item indices
+      int i_Q2;
+      int i_x;
+      int i_y;
+      int i_W;
+      int i_nu;
+      int i_qx;
+      int i_qy;
+      int i_qz;
+      int i_qE;
+
+      // config options
       int o_runnum;
       double o_beam_energy;
       std::vector<double> o_beam_direction;
@@ -76,6 +89,7 @@ namespace iguana::physics {
       method_reconstruction o_method_reconstruction;
       method_lepton_finder o_method_lepton_finder;
 
+      // additional properties
       struct particle_t {
           int pdg;
           double mass;

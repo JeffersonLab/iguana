@@ -19,6 +19,15 @@ namespace iguana::physics {
         {"Q2/D", "x/D", "y/D", "W/D", "nu/D", "qx/D", "qy/D", "qz/D", "qE/D"},
         0xF000,
         1);
+    int i_Q2 = b_result.getSchema().getEntryOrder("Q2");
+    int i_x  = b_result.getSchema().getEntryOrder("x");
+    int i_y  = b_result.getSchema().getEntryOrder("y");
+    int i_W  = b_result.getSchema().getEntryOrder("W");
+    int i_nu = b_result.getSchema().getEntryOrder("nu");
+    int i_qx = b_result.getSchema().getEntryOrder("qx");
+    int i_qy = b_result.getSchema().getEntryOrder("qy");
+    int i_qz = b_result.getSchema().getEntryOrder("qz");
+    int i_qE = b_result.getSchema().getEntryOrder("qE");
 
     // parse config file
     ParseYAMLConfig();
@@ -117,16 +126,15 @@ namespace iguana::physics {
         m_target.mass,
         m_beam.pdg);
 
-    int idx = 0;
-    result_bank.putDouble(idx++, 0, result_vars.Q2);
-    result_bank.putDouble(idx++, 0, result_vars.x);
-    result_bank.putDouble(idx++, 0, result_vars.y);
-    result_bank.putDouble(idx++, 0, result_vars.W);
-    result_bank.putDouble(idx++, 0, result_vars.nu);
-    result_bank.putDouble(idx++, 0, std::get<0>(result_vars.q));
-    result_bank.putDouble(idx++, 0, std::get<1>(result_vars.q));
-    result_bank.putDouble(idx++, 0, std::get<2>(result_vars.q));
-    result_bank.putDouble(idx++, 0, std::get<3>(result_vars.q));
+    result_bank.putDouble(i_Q2, 0, result_vars.Q2);
+    result_bank.putDouble(i_x, 0, result_vars.x);
+    result_bank.putDouble(i_y, 0, result_vars.y);
+    result_bank.putDouble(i_W, 0, result_vars.W);
+    result_bank.putDouble(i_nu, 0, result_vars.nu);
+    result_bank.putDouble(i_qx, 0, std::get<0>(result_vars.q));
+    result_bank.putDouble(i_qy, 0, std::get<1>(result_vars.q));
+    result_bank.putDouble(i_qz, 0, std::get<2>(result_vars.q));
+    result_bank.putDouble(i_qE, 0, std::get<3>(result_vars.q));
   }
 
   ///////////////////////////////////////////////////////////////////////////////

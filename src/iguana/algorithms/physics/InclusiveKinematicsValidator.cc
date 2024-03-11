@@ -33,10 +33,10 @@ namespace iguana::physics {
     const double range_Y[2]  = {0, 1};
     const double range_Nu[2] = {0, 1};
 
-    Q2_vs_x = new TH2D("Q2_vs_x", "Q^{2} vs. x;Q^{2} [GeV^{2}];x", n_bins, range_x[0], range_x[1], n_bins, range_Q2[0], range_Q2[1]);
-    Q2_vs_W = new TH2D("Q2_vs_W", "Q^{2} vs. W;Q^{2} [GeV^{2}];W [GeV]", n_bins, range_W[0], range_W[1], n_bins, range_Q2[0], range_Q2[1]);
+    Q2_vs_x = new TH2D("Q2_vs_x", "Q^{2} vs. x;x;Q^{2} [GeV^{2}]", n_bins, range_x[0], range_x[1], n_bins, range_Q2[0], range_Q2[1]);
+    Q2_vs_W = new TH2D("Q2_vs_W", "Q^{2} vs. W;W [GeV];Q^{2} [GeV^{2}]", n_bins, range_W[0], range_W[1], n_bins, range_Q2[0], range_Q2[1]);
     y_dist  = new TH1D("y_dist", "y distribution;y", n_bins, range_Y[0], range_Y[1]);
-    nu_dist = new TH1D("nu_dist", "#nu distribution;y", n_bins, range_Nu[0], range_Nu[1]);
+    nu_dist = new TH1D("nu_dist", "#nu distribution;#nu", n_bins, range_Nu[0], range_Nu[1]);
   }
 
 
