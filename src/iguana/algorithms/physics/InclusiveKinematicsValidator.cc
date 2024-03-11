@@ -11,6 +11,7 @@ namespace iguana::physics {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("physics::InclusiveKinematics");
+    m_algo_seq->SetOption("physics::InclusiveKinematics", "log", m_log->GetLevel());
     m_algo_seq->Start(banks);
 
     // get bank indices
@@ -45,6 +46,14 @@ namespace iguana::physics {
     // calculate kinematics
     m_algo_seq->Run(banks);
     auto& result_bank = GetBank(banks, b_result, "physics::InclusiveKinematics");
+
+    if(result_bank.getRows() == 0) {
+      m_log->Debug("skip this event, since it has no inclusive kinematics results");
+      return;
+    }
+    if(result_bank.getRows() > 1) {
+      m_log->Warn("found event with more than 1 inclusive kinematics bank rows; only the first row will be used");
+    }
 
     auto Q2 = result_bank.getDouble("Q2", 0);
     auto x  = result_bank.getDouble("x", 0);
