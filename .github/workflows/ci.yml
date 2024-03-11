@@ -389,7 +389,7 @@ jobs:
         run: |
           [ ${{ inputs.runner }} = "macos-latest" ] && stdbuf_cmd=gstdbuf || stdbuf_cmd=stdbuf
           # meson test --print-errorlogs -C build-iguana # terse
-          $stdbuf -o0 meson test --print-errorlogs --verbose --no-stdsplit -C build-iguana # verbose
+          $stdbuf_cmd -o0 meson test --print-errorlogs --verbose --no-stdsplit -C build-iguana # verbose
       - name: coverage
         if: ${{ matrix.mode == 'coverage' }}
         run: |
