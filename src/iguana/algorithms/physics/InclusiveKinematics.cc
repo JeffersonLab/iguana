@@ -13,21 +13,22 @@ namespace iguana::physics {
 
     // create the output bank
     // FIXME: generalize the groupid and itemid
-    b_result = CreateBank(
+    auto result_schema = CreateBank(
         banks,
+        b_result,
         GetClassName(),
         {"Q2/D", "x/D", "y/D", "W/D", "nu/D", "qx/D", "qy/D", "qz/D", "qE/D"},
         0xF000,
         1);
-    int i_Q2 = b_result.getSchema().getEntryOrder("Q2");
-    int i_x  = b_result.getSchema().getEntryOrder("x");
-    int i_y  = b_result.getSchema().getEntryOrder("y");
-    int i_W  = b_result.getSchema().getEntryOrder("W");
-    int i_nu = b_result.getSchema().getEntryOrder("nu");
-    int i_qx = b_result.getSchema().getEntryOrder("qx");
-    int i_qy = b_result.getSchema().getEntryOrder("qy");
-    int i_qz = b_result.getSchema().getEntryOrder("qz");
-    int i_qE = b_result.getSchema().getEntryOrder("qE");
+    i_Q2 = result_schema.getEntryOrder("Q2");
+    i_x  = result_schema.getEntryOrder("x");
+    i_y  = result_schema.getEntryOrder("y");
+    i_W  = result_schema.getEntryOrder("W");
+    i_nu = result_schema.getEntryOrder("nu");
+    i_qx = result_schema.getEntryOrder("qx");
+    i_qy = result_schema.getEntryOrder("qy");
+    i_qz = result_schema.getEntryOrder("qz");
+    i_qE = result_schema.getEntryOrder("qE");
 
     // parse config file
     ParseYAMLConfig();

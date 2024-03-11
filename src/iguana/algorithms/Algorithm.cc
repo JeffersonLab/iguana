@@ -214,7 +214,13 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  hipo::banklist::size_type Algorithm::CreateBank(hipo::banklist& banks, std::string bank_name, std::vector<std::string> schema_def, int group_id, int item_id) const
+  hipo::schema Algorithm::CreateBank(
+      hipo::banklist& banks,
+      hipo::banklist::size_type& bank_idx,
+      std::string bank_name,
+      std::vector<std::string> schema_def,
+      int group_id,
+      int item_id) const
   {
     if(schema_def.empty()) {
       m_log->Error("empty schema_def in CreateBank");
@@ -228,7 +234,8 @@ namespace iguana {
         [](std::string a, std::string b)
         { return a + "," + b; }));
     banks.push_back({bank_schema});
-    return GetBankIndex(banks, bank_name);
+    bank_idx = GetBankIndex(banks, bank_name);
+    return bank_schema;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

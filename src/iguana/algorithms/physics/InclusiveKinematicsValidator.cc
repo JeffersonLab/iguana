@@ -66,7 +66,7 @@ namespace iguana::physics {
     if(GetOutputDirectory()) {
       int n_rows = 2;
       int n_cols = 2;
-      auto canv = new TCanvas("canv", "canv", n_cols*800, n_rows*600);
+      auto canv  = new TCanvas("canv", "canv", n_cols * 800, n_rows * 600);
       canv->Divide(n_cols, n_rows);
       for(int pad_num = 1; pad_num <= n_rows * n_cols; pad_num++) {
         auto pad = canv->GetPad(pad_num);
@@ -91,7 +91,6 @@ namespace iguana::physics {
           nu_dist->Draw();
           break;
         }
-
       }
       canv->SaveAs(m_output_file_basename + ".png");
       m_output_file->Write();

@@ -4,8 +4,8 @@
 
 #include <TCanvas.h>
 #include <TFile.h>
-#include <TH2.h>
 #include <TH1.h>
+#include <TH2.h>
 
 namespace iguana::physics {
 
