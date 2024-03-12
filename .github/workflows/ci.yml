@@ -33,10 +33,10 @@ on:
             "include": [
               { "mode": "coverage",                     "build_id": "cpp-gcc-release",        "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
               { "mode": "noROOT",                       "build_id": "cpp-gcc-release-noROOT", "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
-              { "mode": "address sanitizer",            "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "thread sanitizer",             "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "undefined behavior sanitizer", "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "leak sanitizer",               "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
+              { "mode": "address-sanitizer",            "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "thread-sanitizer",             "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "undefined-behavior-sanitizer", "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
+              { "mode": "leak-sanitizer",               "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
             ]
           }
 
@@ -372,7 +372,7 @@ jobs:
                 build-iguana
               ;;
             *sanitizer)
-              san=$(echo ${{ matrix.mode }} | sed 's; .*;;g')
+              san=$(echo ${{ matrix.mode }} | sed 's;-.*;;g')
               meson configure     \
                 -Db_sanitize=$san \
                 -Db_lundef=false  \
@@ -388,7 +388,9 @@ jobs:
       - name: meson test
         run: |
           meson test --print-errorlogs -C build-iguana # terse
-          # stdbuf -o0 meson test --print-errorlogs --verbose --no-stdsplit -C build-iguana # verbose
+          ### verbose (do not use by default):
+          # [ ${{ inputs.runner }} = "macos-latest" ] && stdbuf_cmd=gstdbuf || stdbuf_cmd=stdbuf
+          # $stdbuf_cmd -o0 meson test --print-errorlogs --verbose --no-stdsplit -C build-iguana
       - name: coverage
         if: ${{ matrix.mode == 'coverage' }}
         run: |
@@ -403,10 +405,10 @@ jobs:
           echo '- to compare to the report from the `main` branch, see <https://jeffersonlab.github.io/iguana/coverage-report>' >> $GITHUB_STEP_SUMMARY
       ### upload artifacts
       - uses: actions/upload-artifact@v4
-        if: ${{ matrix.mode != 'coverage' }}
+        if: always()
         with:
           name: logs_build_iguana_${{ matrix.mode }}
-          retention-days: 1
+          retention-days: 3
           path: build-iguana/meson-logs
       - uses: actions/upload-artifact@v4
         if: ${{ matrix.mode == 'coverage' }}

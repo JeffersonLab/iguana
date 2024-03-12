@@ -13,11 +13,11 @@ namespace iguana {
     return false;
   }
 
-  algo_t AlgorithmFactory::Create(const std::string& name) noexcept
+  algo_t AlgorithmFactory::Create(const std::string& name)
   {
     if(auto it = s_creators.find(name); it != s_creators.end())
       return it->second();
-    return nullptr;
+    throw std::runtime_error(fmt::format("AlgorithmFactory: algorithm with name {:?} does not exist", name));
   }
 
 }

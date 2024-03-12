@@ -81,6 +81,20 @@ algo_dict = {
     },
     'test_args': { 'banks': ['RUN::config', 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator'] },
   },
+  'physics::InclusiveKinematics': {
+    'algorithm': {
+      'sources': [ 'physics/InclusiveKinematics.cc' ],
+      'headers': [ 'physics/InclusiveKinematics.h' ],
+      'needs_ROOT': true,
+    },
+    'validator': {
+      'sources': [ 'physics/InclusiveKinematicsValidator.cc' ],
+      'headers': [ 'physics/InclusiveKinematicsValidator.h' ],
+      'needs_ROOT': true,
+    },
+    'configs': [ 'physics/InclusiveKinematics.yaml' ],
+    'test_args': { 'banks': ['REC::Particle'] },
+  },
 }
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT

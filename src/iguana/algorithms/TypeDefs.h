@@ -44,6 +44,14 @@ namespace iguana {
       { proton,   "p"       }
     };
 
+    /// Particle mass in GeV
+    const std::unordered_map<PDG, double> mass{
+      { electron, 0.00051099895000 },
+      { pi_plus,  0.13957039       },
+      { pi_minus, 0.13957039       },
+      { proton,   0.93827208816    }
+    };
+
     // clang-format on
   }
 

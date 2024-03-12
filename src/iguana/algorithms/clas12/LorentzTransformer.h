@@ -3,10 +3,6 @@
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 
-// ROOT
-#include <Math/Boost.h>
-#include <Math/Vector4D.h>
-
 namespace iguana::clas12 {
 
   /// @brief Lorentz transform momenta in `REC::Particle` (or similar banks)

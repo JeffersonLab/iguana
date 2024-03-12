@@ -1,5 +1,7 @@
 #include "Algorithm.h"
 
+#include <numeric>
+
 namespace iguana {
 
   void Algorithm::Start()
@@ -208,6 +210,32 @@ namespace iguana {
     // TODO: need https://github.com/gavalian/hipo/issues/35
     // until then, just set the PID to -1
     bank.putInt("pid", row, -1);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  hipo::schema Algorithm::CreateBank(
+      hipo::banklist& banks,
+      hipo::banklist::size_type& bank_idx,
+      std::string bank_name,
+      std::vector<std::string> schema_def,
+      int group_id,
+      int item_id) const
+  {
+    if(schema_def.empty()) {
+      m_log->Error("empty schema_def in CreateBank");
+      throw std::runtime_error("CreateBank failed");
+    }
+    hipo::schema bank_schema(bank_name.c_str(), group_id, item_id);
+    bank_schema.parse(std::accumulate(
+        std::next(schema_def.begin()),
+        schema_def.end(),
+        schema_def[0],
+        [](std::string a, std::string b)
+        { return a + "," + b; }));
+    banks.push_back({bank_schema});
+    bank_idx = GetBankIndex(banks, bank_name);
+    return bank_schema;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
