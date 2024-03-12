@@ -387,9 +387,10 @@ jobs:
       ### run tests
       - name: meson test
         run: |
-          [ ${{ inputs.runner }} = "macos-latest" ] && stdbuf_cmd=gstdbuf || stdbuf_cmd=stdbuf
-          # meson test --print-errorlogs -C build-iguana # terse
-          $stdbuf_cmd -o0 meson test --print-errorlogs --verbose --no-stdsplit -C build-iguana # verbose
+          meson test --print-errorlogs -C build-iguana # terse
+          ### verbose (do not use by default):
+          # [ ${{ inputs.runner }} = "macos-latest" ] && stdbuf_cmd=gstdbuf || stdbuf_cmd=stdbuf
+          # $stdbuf_cmd -o0 meson test --print-errorlogs --verbose --no-stdsplit -C build-iguana
       - name: coverage
         if: ${{ matrix.mode == 'coverage' }}
         run: |
