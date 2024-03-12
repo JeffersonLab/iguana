@@ -166,7 +166,7 @@ namespace iguana {
 
       /// Create a new bank and push it to the bank list
       /// @param [out] banks the `hipo::banklist` onto which the new bank will be pushed
-      /// @param [out] bank_idx the `hipo::banklist` index of the new bank
+      /// @param [out] bank_idx will be set to the `hipo::banklist` index of the new bank
       /// @param [in] bank_name the new bank name
       /// @param [in] schema_def a list of variables for the schema
       /// @param [in] group_id the group ID for the schema
