@@ -1,4 +1,5 @@
 # https://github.com/gavalian/hipo/issues/49
 alignment:hipo::structure::getFloatAt
 alignment:hipo::structure::getShortAt
+alignment:hipo::structure::getDoubleAt
 alignment:hipo::structure::putDoubleAt
