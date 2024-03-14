@@ -7,7 +7,7 @@ project(
 
 # find dependencies
 # - it's good practice to specifiy minimum version requirements; here we just assume that `iguana` already did this
-hipo_dep   = dependency('hipo4', static: true) # use static link, for performance
+hipo_dep   = dependency('hipo4')
 iguana_dep = dependency('iguana')
 
 # set rpath
@@ -15,8 +15,11 @@ iguana_dep = dependency('iguana')
 # - alternatively, set $LD_LIBRARY_PATH before running your executables ($DYLD_LIBRARY_PATH on macOS)
 # - not needed for libraries which are static-linked
 bin_rpaths = [
-  iguana_dep.get_variable(pkgconfig: 'libdir')
+  hipo_dep.get_variable(pkgconfig: 'libdir')
 ]
+if host_machine.system() != 'darwin'
+  bin_rpaths += iguana_dep.get_variable(pkgconfig: 'libdir') # not needed on macOS
+endif
 
 # build and install the executable
 example_bin = 'iguana-example-00-basic'

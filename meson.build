@@ -35,7 +35,6 @@ yamlcpp_dep = dependency(
 )
 hipo_dep = dependency(
   'hipo4',
-  static:  true,
   method:  'pkg-config',
   version: '>=4.0.1',
 )
@@ -148,7 +147,9 @@ project_test_env.set(
 )
 
 # executables' rpath
-project_exe_rpath = []
+project_exe_rpath = [
+  hipo_dep.get_variable(pkgconfig: 'libdir')
+]
 if host_machine.system() != 'darwin'
   # FIXME(darwin): not sure how to set multiple rpaths on darwin executables,
   # aside from running `install_name_tool -add_rpath` post-installation;
