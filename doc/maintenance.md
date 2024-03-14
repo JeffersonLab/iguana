@@ -13,6 +13,10 @@ If the source code was obtained from a release tarball from GitHub, the `.git/` 
 
 Because of the fragility of version detection, we try to keep at least the _major_ version correct in the fallback version number of the version detection implementation.
 
+## Building for `ifarm` or `cvmfs` Common Installation
+
+See [its documentation](/meson/ifarm/README.md).
+
 ## Python Binding Dependencies
 
 Keep the Python binding dependency versions reasonably up to date in the corresponding `requirements.txt` file:
