@@ -47,8 +47,8 @@ defaults:
 env:
   hipo_version: f40da676bbd1745398e9fdf233ff213ff98798f1
   num_events: 1000
-  ASAN_OPTIONS: 'bad_option'
-  UBSAN_OPTIONS: 'bad_option'
+  ASAN_OPTIONS: 'suppressions=non_existent_file.supp'
+  UBSAN_OPTIONS: 'suppressions=non_existent_file.supp'
 
 jobs:
 
