@@ -14,6 +14,6 @@ foreach example : python_examples
   install_data(
     example,
     install_dir:  get_option('bindir'),
-    install_mode: 'rwxr--r--',
+    install_mode: 'rwxr-xr-x',
   )
 endforeach
