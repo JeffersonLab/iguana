@@ -5,7 +5,7 @@ namespace iguana {
   std::unordered_map<std::string, AlgorithmFactory::algo_creator_t> AlgorithmFactory::s_creators;
   std::unordered_map<std::string, std::vector<std::string>> AlgorithmFactory::s_created_banks;
 
-  bool AlgorithmFactory::Register(const std::string& name, algo_creator_t creator, const std::vector<std::string>& new_banks) noexcept
+  bool AlgorithmFactory::Register(const std::string& name, algo_creator_t creator, const std::vector<std::string> new_banks) noexcept
   {
     if(auto it = s_creators.find(name); it == s_creators.end()) {
       s_creators.insert({name, creator});

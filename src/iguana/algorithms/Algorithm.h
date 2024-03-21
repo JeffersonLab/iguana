@@ -254,7 +254,7 @@ namespace iguana {
       /// @param creator the creator function
       /// @param new_banks if this algorithm creates *new* banks, list them here
       /// @returns true if the algorithm has not yet been registered
-      static bool Register(const std::string& name, algo_creator_t creator, const std::vector<std::string>& new_banks) noexcept;
+      static bool Register(const std::string& name, algo_creator_t creator, const std::vector<std::string> new_banks={}) noexcept;
 
       /// Create an algorithm. Throws an exception if the algorithm cannot be created
       /// @param name the name of the algorithm, which was used as an argument in the `AlgorithmFactory::Register` call
