@@ -34,8 +34,7 @@
 
 /// Define the private members of an algorithm
 #define IGUANA_ALGORITHM_PRIVATE_MEMBERS \
-  static bool s_registered;              \
-  static bool s_registered_as_creator;
+  static bool s_registered;
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -69,14 +68,10 @@ public:                                                                    \
 
 /// Register an algorithm for the `iguana::AlgorithmFactory`; this macro should be called in the algorithm's implementation
 /// @param ALGO_NAME the name of the algorithm class
-#define REGISTER_IGUANA_ALGORITHM(ALGO_NAME) \
-  bool ALGO_NAME::s_registered = AlgorithmFactory::Register(ALGO_NAME::GetClassName(), ALGO_NAME::Creator);
-
-/// Register banks created by this algorithm
-/// @param ALGO_NAME the name of the algorithm class
-/// @param ... the new banks
-#define REGISTER_IGUANA_NEW_BANKS(ALGO_NAME, ...) \
-  bool ALGO_NAME::s_registered_as_creator = AlgorithmFactory::RegisterNewBanks({__VA_ARGS__}, ALGO_NAME::GetClassName());
+/// @param ... if this algorithm creates new banks, add their names here; this is a variadic parameter, so you may
+/// list as many as needed, or none.
+#define REGISTER_IGUANA_ALGORITHM(ALGO_NAME, ...) \
+  bool ALGO_NAME::s_registered = AlgorithmFactory::Register(ALGO_NAME::GetClassName(), ALGO_NAME::Creator, {__VA_ARGS__});
 
 /// Register a validator for the `iguana::AlgorithmFactory`, similar to `REGISTER_IGUANA_ALGORITHM`
 /// @param VDOR_NAME the name of the validator class

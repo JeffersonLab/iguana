@@ -252,19 +252,14 @@ namespace iguana {
       /// Register an algorithm with a unique name. Algorithms register themselves by calling this function.
       /// @param name the name of the algorithm (not equivalent to `Object::m_name`)
       /// @param creator the creator function
+      /// @param new_banks if this algorithm creates *new* banks, list them here
       /// @returns true if the algorithm has not yet been registered
-      static bool Register(const std::string& name, algo_creator_t creator) noexcept;
+      static bool Register(const std::string& name, algo_creator_t creator, const std::vector<std::string>& new_banks) noexcept;
 
       /// Create an algorithm. Throws an exception if the algorithm cannot be created
       /// @param name the name of the algorithm, which was used as an argument in the `AlgorithmFactory::Register` call
       /// @returns the algorithm instance
       static algo_t Create(const std::string& name) noexcept(false);
-
-      /// Register banks that are created by a creator-type algorithm
-      /// @param bank_names the list of new bank names
-      /// @param algo_name the name of the algorithm which creates the new banks
-      /// @returns true if successful
-      static bool RegisterNewBanks(const std::vector<std::string>& bank_names, const std::string& algo_name) noexcept;
 
       /// Check if a bank is created by an algorithm
       /// @param bank_name the name of the bank
