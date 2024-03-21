@@ -6,6 +6,7 @@
 namespace iguana::physics {
 
   REGISTER_IGUANA_ALGORITHM(InclusiveKinematics);
+  REGISTER_IGUANA_NEW_BANKS(physics::InclusiveKinematics, "physics::InclusiveKinematics");
 
   void InclusiveKinematics::Start(hipo::banklist& banks)
   {

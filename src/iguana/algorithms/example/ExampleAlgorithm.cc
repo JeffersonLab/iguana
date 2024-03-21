@@ -14,8 +14,11 @@ namespace iguana::example {
   // # - this must be done here in the source file, not in the header
   // # - the argument is the class name; do not surround it with quotes
   // # - usage of a semicolon at the end is optional, but recommended
+  // # - if this algorithm creates NEW banks, they also need to be registered;
+  // #   the preprocessor macro is variadic
   // ############################################################################
   REGISTER_IGUANA_ALGORITHM(ExampleAlgorithm);
+  REGISTER_IGUANA_NEW_BANKS(ExampleAlgorithm, "example::newBank1", "example::newBank2"); // (only needed if this algorithm creates a NEW bank)
 
   // ############################################################################
   // # define `ExampleAlgorithm::Start()`

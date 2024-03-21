@@ -131,21 +131,24 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  hipo::banklist::size_type Algorithm::GetBankIndex(hipo::banklist& banks, const std::string bankName) const
+  hipo::banklist::size_type Algorithm::GetBankIndex(hipo::banklist& banks, const std::string bank_name) const
   {
     if(m_rows_only)
       return 0;
     auto it = std::find_if(
         banks.begin(),
         banks.end(),
-        [&bankName](auto& bank)
-        { return bank.getSchema().getName() == bankName; });
+        [&bank_name](auto& bank)
+        { return bank.getSchema().getName() == bank_name; });
     if(it == banks.end()) {
-      m_log->Error("required input bank '{}' not found; cannot `Start` algorithm '{}'", bankName, m_name);
+      m_log->Error("required input bank '{}' not found; cannot `Start` algorithm '{}'", bank_name, m_class_name);
+      auto creators = AlgorithmFactory::QueryNewBank(bank_name);
+      if(creators)
+        m_log->Error(" -> this bank is created by algorithm(s) [{}]; please `Start` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
       throw std::runtime_error("cannot cache bank index");
     }
     auto idx = std::distance(banks.begin(), it);
-    m_log->Debug("cached index of bank '{}' is {}", bankName, idx);
+    m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
     return idx;
   }
 
@@ -183,7 +186,7 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expectedBankName) const
+  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expected_bank_name) const
   {
     if(m_rows_only) {
       m_log->Error("algorithm is in 'rows only' mode; cannot call `Run` since banks are not cached; use action function(s) instead");
@@ -191,13 +194,16 @@ namespace iguana {
     else {
       try {
         auto& result = banks.at(idx);
-        if(expectedBankName != "" && result.getSchema().getName() != expectedBankName)
-          m_log->Error("expected input bank '{}' at index={}; got bank named '{}'", expectedBankName, idx, result.getSchema().getName());
+        if(expected_bank_name != "" && result.getSchema().getName() != expected_bank_name)
+          m_log->Error("expected input bank '{}' at index={}; got bank named '{}'", expected_bank_name, idx, result.getSchema().getName());
         else
           return result;
       }
       catch(const std::out_of_range& o) {
-        m_log->Error("required input bank '{}' not found; cannot `Run` algorithm '{}'", expectedBankName, m_name);
+        m_log->Error("required input bank '{}' not found; cannot `Run` algorithm '{}'", expected_bank_name, m_class_name);
+        auto creators = AlgorithmFactory::QueryNewBank(expected_bank_name);
+        if(creators)
+          m_log->Error(" -> this bank is created by algorithm(s) [{}]; please `Run` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
       }
     }
     throw std::runtime_error("GetBank failed");
@@ -235,6 +241,8 @@ namespace iguana {
         { return a + "," + b; }));
     banks.push_back({bank_schema});
     bank_idx = GetBankIndex(banks, bank_name);
+    if(!AlgorithmFactory::QueryNewBank(bank_name))
+      m_log->Error("'{}' is not registered as a creator algorithm; `REGISTER_IGUANA_NEW_BANKS` must be called in the algorithm source code", m_class_name);
     return bank_schema;
   }
 

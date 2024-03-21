@@ -143,9 +143,9 @@ namespace iguana {
 
       /// Get the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
       /// @param banks the list of banks this algorithm will use
-      /// @param bankName the name of the bank
+      /// @param bank_name the name of the bank
       /// returns the `hipo::banklist` index of the bank
-      hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, const std::string bankName) const noexcept(false);
+      hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, const std::string bank_name) const noexcept(false);
 
       /// Return a string with the value of an option along with its type
       /// @param key the name of the option
@@ -155,9 +155,9 @@ namespace iguana {
       /// Get the reference to a bank from a `hipo::banklist`; optionally checks if the bank name matches the expectation
       /// @param banks the `hipo::banklist` from which to get the specified bank
       /// @param idx the index of `banks` of the specified bank
-      /// @param expectedBankName if specified, checks that the specified bank has this name
+      /// @param expected_bank_name if specified, checks that the specified bank has this name
       /// @return a reference to the bank
-      hipo::bank& GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expectedBankName = "") const noexcept(false);
+      hipo::bank& GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, const std::string expected_bank_name = "") const noexcept(false);
 
       /// Mask a row, setting all items to zero
       /// @param bank the bank to modify
@@ -252,15 +252,31 @@ namespace iguana {
       /// Register an algorithm with a unique name. Algorithms register themselves by calling this function.
       /// @param name the name of the algorithm (not equivalent to `Object::m_name`)
       /// @param creator the creator function
+      /// @returns true if the algorithm has not yet been registered
       static bool Register(const std::string& name, algo_creator_t creator) noexcept;
 
       /// Create an algorithm. Throws an exception if the algorithm cannot be created
       /// @param name the name of the algorithm, which was used as an argument in the `AlgorithmFactory::Register` call
+      /// @returns the algorithm instance
       static algo_t Create(const std::string& name) noexcept(false);
+
+      /// Register banks that are created by a creator-type algorithm
+      /// @param bank_names the list of new bank names
+      /// @param algo_name the name of the algorithm which creates the new banks
+      /// @returns true if successful
+      static bool RegisterNewBanks(const std::vector<std::string>& bank_names, const std::string& algo_name) noexcept;
+
+      /// Check if a bank is created by an algorithm
+      /// @param bank_name the name of the bank
+      /// @returns the list of algorithms which create it, if any
+      static std::optional<std::vector<std::string>> QueryNewBank(const std::string& bank_name) noexcept;
 
     private:
 
       /// Association between the algorithm names and their creators
       static std::unordered_map<std::string, algo_creator_t> s_creators;
+
+      /// Association between a created bank and its creator algorithms
+      static std::unordered_map<std::string, std::vector<std::string>> s_created_banks;
   };
 }
