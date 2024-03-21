@@ -32,6 +32,8 @@ inline int TestAlgorithm(
   // define the algorithm
   iguana::AlgorithmSequence seq;
   seq.Add(algo_name);
+  seq.SetName("TEST");
+  seq.PrintSequence();
   seq.SetOption(algo_name, "log", verbose ? "trace" : "info");
 
   // start the algorithm

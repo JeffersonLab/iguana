@@ -2,6 +2,7 @@
 
 #include "TestAlgorithm.h"
 #include "TestConfig.h"
+#include "TestLogger.h"
 #include "TestValidator.h"
 
 int main(int argc, char** argv)
@@ -17,14 +18,16 @@ int main(int argc, char** argv)
   std::vector<std::string> bank_names;
 
   // get the command
+  auto exe           = std::string(argv[0]);
   auto UsageCommands = [&](int exit_code)
   {
-    fmt::print(stderr, "\nUSAGE: {} [COMMAND] [OPTIONS]...\n", argv[0]);
+    fmt::print(stderr, "\nUSAGE: {} [COMMAND] [OPTIONS]...\n", exe);
     fmt::print("\n  COMMANDS:\n\n");
     fmt::print("    {:<20} {}\n", "algorithm", "call `Run` on an algorithm");
     fmt::print("    {:<20} {}\n", "validator", "run an algorithm's validator");
     fmt::print("    {:<20} {}\n", "unit", "call `Test` on an algorithm, for unit tests");
     fmt::print("    {:<20} {}\n", "config", "test config file parsing");
+    fmt::print("    {:<20} {}\n", "logger", "test Logger");
     fmt::print("\n  OPTIONS:\n\n");
     fmt::print("    Each command has its own set of OPTIONS; either provide no OPTIONS\n");
     fmt::print("    or use the --help option for more usage information about a specific command\n");
@@ -92,12 +95,15 @@ int main(int argc, char** argv)
     else if(command == "config") {
       available_options = {"t"};
     }
+    else if(command == "logger") {
+      available_options = {};
+    }
     else {
       fmt::print(stderr, "ERROR: unknown command '{}'\n", command);
       return 1;
     }
     available_options.push_back("v");
-    fmt::print(stderr, "\nUSAGE: {} {} [OPTIONS]...\n", argv[0], command);
+    fmt::print(stderr, "\nUSAGE: {} {} [OPTIONS]...\n", exe, command);
     fmt::print("\n  OPTIONS:\n\n");
     for(auto available_opt : available_options) {
       print_option.at(available_opt)();
@@ -105,7 +111,7 @@ int main(int argc, char** argv)
     }
     return exit_code;
   };
-  if(argc <= 2)
+  if(argc <= 2 && command != "logger")
     return UsageOptions(2);
   auto first_option = std::string(argv[2]);
   if(first_option == "--help" || first_option == "-h")
@@ -165,15 +171,14 @@ int main(int argc, char** argv)
   fmt::print("\n");
 
   // run test
-  if(command == "algorithm" || command == "unit") {
+  if(command == "algorithm" || command == "unit")
     return TestAlgorithm(command, algo_name, bank_names, data_file, num_events, verbose);
-  }
-  else if(command == "validator") {
+  else if(command == "validator")
     return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, verbose);
-  }
-  else if(command == "config") {
+  else if(command == "config")
     return TestConfig(test_num, verbose);
-  }
+  else if(command == "logger")
+    return TestLogger();
   else {
     fmt::print(stderr, "ERROR: unknown command '{}'\n", command);
     return 1;

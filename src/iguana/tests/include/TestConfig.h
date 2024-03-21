@@ -9,6 +9,18 @@ inline int TestConfig(int test_num, bool verbose)
     fmt::print(stderr, "ERROR: need a test number\n");
     return 1;
   }
+  // first, some sanity checks of `ConfigFileReader`
+  iguana::ConfigFileReader bad_config("bad_config");
+  bad_config.AddDirectory("non_existent_directory");
+  try {
+    bad_config.AddFile("non_existent_file.yaml");
+  }
+  catch(const std::exception& ex) {
+    fmt::print("excpected exception thrown when trying to add non-existent file\n");
+  }
+  bad_config.PrintDirectories();
+
+  // then test configuring an algorithm
   auto algo = iguana::AlgorithmFactory::Create("example::ExampleAlgorithm");
   algo->SetOption("log", verbose ? "debug" : "info");
   algo->SetConfigDirectory("src/iguana/tests"); // must be relative to build directory

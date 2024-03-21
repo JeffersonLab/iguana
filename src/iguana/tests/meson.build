@@ -77,6 +77,17 @@ else
   message('Test sample file NOT ' + stat_file + '; you may run algorithm tests manually with `' + get_option('prefix') / get_option('bindir') / test_exe_name + '`')
 endif
 
+# test usage guide for each iguana-test command
+foreach command : ['', 'unknown', 'algorithm', 'validator', 'unit', 'config']
+  test(
+    'iguana-test-usage-guide' + (command=='' ? '' : '-' + command),
+    test_exe,
+    args: command=='' ? [] : [command],
+    env: project_test_env,
+    should_fail: true,
+  )
+endforeach
+
 # test config files
 foreach test_num : [ '1', '2', '3' ]
   config_file_name = 'test_' + test_num + '.yaml'
@@ -88,3 +99,11 @@ foreach test_num : [ '1', '2', '3' ]
     env: project_test_env,
     )
 endforeach
+
+# test Logger
+test(
+  'logger',
+  test_exe,
+  args: [ 'logger' ],
+  env: project_test_env,
+)
