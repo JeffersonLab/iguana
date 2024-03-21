@@ -88,3 +88,11 @@ foreach test_num : [ '1', '2', '3' ]
     env: project_test_env,
     )
 endforeach
+
+# test Logger
+test(
+  'logger',
+  test_exe,
+  args: [ 'logger' ],
+  env: project_test_env,
+)

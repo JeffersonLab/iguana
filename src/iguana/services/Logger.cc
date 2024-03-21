@@ -21,7 +21,8 @@ namespace iguana {
   {
     for(auto& [lev_i, lev_n] : m_level_names) {
       if(lev == lev_n) {
-        SetLevel(lev_i);
+        m_level = lev_i;
+        Debug("log level set to '{}'", lev);
         return;
       }
     }
@@ -30,8 +31,14 @@ namespace iguana {
 
   void Logger::SetLevel(const Level lev)
   {
-    m_level = lev;
-    Debug("log level set to '{}'", m_level_names.at(m_level));
+    try {
+      auto level_name = m_level_names.at(lev);
+      m_level         = lev;
+      Debug("log level set to '{}'", level_name);
+    }
+    catch(const std::out_of_range& ex) {
+      Error("Log level '{}' is not a known log level; the log level will remain at '{}'", static_cast<int>(lev), m_level_names.at(m_level));
+    }
   }
 
   Logger::Level Logger::GetLevel()
