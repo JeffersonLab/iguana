@@ -228,6 +228,10 @@ namespace iguana {
       int group_id,
       int item_id) const
   {
+    if(!AlgorithmFactory::QueryNewBank(bank_name)) {
+      m_log->Error("{:?} creates bank {:?}, which is not registered; new banks must be included in `REGISTER_IGUANA_ALGORITHM` arguments", m_class_name, bank_name);
+      throw std::runtime_error("CreateBank failed");
+    }
     if(schema_def.empty()) {
       m_log->Error("empty schema_def in CreateBank");
       throw std::runtime_error("CreateBank failed");
@@ -241,8 +245,6 @@ namespace iguana {
         { return a + "," + b; }));
     banks.push_back({bank_schema});
     bank_idx = GetBankIndex(banks, bank_name);
-    if(!AlgorithmFactory::QueryNewBank(bank_name))
-      m_log->Error("'{}' is not registered as a creator algorithm; `REGISTER_IGUANA_NEW_BANKS` must be called in the algorithm source code", m_class_name);
     return bank_schema;
   }
 
