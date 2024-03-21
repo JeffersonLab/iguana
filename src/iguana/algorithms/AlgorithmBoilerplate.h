@@ -68,8 +68,10 @@ public:                                                                    \
 
 /// Register an algorithm for the `iguana::AlgorithmFactory`; this macro should be called in the algorithm's implementation
 /// @param ALGO_NAME the name of the algorithm class
-#define REGISTER_IGUANA_ALGORITHM(ALGO_NAME) \
-  bool ALGO_NAME::s_registered = AlgorithmFactory::Register(ALGO_NAME::GetClassName(), ALGO_NAME::Creator);
+/// @param ... if this algorithm creates new banks, add their names here; this is a variadic parameter, so you may
+/// list as many as needed, or none.
+#define REGISTER_IGUANA_ALGORITHM(ALGO_NAME, ...) \
+  bool ALGO_NAME::s_registered = AlgorithmFactory::Register(ALGO_NAME::GetClassName(), ALGO_NAME::Creator, {__VA_ARGS__});
 
 /// Register a validator for the `iguana::AlgorithmFactory`, similar to `REGISTER_IGUANA_ALGORITHM`
 /// @param VDOR_NAME the name of the validator class

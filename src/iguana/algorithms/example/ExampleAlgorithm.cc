@@ -14,8 +14,12 @@ namespace iguana::example {
   // # - this must be done here in the source file, not in the header
   // # - the argument is the class name; do not surround it with quotes
   // # - usage of a semicolon at the end is optional, but recommended
+  // # - if this algorithm creates NEW banks, they also need to be registered by
+  // #   adding additional string arguments for their names; you may add as many
+  // #   new banks as you want
   // ############################################################################
   REGISTER_IGUANA_ALGORITHM(ExampleAlgorithm);
+  // REGISTER_IGUANA_ALGORITHM(ExampleAlgorithm , "example::newBank1", "example::newBank2"); // if this algorithm creates 2 new banks
 
   // ############################################################################
   // # define `ExampleAlgorithm::Start()`
@@ -39,6 +43,11 @@ namespace iguana::example {
     // #   avoid looking them up in the `Algorithm::Run` method
     // ############################################################################
     b_particle = GetBankIndex(banks, "REC::Particle");
+    // ############################################################################
+    // # if this algorithm creates any new banks, use the `CreateBank` function;
+    // # see API documentation or other algorithms for its usage
+    // ############################################################################
+    // CreateBank(.....); // use this to create a new bank
   }
 
 
