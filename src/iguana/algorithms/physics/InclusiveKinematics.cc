@@ -43,7 +43,7 @@ namespace iguana::physics {
     m_beam.pdg        = 0;
     m_beam.mass       = -1.0;
     m_target.mass     = -1.0;
-    for(const auto& [pdg, name] : particle::name) {
+    for(auto const& [pdg, name] : particle::name) {
       if(name == o_beam_particle) {
         m_beam.pdg  = pdg;
         m_beam.mass = particle::mass.at(pdg);
@@ -145,7 +145,7 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  int InclusiveKinematics::FindScatteredLepton(const hipo::bank& particle_bank) const
+  int InclusiveKinematics::FindScatteredLepton(hipo::bank const& particle_bank) const
   {
     int lepton_row       = -1;
     double lepton_energy = 0;

@@ -37,7 +37,7 @@ namespace iguana::clas12 {
       /// @param sec the sector
       /// @param pid the particle PDG
       /// @returns the correction factor
-      double CorrectionInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int sec, const int pid) const;
+      double CorrectionInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const sec, int const pid) const;
 
       /// Calculate the correction factor for outbending data
       /// @param Px @f$p_x@f$
@@ -46,7 +46,7 @@ namespace iguana::clas12 {
       /// @param sec the sector
       /// @param pid the particle PDG
       /// @returns the correction factor
-      double CorrectionOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int sec, const int pid) const;
+      double CorrectionOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const sec, int const pid) const;
 
       /// Energy loss correction for inbending data
       /// @param Px @f$p_x@f$
@@ -54,7 +54,7 @@ namespace iguana::clas12 {
       /// @param Pz @f$p_z@f$
       /// @param pid the particle PDG
       /// @returns the correction factor
-      double EnergyLossInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int pid) const;
+      double EnergyLossInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const pid) const;
 
       /// Energy loss correction for outbending data
       /// @param Px @f$p_x@f$
@@ -62,7 +62,7 @@ namespace iguana::clas12 {
       /// @param Pz @f$p_z@f$
       /// @param pid the particle PDG
       /// @returns the correction factor
-      double EnergyLossOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int pid) const;
+      double EnergyLossOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const pid) const;
 
     private:
 

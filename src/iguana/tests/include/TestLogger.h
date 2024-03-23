@@ -36,7 +36,7 @@ inline int TestLogger()
     try {
       log.Info("too few arguments: {} {}", 1);
     }
-    catch(const std::exception& ex) {
+    catch(std::exception const& ex) {
       log.Info("too few arguments test threw expected exception");
     }
   }

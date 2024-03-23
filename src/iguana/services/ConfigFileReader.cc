@@ -37,7 +37,7 @@ namespace iguana {
     if(m_log->GetLevel() <= level) {
       m_log->Print(level, "{:=^60}", " Configuration file search path order: ");
       m_log->Print(level, " - ./");
-      for(const auto& dir : m_directories)
+      for(auto const& dir : m_directories)
         m_log->Print(level, " - {}", dir);
       m_log->Print(level, "{:=^60}", "");
     }
@@ -54,7 +54,7 @@ namespace iguana {
     if(found_local)
       return name;
     // then search each entry of `m_directories`
-    for(const auto& dir : m_directories) {
+    for(auto const& dir : m_directories) {
       std::string filename = dir + "/" + name;
       auto found           = std::filesystem::exists(filename);
       m_log->Trace("  - {}{}", dir, found ? " - FOUND" : "");

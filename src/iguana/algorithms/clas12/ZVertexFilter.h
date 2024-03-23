@@ -19,7 +19,7 @@ namespace iguana::clas12 {
       /// **Action function**: checks if the Z Vertex is within specified bounds
       /// @param zvertex the particle Z Vertex to check
       /// @returns `true` if `zvertex` is within specified bounds
-      bool Filter(const double zvertex) const;
+      bool Filter(double const zvertex) const;
 
       /// @returns the current run number
       int GetRunNum() const;

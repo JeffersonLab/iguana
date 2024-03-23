@@ -5,7 +5,7 @@ namespace iguana {
   void YAMLReader::LoadFiles()
   {
     m_log->Debug("YAMLReader::LoadFiles():");
-    for(const auto& file : m_files) {
+    for(auto const& file : m_files) {
       try {
         m_log->Debug(" - load: {}", file);
         m_configs.push_back({YAML::LoadFile(file), file}); // m_config must be the same ordering as m_files, so `push_back`
@@ -13,7 +13,7 @@ namespace iguana {
       catch(const YAML::Exception& e) {
         m_log->Error(" - YAML Exception: {}", e.what());
       }
-      catch(const std::exception& e) {
+      catch(std::exception const& e) {
         m_log->Error(" - Exception: {}", e.what());
       }
     }
@@ -31,7 +31,7 @@ namespace iguana {
       catch(const YAML::Exception& e) {
         m_log->Error("YAML Parsing Exception: {}", e.what());
       }
-      catch(const std::exception& e) {
+      catch(std::exception const& e) {
         m_log->Error("YAML Misc. Exception: {}", e.what());
       }
     }
@@ -46,7 +46,7 @@ namespace iguana {
   template <typename SCALAR>
   SCALAR YAMLReader::GetScalar(node_path_t node_path)
   {
-    for(const auto& [config, filename] : m_configs) {
+    for(auto const& [config, filename] : m_configs) {
       auto node = FindNode(config, node_path);
       if(node.IsDefined() && !node.IsNull())
         return GetScalar<SCALAR>(node);
@@ -65,14 +65,14 @@ namespace iguana {
     if(node.IsDefined() && !node.IsNull() && node.IsSequence()) {
       try {
         std::vector<SCALAR> result;
-        for(const auto& element : node)
+        for(auto const& element : node)
           result.push_back(element.as<SCALAR>());
         return result;
       }
       catch(const YAML::Exception& e) {
         m_log->Error("YAML Parsing Exception: {}", e.what());
       }
-      catch(const std::exception& e) {
+      catch(std::exception const& e) {
         m_log->Error("YAML Misc. Exception: {}", e.what());
       }
     }
@@ -87,7 +87,7 @@ namespace iguana {
   template <typename SCALAR>
   std::vector<SCALAR> YAMLReader::GetVector(node_path_t node_path)
   {
-    for(const auto& [config, filename] : m_configs) {
+    for(auto const& [config, filename] : m_configs) {
       auto node = FindNode(config, node_path);
       if(node.IsDefined() && !node.IsNull())
         return GetVector<SCALAR>(node);

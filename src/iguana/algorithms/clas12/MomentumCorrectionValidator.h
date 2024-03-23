@@ -28,9 +28,9 @@ namespace iguana::clas12 {
 
       std::unique_ptr<SectorFinder> m_sector_finder;
 
-      const double m_p_max       = 12.0;
-      const double m_deltaP_max  = 1.0;
-      const double m_deltaP_zoom = 0.2;
+      double const m_p_max       = 12.0;
+      double const m_deltaP_max  = 1.0;
+      double const m_deltaP_zoom = 0.2;
 
       const std::vector<int> u_pdg_list = {
           particle::PDG::electron,

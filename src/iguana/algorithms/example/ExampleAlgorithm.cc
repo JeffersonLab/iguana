@@ -102,7 +102,7 @@ namespace iguana::example {
   // ############################################################################
   // # define the action function
   // ############################################################################
-  bool ExampleAlgorithm::Filter(const int pid) const
+  bool ExampleAlgorithm::Filter(int const pid) const
   {
     return pid > 0;
   }

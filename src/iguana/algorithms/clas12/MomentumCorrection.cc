@@ -63,7 +63,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::CorrectionInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int sec, const int pid) const
+  double MomentumCorrection::CorrectionInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const sec, int const pid) const
   {
 
     // skip the correction if it's not defined
@@ -241,7 +241,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::CorrectionOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int sec, const int pid) const
+  double MomentumCorrection::CorrectionOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const sec, int const pid) const
   {
 
     // skip the correction if it's not defined
@@ -356,7 +356,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::EnergyLossInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int pid) const
+  double MomentumCorrection::EnergyLossInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const pid) const
   {
 
     // The following code is for the Energy Loss Corrections for the proton
@@ -378,7 +378,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::EnergyLossOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, const int pid) const
+  double MomentumCorrection::EnergyLossOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const pid) const
   {
 
     // The following code is for the Energy Loss Corrections for the proton

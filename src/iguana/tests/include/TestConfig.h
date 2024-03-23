@@ -15,7 +15,7 @@ inline int TestConfig(int test_num, bool verbose)
   try {
     bad_config.AddFile("non_existent_file.yaml");
   }
-  catch(const std::exception& ex) {
+  catch(std::exception const& ex) {
     fmt::print("excpected exception thrown when trying to add non-existent file\n");
   }
   bad_config.PrintDirectories();
@@ -49,7 +49,7 @@ inline int TestConfig(int test_num, bool verbose)
       fmt::print(stderr, "ERROR: accessing 'scalar_empty' did not throw exception\n");
       return 1;
     }
-    catch(const std::exception& ex) {
+    catch(std::exception const& ex) {
       fmt::print("SUCCESS: accessing 'scalar_empty' threw an expected exception\n");
     }
     try {
@@ -57,7 +57,7 @@ inline int TestConfig(int test_num, bool verbose)
       fmt::print(stderr, "ERROR: accessing 'vector_empty' did not throw exception\n");
       return 1;
     }
-    catch(const std::exception& ex) {
+    catch(std::exception const& ex) {
       fmt::print("SUCCESS: accessing 'vector_empty' threw an expected exception\n");
     }
     try {
@@ -65,7 +65,7 @@ inline int TestConfig(int test_num, bool verbose)
       fmt::print(stderr, "ERROR: accessing 'vector_empty' as a `set` did not throw exception\n");
       return 1;
     }
-    catch(const std::exception& ex) {
+    catch(std::exception const& ex) {
       fmt::print("SUCCESS: accessing 'vector_empty' as a `set` threw an expected exception\n");
     }
     // test access to a key that does not exist
@@ -74,7 +74,7 @@ inline int TestConfig(int test_num, bool verbose)
       fmt::print(stderr, "ERROR: accessing 'non_existent_scalar' did not throw exception\n");
       return 1;
     }
-    catch(const std::exception& ex) {
+    catch(std::exception const& ex) {
       fmt::print("SUCCESS: accessing 'non_existent_scalar' threw an expected exception\n");
     }
     try {
@@ -82,7 +82,7 @@ inline int TestConfig(int test_num, bool verbose)
       fmt::print(stderr, "ERROR: accessing 'non_existent_vector' did not throw exception\n");
       return 1;
     }
-    catch(const std::exception& ex) {
+    catch(std::exception const& ex) {
       fmt::print("SUCCESS: accessing 'non_existent_vector' threw an expected exception\n");
     }
     try {
@@ -90,7 +90,7 @@ inline int TestConfig(int test_num, bool verbose)
       fmt::print(stderr, "ERROR: accessing 'non_existent_vector' as a `set` did not throw exception\n");
       return 1;
     }
-    catch(const std::exception& ex) {
+    catch(std::exception const& ex) {
       fmt::print("SUCCESS: accessing 'non_existent_vector' as a `set` threw an expected exception\n");
     }
     break;
@@ -134,7 +134,7 @@ inline int TestConfig(int test_num, bool verbose)
       fmt::print(stderr, "ERROR: accessing a missing default value for `InRange` did not throw exception\n");
       return 1;
     }
-    catch(const std::exception& ex) {
+    catch(std::exception const& ex) {
       fmt::print("SUCCESS: accessing a missing default value for `InRange` threw expected exception\n");
     }
     break;

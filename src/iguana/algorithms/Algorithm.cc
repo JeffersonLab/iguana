@@ -26,7 +26,7 @@ namespace iguana {
       }
       return val;
     }
-    catch(const std::runtime_error& ex) {
+    catch(std::runtime_error const& ex) {
       m_log->Error("Failed to `GetOptionScalar` for key '{}'", key);
       throw std::runtime_error("config file parsing issue");
     }
@@ -50,7 +50,7 @@ namespace iguana {
       }
       return val;
     }
-    catch(const std::runtime_error& ex) {
+    catch(std::runtime_error const& ex) {
       m_log->Error("Failed to `GetOptionVector` for key '{}'", key);
       throw std::runtime_error("config file parsing issue");
     }
@@ -158,19 +158,19 @@ namespace iguana {
   {
     if(auto it{m_option_cache.find(key)}; it != m_option_cache.end()) {
       auto val = it->second;
-      if(const auto valPtr(std::get_if<int>(&val)); valPtr)
+      if(auto const valPtr(std::get_if<int>(&val)); valPtr)
         return fmt::format("{} [{}]", *valPtr, "int");
-      else if(const auto valPtr(std::get_if<double>(&val)); valPtr)
+      else if(auto const valPtr(std::get_if<double>(&val)); valPtr)
         return fmt::format("{} [{}]", *valPtr, "double");
-      else if(const auto valPtr(std::get_if<std::string>(&val)); valPtr)
+      else if(auto const valPtr(std::get_if<std::string>(&val)); valPtr)
         return fmt::format("{:?} [{}]", *valPtr, "string");
-      else if(const auto valPtr(std::get_if<std::vector<int>>(&val)); valPtr)
+      else if(auto const valPtr(std::get_if<std::vector<int>>(&val)); valPtr)
         return fmt::format("({}) [{}]", fmt::join(*valPtr, ", "), "vector<int>");
-      else if(const auto valPtr(std::get_if<std::vector<double>>(&val)); valPtr)
+      else if(auto const valPtr(std::get_if<std::vector<double>>(&val)); valPtr)
         return fmt::format("({}) [{}]", fmt::join(*valPtr, ", "), "vector<double>");
-      else if(const auto valPtr(std::get_if<std::vector<std::string>>(&val)); valPtr) {
+      else if(auto const valPtr(std::get_if<std::vector<std::string>>(&val)); valPtr) {
         std::vector<std::string> valQuoted;
-        for(const auto& s : *valPtr)
+        for(auto const& s : *valPtr)
           valQuoted.push_back(fmt::format("{:?}", s));
         return fmt::format("({}) [{}]", fmt::join(valQuoted, ", "), "vector<string>");
       }
@@ -199,7 +199,7 @@ namespace iguana {
         else
           return result;
       }
-      catch(const std::out_of_range& o) {
+      catch(std::out_of_range const& o) {
         m_log->Error("required input bank '{}' not found; cannot `Run` algorithm '{}'", expected_bank_name, m_class_name);
         auto creators = AlgorithmFactory::QueryNewBank(expected_bank_name);
         if(creators)
@@ -211,7 +211,7 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Algorithm::MaskRow(hipo::bank& bank, const int row) const
+  void Algorithm::MaskRow(hipo::bank& bank, int const row) const
   {
     // TODO: need https://github.com/gavalian/hipo/issues/35
     // until then, just set the PID to -1
@@ -282,7 +282,7 @@ namespace iguana {
       try { // get the expected type
         return std::get<OPTION_TYPE>(it->second);
       }
-      catch(const std::bad_variant_access& ex) {
+      catch(std::bad_variant_access const& ex) {
         m_log->Warn("user called SetOption for option '{}' and set it to '{}', which is the wrong type; IGNORING", key, PrintOptionValue(key));
       }
     }
