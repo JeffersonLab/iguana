@@ -1,13 +1,12 @@
-# Iguana
+![Iguana](doc/logo.png)
 
 **I**mplementation **Gu**ardian of **An**alysis **A**lgorithms
 
-- Preserve and centralize common analysis algorithms, such as
-  - Fiducial cuts
-  - Momentum corrections
-  - Kinematics reconstruction
-- Focused on HIPO data (CLAS12), but extending support to other data formats (experiments) is feasible
-- This is not a framework for _reading_ data, rather it is a set of algorithms to _mutate_ the data
+The primary goal of Iguana is to preserve and centralize common analysis algorithms, such as fiducial cuts, momentum corrections, and kinematics reconstruction.
+
+Support is focused on HIPO data for CLAS12, but extending support to other data formats (experiments) may be feasible.
+
+Iguana is not a framework for _reading_ data, rather it is a set of algorithms to _mutate_ the data. For HIPO data, algorithms mutate banks. See the [API documentation](https://jeffersonlab.github.io/iguana/doxygen) for the list of available algorithms.
 
 ## Documentation
 
