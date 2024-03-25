@@ -291,12 +291,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: install_iguana_${{ matrix.build_id }}
-          retention-days: 1
+          retention-days: 5
           path: iguana.tar.zst
       - uses: actions/upload-artifact@v4
         with:
           name: build_iguana_${{ matrix.build_id }}
-          retention-days: 1
+          retention-days: 5
           path: build-iguana.tar.zst
 
   # run tests
@@ -408,19 +408,19 @@ jobs:
         if: always()
         with:
           name: logs_build_iguana_${{ matrix.mode }}
-          retention-days: 3
+          retention-days: 5
           path: build-iguana/meson-logs
       - uses: actions/upload-artifact@v4
         if: ${{ matrix.mode == 'coverage' }}
         with:
           name: coverage-report
-          retention-days: 7
+          retention-days: 5
           path: coverage-report
       - uses: actions/upload-artifact@v4
         if: ${{ matrix.mode == 'coverage' }} # select one job-matrix element, since we only need one copy of this artifact
         with:
           name: _validation_results
-          retention-days: 7
+          retention-days: 5
           path: validation_results
 
   # run examples
@@ -595,7 +595,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: doxygen
-          retention-days: 1
+          retention-days: 5
           path: doc/api/
 
   # deployment
@@ -632,7 +632,7 @@ jobs:
       - run: tree
       - uses: actions/upload-pages-artifact@v3
         with:
-          retention-days: 1
+          retention-days: 5
           path: pages/
 
   deploy_webpages:
