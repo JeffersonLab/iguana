@@ -3,7 +3,7 @@
 
 namespace iguana {
 
-  ConfigFileReader::ConfigFileReader(const std::string name)
+  ConfigFileReader::ConfigFileReader(std::string_view name)
       : Object(name)
   {
     // add config files from installation prefix
@@ -15,15 +15,15 @@ namespace iguana {
     return IGUANA_ETC;
   }
 
-  void ConfigFileReader::AddDirectory(const std::string dir)
+  void ConfigFileReader::AddDirectory(std::string_view dir)
   {
     if(dir == "")
       return; // handle unset directory name
     m_log->Trace("Add directory {}", dir);
-    m_directories.push_front(dir);
+    m_directories.push_front(dir.data());
   }
 
-  void ConfigFileReader::AddFile(const std::string name)
+  void ConfigFileReader::AddFile(std::string_view name)
   {
     if(name == "")
       return; // handle unset file name
@@ -43,7 +43,7 @@ namespace iguana {
     }
   }
 
-  std::string ConfigFileReader::FindFile(const std::string name)
+  std::string ConfigFileReader::FindFile(std::string_view name)
   {
     if(name == "")
       return ""; // handle unset file name
@@ -52,10 +52,10 @@ namespace iguana {
     auto found_local = std::filesystem::exists(name);
     m_log->Trace("  - ./{}", found_local ? " - FOUND" : "");
     if(found_local)
-      return name;
+      return name.data();
     // then search each entry of `m_directories`
     for(auto const& dir : m_directories) {
-      std::string filename = dir + "/" + name;
+      std::string filename = dir + "/" + name.data();
       auto found           = std::filesystem::exists(filename);
       m_log->Trace("  - {}{}", dir, found ? " - FOUND" : "");
       if(found)
@@ -67,7 +67,7 @@ namespace iguana {
     throw std::runtime_error("configuration file not found");
   }
 
-  std::string ConfigFileReader::DirName(const std::string name)
+  std::string ConfigFileReader::DirName(std::string_view name)
   {
     auto result = std::filesystem::path{name}.parent_path().string();
     if(result == "")
@@ -75,13 +75,13 @@ namespace iguana {
     return result;
   }
 
-  std::string ConfigFileReader::ConvertAlgoNameToConfigName(const std::string algo_name, const std::string ext)
+  std::string ConfigFileReader::ConvertAlgoNameToConfigName(std::string_view algo_name, std::string_view ext)
   {
-    std::string result        = algo_name;
+    std::string result        = algo_name.data();
     std::string::size_type it = 0;
     while((it = result.find("::", it)) != std::string::npos)
       result.replace(it, 2, "/");
-    return "algorithms/" + result + "." + ext;
+    return "algorithms/" + result + "." + ext.data();
   }
 
 }

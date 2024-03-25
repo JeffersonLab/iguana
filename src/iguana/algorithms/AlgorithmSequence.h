@@ -28,7 +28,7 @@ namespace iguana {
       /// @param class_name the name of the algorithm class
       /// @param instance_name a user-specified unique name for this algorithm instance;
       ///        if not specified, `class_name` will be used
-      void Add(const std::string class_name, const std::string instance_name = "");
+      void Add(std::string_view class_name, std::string_view instance_name = "");
 
       /// Create and add an algorithm to the sequence.
       ///
@@ -39,7 +39,7 @@ namespace iguana {
       /// @param instance_name a user-specified unique name for this algorithm instance;
       ///        if not specified, the class name will be used
       template <class ALGORITHM>
-      void Add(const std::string instance_name = "")
+      void Add(std::string_view instance_name = "")
       {
         if(instance_name == "")
           Add(std::make_unique<ALGORITHM>());
@@ -66,9 +66,9 @@ namespace iguana {
       /// @param instance_name the instance name of the algorithm
       /// @return a reference to the algorithm
       template <class ALGORITHM>
-      ALGORITHM* Get(const std::string instance_name)
+      ALGORITHM* Get(std::string_view instance_name)
       {
-        if(auto it{m_algo_names.find(instance_name)}; it != m_algo_names.end())
+        if(auto it{m_algo_names.find(instance_name.data())}; it != m_algo_names.end())
           return dynamic_cast<ALGORITHM*>(m_sequence[it->second].get());
         m_log->Error("cannot find algorithm '{}' in sequence", instance_name);
         throw std::runtime_error("cannot Get algorithm");
@@ -80,14 +80,14 @@ namespace iguana {
       /// @param key the option name
       /// @param val the option value
       template <typename OPTION_TYPE>
-      void SetOption(const std::string algo_name, const std::string key, const OPTION_TYPE val)
+      void SetOption(std::string_view algo_name, std::string_view key, const OPTION_TYPE val)
       {
         Get<Algorithm>(algo_name)->SetOption(key, val);
       }
 
       /// Set the name of this sequence
       /// @param name the new name
-      void SetName(const std::string name);
+      void SetName(std::string_view name);
 
       /// Print the names of the algorithms in this sequence
       /// @param level the log level of the printout

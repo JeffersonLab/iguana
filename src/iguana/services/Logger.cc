@@ -2,7 +2,7 @@
 
 namespace iguana {
 
-  Logger::Logger(const std::string name, const Level lev, bool const enable_style)
+  Logger::Logger(std::string_view name, const Level lev, bool const enable_style)
       : m_name(name)
       , m_enable_style(enable_style)
   {
@@ -17,7 +17,7 @@ namespace iguana {
     SetLevel(lev);
   }
 
-  void Logger::SetLevel(const std::string lev)
+  void Logger::SetLevel(std::string_view lev)
   {
     for(auto& [lev_i, lev_n] : m_level_names) {
       if(lev == lev_n) {
@@ -56,7 +56,7 @@ namespace iguana {
     m_enable_style = false;
   }
 
-  std::string Logger::Header(const std::string message, int const width)
+  std::string Logger::Header(std::string_view message, int const width)
   {
     return fmt::format("{:=^{}}", " " + message + " ", width);
   }

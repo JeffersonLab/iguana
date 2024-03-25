@@ -28,7 +28,7 @@ namespace iguana {
       using node_path_t = std::deque<node_id_t>;
 
       /// @param name of this reader (for `Logger`)
-      YAMLReader(const std::string name = "config")
+      YAMLReader(std::string_view name = "config")
           : ConfigFileReader(name)
       {}
       ~YAMLReader() {}

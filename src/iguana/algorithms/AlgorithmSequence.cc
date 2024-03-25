@@ -20,7 +20,7 @@ namespace iguana {
       algo->Stop();
   }
 
-  void AlgorithmSequence::Add(const std::string class_name, const std::string instance_name)
+  void AlgorithmSequence::Add(std::string_view class_name, std::string_view instance_name)
   {
     auto algo = AlgorithmFactory::Create(class_name);
     if(algo == nullptr) {
@@ -46,15 +46,15 @@ namespace iguana {
     }
   }
 
-  void AlgorithmSequence::SetName(const std::string name)
+  void AlgorithmSequence::SetName(std::string_view name)
   {
     // change the `m_name+"|"` prefix of each algorithm
     for(auto const& algo : m_sequence) {
       auto algoName = algo->GetName();
       if(auto pos{algoName.find("|")}; pos != algoName.npos)
-        algo->SetName(name + algoName.substr(pos));
+        algo->SetName(name.data() + algoName.substr(pos));
       else
-        algo->SetName(name + "|" + algoName);
+        algo->SetName(name.data() + std::string("|") + algoName);
     }
     // then change the object name
     Algorithm::SetName(name);

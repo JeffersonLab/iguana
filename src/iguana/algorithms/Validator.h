@@ -20,7 +20,7 @@ namespace iguana {
     public:
 
       /// @param name the unique name for a derived class instance
-      Validator(const std::string name = "validator")
+      Validator(std::string_view name = "validator")
           : Algorithm(name)
           , m_output_dir("")
       {}
