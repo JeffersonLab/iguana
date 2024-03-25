@@ -39,7 +39,7 @@ namespace iguana::physics {
       /// responsible for finding the scattered lepton.
       /// @param particle_bank the particle bank to search
       /// @returns the bank row of the scattered lepton, or `-1` if not found
-      int FindScatteredLepton(const hipo::bank& particle_bank) const;
+      int FindScatteredLepton(hipo::bank const& particle_bank) const;
 
       /// **Action function**: compute kinematics from the scattered lepton.
       /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)

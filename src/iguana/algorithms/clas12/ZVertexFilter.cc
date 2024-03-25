@@ -43,7 +43,7 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
-  bool ZVertexFilter::Filter(const double zvertex) const
+  bool ZVertexFilter::Filter(double const zvertex) const
   {
     return zvertex > GetZcutLower() && zvertex < GetZcutUpper();
   }

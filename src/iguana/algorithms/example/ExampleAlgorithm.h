@@ -74,7 +74,7 @@ namespace iguana::example {
       /// this is an example action function, please replace it with your own
       /// @param pid the particle PDG to check
       /// @returns `true` if `pid` is positive
-      bool Filter(const int pid) const;
+      bool Filter(int const pid) const;
 
     private:
 

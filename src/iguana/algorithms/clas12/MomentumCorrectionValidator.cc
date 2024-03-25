@@ -32,7 +32,7 @@ namespace iguana::clas12 {
 
     // define plots
     gStyle->SetOptStat(0);
-    for(const auto& pdg : u_pdg_list) {
+    for(auto const& pdg : u_pdg_list) {
       std::vector<TH2D*> deltaPvsP;
       TString particle_name  = particle::name.at(particle::PDG(pdg));
       TString particle_title = particle::title.at(particle::PDG(pdg));
@@ -96,14 +96,14 @@ namespace iguana::clas12 {
   void MomentumCorrectionValidator::Stop()
   {
     if(GetOutputDirectory()) {
-      for(const auto& [pdg, plots] : u_deltaPvsP) {
+      for(auto const& [pdg, plots] : u_deltaPvsP) {
         int n_cols        = 3;
         int n_rows        = 2;
         TString canv_name = Form("canv%d", pdg);
         auto canv         = new TCanvas(canv_name, canv_name, n_cols * 800, n_rows * 600);
         canv->Divide(n_cols, n_rows);
         int pad_num = 0;
-        for(const auto& plot : plots) {
+        for(auto const& plot : plots) {
           auto pad = canv->GetPad(++pad_num);
           pad->cd();
           pad->SetGrid(1, 1);

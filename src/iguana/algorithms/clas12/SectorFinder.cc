@@ -32,7 +32,7 @@ namespace iguana::clas12 {
   {
   }
 
-  int SectorFinder::GetSector(const hipo::bank& bank, const int pindex) const
+  int SectorFinder::GetSector(hipo::bank const& bank, int const pindex) const
   {
     int sector = 0;
     for(int row = 0; row < bank.getRows(); row++) {
@@ -46,11 +46,11 @@ namespace iguana::clas12 {
   std::vector<int> SectorFinder::Find(hipo::banklist& banks) const
   {
     std::vector<int> sectors;
-    const auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
+    auto const& particleBank = GetBank(banks, b_particle, "REC::Particle");
 
     // filter the input bank for requested PDG code(s)
     if(userSpecifiedBank) { // if user specified a specific bank
-      const auto& userBank = GetBank(banks, b_user);
+      auto const& userBank = GetBank(banks, b_user);
       for(int row = 0; row < particleBank.getRows(); row++) {
         if(userBank.getRows() > 0) {
           sectors.push_back(GetSector(userBank, row));
@@ -62,9 +62,9 @@ namespace iguana::clas12 {
       }
     }
     else { // use the standard method
-      const auto& calBank   = GetBank(banks, b_calorimeter);
-      const auto& scintBank = GetBank(banks, b_scint);
-      const auto& trackBank = GetBank(banks, b_track);
+      auto const& calBank   = GetBank(banks, b_calorimeter);
+      auto const& scintBank = GetBank(banks, b_scint);
+      auto const& trackBank = GetBank(banks, b_track);
       for(int row = 0; row < particleBank.getRows(); row++) {
         int trackSector = 0;
         if(trackBank.getRows() > 0) {

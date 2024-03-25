@@ -82,7 +82,7 @@ namespace iguana {
         if(key == "log") {
           if constexpr(std::disjunction<
                            std::is_same<OPTION_TYPE, std::string>,
-                           std::is_same<OPTION_TYPE, const char*>,
+                           std::is_same<OPTION_TYPE, char const*>,
                            std::is_same<OPTION_TYPE, Logger::Level>>::value)
             m_log->SetLevel(val);
           else
@@ -162,7 +162,7 @@ namespace iguana {
       /// Mask a row, setting all items to zero
       /// @param bank the bank to modify
       /// @param row the row to mask
-      void MaskRow(hipo::bank& bank, const int row) const;
+      void MaskRow(hipo::bank& bank, int const row) const;
 
       /// Create a new bank and push it to the bank list
       /// @param [out] banks the `hipo::banklist` onto which the new bank will be pushed
@@ -254,17 +254,17 @@ namespace iguana {
       /// @param creator the creator function
       /// @param new_banks if this algorithm creates *new* banks, list them here
       /// @returns true if the algorithm has not yet been registered
-      static bool Register(const std::string& name, algo_creator_t creator, const std::vector<std::string> new_banks = {}) noexcept;
+      static bool Register(std::string const& name, algo_creator_t creator, const std::vector<std::string> new_banks = {}) noexcept;
 
       /// Create an algorithm. Throws an exception if the algorithm cannot be created
       /// @param name the name of the algorithm, which was used as an argument in the `AlgorithmFactory::Register` call
       /// @returns the algorithm instance
-      static algo_t Create(const std::string& name) noexcept(false);
+      static algo_t Create(std::string const& name) noexcept(false);
 
       /// Check if a bank is created by an algorithm
       /// @param bank_name the name of the bank
       /// @returns the list of algorithms which create it, if any
-      static std::optional<std::vector<std::string>> QueryNewBank(const std::string& bank_name) noexcept;
+      static std::optional<std::vector<std::string>> QueryNewBank(std::string const& bank_name) noexcept;
 
     private:
 

@@ -7,8 +7,8 @@ int main(int argc, char** argv)
 
   // parse arguments
   int argi               = 1;
-  const char* inFileName = argc > argi ? argv[argi++] : "data.hipo";
-  const int numEvents    = argc > argi ? std::stoi(argv[argi++]) : 1;
+  char const* inFileName = argc > argi ? argv[argi++] : "data.hipo";
+  int const numEvents    = argc > argi ? std::stoi(argv[argi++]) : 1;
 
   // read input file
   hipo::reader reader(inFileName);

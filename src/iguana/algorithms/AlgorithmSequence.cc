@@ -6,17 +6,17 @@ namespace iguana {
 
   void AlgorithmSequence::Start(hipo::banklist& banks)
   {
-    for(const auto& algo : m_sequence)
+    for(auto const& algo : m_sequence)
       algo->Start(banks);
   }
   void AlgorithmSequence::Run(hipo::banklist& banks) const
   {
-    for(const auto& algo : m_sequence)
+    for(auto const& algo : m_sequence)
       algo->Run(banks);
   }
   void AlgorithmSequence::Stop()
   {
-    for(const auto& algo : m_sequence)
+    for(auto const& algo : m_sequence)
       algo->Stop();
   }
 
@@ -49,7 +49,7 @@ namespace iguana {
   void AlgorithmSequence::SetName(const std::string name)
   {
     // change the `m_name+"|"` prefix of each algorithm
-    for(const auto& algo : m_sequence) {
+    for(auto const& algo : m_sequence) {
       auto algoName = algo->GetName();
       if(auto pos{algoName.find("|")}; pos != algoName.npos)
         algo->SetName(name + algoName.substr(pos));
@@ -63,7 +63,7 @@ namespace iguana {
   void AlgorithmSequence::PrintSequence(Logger::Level level) const
   {
     m_log->Print(level, "algorithms in this sequence:");
-    for(const auto& algo : m_sequence)
+    for(auto const& algo : m_sequence)
       m_log->Print(level, " - {}", algo->GetName());
   }
 

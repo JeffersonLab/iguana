@@ -39,7 +39,7 @@ namespace iguana::clas12 {
   }
 
 
-  bool EventBuilderFilter::Filter(const int pid) const
+  bool EventBuilderFilter::Filter(int const pid) const
   {
     return o_pids.find(pid) != o_pids.end();
   }

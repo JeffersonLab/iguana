@@ -2,7 +2,7 @@
 
 namespace iguana {
 
-  Logger::Logger(const std::string name, const Level lev, const bool enable_style)
+  Logger::Logger(const std::string name, const Level lev, bool const enable_style)
       : m_name(name)
       , m_enable_style(enable_style)
   {
@@ -36,7 +36,7 @@ namespace iguana {
       m_level         = lev;
       Debug("log level set to '{}'", level_name);
     }
-    catch(const std::out_of_range& ex) {
+    catch(std::out_of_range const& ex) {
       Error("Log level '{}' is not a known log level; the log level will remain at '{}'", static_cast<int>(lev), m_level_names.at(m_level));
     }
   }
@@ -56,7 +56,7 @@ namespace iguana {
     m_enable_style = false;
   }
 
-  std::string Logger::Header(const std::string message, const int width)
+  std::string Logger::Header(const std::string message, int const width)
   {
     return fmt::format("{:=^{}}", " " + message + " ", width);
   }

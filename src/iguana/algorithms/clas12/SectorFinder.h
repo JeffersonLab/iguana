@@ -28,7 +28,7 @@ namespace iguana::clas12 {
       /// @param bank bank to get sector from
       /// @param pindex index in bank for which to get sector
       /// @returns sector for pindex in bank
-      int GetSector(const hipo::bank& bank, const int pindex) const;
+      int GetSector(hipo::bank const& bank, int const pindex) const;
 
     private:
 

@@ -29,6 +29,7 @@ BraceWrapping:
 # alignment
 PointerAlignment: Left
 ReferenceAlignment: Left
+QualifierAlignment: Right
 NamespaceIndentation: All
 AlignConsecutiveAssignments: true
 AlignTrailingComments: false

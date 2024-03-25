@@ -43,7 +43,7 @@ namespace iguana {
       /// @param name the name of this logger instance, which will be include in all of its printouts
       /// @param lev the log level
       /// @param enable_style if true, certain printouts will be styled with color and emphasis
-      Logger(const std::string name = "log", const Level lev = DEFAULT_LEVEL, const bool enable_style = true);
+      Logger(const std::string name = "log", const Level lev = DEFAULT_LEVEL, bool const enable_style = true);
       ~Logger() {}
 
       /// Set the log level to this level. Log messages with a lower level will not be printed.
@@ -70,7 +70,7 @@ namespace iguana {
       /// @param message the header message
       /// @param width the width of the header in number of characters
       /// @returns the header string
-      static std::string Header(const std::string message, const int width = 50);
+      static std::string Header(const std::string message, int const width = 50);
 
       /// Printout a log message at the `trace` level @see `Logger::Print` for more details
       template <typename... VALUES>
