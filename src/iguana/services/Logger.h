@@ -98,7 +98,6 @@ namespace iguana {
       {
         if(lev >= m_level) {
           if(auto it{m_level_names.find(lev)}; it != m_level_names.end()) {
-            std::string prefix;
             std::function<std::string(std::string)> style = [](std::string s)
             { return fmt::format("[{}]", s); };
             if(m_enable_style) {
@@ -116,10 +115,10 @@ namespace iguana {
                 { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold)); };
               }
             }
-            prefix = fmt::format("{} {} ", style(it->second), style(m_name));
+            std::string_view prefix = fmt::format("{} {} ", style(it->second), style(m_name));
             fmt::print(
                 lev >= warn ? stderr : stdout,
-                fmt::runtime(prefix + message.data() + "\n"),
+                fmt::runtime(prefix + message + "\n"),
                 vals...);
           }
           else {
