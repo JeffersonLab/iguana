@@ -1,5 +1,16 @@
 # Iguana
 
+**I**mplementation **Gu**ardian of **An**alysis **A**lgorithms
+
+- Preserve and centralize common analysis algorithms, such as
+  - Fiducial cuts
+  - Momentum corrections
+  - Kinematics reconstruction
+- Focused on HIPO data (CLAS12), but extending support to other data formats (experiments) is feasible
+- This is not a framework for _reading_ data, rather it is a set of algorithms to _mutate_ the data
+
+## Documentation
+
 1. [Setup Guide](doc/setup.md)
 1. [Examples](examples/README.md)
 1. [Troubleshooting](doc/troubleshooting.md)
