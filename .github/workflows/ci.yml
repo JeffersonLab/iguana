@@ -45,7 +45,7 @@ defaults:
     shell: bash
 
 env:
-  hipo_version: f40da676bbd1745398e9fdf233ff213ff98798f1
+  hipo_version: cba9e306d311c40b2d50d4d28392acc9a82a9374
   num_events: 1000
 
 jobs:
@@ -100,7 +100,7 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/checkout@v4
         with:
-          repository: gavalian/hipo
+          repository: c-dilks/hipo
           ref: ${{ env.hipo_version }}
           path: hipo_src
       - name: build
