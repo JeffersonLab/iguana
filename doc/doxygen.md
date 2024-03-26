@@ -9,3 +9,13 @@ documentation locally, run `doxygen doc/Doxyfile`
 This documentation shows how to use the Iguana classes.
 
 For additional documentation and examples, [see the main README](https://github.com/JeffersonLab/iguana/blob/main/README.md)
+
+# List of Algorithms
+
+The algorithms are organized into **namespaces**; click the links to view each of their algorithms.
+
+| Namespace         | Description                                                   |
+| ---               | ---                                                           |
+| `iguana::clas12`  | Algorithms specific to CLAS12 experimental data               |
+| `iguana::physics` | Physics algorithms, which may be more generalized than CLAS12 |
+| `iguana::example` | Example algorithms                                            |
