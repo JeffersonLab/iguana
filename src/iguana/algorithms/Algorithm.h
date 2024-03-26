@@ -76,7 +76,7 @@ namespace iguana {
       /// @param val the value to set
       /// @returns the value that has been set (if needed, _e.g._, when `val` is an rvalue)
       template <typename OPTION_TYPE>
-      OPTION_TYPE SetOption(std::string_view key, const OPTION_TYPE val)
+      OPTION_TYPE SetOption(std::string const& key, const OPTION_TYPE val)
       {
         // FIXME: this template is not specialized, to be friendlier to python `cppyy` bindings
         if(key == "log") {
@@ -89,7 +89,7 @@ namespace iguana {
             m_log->Error("Option '{}' must be a string or a Logger::Level", key);
         }
         else {
-          m_option_cache[key.data()] = val;
+          m_option_cache[key] = val;
           m_log->Debug("  USER OPTION: {:>20} = {}", key, PrintOptionValue(key));
         }
         return val;
@@ -100,21 +100,21 @@ namespace iguana {
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the scalar option
       template <typename OPTION_TYPE>
-      OPTION_TYPE GetOptionScalar(std::string_view key, YAMLReader::node_path_t node_path = {});
+      OPTION_TYPE GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path = {});
 
       /// Get the value of a vector option
       /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the vector option
       template <typename OPTION_TYPE>
-      std::vector<OPTION_TYPE> GetOptionVector(std::string_view key, YAMLReader::node_path_t node_path = {});
+      std::vector<OPTION_TYPE> GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path = {});
 
       /// Get the value of a vector option, and convert it to `std::set`
       /// @param key the unique key name of this option
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the vector option converted to `std::set`
       template <typename OPTION_TYPE>
-      std::set<OPTION_TYPE> GetOptionSet(std::string_view key, YAMLReader::node_path_t node_path = {});
+      std::set<OPTION_TYPE> GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path = {});
 
       /// Set the name of this algorithm
       /// @param name the new name
@@ -145,19 +145,19 @@ namespace iguana {
       /// @param banks the list of banks this algorithm will use
       /// @param bank_name the name of the bank
       /// returns the `hipo::banklist` index of the bank
-      hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string_view bank_name) const noexcept(false);
+      hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
 
       /// Return a string with the value of an option along with its type
       /// @param key the name of the option
       /// @return the string value and its type
-      std::string PrintOptionValue(std::string_view key) const;
+      std::string PrintOptionValue(std::string const& key) const;
 
       /// Get the reference to a bank from a `hipo::banklist`; optionally checks if the bank name matches the expectation
       /// @param banks the `hipo::banklist` from which to get the specified bank
       /// @param idx the index of `banks` of the specified bank
       /// @param expected_bank_name if specified, checks that the specified bank has this name
       /// @return a reference to the bank
-      hipo::bank& GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, std::string_view expected_bank_name = "") const noexcept(false);
+      hipo::bank& GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, std::string const& expected_bank_name = "") const noexcept(false);
 
       /// Mask a row, setting all items to zero
       /// @param bank the bank to modify
@@ -175,7 +175,7 @@ namespace iguana {
       hipo::schema CreateBank(
           hipo::banklist& banks,
           hipo::banklist::size_type& bank_idx,
-          std::string bank_name,
+          std::string const& bank_name,
           std::vector<std::string> schema_def,
           int group_id, // FIXME: generalize group_id and item_id setting
           int item_id) const noexcept(false);
@@ -196,14 +196,14 @@ namespace iguana {
       /// @param key the key name associated with this option
       /// @returns the option value, if found (using `std::optional`)
       template <typename OPTION_TYPE>
-      std::optional<OPTION_TYPE> GetCachedOption(std::string_view key) const;
+      std::optional<OPTION_TYPE> GetCachedOption(std::string const& key) const;
 
     private: // methods
 
       /// Prepend `node_path` with the full algorithm name. If `node_path` is empty, set it to `{key}`.
       /// @param key the key name for this option
       /// @param node_path the `YAMLReader::node_path_t` to prepend
-      void CompleteOptionNodePath(std::string_view key, YAMLReader::node_path_t& node_path) const;
+      void CompleteOptionNodePath(std::string const& key, YAMLReader::node_path_t& node_path) const;
 
     protected: // members
 
@@ -254,17 +254,17 @@ namespace iguana {
       /// @param creator the creator function
       /// @param new_banks if this algorithm creates *new* banks, list them here
       /// @returns true if the algorithm has not yet been registered
-      static bool Register(std::string_view name, algo_creator_t creator, const std::vector<std::string> new_banks = {}) noexcept;
+      static bool Register(std::string const& name, algo_creator_t creator, const std::vector<std::string> new_banks = {}) noexcept;
 
       /// Create an algorithm. Throws an exception if the algorithm cannot be created
       /// @param name the name of the algorithm, which was used as an argument in the `AlgorithmFactory::Register` call
       /// @returns the algorithm instance
-      static algo_t Create(std::string_view name) noexcept(false);
+      static algo_t Create(std::string const& name) noexcept(false);
 
       /// Check if a bank is created by an algorithm
       /// @param bank_name the name of the bank
       /// @returns the list of algorithms which create it, if any
-      static std::optional<std::vector<std::string>> QueryNewBank(std::string_view bank_name) noexcept;
+      static std::optional<std::vector<std::string>> QueryNewBank(std::string const& bank_name) noexcept;
 
     private:
 

@@ -20,11 +20,11 @@ namespace iguana {
 
       /// Add a directory to the configuration files' search paths.
       /// @param dir the directory, which may be relative or absolute
-      void AddDirectory(std::string_view dir);
+      void AddDirectory(std::string const& dir);
 
       /// Add a configuration file to be parsed
       /// @param name the name of the file
-      void AddFile(std::string_view name);
+      void AddFile(std::string const& name);
 
       /// Print the list of directories (search path)
       /// @param level the log level
@@ -37,7 +37,7 @@ namespace iguana {
       /// - the common installation prefix
       /// @param name the configuration file name (with or without a directory)
       /// @return the found configuration file (with the directory)
-      std::string FindFile(std::string_view name);
+      std::string FindFile(std::string const& name);
 
       /// Return the directory containing a file, by stripping the last
       /// component of a file name, similarly to the `dirname` command.

@@ -15,15 +15,15 @@ namespace iguana {
     return IGUANA_ETC;
   }
 
-  void ConfigFileReader::AddDirectory(std::string_view dir)
+  void ConfigFileReader::AddDirectory(std::string const& dir)
   {
     if(dir == "")
       return; // handle unset directory name
     m_log->Trace("Add directory {}", dir);
-    m_directories.push_front(dir.data());
+    m_directories.push_front(dir);
   }
 
-  void ConfigFileReader::AddFile(std::string_view name)
+  void ConfigFileReader::AddFile(std::string const& name)
   {
     if(name == "")
       return; // handle unset file name
@@ -43,7 +43,7 @@ namespace iguana {
     }
   }
 
-  std::string ConfigFileReader::FindFile(std::string_view name)
+  std::string ConfigFileReader::FindFile(std::string const& name)
   {
     if(name == "")
       return ""; // handle unset file name
@@ -52,10 +52,10 @@ namespace iguana {
     auto found_local = std::filesystem::exists(name);
     m_log->Trace("  - ./{}", found_local ? " - FOUND" : "");
     if(found_local)
-      return name.data();
+      return name;
     // then search each entry of `m_directories`
     for(auto const& dir : m_directories) {
-      std::string filename = dir + "/" + name.data();
+      std::string filename = dir + "/" + name;
       auto found           = std::filesystem::exists(filename);
       m_log->Trace("  - {}{}", dir, found ? " - FOUND" : "");
       if(found)
@@ -77,11 +77,11 @@ namespace iguana {
 
   std::string ConfigFileReader::ConvertAlgoNameToConfigName(std::string_view algo_name, std::string_view ext)
   {
-    std::string result        = algo_name.data();
+    std::string result        = std::string(algo_name);
     std::string::size_type it = 0;
     while((it = result.find("::", it)) != std::string::npos)
       result.replace(it, 2, "/");
-    return "algorithms/" + result + "." + ext.data();
+    return "algorithms/" + result + "." + std::string(ext);
   }
 
 }

@@ -58,7 +58,7 @@ namespace iguana {
 
   std::string Logger::Header(std::string_view message, int const width)
   {
-    return fmt::format("{:=^{}}", " " + message + " ", width);
+    return fmt::format("{:=^{}}", fmt::format(" {} ", message), width);
   }
 
 }

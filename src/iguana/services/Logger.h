@@ -115,10 +115,9 @@ namespace iguana {
                 { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold)); };
               }
             }
-            std::string_view prefix = fmt::format("{} {} ", style(it->second), style(m_name));
             fmt::print(
                 lev >= warn ? stderr : stdout,
-                fmt::runtime(prefix + message + "\n"),
+                fmt::runtime(fmt::format("{} {} {}\n", style(it->second), style(m_name), message)),
                 vals...);
           }
           else {
