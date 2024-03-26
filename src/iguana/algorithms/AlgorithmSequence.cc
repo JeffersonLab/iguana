@@ -20,7 +20,7 @@ namespace iguana {
       algo->Stop();
   }
 
-  void AlgorithmSequence::Add(std::string const& class_name, std::string_view instance_name)
+  void AlgorithmSequence::Add(std::string const& class_name, std::string const& instance_name)
   {
     auto algo = AlgorithmFactory::Create(class_name);
     if(algo == nullptr) {

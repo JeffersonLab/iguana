@@ -28,7 +28,7 @@ namespace iguana {
       /// @param class_name the name of the algorithm class
       /// @param instance_name a user-specified unique name for this algorithm instance;
       ///        if not specified, `class_name` will be used
-      void Add(std::string const& class_name, std::string_view instance_name = "");
+      void Add(std::string const& class_name, std::string const& instance_name = "");
 
       /// Create and add an algorithm to the sequence.
       ///
