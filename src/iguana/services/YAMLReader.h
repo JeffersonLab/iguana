@@ -66,7 +66,7 @@ namespace iguana {
       /// @param val the scalar value to check
       /// @returns the search function
       template <typename SCALAR>
-      node_finder_t InRange(std::string key, SCALAR val);
+      node_finder_t InRange(std::string const& key, SCALAR val);
 
     private:
 

@@ -5,7 +5,7 @@
 /// @param ALGO_NAME the name of the algorithm class
 /// @param BASE_NAME the name of the base class
 #define CONSTRUCT_IGUANA_ALGORITHM(ALGO_NAME, BASE_NAME) \
-  ALGO_NAME(std::string name = "")                       \
+  ALGO_NAME(std::string_view name = "")                  \
       : BASE_NAME(name == "" ? GetClassName() : name)    \
   {                                                      \
     m_default_config_file = GetDefaultConfigFile();      \

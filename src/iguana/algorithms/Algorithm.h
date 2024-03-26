@@ -130,11 +130,11 @@ namespace iguana {
 
       /// Set a custom configuration file for this algorithm; see also `Algorithm::SetConfigDirectory`
       /// @param name the configuration file name
-      void SetConfigFile(std::string name);
+      void SetConfigFile(std::string const& name);
 
       /// Set a custom configuration file directory for this algorithm; see also `Algorithm::SetConfigFile`
       /// @param name the directory name
-      void SetConfigDirectory(std::string name);
+      void SetConfigDirectory(std::string const& name);
 
     protected: // methods
 
