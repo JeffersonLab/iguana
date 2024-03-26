@@ -12,5 +12,10 @@ For additional documentation and examples, [see the main README](https://github.
 
 # List of Algorithms
 
-- `iguana::clas12::EventBuilderFilter`
-- `iguana::physics::InclusiveKinematics`
+The algorithms are organized into **namespaces**; click the links to view each of their algorithms.
+
+| Namespace         | Description                                                   |
+| ---               | ---                                                           |
+| `iguana::clas12`  | Algorithms specific to CLAS12 experimental data               |
+| `iguana::physics` | Physics algorithms, which may be more generalized than CLAS12 |
+| `iguana::example` | Example algorithms                                            |

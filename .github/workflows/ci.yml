@@ -31,6 +31,7 @@ on:
         default: >-
           {
             "include": [
+              { "mode": "documentation",                "build_id": "cpp-gcc-release",        "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
               { "mode": "coverage",                     "build_id": "cpp-gcc-release",        "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
               { "mode": "noROOT",                       "build_id": "cpp-gcc-release-noROOT", "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
               { "mode": "address-sanitizer",            "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
@@ -366,6 +367,11 @@ jobs:
             -Dtest_output_dir=$(pwd)/validation_results \
             build-iguana
           case "${{ matrix.mode }}" in
+            documentation)
+              meson configure        \
+                -Ddocumentation=true \
+                build-iguana
+              ;;
             coverage)
               meson configure     \
                 -Db_coverage=true \
@@ -384,6 +390,9 @@ jobs:
         run: meson configure build-iguana | cat
       - name: meson install
         run: meson install -C build-iguana # must install, so the config files are in the expected location
+      - name: doxygen documentation log
+        if: ${{ always() && matrix.mode=='documentation' }}
+        run: cat build-iguana/meson-logs/meson-log.txt
       ### run tests
       - name: meson test
         run: |
@@ -410,6 +419,12 @@ jobs:
           name: logs_build_iguana_${{ matrix.mode }}
           retention-days: 5
           path: build-iguana/meson-logs
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.mode == 'documentation' }}
+        with:
+          name: doxygen
+          retention-days: 7
+          path: iguana/doc/api/
       - uses: actions/upload-artifact@v4
         if: ${{ matrix.mode == 'coverage' }}
         with:
@@ -579,25 +594,6 @@ jobs:
         run: |
           install-consumer/bin/iguana-example-00-basic test_data.hipo 1
 
-  # documentation
-  #########################################################
-
-  doc_generate:
-    if: ${{ inputs.id == 'linux-latest' }}
-    name: Generate documentation
-    runs-on: ${{ inputs.runner }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: doxygen
-        uses: mattnotmitt/doxygen-action@v1
-        with:
-          doxyfile-path: doc/Doxyfile
-      - uses: actions/upload-artifact@v4
-        with:
-          name: doxygen
-          retention-days: 5
-          path: doc/api/
-
   # deployment
   #########################################################
 
@@ -605,7 +601,6 @@ jobs:
     if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.id == 'linux-latest' }}
     name: Collect webpages
     needs:
-      - doc_generate
       - test_iguana
     runs-on: ${{ inputs.runner }}
     steps:
