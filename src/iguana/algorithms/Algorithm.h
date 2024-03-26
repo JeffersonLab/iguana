@@ -43,7 +43,6 @@ namespace iguana {
 
     public:
 
-      /// @param name the unique name for a derived class instance
       Algorithm(std::string_view name)
           : Object(name)
           , m_rows_only(false)
