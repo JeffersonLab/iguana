@@ -9,3 +9,8 @@ documentation locally, run `doxygen doc/Doxyfile`
 This documentation shows how to use the Iguana classes.
 
 For additional documentation and examples, [see the main README](https://github.com/JeffersonLab/iguana/blob/main/README.md)
+
+# List of Algorithms
+
+- `iguana::clas12::EventBuilderFilter`
+- `iguana::physics::InclusiveKinematics`
