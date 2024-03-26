@@ -20,7 +20,7 @@ namespace iguana {
     public:
 
       /// @param name the unique name for a derived class instance
-      Validator(const std::string name = "validator")
+      Validator(std::string_view name = "validator")
           : Algorithm(name)
           , m_output_dir("")
       {}
@@ -32,7 +32,7 @@ namespace iguana {
 
       /// Set this validator's output directory
       /// @param output_dir the output directory
-      void SetOutputDirectory(std::string output_dir);
+      void SetOutputDirectory(std::string_view output_dir);
 
       /// Get this validator's output directory
       /// @returns an `optional`, which is set if the output directory is defined

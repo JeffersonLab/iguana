@@ -3,7 +3,7 @@
 
 namespace iguana {
 
-  ConfigFileReader::ConfigFileReader(const std::string name)
+  ConfigFileReader::ConfigFileReader(std::string_view name)
       : Object(name)
   {
     // add config files from installation prefix
@@ -15,7 +15,7 @@ namespace iguana {
     return IGUANA_ETC;
   }
 
-  void ConfigFileReader::AddDirectory(const std::string dir)
+  void ConfigFileReader::AddDirectory(std::string const& dir)
   {
     if(dir == "")
       return; // handle unset directory name
@@ -23,7 +23,7 @@ namespace iguana {
     m_directories.push_front(dir);
   }
 
-  void ConfigFileReader::AddFile(const std::string name)
+  void ConfigFileReader::AddFile(std::string const& name)
   {
     if(name == "")
       return; // handle unset file name
@@ -43,7 +43,7 @@ namespace iguana {
     }
   }
 
-  std::string ConfigFileReader::FindFile(const std::string name)
+  std::string ConfigFileReader::FindFile(std::string const& name)
   {
     if(name == "")
       return ""; // handle unset file name
@@ -67,7 +67,7 @@ namespace iguana {
     throw std::runtime_error("configuration file not found");
   }
 
-  std::string ConfigFileReader::DirName(const std::string name)
+  std::string ConfigFileReader::DirName(std::string_view name)
   {
     auto result = std::filesystem::path{name}.parent_path().string();
     if(result == "")
@@ -75,13 +75,13 @@ namespace iguana {
     return result;
   }
 
-  std::string ConfigFileReader::ConvertAlgoNameToConfigName(const std::string algo_name, const std::string ext)
+  std::string ConfigFileReader::ConvertAlgoNameToConfigName(std::string_view algo_name, std::string_view ext)
   {
-    std::string result        = algo_name;
+    std::string result        = std::string(algo_name);
     std::string::size_type it = 0;
     while((it = result.find("::", it)) != std::string::npos)
       result.replace(it, 2, "/");
-    return "algorithms/" + result + "." + ext;
+    return "algorithms/" + result + "." + std::string(ext);
   }
 
 }

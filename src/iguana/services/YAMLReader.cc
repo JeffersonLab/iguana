@@ -101,7 +101,7 @@ namespace iguana {
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename SCALAR>
-  YAMLReader::node_finder_t YAMLReader::InRange(std::string key, SCALAR val)
+  YAMLReader::node_finder_t YAMLReader::InRange(std::string const& key, SCALAR val)
   {
     return [this, key, val](YAML::Node node) -> YAML::Node
     {
@@ -128,8 +128,8 @@ namespace iguana {
       throw std::runtime_error("Failed `InRange`");
     };
   }
-  template YAMLReader::node_finder_t YAMLReader::InRange(std::string key, int val);
-  template YAMLReader::node_finder_t YAMLReader::InRange(std::string key, double val);
+  template YAMLReader::node_finder_t YAMLReader::InRange(std::string const& key, int val);
+  template YAMLReader::node_finder_t YAMLReader::InRange(std::string const& key, double val);
 
   ///////////////////////////////////////////////////////////////////////////////
 

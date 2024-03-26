@@ -28,7 +28,7 @@ namespace iguana {
       using node_path_t = std::deque<node_id_t>;
 
       /// @param name of this reader (for `Logger`)
-      YAMLReader(const std::string name = "config")
+      YAMLReader(std::string_view name = "config")
           : ConfigFileReader(name)
       {}
       ~YAMLReader() {}
@@ -66,7 +66,7 @@ namespace iguana {
       /// @param val the scalar value to check
       /// @returns the search function
       template <typename SCALAR>
-      node_finder_t InRange(std::string key, SCALAR val);
+      node_finder_t InRange(std::string const& key, SCALAR val);
 
     private:
 

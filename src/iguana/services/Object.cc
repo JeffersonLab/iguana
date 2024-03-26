@@ -2,7 +2,7 @@
 
 namespace iguana {
 
-  Object::Object(const std::string name)
+  Object::Object(std::string_view name)
       : m_name(name)
       , m_log(std::make_unique<Logger>(m_name))
   {}
@@ -12,7 +12,7 @@ namespace iguana {
     return m_log;
   }
 
-  void Object::SetName(const std::string name)
+  void Object::SetName(std::string_view name)
   {
     m_name        = name;
     m_log->m_name = name;
@@ -23,7 +23,7 @@ namespace iguana {
     return m_name;
   }
 
-  void Object::SetLogLevel(const std::string lev)
+  void Object::SetLogLevel(std::string_view lev)
   {
     m_log->SetLevel(lev);
   }
