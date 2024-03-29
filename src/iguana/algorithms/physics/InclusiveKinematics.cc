@@ -153,7 +153,7 @@ namespace iguana::physics {
     switch(o_method_lepton_finder) {
     case method_lepton_finder::highest_energy_FD_trigger: {
       // find highest energy lepton
-      for(int row = 0; row < particle_bank.getRows(); row++) {
+      for(auto const& row : particle_bank.getRowList()) {
         if(particle_bank.getInt("pid", row) == m_beam.pdg) {
           double px = particle_bank.getFloat("px", row);
           double py = particle_bank.getFloat("py", row);

@@ -37,7 +37,7 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     configBank   = banks[1]
     particleBank.show()
 
-    for row in range(particleBank.getRows()):
+    for row in particleBank.getRowList():
 
         pid = particleBank.getInt('pid', row)
         if(algo_eventbuilder_filter.Filter(pid)):

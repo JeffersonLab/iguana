@@ -35,9 +35,14 @@ defaults:
     shell: bash
 
 env:
+<<<<<<< HEAD
   hipo_fork: gavalian/hipo
   hipo_ref: 4.1.0
   # test options
+=======
+  hipo_fork: c-dilks/hipo
+  hipo_ref: 72b7d75ac6df34edba8b9f5f304f4673b4bd707d
+>>>>>>> 19bffff (feat: make use of `hipo::bank::rowlist`)
   num_events: 1000
   verbose_test: 'false' # only set this to 'true' if `meson test` fails and you need more output to investigate
 

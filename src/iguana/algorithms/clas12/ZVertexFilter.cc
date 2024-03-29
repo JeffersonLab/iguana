@@ -30,14 +30,12 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // filter the input bank for requested PDG code(s)
-    for(int row = 0; row < particleBank.getRows(); row++)
-    {
-      auto zvertex = particleBank.getFloat("vz", row);
-      auto accept  = Filter(zvertex);
-      if(!accept)
-        MaskRow(particleBank, row);
-      m_log->Debug("input vz {} -- accept = {}", zvertex, accept);
-    }
+    particleBank.getMutableRowList().reduce([&](auto bank, auto row) { // FIXME FIXME FIXME: avoid capturing '&'
+        auto zvertex = bank.getFloat("vz", row);
+        auto accept  = Filter(zvertex);
+        m_log->Debug("input vz {} -- accept = {}", zvertex, accept);
+        return accept ? 1 : 0;
+        });
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));

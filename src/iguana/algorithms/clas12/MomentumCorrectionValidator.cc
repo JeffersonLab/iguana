@@ -51,11 +51,10 @@ namespace iguana::clas12 {
   void MomentumCorrectionValidator::Run(hipo::banklist& banks) const
   {
     // get the momenta before
-    // FIXME: will need to refactor this once we have HIPO iterators
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& sector_bank   = GetBank(banks, b_sector, "REC::Particle::Sector");
     std::vector<double> p_measured;
-    for(int row = 0; row < particle_bank.getRows(); row++)
+    for(auto const& row : particle_bank.getRowList())
       p_measured.push_back(std::hypot(
           particle_bank.getFloat("px", row),
           particle_bank.getFloat("py", row),
@@ -68,12 +67,10 @@ namespace iguana::clas12 {
     std::scoped_lock<std::mutex> lock(m_mutex);
 
     // fill the plots
-    for(int row = 0; row < particle_bank.getRows(); row++) {
+    for(auto const& row : particle_bank.getRowList()) {
 
       auto pdg    = particle_bank.getInt("pid", row);
       auto sector = sector_bank.getInt("sector", row);
-      if(pdg == -1)
-        continue; // FIXME: will need to refactor this once we have HIPO iterators
 
       // skip central particle, or unknown sector
       if(sector == 0)
