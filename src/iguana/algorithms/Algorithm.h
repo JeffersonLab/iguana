@@ -53,21 +53,23 @@ namespace iguana {
       {}
       virtual ~Algorithm() {}
 
-      /// Initialize an algorithm before any events are processed, with the intent to process _banks_;
+      /// @brief Initialize this algorithm before any events are processed, with the intent to process _banks_
+      ///
       /// use this method if you intend to use `Algorithm::Run`.
       /// @param banks the list of banks this algorithm will use, so that `Algorithm::Run` can cache the indices
       ///        of the banks that it needs
       virtual void Start(hipo::banklist& banks) = 0;
 
-      /// Initialize an algorithm before any events are processed, with the intent to process _bank rows_ rather than full banks;
+      /// @brief Initialize this algorithm before any events are processed, with the intent to process _bank rows_ rather than full banks;
+      ///
       /// use this method if you intend to use "action functions" instead of `Algorithm::Run`.
       void Start();
 
-      /// Run an algorithm for an event
+      /// @brief Run this algorithm for an event
       /// @param banks the list of banks to process
       virtual void Run(hipo::banklist& banks) const = 0;
 
-      /// Finalize an algorithm after all events are processed
+      /// @brief Finalize this algorithm after all events are processed
       virtual void Stop() = 0;
 
       /// Set an option specified by the user. If the option name is `"log"`, the log level of the `Logger`
