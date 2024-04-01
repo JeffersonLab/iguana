@@ -5,9 +5,20 @@
 namespace iguana::clas12 {
 
   /// @brief Filter the `REC::Particle` (or similar) bank by PID from the Event Builder
-  /// @iguana_algotype Filter
-  /// @iguana_input_banks
-  /// - `REC::Particle`
+  ///
+  /// @begin_doc_algo
+  /// @algo_type{Filter}
+  /// @input_banks{REC::Particle}
+  /// @output_banks{Filtered; REC::Particle}
+  /// @end_doc
+  ///
+  /// @begin_doc_action
+  /// @action_function{EventBuilderFilter::Filter; Scalar}
+  /// @end_doc
+  ///
+  /// @begin_doc_config
+  /// @config_param{pids; list[int]; list of PDG codes to filter}
+  /// @end_doc
   class EventBuilderFilter : public Algorithm
   {
 
@@ -19,7 +30,7 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// @iguana_action checks if the PDG `pid` is a part of the list of user-specified PDGs
+      /// @action_function checks if the PDG `pid` is a part of the list of user-specified PDGs
       /// @param pid the particle PDG to check
       /// @returns `true` if `pid` is one the user wants
       bool Filter(int const pid) const;

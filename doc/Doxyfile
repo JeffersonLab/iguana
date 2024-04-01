@@ -283,9 +283,20 @@ TAB_SIZE               = 4
 # with the commands \{ and \} for these it is advised to use the version @{ and
 # @} or use a double escape (\\{ and \\})
 
-ALIASES  = iguana_action="\brief **Action Function:**^^"
-ALIASES += iguana_algotype="\par Algorithm Type:^^"
-ALIASES += iguana_input_banks="\par Input Banks:^^"
+ALIASES =
+# algorithm properties
+ALIASES += begin_doc_algo="\par %Algorithm Properties:^^<table>"
+ALIASES += algo_type{1}="<tr><td>**%Algorithm Type**</td><td>\1</td></tr>"
+ALIASES += input_banks{1;}="<tr><td>**Input Banks**</td><td>`\1`</td></tr>"
+ALIASES += output_banks{2;}="<tr><td>**\1 Output Banks**</td><td>`\2`</td></tr>"
+ALIASES += end_doc="</table>"
+# action functions
+ALIASES += begin_doc_action="\par Action Functions:^^<table><tr><th>Function</th><th>Type</th></tr>"
+ALIASES += action_function{2;}="<tr><td>`\1`</td><td>\2</td></tr>"
+ALIASES += action_function="\brief **Action Function:**^^" # for function docstring (overloads `action_function` for table)
+# configuration options
+ALIASES += begin_doc_config="\par Configuration Options:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"
+ALIASES += config_param{3;}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
