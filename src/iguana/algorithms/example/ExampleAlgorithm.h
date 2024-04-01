@@ -26,6 +26,10 @@ namespace iguana::example {
   /// @brief This is a template algorithm; provide a brief, one-line description of your algorithm here.
   ///
   /// Provide a more detailed description of your algorithm here, if you want.
+  //
+  // FIXME: either describe how to fill out this docstring, or abandon `ExampleAlgorithm` in
+  // favor of "simple" example algorithms `EventBuilderFilter`, `LorentzTransformer`, and `SectorFinder`
+  //
   class ExampleAlgorithm : public Algorithm
   {
 

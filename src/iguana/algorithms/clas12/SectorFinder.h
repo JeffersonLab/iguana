@@ -4,6 +4,12 @@
 
 namespace iguana::clas12 {
 
+  /// FIXME
+  /// FIXME
+  /// need `rowlist` branch merged
+  /// FIXME
+  /// FIXME
+  ///
   /// @brief Find the sector for all rows in REC::Particle
   ///
   /// **WARNING**: this algorithm has no action functions, since it requires

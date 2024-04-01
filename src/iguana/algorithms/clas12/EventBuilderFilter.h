@@ -9,15 +9,15 @@ namespace iguana::clas12 {
   /// @begin_doc_algo
   /// @algo_type{Filter}
   /// @input_banks{REC::Particle}
-  /// @output_banks{Filtered; REC::Particle}
+  /// @output_banks{Filtered | REC::Particle}
   /// @end_doc
   ///
   /// @begin_doc_action
-  /// @action_function{EventBuilderFilter::Filter; Scalar}
+  /// @action_function{EventBuilderFilter::Filter | Scalar}
   /// @end_doc
   ///
   /// @begin_doc_config
-  /// @config_param{pids; list[int]; list of PDG codes to filter}
+  /// @config_param{pids | list[int] | list of PDG codes to filter}
   /// @end_doc
   class EventBuilderFilter : public Algorithm
   {

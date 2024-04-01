@@ -10,9 +10,9 @@ namespace iguana::clas12 {
     // Read YAML config file with cuts for a given run number.
     ParseYAMLConfig();
     o_runnum = GetCachedOption<int>("runnum").value_or(0); // FIXME: should be set form RUN::config
-    o_zcuts  = GetOptionVector<double>("zcuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
+    o_zcuts  = GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
     if(o_zcuts.size() != 2) {
-      m_log->Error("configuration option 'zcuts' must be an array of size 2, but it is {}", PrintOptionValue("zcuts"));
+      m_log->Error("configuration option 'cuts' must be an array of size 2, but it is {}", PrintOptionValue("cuts"));
       throw std::runtime_error("bad configuration");
     }
 
