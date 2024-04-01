@@ -30,7 +30,7 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // filter the input bank for requested PDG code(s)
-    particleBank.getMutableRowList().reduce([&](auto bank, auto row) { // FIXME FIXME FIXME: avoid capturing '&'
+    particleBank.getMutableRowList().filter([&](auto bank, auto row) { // FIXME FIXME FIXME: avoid capturing '&'
         auto zvertex = bank.getFloat("vz", row);
         auto accept  = Filter(zvertex);
         m_log->Debug("input vz {} -- accept = {}", zvertex, accept);
