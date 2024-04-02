@@ -55,7 +55,7 @@ int main(int argc, char** argv)
       // - note that this will OVERRIDE any value used in any configuration file
       // - only use `SetOption` if for any reason you want to hard-code a specific value; usage
       //   of configuration files is preferred in general
-      algo->SetOption<std::vector<double>>("zcuts", {-5.0, 3.0});
+      algo->SetOption<std::vector<double>>("cuts", {-5.0, 3.0});
       algo->Start();
       assert((algo->GetZcutLower() == -5.0));
       assert((algo->GetZcutUpper() == 3.0));
