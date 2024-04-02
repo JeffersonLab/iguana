@@ -17,7 +17,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   which
   pkgconf
   ninja
-  # meson # FIXME: temporarly using pip for older version
+  # meson # FIXME: temporarly using ALA for older version
   gcovr           # for coverage
   python-pygments # for coverage report syntax colors
   llvm            # for `llvm-symbolizer`, for human-readable sanitizer results
