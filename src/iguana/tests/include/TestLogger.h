@@ -14,7 +14,7 @@ inline int TestLogger()
   logs.at(1).DisableStyle();
 
   // set non-existent level; should print errors
-  auto non_existent_level = static_cast<iguana::Logger::Level>(1000);
+  // auto non_existent_level = static_cast<iguana::Logger::Level>(1000); // unused, since UndefinedBehaviorSanitizer catches any usage of this
   // logs.at(0).SetLevel(non_existent_level); // UndefinedBehaviorSanitizer catches this
   logs.at(0).SetLevel("non_existent_level");
 
@@ -26,7 +26,7 @@ inline int TestLogger()
     log.Warn("warn is level {}", static_cast<int>(iguana::Logger::Level::warn));
     log.Error("error is level {}", static_cast<int>(iguana::Logger::Level::error));
     // test non-existent level
-    log.Print(non_existent_level, "print to non-existent log level {}", static_cast<int>(non_existent_level));
+    // log.Print(non_existent_level, "print to non-existent log level {}", static_cast<int>(non_existent_level)); // UndefinedBehaviorSanitizer catches this
     // test silence
     log.SetLevel("silent");
     log.Error("if this prints, 'silent' level failed");
