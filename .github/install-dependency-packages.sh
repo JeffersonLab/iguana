@@ -7,6 +7,7 @@ set -e
 ##############################
 GENERAL_PACKAGE_LIST_LINUX=(
   python
+  python-pip
   gcc
   clang
   make
