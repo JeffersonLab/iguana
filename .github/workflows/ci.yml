@@ -585,12 +585,12 @@ jobs:
     if: ${{ inputs.id == 'linux-latest' }}
     name: Generate documentation
     runs-on: ${{ inputs.runner }}
+    container:
+      image: ${{ inputs.container }}
     steps:
       - uses: actions/checkout@v4
       - name: doxygen
-        uses: mattnotmitt/doxygen-action@v1
-        with:
-          doxyfile-path: doc/Doxyfile
+        run: doxygen doc/Doxyfile
       - uses: actions/upload-artifact@v4
         with:
           name: doxygen
