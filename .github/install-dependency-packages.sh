@@ -19,6 +19,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   ninja
   # meson # FIXME: temporarly using ALA for older version
   doxygen         # for documentation
+  graphviz        # for `dot` for documentation
   gcovr           # for coverage
   python-pygments # for coverage report syntax colors
   llvm            # for `llvm-symbolizer`, for human-readable sanitizer results
