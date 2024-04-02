@@ -4,10 +4,16 @@
 
 namespace iguana::clas12 {
 
-  /// @brief Find the sector for all rows in REC::Particle
+  /// @brief_algo Find the sector for all rows in `REC::Particle`
   ///
-  /// **WARNING**: this algorithm has no action functions, since it requires
-  /// _full_ bank information to run
+  /// @begin_doc_algo{Creator}
+  /// @input_banks{REC::Particle}
+  /// @output_banks{%REC::Particle::Sector}
+  /// @end_doc
+  ///
+  /// @begin_doc_config
+  /// @config_param{bank | string | if not `default`, use this bank for sector finding}
+  /// @end_doc
   class SectorFinder : public Algorithm
   {
 

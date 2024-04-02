@@ -20,12 +20,25 @@ namespace iguana::example {
   // ############################################################################
   // # define the algorithm class
   // # - it must inherit from `Algorithm`, which includes common methods and objects used by each algorithm
-  // # - it must also include a Doxygen docstring, typically defined by 3 forward slashes `///`;
-  // #   see Doxygen documentation for more details, or see other algorithms
+  // # - it must also include a Doxygen docstring, typically defined by 3 forward slashes `///`
+  // #   - algorithm classes have a standardized format for their docstring, please try to follow it and
+  // #     keep it up-to-date with respect to the code
+  // #   - see Doxygen documentation for more details, or see other algorithms
   // ############################################################################
-  /// @brief This is a template algorithm; provide a brief, one-line description of your algorithm here.
   ///
-  /// Provide a more detailed description of your algorithm here, if you want.
+  /// @brief_algo This is a template algorithm, used as an example showing how to write an algorithm.
+  ///
+  /// Provide a more detailed description of your algorithm here.
+  ///
+  /// @begin_doc_algo{Filter}
+  /// @input_banks{REC::Particle}
+  /// @output_banks{REC::Particle}
+  /// @end_doc
+  ///
+  /// @begin_doc_config
+  /// @config_param{exampleInt | int | an example `integer` configuration parameter}
+  /// @config_param{exampleDouble | double | an example `double` configuration parameter}
+  /// @end_doc
   class ExampleAlgorithm : public Algorithm
   {
 

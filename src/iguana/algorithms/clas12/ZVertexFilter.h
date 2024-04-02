@@ -4,7 +4,16 @@
 
 namespace iguana::clas12 {
 
-  /// @brief Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex
+  /// @brief_algo Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex
+  ///
+  /// @begin_doc_algo{Filter}
+  /// @input_banks{REC::Particle}
+  /// @output_banks{REC::Particle}
+  /// @end_doc
+  ///
+  /// @begin_doc_config
+  /// @config_param{cuts | list[double] | lower and upper @f$z@f$-vertex cuts; run-range dependent}
+  /// @end_doc
   class ZVertexFilter : public Algorithm
   {
 
@@ -16,7 +25,7 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// **Action function**: checks if the Z Vertex is within specified bounds
+      /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds
       /// @param zvertex the particle Z Vertex to check
       /// @returns `true` if `zvertex` is within specified bounds
       bool Filter(double const zvertex) const;

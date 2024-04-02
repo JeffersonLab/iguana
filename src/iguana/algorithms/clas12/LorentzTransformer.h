@@ -5,10 +5,21 @@
 
 namespace iguana::clas12 {
 
-  /// @brief Lorentz transform momenta in `REC::Particle` (or similar banks)
+  /// @brief_algo Lorentz transform momenta in `REC::Particle` (or similar banks)
   ///
-  /// Available frames are:
-  /// - `"beam_rest_frame"`: rest frame of the electron beam
+  /// @begin_doc_algo{Transformer}
+  /// @input_banks{REC::Particle}
+  /// @output_banks{REC::Particle}
+  /// @end_doc
+  ///
+  /// @begin_doc_config
+  /// @config_param{frame | string | the frame to transform to; see below for available frames}
+  /// @end_doc
+  ///
+  /// @par Available Frames:
+  /// | Frame Name        | Description                     |
+  /// | ---               | ---                             |
+  /// | `beam_rest_frame` | rest frame of the electron beam |
   class LorentzTransformer : public Algorithm
   {
 
@@ -20,7 +31,7 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// **Action function**: boost the 4-momentum @f$p=(p_x,p_y,p_z,E)@f$ along @f$\beta=(\beta_x, \beta_y, \beta_z)@f$
+      /// @action_function{scalar transformer} boost the 4-momentum @f$p=(p_x,p_y,p_z,E)@f$ along @f$\beta=(\beta_x, \beta_y, \beta_z)@f$
       /// @param p_x @f$p_x@f$
       /// @param p_y @f$p_y@f$
       /// @param p_z @f$p_z@f$

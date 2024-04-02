@@ -21,7 +21,18 @@ namespace iguana::physics {
       double nu;
   };
 
-  /// @brief Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
+  /// @brief_algo Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
+  ///
+  /// @begin_doc_algo{Creator}
+  /// @input_banks{REC::Particle}
+  /// @output_banks{%physics::InclusiveKinematics}
+  /// @end_doc
+  ///
+  /// @begin_doc_config
+  /// @config_param{initial_state | dict | description of the initial state}
+  /// @config_param{method:reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available}
+  /// @config_param{method:lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available}
+  /// @end_doc
   class InclusiveKinematics : public Algorithm
   {
 
@@ -33,6 +44,7 @@ namespace iguana::physics {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
+      /// FIXME: this could be changed to a vector action function
       /// Find the scattered lepton. Since finding the scattered lepton requires
       /// reading all the particles of an event, there is no **Action function**;
       /// therefore, callers that do not have access to `hipo::bank` objects are
@@ -41,7 +53,7 @@ namespace iguana::physics {
       /// @returns the bank row of the scattered lepton, or `-1` if not found
       int FindScatteredLepton(hipo::bank const& particle_bank) const;
 
-      /// **Action function**: compute kinematics from the scattered lepton.
+      /// @action_function{scalar creator} compute kinematics from the scattered lepton.
       /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)
       /// @param lepton_py scattered lepton momentum component @f$p_y@f$ (GeV)
       /// @param lepton_pz scattered lepton momentum component @f$p_z@f$ (GeV)

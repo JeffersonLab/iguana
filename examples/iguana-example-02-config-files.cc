@@ -1,6 +1,25 @@
 #include <cassert>
 #include <iguana/algorithms/clas12/ZVertexFilter.h>
 
+/// @begin_doc_example
+/// @file iguana-example-02-config-files.cc
+/// @brief Example showing how to control algorithm configuration.
+///
+/// Examples include:
+/// - hard-coding a configuration setting override
+/// - using a configuration file
+/// - using a directory of configuration files
+///
+/// @par Usage
+/// ```bash
+/// iguana-example-02-config-files [CONFIG_FILE_DIRECTORY]
+///
+///   CONFIG_FILE_DIRECTORY    a custom directory with config files
+///                            (default = an example directory)
+/// ```
+/// @end_doc_example
+
+/// main function
 int main(int argc, char** argv)
 {
 
@@ -36,7 +55,7 @@ int main(int argc, char** argv)
       // - note that this will OVERRIDE any value used in any configuration file
       // - only use `SetOption` if for any reason you want to hard-code a specific value; usage
       //   of configuration files is preferred in general
-      algo->SetOption<std::vector<double>>("zcuts", {-5.0, 3.0});
+      algo->SetOption<std::vector<double>>("cuts", {-5.0, 3.0});
       algo->Start();
       assert((algo->GetZcutLower() == -5.0));
       assert((algo->GetZcutUpper() == 3.0));

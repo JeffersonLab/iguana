@@ -6,9 +6,14 @@
 
 namespace iguana::clas12 {
 
-  /// @brief Momentum Corrections
+  /// @brief_algo Momentum Corrections
   ///
   /// Adapted from <https://clasweb.jlab.org/wiki/index.php/CLAS12_Momentum_Corrections#tab=Correction_Code>
+  ///
+  /// @begin_doc_algo{Transformer}
+  /// @input_banks{RUN::config, REC::Particle, REC::Particle::Sector}
+  /// @output_banks{REC::Particle}
+  /// @end_doc
   class MomentumCorrection : public Algorithm
   {
 
@@ -20,7 +25,7 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// **Action function**: apply the momentum correction
+      /// @action_function{scalar transformer} Apply the momentum correction
       /// @param px @f$p_x@f$
       /// @param py @f$p_y@f$
       /// @param pz @f$p_z@f$
@@ -30,7 +35,7 @@ namespace iguana::clas12 {
       /// @returns the transformed momentum
       vector3_t Transform(vector_element_t px, vector_element_t py, vector_element_t pz, int sec, int pid, float torus) const;
 
-      /// Calculate the correction factor for inbending data
+      /// @action_function{scalar creator} Calculate the correction factor for inbending data
       /// @param Px @f$p_x@f$
       /// @param Py @f$p_y@f$
       /// @param Pz @f$p_z@f$
@@ -39,7 +44,7 @@ namespace iguana::clas12 {
       /// @returns the correction factor
       double CorrectionInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const sec, int const pid) const;
 
-      /// Calculate the correction factor for outbending data
+      /// @action_function{scalar creator} Calculate the correction factor for outbending data
       /// @param Px @f$p_x@f$
       /// @param Py @f$p_y@f$
       /// @param Pz @f$p_z@f$
@@ -48,7 +53,7 @@ namespace iguana::clas12 {
       /// @returns the correction factor
       double CorrectionOutbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const sec, int const pid) const;
 
-      /// Energy loss correction for inbending data
+      /// @action_function{scalar creator} Energy loss correction for inbending data
       /// @param Px @f$p_x@f$
       /// @param Py @f$p_y@f$
       /// @param Pz @f$p_z@f$
@@ -56,7 +61,7 @@ namespace iguana::clas12 {
       /// @returns the correction factor
       double EnergyLossInbending(const vector_element_t Px, const vector_element_t Py, const vector_element_t Pz, int const pid) const;
 
-      /// Energy loss correction for outbending data
+      /// @action_function{scalar creator} Energy loss correction for outbending data
       /// @param Px @f$p_x@f$
       /// @param Py @f$p_y@f$
       /// @param Pz @f$p_z@f$

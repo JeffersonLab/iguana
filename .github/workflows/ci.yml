@@ -248,7 +248,6 @@ jobs:
             --prefix=$(pwd)/iguana              \
             -Dbuildtype=${{ matrix.buildtype }} \
             -Dexamples=True                     \
-            -Ddocumentation=False               \
             ${{ matrix.binding_opts }}          \
             build-iguana
       - name: require ROOT
@@ -586,12 +585,14 @@ jobs:
     if: ${{ inputs.id == 'linux-latest' }}
     name: Generate documentation
     runs-on: ${{ inputs.runner }}
+    container:
+      image: ${{ inputs.container }}
     steps:
       - uses: actions/checkout@v4
+      - name: install dependencies
+        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: doxygen
-        uses: mattnotmitt/doxygen-action@v1
-        with:
-          doxyfile-path: doc/Doxyfile
+        run: doxygen doc/Doxyfile
       - uses: actions/upload-artifact@v4
         with:
           name: doxygen

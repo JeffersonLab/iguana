@@ -11,3 +11,6 @@
 *.hipo
 *.root
 *.png
+
+# overrides
+!doc/logo.png

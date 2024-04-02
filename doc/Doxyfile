@@ -283,7 +283,21 @@ TAB_SIZE               = 4
 # with the commands \{ and \} for these it is advised to use the version @{ and
 # @} or use a double escape (\\{ and \\})
 
-ALIASES                =
+ALIASES =
+# algorithm properties
+ALIASES += brief_algo="@brief **%Algorithm:** "
+ALIASES += begin_doc_algo{1}="\xrefitem algo \"Algorithm Type:\" \"List of all Algorithms\" \1 \par %Algorithm Properties:^^<table>"
+ALIASES += input_banks{1}="<tr><td>**Input Banks**</td><td>`\1`</td></tr>"
+ALIASES += output_banks{1}="<tr><td>**Output Banks**</td><td>`\1`</td></tr>"
+ALIASES += end_doc="</table>"
+# configuration options
+ALIASES += begin_doc_config="\par Configuration Options:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"
+ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
+# action functions
+ALIASES += action_function{1}="\xrefitem action \"Function Type\" \"List of all Action Functions\" \1 \brief **Action Function:** "
+# examples
+ALIASES += begin_doc_example="@addtogroup examples Examples^^@{"
+ALIASES += end_doc_example="@}"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
@@ -815,7 +829,7 @@ FILE_VERSION_FILTER    =
 # DoxygenLayout.xml, doxygen will parse it automatically even if the LAYOUT_FILE
 # tag is left empty.
 
-LAYOUT_FILE            =
+LAYOUT_FILE            = doc/DoxygenLayout.xml
 
 # The CITE_BIB_FILES tag can be used to specify one or more bib files containing
 # the reference definitions. This must be a list of .bib files. The .bib
@@ -943,7 +957,7 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = src/ doc/doxygen.md doc/namespaces.h
+INPUT                  = src/ examples/ doc/DoxygenMainpage.md
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -983,7 +997,7 @@ INPUT_FILE_ENCODING    =
 # provided as doxygen C comment), *.py, *.pyw, *.f90, *.f95, *.f03, *.f08,
 # *.f18, *.f, *.for, *.vhd, *.vhdl, *.ucf, *.qsf and *.ice.
 
-FILE_PATTERNS          = *.h
+FILE_PATTERNS          = *.h iguana-example-*.cc
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
@@ -1005,7 +1019,7 @@ EXCLUDE                =
 # from the input.
 # The default value is: NO.
 
-EXCLUDE_SYMLINKS       = NO
+EXCLUDE_SYMLINKS       = YES
 
 # If the value of the INPUT tag contains directories, you can use the
 # EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude
@@ -1109,7 +1123,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = doc/doxygen.md
+USE_MDFILE_AS_MAINPAGE = doc/DoxygenMainpage.md
 
 # The Fortran standard specifies that for fixed formatted Fortran code all
 # characters from position 72 are to be considered as comment. A common
