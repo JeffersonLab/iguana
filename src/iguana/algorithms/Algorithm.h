@@ -65,11 +65,11 @@ namespace iguana {
       /// use this method if you intend to use "action functions" instead of `Algorithm::Run`.
       void Start();
 
-      /// @brief Run this algorithm for an event
+      /// @brief Run this algorithm for an event.
       /// @param banks the list of banks to process
       virtual void Run(hipo::banklist& banks) const = 0;
 
-      /// @brief Finalize this algorithm after all events are processed
+      /// @brief Finalize this algorithm after all events are processed.
       virtual void Stop() = 0;
 
       /// Set an option specified by the user. If the option name is `"log"`, the log level of the `Logger`

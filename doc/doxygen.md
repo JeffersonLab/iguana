@@ -10,12 +10,65 @@ This documentation shows how to use the Iguana classes.
 
 For additional documentation and examples, [see the main README](https://github.com/JeffersonLab/iguana/blob/main/README.md)
 
-# List of Algorithms
+## Algorithms
 
-The algorithms are organized into **namespaces**; click the links to view each of their algorithms.
+The algorithms are organized into **namespaces**; click the links to view each of their algorithms, or browse the full list:
+- [List of all Algorithms](algo.html)
 
 | Namespace         | Description                                                   |
 | ---               | ---                                                           |
 | `iguana::clas12`  | Algorithms specific to CLAS12 experimental data               |
 | `iguana::physics` | Physics algorithms, which may be more generalized than CLAS12 |
 | `iguana::example` | Example algorithms                                            |
+
+### Algorithm Types
+
+<table>
+<tr><td> **Filter** </td><td> Remove rows of a bank based on some `bool` condition </td></tr>
+<tr><td> **Transformer** </td><td> Transform (mutate) elements of a bank </td></tr>
+<tr><td> **Creator** </td><td> Create a new bank </td></tr>
+</table>
+
+## Common Functions
+
+All algorithms have the following functions, which may be used in analysis code that uses [the HIPO C++ API](https://github.com/gavalian/hipo); for analysis code that does not, skip to the **Action Functions** section.
+
+| Function                   | Description                 |
+| ---                        | ---                         |
+| `iguana::Algorithm::Start` | Run before event processing |
+| `iguana::Algorithm::Run`   | Run for every event         |
+| `iguana::Algorithm::Stop`  | Run after event processing  |
+
+## Action Functions
+
+The action functions do the _real_ work of the algorithm, and are meant to be easily callable from _any_ analysis.
+These functions are unique to each algorithm, so view the algorithm documentation for details, or browse the full list:
+- [List of all Action Functions](action.html)
+
+### Action Function Types
+
+They match the algorithm types:
+
+<table>
+<tr><td> **Filter** </td><td> Returns `bool` </td></tr>
+<tr><td> **Transformer** </td><td> Returns an object that should replace one of its inputs </td></tr>
+<tr><td> **Creator** </td><td> Create a new object </td></tr>
+</table>
+
+Furthermore, some action functions can only be useful if all of the rows of a bank are included in its inputs, which motivates
+the following additional classification:
+<table>
+<tr><td> **Scalar** </td><td>
+All inputs and outputs are scalar quantities (single values).
+This type of function may be used on a bank row.
+</td></tr>
+<tr><td> **Vector** </td><td>
+All inputs and outputs are vector quantities (lists of values).
+This type of action function needs values from all of the bank rows.
+</td></tr>
+<tr><td> **Mixed** </td><td>
+Inputs and outputs are scalar or vector quantities.
+</td></tr>
+</table>
+To maximize compatibility with user analysis code, these functions are overloaded, _e.g._, for every scalar function there is
+a corresponding vector function that calls it on each element of its input vectors.

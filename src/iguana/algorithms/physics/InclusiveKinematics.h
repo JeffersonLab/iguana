@@ -23,19 +23,14 @@ namespace iguana::physics {
 
   /// @brief Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
   ///
-  /// @begin_doc_algo
-  /// @algo_type{Creator}
+  /// @begin_doc_algo{Creator}
   /// @input_banks{REC::Particle}
-  /// @output_banks{Created | %physics::InclusiveKinematics}
-  /// @end_doc
-  ///
-  /// @begin_doc_action
-  /// @action_function{InclusiveKinematics::ComputeFromLepton | Scalar}
+  /// @output_banks{%physics::InclusiveKinematics}
   /// @end_doc
   ///
   /// @begin_doc_config
   /// @config_param{initial_state | dict | description of the initial state}
-  /// @config_param{method:reconstruction | string | kinematics reconstruction method; only `scattered_leption` is available}
+  /// @config_param{method:reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available}
   /// @config_param{method:lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available}
   /// @end_doc
   class InclusiveKinematics : public Algorithm
@@ -58,7 +53,7 @@ namespace iguana::physics {
       /// @returns the bank row of the scattered lepton, or `-1` if not found
       int FindScatteredLepton(hipo::bank const& particle_bank) const;
 
-      /// @action_function compute kinematics from the scattered lepton.
+      /// @action_function{scalar creator} compute kinematics from the scattered lepton.
       /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)
       /// @param lepton_py scattered lepton momentum component @f$p_y@f$ (GeV)
       /// @param lepton_pz scattered lepton momentum component @f$p_z@f$ (GeV)
