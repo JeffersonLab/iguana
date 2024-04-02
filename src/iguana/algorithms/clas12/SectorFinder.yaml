@@ -1,6 +1,5 @@
 clas12::SectorFinder:
-  # list of PDG codes to filter for
+  # use the default banks
   bank: default
-
-  #can force finder to use a certain bank with eg:
+  # or force finder to use a certain bank with eg:
   #bank: REC::Calorimeter
