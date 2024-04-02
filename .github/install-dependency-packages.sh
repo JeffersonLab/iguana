@@ -17,7 +17,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   which
   pkgconf
   ninja
-  meson
+  # meson # FIXME: temporarly using ALA for older version
   gcovr           # for coverage
   python-pygments # for coverage report syntax colors
   llvm            # for `llvm-symbolizer`, for human-readable sanitizer results
@@ -112,6 +112,10 @@ case $runner in
       esac
       info_pacman $pkg
     done
+    ### FIXME: install older meson version
+    pacman -U --noconfirm https://archive.archlinux.org/packages/m/meson/meson-1.3.2-1-any.pkg.tar.zst
+    echo "MESON VERSION:"
+    meson --version
     ;;
 
   macos*)
