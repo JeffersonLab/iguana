@@ -7,7 +7,6 @@ set -e
 ##############################
 GENERAL_PACKAGE_LIST_LINUX=(
   python
-  python-pip
   gcc
   clang
   make
@@ -114,7 +113,7 @@ case $runner in
       info_pacman $pkg
     done
     ### FIXME: install older meson version
-    python -m pip install meson==1.3.2
+    pacman -U --noconfirm https://archive.archlinux.org/packages/m/meson/meson-1.3.2-1-any.pkg.tar.zst
     echo "MESON VERSION:"
     meson --version
     ;;
