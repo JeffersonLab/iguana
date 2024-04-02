@@ -248,7 +248,6 @@ jobs:
             --prefix=$(pwd)/iguana              \
             -Dbuildtype=${{ matrix.buildtype }} \
             -Dexamples=True                     \
-            -Ddocumentation=False               \
             ${{ matrix.binding_opts }}          \
             build-iguana
       - name: require ROOT

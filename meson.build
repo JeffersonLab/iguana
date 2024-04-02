@@ -189,19 +189,6 @@ if get_option('examples')
   subdir('examples')
 endif
 
-# generate documentation
-if get_option('documentation')
-  doxygen = find_program('doxygen', required: false)
-  if doxygen.found()
-    message('Generating documentation...')
-    run_command('doxygen', meson.project_source_root() / 'doc' / 'Doxyfile', check: true)
-    message('...documentation generated.')
-    install_subdir('doc/api', install_dir: 'doc')
-  else
-    warning('Cannot generate documentation since `doxygen` is not found')
-  endif
-endif
-
 # install environment setup file
 configure_file(
   input:         'meson' / 'this_iguana.sh.in',
