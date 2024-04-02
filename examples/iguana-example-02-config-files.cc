@@ -1,6 +1,25 @@
 #include <cassert>
 #include <iguana/algorithms/clas12/ZVertexFilter.h>
 
+/// @begin_doc_example
+/// @file iguana-example-02-config-files.cc
+/// @brief Example showing how to control algorithm configuration.
+///
+/// Examples include:
+/// - hard-coding a configuration setting override
+/// - using a configuration file
+/// - using a directory of configuration files
+///
+/// @par Usage
+/// ```bash
+/// iguana-example-02-config-files [CONFIG_FILE_DIRECTORY]
+///
+///   CONFIG_FILE_DIRECTORY    a custom directory with config files
+///                            (default = an example directory)
+/// ```
+/// @end_doc_example
+
+/// main function
 int main(int argc, char** argv)
 {
 

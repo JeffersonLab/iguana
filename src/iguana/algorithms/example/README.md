@@ -26,6 +26,7 @@ Once you have generated your new algorithm:
 - [ ] add your algorithm files and your name (GitHub handle or email address) to the [`CODEOWNERS` file](/CODEOWNERS)
 - [ ] consider writing a **Validator** algorithm, for example, one that draws validation plots used to check if your algorithm is working;
       see existing algorithms for examples, and [documentation here](/doc/testing.md)
+- [ ] if you created a new namespace, update [`Docstrings.h`](/src/iguana/algorithms/Docstrings.h)
 
 > [!TIP]
 > Enable debugging symbols when building by setting the Iguana build option `buildtype` to `debug`.

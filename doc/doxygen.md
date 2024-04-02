@@ -7,21 +7,23 @@ documentation locally, run `doxygen doc/Doxyfile`
 # Iguana API Documentation
 
 This documentation shows how to use the Iguana classes.
+For additional documentation and examples,
+[**see the main README**](https://github.com/JeffersonLab/iguana/blob/main/README.md)
 
-For additional documentation and examples, [see the main README](https://github.com/JeffersonLab/iguana/blob/main/README.md)
+## Example Analysis Code
+
+To see Iguana algorithms used in the context of analysis code, see
+
+- \ref examples "Examples of Analysis Code"
 
 ## Algorithms
 
-The algorithms are organized into **namespaces**; click the links to view each of their algorithms, or browse the full list:
-- [List of all Algorithms](algo.html)
+An Iguana algorithm is a function that maps input HIPO bank data to output data. The available algorithms are:
 
-| Namespace         | Description                                                   |
-| ---               | ---                                                           |
-| `iguana::clas12`  | Algorithms specific to CLAS12 experimental data               |
-| `iguana::physics` | Physics algorithms, which may be more generalized than CLAS12 |
-| `iguana::example` | Example algorithms                                            |
+- \ref algo_namespaces "Algorithms organized by Namespace"
+- \ref algo "Full List of Algorithms"
 
-### Algorithm Types
+The algorithm types are defined based on what they do to HIPO bank data:
 
 <table>
 <tr><td> **Filter** </td><td> Remove rows of a bank based on some `bool` condition </td></tr>
@@ -31,36 +33,33 @@ The algorithms are organized into **namespaces**; click the links to view each o
 
 ## Common Functions
 
-All algorithms have the following functions, which may be used in analysis code that uses [the HIPO C++ API](https://github.com/gavalian/hipo); for analysis code that does not, skip to the **Action Functions** section.
+All algorithms have the following functions, which may be used in analysis code
+that uses [**the HIPO C++ API**](https://github.com/gavalian/hipo); for
+analysis code that does not, skip to the **Action Functions** section.
 
-| Function                   | Description                 |
-| ---                        | ---                         |
-| `iguana::Algorithm::Start` | Run before event processing |
-| `iguana::Algorithm::Run`   | Run for every event         |
-| `iguana::Algorithm::Stop`  | Run after event processing  |
+<table>
+<tr><td> `iguana::Algorithm::Start` </td><td> Run before event processing </td></tr>
+<tr><td> `iguana::Algorithm::Run` </td><td> Run for every event </td></tr>
+<tr><td> `iguana::Algorithm::Stop` </td><td> Run after event processing </td></tr>
+</table>
 
 ## Action Functions
 
-The action functions do the _real_ work of the algorithm, and are meant to be easily callable from _any_ analysis.
-These functions are unique to each algorithm, so view the algorithm documentation for details, or browse the full list:
-- [List of all Action Functions](action.html)
+The action functions do the _real_ work of the algorithm, and are meant to be
+easily callable from _any_ analysis, even if HIPO banks are not directly used.
+These functions are unique to each algorithm, so view the algorithm
+documentation for details, or browse the full list:
 
-### Action Function Types
+- \ref action "List of all Action Functions"
 
-They match the algorithm types:
-
-<table>
-<tr><td> **Filter** </td><td> Returns `bool` </td></tr>
-<tr><td> **Transformer** </td><td> Returns an object that should replace one of its inputs </td></tr>
-<tr><td> **Creator** </td><td> Create a new object </td></tr>
-</table>
-
-Furthermore, some action functions can only be useful if all of the rows of a bank are included in its inputs, which motivates
-the following additional classification:
+The action functions have types that correspond to the algorithm types.
+Furthermore, some action functions can only be useful if all of the rows of a
+bank are included in its inputs, which motivates the following additional
+classification:
 <table>
 <tr><td> **Scalar** </td><td>
 All inputs and outputs are scalar quantities (single values).
-This type of function may be used on a bank row.
+This type of function may be used on a single bank row.
 </td></tr>
 <tr><td> **Vector** </td><td>
 All inputs and outputs are vector quantities (lists of values).
@@ -70,5 +69,6 @@ This type of action function needs values from all of the bank rows.
 Inputs and outputs are scalar or vector quantities.
 </td></tr>
 </table>
-To maximize compatibility with user analysis code, these functions are overloaded, _e.g._, for every scalar function there is
-a corresponding vector function that calls it on each element of its input vectors.
+To maximize compatibility with user analysis code, these functions are
+overloaded, _e.g._, for every scalar function there is a corresponding vector
+function that calls it on each element of its input vectors.

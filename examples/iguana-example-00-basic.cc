@@ -1,13 +1,32 @@
+/// @begin_doc_example
+/// These are examples which demonstrate how to use Iguana in C++ analysis code. See each one for its usage guide.
+/// @file iguana-example-00-basic.cc
+/// @brief Example using full HIPO banks with Iguana This example requires the
+/// user to have the C++ `hipo::bank` objects; see other examples if you do not have these banks in this format.
+/// @par Usage
+/// ```bash
+/// iguana-example-00-basic [HIPO_FILE] [NUM_EVENTS]
+///
+///   HIPO_FILE   the HIPO file to analyze
+///
+///   NUM_EVENTS  the number of events to analyze;
+///               set to zero to analyze all events
+/// ```
+/// @end_doc_example
+
 #include <hipo4/reader.h>
 #include <iguana/algorithms/AlgorithmSequence.h>
 
-// show a bank along with a header
+/// @brief show a bank along with a header
+/// @param header the header to print above the bank
+/// @param bank the bank to show
 void prettyPrint(std::string header, hipo::bank& bank)
 {
   fmt::print("{:=^70}\n", " " + header + " ");
   bank.show();
 }
 
+/// main function
 int main(int argc, char** argv)
 {
 

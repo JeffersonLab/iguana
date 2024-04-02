@@ -1,7 +1,22 @@
+/// @begin_doc_example
+/// @file iguana-example-01-bank-rows.cc
+/// @brief Example using Iguana action functions on data from bank rows. This is useful for
+/// users who do not have the `hipo::bank` objects, instead only having the numerical data from them.
+/// @par Usage
+/// ```bash
+/// iguana-example-01-bank-rows [HIPO_FILE] [NUM_EVENTS]
+///
+///   HIPO_FILE   the HIPO file to analyze
+///
+///   NUM_EVENTS  the number of events to analyze;
+///               set to zero to analyze all events
+/// ```
+/// @end_doc_example
 #include <hipo4/reader.h>
 #include <iguana/algorithms/clas12/EventBuilderFilter.h>
 #include <iguana/algorithms/clas12/MomentumCorrection.h>
 
+/// main function
 int main(int argc, char** argv)
 {
 
