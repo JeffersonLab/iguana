@@ -6,7 +6,7 @@
 
 namespace iguana::clas12 {
 
-  /// @brief Momentum Corrections
+  /// @brief_algo Momentum Corrections
   ///
   /// Adapted from <https://clasweb.jlab.org/wiki/index.php/CLAS12_Momentum_Corrections#tab=Correction_Code>
   ///

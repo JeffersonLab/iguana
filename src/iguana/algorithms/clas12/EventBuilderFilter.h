@@ -4,7 +4,7 @@
 
 namespace iguana::clas12 {
 
-  /// @brief Filter the `REC::Particle` (or similar) bank by PID from the Event Builder
+  /// @brief_algo Filter the `REC::Particle` (or similar) bank by PID from the Event Builder
   ///
   /// @begin_doc_algo{Filter}
   /// @input_banks{REC::Particle}

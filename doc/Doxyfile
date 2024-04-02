@@ -285,6 +285,7 @@ TAB_SIZE               = 4
 
 ALIASES =
 # algorithm properties
+ALIASES += brief_algo="@brief **%Algorithm:** "
 ALIASES += begin_doc_algo{1}="\xrefitem algo \"Algorithm Type:\" \"List of all Algorithms\" \1 \par %Algorithm Properties:^^<table>"
 ALIASES += input_banks{1}="<tr><td>**Input Banks**</td><td>`\1`</td></tr>"
 ALIASES += output_banks{1}="<tr><td>**Output Banks**</td><td>`\1`</td></tr>"

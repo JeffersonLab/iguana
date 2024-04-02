@@ -21,7 +21,7 @@ namespace iguana::physics {
       double nu;
   };
 
-  /// @brief Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
+  /// @brief_algo Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
   ///
   /// @begin_doc_algo{Creator}
   /// @input_banks{REC::Particle}
