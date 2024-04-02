@@ -15,7 +15,7 @@ inline int TestLogger()
 
   // set non-existent level; should print errors
   auto non_existent_level = static_cast<iguana::Logger::Level>(1000);
-  logs.at(0).SetLevel(non_existent_level);
+  // logs.at(0).SetLevel(non_existent_level); // UndefinedBehaviorSanitizer catches this
   logs.at(0).SetLevel("non_existent_level");
 
   for(auto& log : logs) {
