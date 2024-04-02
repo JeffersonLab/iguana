@@ -12,7 +12,7 @@ For additional documentation and examples,
 
 ## Example Analysis Code
 
-To see Iguana algorithms used in the context of analysis code, see
+To see Iguana algorithms used in the context of analysis code, see:
 
 - \ref examples "Examples of Analysis Code"
 
