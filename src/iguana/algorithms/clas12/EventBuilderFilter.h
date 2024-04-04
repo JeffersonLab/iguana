@@ -31,9 +31,9 @@ namespace iguana::clas12 {
       bool Filter(int const pid) const;
 
       /// @action_function{vector filter} checks if the PDG `pid` is a part of the list of user-specified PDGs
-      /// @param pid the particle PDG to check
-      /// @returns `true` if `pid` is one the user wants
-      std::array<bool> Filter(std::vector<int> const pid) const;
+      /// @param pids the list of particle PDGs to check
+      /// @returns list of booleans which are `true` for `pids` the user wants
+      std::deque<bool> Filter(std::vector<int> const pids) const;
 
     private:
 

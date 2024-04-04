@@ -22,7 +22,7 @@ int main(int argc, char** argv)
   // parse arguments
   int argi               = 1;
   char const* inFileName = argc > argi ? argv[argi++] : "data.hipo";
-  int const numEvents    = argc > argi ? std::stoi(argv[argi++]) : 1;
+  // int const numEvents    = argc > argi ? std::stoi(argv[argi++]) : 1;
 
   // iguana algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
@@ -36,10 +36,10 @@ int main(int argc, char** argv)
   auto frame_init = MakeHipoDataFrame(inFileName);
 
   // run algorithms
-  auto frame_filtered = frame_init.Define(
-      "REC::Particle::event_builder_filter",
-      [&algo_eventbuilder_filter](auto& pids) { return algo_eventbuilder_filter->Filter(pids); },
-      {"REC::Particle::pid"});
+  // auto frame_filtered = frame_init.Define(
+  //     "REC::Particle::event_builder_filter",
+  //     [&algo_eventbuilder_filter](auto& pids) { return algo_eventbuilder_filter.Filter(pids); },
+  //     {"REC::Particle::pid"});
 
   return 0;
 }
