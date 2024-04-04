@@ -505,6 +505,9 @@ jobs:
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 01
         run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
+      - name: test 02
+        if: ${{ matrix.build_id == 'cpp-gcc-release' }}
+        run: iguana/bin/iguana-example-02-config-files
 
   # test consumers
   #########################################################

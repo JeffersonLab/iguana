@@ -115,7 +115,6 @@ if ROOT_dep.found()
 endif
 
 # general project vars
-project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ] ) # do NOT include ROOT here
@@ -146,7 +145,11 @@ project_test_env.set(
   'suppressions=' + meson.project_source_root() / 'meson' / 'lsan.supp',
 )
 
-# executables' rpath
+# rpaths
+project_lib_rpath = [
+  hipo_dep.get_variable(pkgconfig: 'libdir'),
+  '$ORIGIN',
+]
 project_exe_rpath = [
   hipo_dep.get_variable(pkgconfig: 'libdir')
 ]
