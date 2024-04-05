@@ -261,12 +261,13 @@ jobs:
       - name: dump build log
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
-      - name: readelf/otool iguana examples
+      - name: readelf/otool iguana objects
         if: ${{ matrix.binding_opts == '' }}
         run: |
           binaries=$(find iguana/bin -type f -name "iguana-example-*")
-          libraries=$(find iguana -type f -name "*.so")
-          for obj in $binaries $libraries; do
+          libraries_so=$(find iguana -type f -name "*.so")
+          libraries_dylib=$(find iguana -type f -name "*.dylib")
+          for obj in $binaries $libraries_so $libraries_dylib; do
             echo "[+++] READ $obj"
             if [ ${{ inputs.runner }} = "macos-latest" ]; then
               otool -l $obj
