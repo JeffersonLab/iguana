@@ -146,19 +146,16 @@ project_test_env.set(
 )
 
 # rpaths
-project_lib_rpath = [
-  hipo_dep.get_variable(pkgconfig: 'libdir'),
-  '$ORIGIN',
-]
-project_exe_rpath = [
-  hipo_dep.get_variable(pkgconfig: 'libdir')
-]
+# FIXME(darwin): not sure how to set multiple rpaths on darwin objects,
+# aside from running `install_name_tool -add_rpath` post-installation
+# or requiring macOS users to set `$DYLD_LIBRARY_PATH`;
+# luckily, darwin-built objects don't need the `iguana` library path
+# explictly included in the rpath, so the `if darwin` block just keeps
+# rpaths minimal. See https://github.com/mesonbuild/meson/issues/5760
+project_lib_rpath = [ hipo_dep.get_variable(pkgconfig: 'libdir') ]
+project_exe_rpath = [ hipo_dep.get_variable(pkgconfig: 'libdir') ]
 if host_machine.system() != 'darwin'
-  # FIXME(darwin): not sure how to set multiple rpaths on darwin executables,
-  # aside from running `install_name_tool -add_rpath` post-installation;
-  # luckily, darwin-built executables don't need the `iguana` library path
-  # explictly included in the rpath, so this `if` block just keeps
-  # `project_exe_rpath` minimal. See https://github.com/mesonbuild/meson/issues/5760
+  project_lib_rpath += '$ORIGIN'
   project_exe_rpath += '$ORIGIN' / '..' / get_option('libdir')
 endif
 
