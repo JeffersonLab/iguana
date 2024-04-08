@@ -272,7 +272,6 @@ jobs:
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
       - name: dump rpaths
-        if: ${{ matrix.binding_opts == '' }}
         run: iguana_src/.github/rpath-dump.sh iguana ${{ inputs.runner }}
       - name: cat pkg-config pc files
         run: |
