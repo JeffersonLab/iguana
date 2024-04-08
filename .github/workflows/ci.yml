@@ -462,10 +462,10 @@ jobs:
         with:
           key: ${{ needs.build_root.outputs.key }}
           path: root.tar.zst
-      - name: get iguana build artifacts
+      - name: get iguana build dir
         uses: actions/download-artifact@v4
         with:
-          name: install_iguana_${{ matrix.build_id }}
+          name: build_iguana_${{ matrix.build_id }}
       - name: get test data
         uses: actions/cache/restore@v4
         with:
@@ -477,6 +477,12 @@ jobs:
           rm -v *.tar.zst
       - name: tree artifacts
         run: tree
+      ### rebuild iguana to force re-link (deal with macOS runners' install tree variation)
+      - name: meson wipe builddir for macOS # wipe on macOS only
+        if: ${{ inputs.runner == 'macos-latest' }}
+        run: meson setup build-iguana iguana_src --wipe
+      - name: meson install
+        run: meson install -C build-iguana
       ### setup python virtaul environment (for python binding tests)
       - name: install python binding runtime dependencies
         if: ${{ matrix.build_id == 'python' }}
