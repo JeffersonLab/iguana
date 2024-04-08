@@ -594,7 +594,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm doxygen graphviz
       - name: doxygen
         run: doxygen doc/Doxyfile
       - uses: actions/upload-artifact@v4
