@@ -479,7 +479,7 @@ jobs:
         run: tree
       ### macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
       - name: source environment for ROOT
-        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld python # later needed for `ld` path and PYTHONPATH
+        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld python # for `PATH`; `ld` path and `PYTHONPATH` needed later at runtime
       - name: meson wipe builddir for macOS # wipe on macOS only
         if: ${{ inputs.runner == 'macos-latest' }}
         run: meson setup build-iguana iguana_src --wipe
