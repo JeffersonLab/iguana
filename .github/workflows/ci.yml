@@ -271,20 +271,9 @@ jobs:
       - name: dump build log
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
-      - name: readelf/otool iguana objects
+      - name: dump rpaths
         if: ${{ matrix.binding_opts == '' }}
-        run: |
-          binaries=$(find iguana/bin -type f -name "iguana-example-*")
-          libraries_so=$(find iguana -type f -name "*.so")
-          libraries_dylib=$(find iguana -type f -name "*.dylib")
-          for obj in $binaries $libraries_so $libraries_dylib; do
-            echo "[+++] READ $obj"
-            if [ ${{ inputs.runner }} = "macos-latest" ]; then
-              otool -l $obj
-            else
-              readelf -d $obj
-            fi
-          done
+        run: iguana_src/.github/rpath-dump.sh iguana ${{ inputs.runner }}
       - name: cat pkg-config pc files
         run: |
           pcfiles=$(find iguana -type f -name "*.pc")
@@ -583,13 +572,8 @@ jobs:
         run: |
           source iguana/bin/this_iguana.sh verbose
           .github/test-consumer-build.sh ${{ matrix.tool }}
-      - name: readelf/otool executable
-        run: |
-          if [ ${{ inputs.runner }} = "macos-latest" ]; then
-            otool -l install-consumer/bin/iguana-example-00-basic
-          else
-            readelf -d install-consumer/bin/iguana-example-00-basic
-          fi
+      - name: dump rpaths
+        run: .github/rpath-dump.sh install-consumer ${{ inputs.runner }}
       ### run test
       - name: run
         run: |
