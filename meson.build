@@ -157,6 +157,10 @@ project_test_env.set(
 # rpaths minimal. See https://github.com/mesonbuild/meson/issues/5760
 project_lib_rpath = [ hipo_dep.get_variable(pkgconfig: 'libdir') ]
 project_exe_rpath = [ hipo_dep.get_variable(pkgconfig: 'libdir') ]
+if ROOT_dep_rpath != ''
+  project_lib_rpath += ROOT_dep_rpath
+  project_exe_rpath += ROOT_dep_rpath
+endif
 if host_machine.system() != 'darwin'
   project_lib_rpath += '$ORIGIN'
   project_exe_rpath += '$ORIGIN' / '..' / get_option('libdir')
