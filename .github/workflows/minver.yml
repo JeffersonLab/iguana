@@ -1,7 +1,6 @@
 name: MinVer # minimum required-version of dependencies on Linux
 
 on:
-  pull_request: # FIXME: delete this
   schedule:
     - cron: '15 7 * * 0' # Sundays at 0715Z
 
