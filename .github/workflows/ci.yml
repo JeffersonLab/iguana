@@ -477,7 +477,9 @@ jobs:
           rm -v *.tar.zst
       - name: tree artifacts
         run: tree
-      ### rebuild iguana to force re-link (deal with macOS runners' install tree variation)
+      ### macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
+      - name: source environment for ROOT
+        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld python # later needed for `ld` path and PYTHONPATH
       - name: meson wipe builddir for macOS # wipe on macOS only
         if: ${{ inputs.runner == 'macos-latest' }}
         run: meson setup build-iguana iguana_src --wipe
@@ -505,8 +507,6 @@ jobs:
           echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH     >> $GITHUB_ENV
           echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
           echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV  # for cppyy on macOS to be able to find dynamic libs
-      - name: source environment for ROOT
-        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld python # needed for `ld` path and PYTHONPATH
       ### run tests
       - name: test 00
         run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
