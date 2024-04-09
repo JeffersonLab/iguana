@@ -98,6 +98,7 @@ fi
 # export variables for GitHub CI environment
 if $arg_githubCI; then
   echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
+  echo PATH=$PATH >> $GITHUB_ENV
   echo @ld_path@=$@ld_path@ >> $GITHUB_ENV
   if @python@; then
     echo PYTHONPATH=$PYTHONPATH >> $GITHUB_ENV
