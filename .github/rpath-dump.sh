@@ -18,11 +18,11 @@ objs=($(find $prefix -type f -name "iguana-*" | grep -vE '\.py$'))
 case $os in
   ubuntu*|linux)
     objs+=($(find $prefix -type f -name "*.so"))
-    get_rpath() { readelf -d $1 | grep RUNPATH; }
+    get_rpath() { readelf -d $1 | grep RUNPATH || echo "NO RPATH"; }
     ;;
   macos*|darwin)
     objs+=($(find $prefix -type f -name "*.dylib"))
-    get_rpath() { otool -l $1 | grep LC_RPATH -A3; }
+    get_rpath() { otool -l $1 | grep LC_RPATH -A3 || echo "NO RPATH"; }
     ;;
   *)
     echo "ERROR: unknown OS '$os'" >&2
