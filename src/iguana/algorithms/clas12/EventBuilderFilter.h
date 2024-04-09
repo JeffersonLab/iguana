@@ -43,4 +43,20 @@ namespace iguana::clas12 {
       /// Configuration options
       std::set<int> o_pids;
   };
+
+  ////////////////////////////// fortran bindings
+  extern "C" {
+
+    EventBuilderFilter this_algo;
+
+    void fort_start_() {
+      this_algo.Start();
+    }
+
+    void fort_filter_(int const* pid, int* result) {
+      *result = this_algo.Filter(*pid) ? 1 : 0;
+    }
+  }
+  ///////////////////////////////////////////////
+
 }

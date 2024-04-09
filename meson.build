@@ -1,6 +1,6 @@
 project(
   'iguana',
-  'cpp',
+  'cpp', 'fortran',
   license: 'LGPLv3',
   meson_version: '>=1.2',
   default_options: {
@@ -166,6 +166,9 @@ subdir('src/iguana/tests')
 # build bindings
 if get_option('bind_python')
   subdir('bind/python')
+endif
+if get_option('bind_fortran')
+  subdir('bind/fortran')
 endif
 
 # generate pkg-config file
