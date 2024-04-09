@@ -124,6 +124,7 @@ project_deps      = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hip
 project_etc       = get_option('sysconfdir') / meson.project_name()
 project_test_env  = environment()
 project_pkg_vars  = [
+  'bindir='            + '${prefix}' / get_option('bindir'),
   'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
   'dep_libdirs='       + ':'.join(dep_lib_paths),
 ]
@@ -147,24 +148,6 @@ project_test_env.set(
   'LSAN_OPTIONS',
   'suppressions=' + meson.project_source_root() / 'meson' / 'lsan.supp',
 )
-
-# rpaths
-# FIXME(darwin): not sure how to set multiple rpaths on darwin objects,
-# aside from running `install_name_tool -add_rpath` post-installation
-# or requiring macOS users to set `$DYLD_LIBRARY_PATH`;
-# luckily, darwin-built objects don't need the `iguana` library path
-# explictly included in the rpath, so the `if darwin` block just keeps
-# rpaths minimal. See https://github.com/mesonbuild/meson/issues/5760
-project_lib_rpath = [ hipo_dep.get_variable(pkgconfig: 'libdir') ]
-project_exe_rpath = [ hipo_dep.get_variable(pkgconfig: 'libdir') ]
-if ROOT_dep_rpath != ''
-  project_lib_rpath += ROOT_dep_rpath
-  project_exe_rpath += ROOT_dep_rpath
-endif
-if host_machine.system() != 'darwin'
-  project_lib_rpath += '$ORIGIN'
-  project_exe_rpath += '$ORIGIN' / '..' / get_option('libdir')
-endif
 
 # set preprocessor macros
 add_project_arguments(

@@ -6,7 +6,7 @@ set -u
 # parse arguments
 if [ $# -lt 2 ]; then
   echo """
-  USAGE: $0 [path/to/root] [runner] [OPTIONS]...
+  USAGE: $0 [path/to/root] [RUNNER] [OPTIONS]...
 
   OPTIONS:
              ld          append (DY)LD_LIBRARY_PATH

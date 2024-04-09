@@ -146,22 +146,16 @@ The C++ Iguana implementation does not require the use of any environment variab
 You may set your own environment variables, but for a quick start with suggested settings,
 the installed file `bin/this_iguana.sh` may be used as
 ```
-source bin/this_iguana.sh [OPTIONAL ARGUMENTS]...
-
-OPTIONAL ARGUMENTS:
-
-   ld       append library paths to LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH);
-            by default these variables are NOT modified
-
-   verbose  print the relevant environment variable values
+source bin/this_iguana.sh
 ```
+Use the `--help` argument to see its full usage guide.
 
-which sets or modifies the following environment variables:
+The following environment variables are set or modified:
 
 | Variable                                                 | Modification                                                                                                                              |
 | ---                                                      | ---                                                                                                                                       |
 | `PKG_CONFIG_PATH`                                        | adds paths to the `pkg-config` files (`.pc`) for dependencies and Iguana; see [note on dependency resolution](dependency_resolution.md)   |
 | `PYTHONPATH`                                             | adds paths to dependency and Iguana Python packages, if Python bindings are installed                                                     |
-| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries, if the optional argument `ld` was used                                                     |
+| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries                                                                                             |
 
 `this_iguana.sh` is compatible with `bash` and `zsh`, but not with `tcsh` or `csh`.

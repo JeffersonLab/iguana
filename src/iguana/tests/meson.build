@@ -10,7 +10,6 @@ test_exe = executable(
   link_with:           test_exe_links,
   link_args:           ROOT_dep_link_args,
   install:             true,
-  install_rpath:       ':'.join(project_exe_rpath),
   build_rpath:         ROOT_dep_rpath,
 )
 

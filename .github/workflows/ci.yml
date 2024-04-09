@@ -483,33 +483,22 @@ jobs:
           source .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
           python -m pip install -r iguana_src/bind/python/requirements.txt
-      ### set env vars - depends on runner and binding
-      - name: source environment for Linux and python
-        if: ${{ inputs.runner == 'ubuntu-latest' && matrix.build_id == 'python' }}
-        run: |
-          source iguana/bin/this_iguana.sh verbose
-          echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
-          echo PYTHONPATH=$PYTHONPATH           >> $GITHUB_ENV
-      - name: source environment for macOS and python
-        if: ${{ inputs.runner == 'macos-latest' && matrix.build_id == 'python' }}
-        run: |
-          source iguana/bin/this_iguana.sh verbose ld
-          echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH     >> $GITHUB_ENV
-          echo PYTHONPATH=$PYTHONPATH               >> $GITHUB_ENV
-          echo DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH >> $GITHUB_ENV  # for cppyy on macOS to be able to find dynamic libs
+      ### set env vars
       - name: source environment for ROOT
         run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld python # needed for `ld` path and PYTHONPATH
+      - name: source iguana environment
+        run: source iguana/bin/this_iguana.sh --verbose --githubCI
       ### run tests
       - name: test 00
-        run: iguana/bin/iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
+        run: iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 01
-        run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
+        run: iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 02
         if: ${{ matrix.build_id == 'cpp-gcc-release' }}
-        run: iguana/bin/iguana-example-02-dataframes${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
+        run: iguana-example-02-dataframes${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 03
         if: ${{ matrix.build_id == 'cpp-gcc-release' }}
-        run: iguana/bin/iguana-example-03-config-files${{ matrix.extension }}
+        run: iguana-example-03-config-files${{ matrix.extension }}
 
   # test consumers
   #########################################################
@@ -569,7 +558,7 @@ jobs:
       ### build test
       - name: build
         run: |
-          source iguana/bin/this_iguana.sh verbose
+          source iguana/bin/this_iguana.sh --verbose
           .github/test-consumer-build.sh ${{ matrix.tool }}
       - name: dump rpaths
         run: .github/rpath-dump.sh install-consumer ${{ inputs.runner }}
