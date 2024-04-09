@@ -271,6 +271,8 @@ jobs:
       - name: dump build log
         if: always()
         run: cat build-iguana/meson-logs/meson-log.txt
+      - name: dump rpaths
+        run: iguana_src/.github/rpath-dump.sh iguana ${{ inputs.runner }}
       - name: cat pkg-config pc files
         run: |
           pcfiles=$(find iguana -type f -name "*.pc")
@@ -486,6 +488,8 @@ jobs:
         run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld python # needed for `ld` path and PYTHONPATH
       - name: source iguana environment
         run: source iguana/bin/this_iguana.sh --verbose --githubCI
+      - name: dump rpaths
+        run: iguana_src/.github/rpath-dump.sh iguana ${{ inputs.runner }}
       ### run tests
       - name: test 00
         run: iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
@@ -558,6 +562,8 @@ jobs:
       ### build test
       - name: build
         run: .github/test-consumer-build.sh ${{ matrix.tool }}
+      - name: dump rpaths
+        run: .github/rpath-dump.sh install-consumer ${{ inputs.runner }}
       ### run test
       - name: run
         run: install-consumer/bin/iguana-example-00-basic test_data.hipo 1
