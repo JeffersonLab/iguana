@@ -496,7 +496,7 @@ jobs:
         run: iguana-example-02-dataframes${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 03
         if: ${{ matrix.build_id == 'cpp-gcc-release' }}
-        run: iguana-example-03-config-files${{ matrix.extension }}
+        run: iguana-example-03-config-files iguana/etc/iguana/examples
 
   # test consumers
   #########################################################
@@ -553,15 +553,14 @@ jobs:
         run: echo CMAKE_PREFIX_PATH=$(pwd)/hipo >> $GITHUB_ENV
       - name: source environment for ROOT
         run: .github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `ld` path
+      - name: source iguana environment
+        run: source iguana/bin/this_iguana.sh --verbose --githubCI
       ### build test
       - name: build
-        run: |
-          source iguana/bin/this_iguana.sh --verbose
-          .github/test-consumer-build.sh ${{ matrix.tool }}
+        run: .github/test-consumer-build.sh ${{ matrix.tool }}
       ### run test
       - name: run
-        run: |
-          install-consumer/bin/iguana-example-00-basic test_data.hipo 1
+        run: install-consumer/bin/iguana-example-00-basic test_data.hipo 1
 
   # documentation
   #########################################################
