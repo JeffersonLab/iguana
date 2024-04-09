@@ -12,7 +12,7 @@ prefix=$1
 os=$2
 
 # binaries
-objs=($(find $prefix -type f -name "iguana-*"))
+objs=($(find $prefix -type f -name "iguana-*" | grep -vE '\.py$'))
 
 # libraries and `get_rpath` function
 case $os in
