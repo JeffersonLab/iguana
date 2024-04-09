@@ -35,7 +35,7 @@ foreach example, info : example_sources
       example_exe,
       args: info.get(
         'test_args',
-        [ get_option('test_data_file'), get_option('test_num_events') ]
+        [ get_option('test_data_file'), '100' ] # don't run too many events, or meson test log will be huge
       ),
       env: project_test_env,
     )
