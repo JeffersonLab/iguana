@@ -510,7 +510,6 @@ jobs:
     needs:
       - download_test_data
       - build_hipo
-      - build_root
       - build_iguana
     runs-on: ${{ inputs.runner }}
     container:
@@ -533,11 +532,6 @@ jobs:
         with:
           key: ${{ needs.build_hipo.outputs.key }}
           path: hipo.tar.zst
-      - name: get local dependency `ROOT`
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_root.outputs.key }}
-          path: root.tar.zst
       - name: get iguana build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -555,8 +549,6 @@ jobs:
       - name: set cmake prefix path
         if: ${{ matrix.tool == 'cmake' }}
         run: echo CMAKE_PREFIX_PATH=$(pwd)/hipo >> $GITHUB_ENV
-      - name: source environment for ROOT
-        run: .github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `ld` path
       - name: source iguana environment
         run: source iguana/bin/this_iguana.sh --verbose --githubCI
       ### build test
