@@ -76,7 +76,6 @@ program iguana_example_fortran
       case(0)
         if(argc.eq.0) then
           print *, 'USAGE: ' // arg // ' [HIPO data file] [number of events (0 for all)]'
-          error stop 'please specify a HIPO file'
         end if
       case(1)
         allocate(character(arglen) :: in_file)
@@ -85,17 +84,16 @@ program iguana_example_fortran
         read(arg,*) num_events
     end select
   end do
+  if(.not.allocated(in_file)) then
+    error stop 'please specify a HIPO file'
+  end if
 
   ! create iguana algorithms
   event_builder_filter = iguana_algo_create('clas12::EventBuilderFilter')
   ! momentum_corrections = iguana_algo_create('clas12::MomentumCorrection') ! FIXME: can't create 2 algos
 
   ! open the HIPO file
-  if(allocated(in_file)) then
-    call hipo_file_open(in_file//c_null_char) ! be sure to terminate with null character
-  else
-    error stop 'in file name is not allocated'
-  end if
+  call hipo_file_open(in_file//c_null_char) ! be sure to terminate with null character
   reader_status = 0
   counter       = 0
 
