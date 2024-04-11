@@ -18,6 +18,11 @@ example_sources = {
     'sources':   [ 'iguana-example-03-config-files.cc' ],
     'test_args': [ get_option('prefix') / example_config_files_prefix ],
   },
+  'iguana-example-fortran': {
+    'sources':     [ 'iguana-example-fortran.f03' ],
+    'extra_links': [ algo_fortran_lib ],
+    'build_this':  get_option('bind_fortran')
+  },
 }
 
 # build executables and test them
@@ -28,7 +33,7 @@ foreach example, info : example_sources
       sources:             info['sources'],
       include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
       dependencies:        project_deps,
-      link_with:           project_libs,
+      link_with:           project_libs + info.get('extra_links', []),
       link_args:           ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
       install:             true,
       build_rpath:         ROOT_dep_rpath,
