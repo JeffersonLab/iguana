@@ -1,9 +1,8 @@
-module iguana
+module iguana_Algorithm
 
   use, intrinsic :: iso_c_binding
   implicit none
 
-  ! iguana bindings interface
   interface
 
     type(c_ptr) function iguana_algo_create(algo_name) bind(C)
@@ -31,15 +30,6 @@ module iguana
       type(c_ptr), value, intent(in) :: algo
     end subroutine
 
-  end interface
-
-  ! action functions interface
-  interface
-    logical(c_bool) function action_filter(algo, pid) bind(C, name='iguana_clas12_EventBuilderFilter_Filter')
-      import
-      type(c_ptr), value, intent(in) :: algo
-      integer(c_int), value, intent(in) :: pid
-    end function
   end interface
 
 end module

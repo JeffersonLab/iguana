@@ -1,7 +1,8 @@
 program iguana_example_fortran
 
   use, intrinsic :: iso_c_binding
-  use iguana
+  use iguana_Algorithm
+  use iguana_clas12_EventBuilderFilter
 
   implicit none
 

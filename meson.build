@@ -167,9 +167,6 @@ subdir('src/iguana/tests')
 if get_option('bind_python')
   subdir('bind/python')
 endif
-if get_option('bind_fortran')
-  subdir('bind/fortran')
-endif
 
 # generate pkg-config file
 pkg.generate(
