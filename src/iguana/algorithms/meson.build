@@ -20,7 +20,7 @@
 algo_dict = {
   'main': {
     'algorithm': {
-      'sources': [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ],
+      'sources': [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmBindings.cc', 'AlgorithmSequence.cc' ],
       'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
     },
     'validator': {
