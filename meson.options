@@ -4,4 +4,4 @@ option('test_num_events', type: 'string',  value: '10',  description: 'Number of
 option('test_output_dir', type: 'string',  value: '',    description: 'Output directory for tests. Must be an absolute path. If unspecified, tests will still run, but will not produce output files.')
 option('require_ROOT',    type: 'boolean', value: false, description: 'If false, ROOT is only used if it is found; if true, ROOT is REQUIRED and the build will fail if ROOT is not found')
 option('bind_python',     type: 'boolean', value: false, description: 'Generate Python bindings and their examples')
-option('bind_fortran',    type: 'boolean', value: false, description: 'Generate Fortran bindings and their examples')
+option('bind_fortran',    type: 'boolean', value: false, description: 'Generate Fortran bindings')
