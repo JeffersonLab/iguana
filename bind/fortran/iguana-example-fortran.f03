@@ -44,15 +44,16 @@ program iguana_example_fortran
 
   ! -----------------------------------------------
 
-  character(:), allocatable :: in_file, num_events_arg
-  integer(c_int) :: num_events
-  integer arglen
+  integer                   :: argc, arglen
+  character(:), allocatable :: arg, in_file
+  integer(c_int)            :: num_events
 
   integer :: reader_status
   integer :: counter
   integer :: nrows
   integer :: nr
-  integer(c_int) :: pid(50)
+
+  integer(c_int)  :: pid(50)
   logical(c_bool) :: accept(50)
 
   integer :: i, j
@@ -63,16 +64,25 @@ program iguana_example_fortran
 
   ! parse arguments
   num_events = 10
-  do i = 1, command_argument_count()
-  call get_command_argument(number=i, length=arglen)
-    select case (i)
+  argc = command_argument_count()
+  do i = 0, argc
+    if(allocated(arg)) then
+      deallocate(arg)
+    end if
+    call get_command_argument(number=i, length=arglen)
+    allocate(character(arglen) :: arg)
+    call get_command_argument(number=i, value=arg)
+    select case(i)
+      case(0)
+        if(argc.eq.0) then
+          print *, 'USAGE: ' // arg // ' [HIPO data file] [number of events (0 for all)]'
+          error stop 'please specify a HIPO file'
+        end if
       case(1)
         allocate(character(arglen) :: in_file)
-        call get_command_argument(number=i, value=in_file)
+        in_file = arg
       case(2)
-        allocate(character(arglen) :: num_events_arg)
-        call get_command_argument(number=i, value=num_events_arg)
-        read(num_events_arg,*) num_events
+        read(arg,*) num_events
     end select
   end do
 
@@ -81,7 +91,11 @@ program iguana_example_fortran
   ! momentum_corrections = iguana_algo_create('clas12::MomentumCorrection') ! FIXME: can't create 2 algos
 
   ! open the HIPO file
-  call hipo_file_open(in_file//c_null_char)
+  if(allocated(in_file)) then
+    call hipo_file_open(in_file//c_null_char) ! be sure to terminate with null character
+  else
+    error stop 'in file name is not allocated'
+  end if
   reader_status = 0
   counter       = 0
 
