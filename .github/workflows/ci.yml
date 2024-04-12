@@ -45,7 +45,8 @@ defaults:
     shell: bash
 
 env:
-  hipo_version: f40da676bbd1745398e9fdf233ff213ff98798f1
+  hipo_fork: c-dilks/hipo
+  hipo_ref: 4c8325bcf289c5da84f20e6e2b84f9b9ad121447 # for libHipoDataFrame in pkg-config
   num_events: 1000
 
 jobs:
@@ -73,51 +74,6 @@ jobs:
 
   # dependencies
   #########################################################
-
-  build_hipo:
-    name: Build HIPO
-    runs-on: ${{ inputs.runner }}
-    container:
-      image: ${{ inputs.container }}
-    outputs:
-      key: ${{ steps.key.outputs.key }}
-    steps:
-      - name: key
-        id: key
-        run: echo key=hipo---${{ inputs.id }}---${{ env.hipo_version }}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
-      - uses: actions/cache/restore@v4
-        id: cache
-        with:
-          key: ${{ steps.key.outputs.key }}
-          path: hipo.tar.zst
-          lookup-only: true
-      - name: checkout iguana for dependency installation script
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/checkout@v4
-        with:
-          path: iguana_src
-      - name: checkout hipo
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/checkout@v4
-        with:
-          repository: gavalian/hipo
-          ref: ${{ env.hipo_version }}
-          path: hipo_src
-      - name: build
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-          cmake -S hipo_src -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIE build, for sanitizer readibility
-          cmake --build build
-          cmake --install build
-          tar cavf hipo{.tar.zst,}
-      - uses: actions/cache/save@v4
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        id: cache_save
-        with:
-          key: ${{ steps.key.outputs.key }}
-          path: hipo.tar.zst
-
 
   build_root:
     name: Build ROOT
@@ -167,6 +123,60 @@ jobs:
         with:
           key: ${{ steps.key.outputs.key }}
           path: root.tar.zst
+
+  build_hipo:
+    name: Build HIPO
+    needs:
+      - build_root # for dataframe support
+    runs-on: ${{ inputs.runner }}
+    container:
+      image: ${{ inputs.container }}
+    outputs:
+      key: ${{ steps.key.outputs.key }}
+    steps:
+      - name: get ROOT build
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ needs.build_root.outputs.key }}
+          path: root.tar.zst
+      - name: untar ROOT build
+        run: ls *.tar.zst | xargs -I{} tar xvf {}
+      - name: key
+        id: key
+        run: echo key=hipo---${{ inputs.id }}---${{ env.hipo_ref }}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          key: ${{ steps.key.outputs.key }}
+          path: hipo.tar.zst
+          lookup-only: true
+      - name: checkout iguana for dependency installation script
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/checkout@v4
+        with:
+          path: iguana_src
+      - name: checkout hipo
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.hipo_fork }}
+          ref: ${{ env.hipo_ref }}
+          path: hipo_src
+      - name: build
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
+          source root/bin/thisroot.sh
+          cmake -S hipo_src -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIE build, for sanitizer readibility
+          cmake --build build
+          cmake --install build
+          tar cavf hipo{.tar.zst,}
+      - uses: actions/cache/save@v4
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        id: cache_save
+        with:
+          key: ${{ steps.key.outputs.key }}
+          path: hipo.tar.zst
 
   # build
   #########################################################
@@ -227,7 +237,7 @@ jobs:
           echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
-          echo "| \`hipo\` | ${{ env.hipo_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`hipo\` | ${{ env.hipo_ref }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       ### build
       - name: add `ROOT` to `PATH`
@@ -508,7 +518,10 @@ jobs:
         run: iguana/bin/iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
       - name: test 02
         if: ${{ matrix.build_id == 'cpp-gcc-release' }}
-        run: iguana/bin/iguana-example-02-config-files
+        run: iguana/bin/iguana-example-02-dataframes${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
+      - name: test 03
+        if: ${{ matrix.build_id == 'cpp-gcc-release' }}
+        run: iguana/bin/iguana-example-03-config-files${{ matrix.extension }}
 
   # test consumers
   #########################################################

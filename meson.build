@@ -103,6 +103,9 @@ if ROOT_dep.found()
     '-L' + ROOT_libdir,
     '-lCore',
     '-lGenVector',
+    '-lROOTDataFrame',
+    '-lROOTVecOps',
+    '-lTreePlayer',
   ]
   ROOT_dep_link_args_for_validators = [
     # additional ROOT libraries for validators (namely, graphics libraries)

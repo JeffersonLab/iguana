@@ -30,6 +30,11 @@ namespace iguana::clas12 {
       /// @returns `true` if `pid` is one the user wants
       bool Filter(int const pid) const;
 
+      /// @action_function{vector filter} checks if the PDG `pid` is a part of the list of user-specified PDGs
+      /// @param pids the list of particle PDGs to check
+      /// @returns list of booleans which are `true` for `pids` the user wants
+      std::deque<bool> Filter(std::vector<int> const pids) const;
+
     private:
 
       /// `hipo::banklist` index for the particle bank
