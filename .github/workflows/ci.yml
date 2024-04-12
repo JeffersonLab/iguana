@@ -224,13 +224,13 @@ jobs:
         if: ${{ matrix.id != 'noROOT' }}
         uses: actions/cache/restore@v4
         with:
-          key: ${{ steps.hipo_key.output.hipo_key }}---withROOT
+          key: ${{ needs.build_hipo.outputs.key }}---withROOT
           path: hipo.tar.zst
       - name: get `hipo-noROOT` build
         if: ${{ matrix.id == 'noROOT' }}
         uses: actions/cache/restore@v4
         with:
-          key: ${{ steps.hipo_key.output.hipo_key }}---noROOT
+          key: ${{  needs.build_hipo.outputs.key }}---noROOT
           path: hipo.tar.zst
       - name: get `ROOT` build
         if: ${{ matrix.id != 'noROOT' }}
