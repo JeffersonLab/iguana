@@ -21,6 +21,14 @@ on:
         required: false
         type: string
         default: 'latest'
+      matrix:
+        description: 'Iguana job matrix'
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 defaults:
   run:
@@ -184,23 +192,7 @@ jobs:
       image: ${{ inputs.container }}
     strategy:
       fail-fast: false
-      matrix:
-        id:
-          - cpp
-          - address-sanitizer
-          - thread-sanitizer
-          - undefined-sanitizer
-          - leak-sanitizer
-          - noROOT
-          - python
-        include:
-          - { id: cpp,                 CC: gcc,   CXX: g++,     opts: '-Dbuildtype=release -Drequire_ROOT=true   -Db_coverage=true'     }
-          - { id: address-sanitizer,   CC: clang, CXX: clang++, opts: '-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=address   -Db_lundef=false -Db_pie=true' }
-          - { id: thread-sanitizer,    CC: clang, CXX: clang++, opts: '-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=thread    -Db_lundef=false -Db_pie=true' }
-          - { id: undefined-sanitizer, CC: clang, CXX: clang++, opts: '-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=undefined -Db_lundef=false -Db_pie=true' }
-          - { id: leak-sanitizer,      CC: clang, CXX: clang++, opts: '-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=leak      -Db_lundef=false -Db_pie=true' }
-          - { id: noROOT,              CC: gcc,   CXX: g++,     opts: '-Dbuildtype=release -Drequire_ROOT=false' }
-          - { id: python,              CC: gcc,   CXX: g++,     opts: '-Dbuildtype=release -Drequire_ROOT=true   -Dbind_python=true'    }
+      matrix: ${{ fromJson(inputs.matrix) }}
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
@@ -312,7 +304,7 @@ jobs:
           fi
       ### coverage
       - name: coverage
-        if: ${{ matrix.id == 'cpp' }}
+        if: ${{ matrix.id == 'coverage' }}
         run: |
           ninja -C iguana_build coverage
           mv iguana_build/meson-logs/coveragereport coverage-report
@@ -371,7 +363,7 @@ jobs:
           retention-days: 5
           path: iguana_build/meson-logs
       - uses: actions/upload-artifact@v4
-        if: ${{ matrix.id == 'cpp' }}
+        if: ${{ matrix.id == 'coverage' }}
         with:
           name: coverage-report
           retention-days: 5
