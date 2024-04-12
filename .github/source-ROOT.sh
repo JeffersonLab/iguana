@@ -4,7 +4,7 @@ set -e
 set -u
 
 # parse arguments
-if [ $# -lt 2 ]; then
+if [ $# -ne 1 ]; then
   echo """
   USAGE: $0 [path/to/root]
 
