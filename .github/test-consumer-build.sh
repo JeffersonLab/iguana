@@ -9,8 +9,8 @@ tool=$1
 
 # source, build, and install directories
 source_dir=examples/build_with_$tool
-build_dir=build-consumer
-install_dir=install-consumer
+build_dir=build-consumer-$tool
+install_dir=install-consumer-$tool
 mkdir -p $install_dir
 install_dir=$(cd $install_dir && pwd -P)
 

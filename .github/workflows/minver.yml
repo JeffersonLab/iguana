@@ -18,13 +18,6 @@ jobs:
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
       verset: minver
-      test_matrix: >-
-        {
-          "include": [
-            { "mode": "test",   "build_id": "cpp-gcc-release",        "CC": "gcc", "CXX": "g++", "buildtype": "release" },
-            { "mode": "noROOT", "build_id": "cpp-gcc-release-noROOT", "CC": "gcc", "CXX": "g++", "buildtype": "release" }
-          ]
-        }
 
   issue_bot:
     name: Issue bot

@@ -21,24 +21,6 @@ on:
         required: false
         type: string
         default: 'latest'
-      test_matrix:
-        description: 'Test matrix for `test_iguana` job (JSON)'
-        required: false
-        type: string
-        # test coverage and sanitizers
-        # FIXME: `b_sanitize=memory` is not used because `libc++` needs to be re-compiled with `-fsanitize=memory`, otherwise
-        #        we are bothered by false positives (e.g., from `std::map` insertion)
-        default: >-
-          {
-            "include": [
-              { "mode": "coverage",                     "build_id": "cpp-gcc-release",        "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
-              { "mode": "noROOT",                       "build_id": "cpp-gcc-release-noROOT", "CC": "gcc",   "CXX": "g++",     "buildtype": "release" },
-              { "mode": "address-sanitizer",            "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "thread-sanitizer",             "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "undefined-behavior-sanitizer", "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   },
-              { "mode": "leak-sanitizer",               "build_id": "cpp-clang-debug",        "CC": "clang", "CXX": "clang++", "buildtype": "debug"   }
-            ]
-          }
 
 defaults:
   run:
@@ -47,7 +29,9 @@ defaults:
 env:
   hipo_fork: c-dilks/hipo
   hipo_ref: 4c8325bcf289c5da84f20e6e2b84f9b9ad121447 # for libHipoDataFrame in pkg-config
+  # test options
   num_events: 1000
+  verbose_test: 'false' # only set this to 'true' if `meson test` fails and you need more output to investigate
 
 jobs:
 
@@ -131,15 +115,23 @@ jobs:
     runs-on: ${{ inputs.runner }}
     container:
       image: ${{ inputs.container }}
+    strategy:
+      fail-fast: true
+      matrix:
+        root_dep:
+          - noROOT # exclude dataframe lib, which depends on ROOT
+          - withROOT
     outputs:
       key: ${{ steps.key.outputs.key }}
     steps:
       - name: get ROOT build
+        if: ${{ matrix.root_dep == 'withROOT' }}
         uses: actions/cache/restore@v4
         with:
           key: ${{ needs.build_root.outputs.key }}
           path: root.tar.zst
       - name: untar ROOT build
+        if: ${{ matrix.root_dep == 'withROOT' }}
         run: ls *.tar.zst | xargs -I{} tar xvf {}
       - name: key
         id: key
@@ -147,7 +139,7 @@ jobs:
       - uses: actions/cache/restore@v4
         id: cache
         with:
-          key: ${{ steps.key.outputs.key }}
+          key: ${{ steps.key.outputs.key }}---${{ matrix.root_dep }}
           path: hipo.tar.zst
           lookup-only: true
       - name: checkout iguana for dependency installation script
@@ -166,7 +158,7 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
           iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-          source root/bin/thisroot.sh
+          [ "${{ matrix.root_dep }}" = "withROOT" ] && source root/bin/thisroot.sh
           cmake -S hipo_src -B build -G Ninja --install-prefix $(pwd)/hipo -DCMAKE_POSITION_INDEPENDENT_CODE=ON # using PIE build, for sanitizer readibility
           cmake --build build
           cmake --install build
@@ -175,14 +167,14 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         id: cache_save
         with:
-          key: ${{ steps.key.outputs.key }}
+          key: ${{ steps.key.outputs.key }}---${{ matrix.root_dep }}
           path: hipo.tar.zst
 
-  # build
+  # build and test Iguana
   #########################################################
 
-  build_iguana:
-    name: Build Iguana
+  iguana:
+    name: Iguana
     needs:
       - build_hipo
       - build_root
@@ -192,16 +184,22 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
+        id:
+          - cpp
+          - address-sanitizer
+          - thread-sanitizer
+          - undefined-sanitizer
+          - leak-sanitizer
+          - noROOT
+          - python
         include:
-          # build C++-only version with various compilers and buildtypes
-          - { build_id: cpp-gcc-release,        CC: gcc,   CXX: g++,     buildtype: release, binding_opts: '' }
-          - { build_id: cpp-gcc-debug,          CC: gcc,   CXX: g++,     buildtype: debug,   binding_opts: '' }
-          - { build_id: cpp-clang-release,      CC: clang, CXX: clang++, buildtype: release, binding_opts: '' }
-          - { build_id: cpp-clang-debug,        CC: clang, CXX: clang++, buildtype: debug,   binding_opts: '' }
-          # build without ROOT
-          - { build_id: cpp-gcc-release-noROOT, CC: gcc,   CXX: g++,     buildtype: release, binding_opts: '' }
-          # build with bindings
-          - { build_id: python,                 CC: gcc,   CXX: g++,     buildtype: release, binding_opts: '-Dbind_python=True' }
+          - { id: cpp,                 CC: gcc,   CXX: g++,     opts: '-Dbuildtype=release -Drequire_ROOT=true   -Db_coverage=true'     }
+          - { id: address-sanitizer,   CC: clang, CXX: clang++, opts: '-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=address   -Db_lundef=false -Db_pie=true' }
+          - { id: thread-sanitizer,    CC: clang, CXX: clang++, opts: '-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=thread    -Db_lundef=false -Db_pie=true' }
+          - { id: undefined-sanitizer, CC: clang, CXX: clang++, opts: '-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=undefined -Db_lundef=false -Db_pie=true' }
+          - { id: leak-sanitizer,      CC: clang, CXX: clang++, opts: '-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=leak      -Db_lundef=false -Db_pie=true' }
+          - { id: noROOT,              CC: gcc,   CXX: g++,     opts: '-Dbuildtype=release -Drequire_ROOT=false' }
+          - { id: python,              CC: gcc,   CXX: g++,     opts: '-Dbuildtype=release -Drequire_ROOT=true   -Dbind_python=true'    }
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
@@ -213,26 +211,39 @@ jobs:
           fetch-tags: true
           fetch-depth: 0
           path: iguana_src
+      ### get test data
+      - name: get test data
+        uses: actions/cache/restore@v4
+        with:
+          key: test_data
+          path: test_data.hipo
       ### dependencies
       - name: install dependency packages
         run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      - name: get local dependency `hipo`
+      - name: get `hipo-withROOT` build
+        if: ${{ matrix.id != 'noROOT' }}
         uses: actions/cache/restore@v4
         with:
-          key: ${{ needs.build_hipo.outputs.key }}
+          key: ${{ steps.hipo_key.output.hipo_key }}---withROOT
           path: hipo.tar.zst
-      - name: get local dependency `ROOT`
-        if: ${{ matrix.build_id != 'cpp-gcc-release-noROOT' }}
+      - name: get `hipo-noROOT` build
+        if: ${{ matrix.id == 'noROOT' }}
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ steps.hipo_key.output.hipo_key }}---noROOT
+          path: hipo.tar.zst
+      - name: get `ROOT` build
+        if: ${{ matrix.id != 'noROOT' }}
         uses: actions/cache/restore@v4
         with:
           key: ${{ needs.build_root.outputs.key }}
           path: root.tar.zst
-      - name: untar local dependencies
+      - name: untar dependency builds
         run: ls *.tar.zst | xargs -I{} tar xvf {}
       - name: tree local dependencies
         run: tree hipo
       - name: summarize dependencies
-        if: ${{ matrix.build_id == 'cpp-gcc-release' }}
+        if: ${{ matrix.id == 'cpp' }}
         run: |
           echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
@@ -240,37 +251,29 @@ jobs:
           echo "| \`hipo\` | ${{ env.hipo_ref }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       ### build
-      - name: add `ROOT` to `PATH`
-        if: ${{ matrix.build_id != 'cpp-gcc-release-noROOT' }}
-        run: iguana_src/.github/source-ROOT.sh root # needed for `root-config`
+      - name: set ROOT environment
+        if: ${{ matrix.id != 'noROOT' }}
+        run: iguana_src/.github/source-ROOT.sh root
       - name: meson setup
         run: |
-          resolve_args=(--cli)
-          resolve_args+=(--hipo ./hipo)
-          [ "${{ matrix.build_id }}" != "cpp-gcc-release-noROOT" ] && resolve_args+=(--root ./root)
-          build_args=$(iguana_src/meson/resolve-dependencies.py ${resolve_args[@]})
-          echo "resolve_args = ${resolve_args[@]}"
-          echo "build_args   = $build_args"
-          meson setup build-iguana iguana_src $build_args
-      - name: meson configure
-        run: |
-          meson configure                       \
-            --prefix=$(pwd)/iguana              \
-            -Dbuildtype=${{ matrix.buildtype }} \
-            -Dexamples=True                     \
-            ${{ matrix.binding_opts }}          \
-            build-iguana
-      - name: require ROOT
-        if: ${{ matrix.build_id != 'cpp-gcc-release-noROOT' }}
-        run: meson configure -Drequire_ROOT=true build-iguana
+          meson setup iguana_build iguana_src           \
+            --prefix=$(pwd)/iguana                      \
+            --cmake-prefix-path=$(pwd)/root             \
+            --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
+            -Dtest_data_file=$(pwd)/test_data.hipo      \
+            -Dtest_num_events=${{ env.num_events }}     \
+            -Dtest_output_dir=$(pwd)/validation_results \
+            ${{ matrix.opts }}
       - name: dump build options
-        run: meson configure build-iguana | cat
-      - name: meson install
-        run: meson install -C build-iguana
+        run: meson configure iguana_build | cat
+      - run: meson compile
+        working-directory: iguana_build
+      - run: meson install
+        working-directory: iguana_build
       ### dump info about this build
       - name: dump build log
         if: always()
-        run: cat build-iguana/meson-logs/meson-log.txt
+        run: cat iguana_build/meson-logs/meson-log.txt
       - name: dump rpaths
         run: iguana_src/.github/rpath-dump.sh iguana ${{ inputs.runner }}
       - name: cat pkg-config pc files
@@ -280,285 +283,77 @@ jobs:
             echo "[+++] cat $pcfile"
             cat $pcfile
           done
-      - run: tree iguana
-      ### upload artifacts
-      - name: tar
-        run: |
-          tar cavf iguana{.tar.zst,}
-          tar cavf build-iguana{.tar.zst,}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: install_iguana_${{ matrix.build_id }}
-          retention-days: 5
-          path: iguana.tar.zst
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build_iguana_${{ matrix.build_id }}
-          retention-days: 5
-          path: build-iguana.tar.zst
-
-  # run tests
-  #########################################################
-
-  test_iguana:
-    name: Test Iguana
-    needs:
-      - build_hipo
-      - build_root
-      - download_test_data
-      - build_iguana
-    runs-on: ${{ inputs.runner }}
-    container:
-      image: ${{ inputs.container }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(inputs.test_matrix) }}
-    env:
-      CC: ${{ matrix.CC }}
-      CXX: ${{ matrix.CXX }}
-    steps:
-      ### setup
-      - uses: actions/checkout@v4
-        with: # settings needed for version number detection
-          clean: false
-          fetch-tags: true
-          fetch-depth: 0
-          path: iguana_src
-      - name: get test data
-        uses: actions/cache/restore@v4
-        with:
-          key: test_data
-          path: test_data.hipo
-      - name: get iguana build dir
-        uses: actions/download-artifact@v4
-        with:
-          name: build_iguana_${{ matrix.build_id }}
-      ### dependencies
-      - name: install dependency packages
-        run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      - name: get local dependency `hipo`
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_hipo.outputs.key }}
-          path: hipo.tar.zst
-      - name: get local dependency `ROOT`
-        if: ${{ matrix.mode != 'noROOT' }}
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_root.outputs.key }}
-          path: root.tar.zst
-      - name: untar local dependencies
-        run: ls *.tar.zst | xargs -I{} tar xvf {}
-      ### rebuild iguana
-      - name: add `ROOT` to `PATH` and `ld` path
-        if: ${{ matrix.mode != 'noROOT' }}
-        run: iguana_src/.github/source-ROOT.sh root # needed for `root-config` and `ld` path
-      - name: meson wipe builddir for macOS re-link # macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
-        if: ${{ inputs.runner == 'macos-latest' }}
-        run: meson setup build-iguana iguana_src --wipe
-      - name: meson configure
-        run: |
-          meson configure                               \
-            -Dtest_data_file=$(pwd)/test_data.hipo      \
-            -Dtest_num_events=${{ env.num_events }}     \
-            -Dtest_output_dir=$(pwd)/validation_results \
-            build-iguana
-          case "${{ matrix.mode }}" in
-            coverage)
-              meson configure     \
-                -Db_coverage=true \
-                build-iguana
-              ;;
-            *sanitizer)
-              san=$(echo ${{ matrix.mode }} | sed 's;-.*;;g')
-              meson configure     \
-                -Db_sanitize=$san \
-                -Db_lundef=false  \
-                -Db_pie=true      \
-                build-iguana
-              ;;
-          esac
-      - name: dump build options
-        run: meson configure build-iguana | cat
-      - name: meson install
-        run: meson install -C build-iguana # must install, so the config files are in the expected location
+      - run: tree iguana installation prefix
       ### run tests
       - name: meson test
+        working-directory: iguana_build
         run: |
-          meson test --print-errorlogs -C build-iguana # terse
-          ### verbose (do not use by default):
-          # [ ${{ inputs.runner }} = "macos-latest" ] && stdbuf_cmd=gstdbuf || stdbuf_cmd=stdbuf
-          # $stdbuf_cmd -o0 meson test --print-errorlogs --verbose --no-stdsplit -C build-iguana
+          if [ "${{ env.verbose_test }}" = "true" ]; then
+            [ ${{ inputs.runner }} = "macos-latest" ] && stdbuf_cmd=gstdbuf || stdbuf_cmd=stdbuf
+            $stdbuf_cmd -o0 meson test --print-errorlogs --verbose --no-stdsplit
+          else
+            meson test --print-errorlogs
+          fi
+      ### coverage
       - name: coverage
-        if: ${{ matrix.mode == 'coverage' }}
+        if: ${{ matrix.id == 'cpp' }}
         run: |
-          ninja -C build-iguana coverage
-          mv build-iguana/meson-logs/coveragereport coverage-report
+          ninja -C iguana_build coverage
+          mv iguana_build/meson-logs/coveragereport coverage-report
           echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          cat build-iguana/meson-logs/coverage.txt >> $GITHUB_STEP_SUMMARY
+          cat iguana_build/meson-logs/coverage.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
           echo '- for details, see the `coverage-report` artifact' >> $GITHUB_STEP_SUMMARY
           echo '- to compare to the report from the `main` branch, see <https://jeffersonlab.github.io/iguana/coverage-report>' >> $GITHUB_STEP_SUMMARY
+      ### set iguana environment, since the next steps will check the iguana installation
+      - name: set iguana environment
+        run: source iguana/bin/this_iguana.sh --verbose --githubCI
+      ### test installed examples
+      ###### cpp
+      - run: iguana-example-00-basic test_data.hipo ${{ env.num_events }}
+        if: ${{ matrix.id == 'cpp' }}
+      - run: iguana-example-01-bank-rows test_data.hipo ${{ env.num_events }}
+        if: ${{ matrix.id == 'cpp' }}
+      - run: iguana-example-02-dataframes test_data.hipo ${{ env.num_events }}
+        if: ${{ matrix.id == 'cpp' }}
+      - run: iguana-example-03-config-files iguana/etc/iguana/examples
+        if: ${{ matrix.id == 'cpp' }}
+      ###### python
+      - run: iguana-example-00-basic.py test_data.hipo ${{ env.num_events }}
+        if: ${{ matrix.id == 'python' }}
+      - run: iguana-example-01-bank-rows.py test_data.hipo ${{ env.num_events }}
+        if: ${{ matrix.id == 'python' }}
+      ### test consumers
+      - name: consumer test: make
+        run: iguana_src/.github/test-consumer-build.sh make
+        if: ${{ matrix.id == 'cpp' }}
+      - name: consumer test: meson
+        run: iguana_src/.github/test-consumer-build.sh meson
+        if: ${{ matrix.id == 'cpp' }}
+      - name: consumer test: cmake
+        run: CMAKE_PREFIX_PATH=$(pwd)/hipo iguana_src/.github/test-consumer-build.sh cmake
+        if: ${{ matrix.id == 'cpp' }}
       ### upload artifacts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: logs_build_iguana_${{ matrix.mode }}
+          name: logs_iguana_build_${{ matrix.id }}
           retention-days: 5
-          path: build-iguana/meson-logs
+          path: iguana_build/meson-logs
       - uses: actions/upload-artifact@v4
-        if: ${{ matrix.mode == 'coverage' }}
+        if: ${{ matrix.id == 'cpp' }}
         with:
           name: coverage-report
           retention-days: 5
           path: coverage-report
       - uses: actions/upload-artifact@v4
-        if: ${{ matrix.mode == 'coverage' }} # select one job-matrix element, since we only need one copy of this artifact
+        if: ${{ matrix.id == 'cpp' }}
         with:
           name: _validation_results
           retention-days: 5
           path: validation_results
-
-  # run examples
-  # - a bit redundant, with `meson test` from `test_iguana`, but this ensures
-  #   the _installation_ works (e.g., `rpath` handling)
-  #########################################################
-
-  test_examples:
-    name: Test Installed Examples
-    needs:
-      - download_test_data
-      - build_hipo
-      - build_root
-      - build_iguana
-    runs-on: ${{ inputs.runner }}
-    container:
-      image: ${{ inputs.container }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { build_id: cpp-gcc-release, extension: ''    }
-          - { build_id: python,          extension: '.py' }
-    steps:
-      ### dependencies and test data
-      - uses: actions/checkout@v4
-        with:
-          path: iguana_src # keep source code isolated
-      - name: install dependency packages
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-        working-directory: iguana_src
-      - name: get local dependency `hipo`
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_hipo.outputs.key }}
-          path: hipo.tar.zst
-      - name: get local dependency `ROOT`
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_root.outputs.key }}
-          path: root.tar.zst
-      - name: get iguana build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: install_iguana_${{ matrix.build_id }}
-      - name: get test data
-        uses: actions/cache/restore@v4
-        with:
-          key: test_data
-          path: test_data.hipo
-      - name: untar artifacts
-        run: |
-          ls *.tar.zst | xargs -I{} tar xvf {}
-          rm -v *.tar.zst
-      - name: tree artifacts
-        run: tree
-      ### setup python virtaul environment (for python binding tests)
-      - name: install python binding runtime dependencies
-        if: ${{ matrix.build_id == 'python' }}
-        run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          echo PATH=$PATH >> $GITHUB_ENV
-          python -m pip install -r iguana_src/bind/python/requirements.txt
-      ### set env vars
-      - name: source environment for ROOT
-        run: iguana_src/.github/source-ROOT.sh root # needed for `ld` path and PYTHONPATH
-      - name: source iguana environment
-        run: source iguana/bin/this_iguana.sh --verbose --githubCI
-      - name: dump rpaths
-        run: iguana_src/.github/rpath-dump.sh iguana ${{ inputs.runner }}
-      ### run tests
-      - name: test 00
-        run: iguana-example-00-basic${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
-      - name: test 01
-        run: iguana-example-01-bank-rows${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
-      - name: test 02
-        if: ${{ matrix.build_id == 'cpp-gcc-release' }}
-        run: iguana-example-02-dataframes${{ matrix.extension }} test_data.hipo ${{ env.num_events }}
-      - name: test 03
-        if: ${{ matrix.build_id == 'cpp-gcc-release' }}
-        run: iguana-example-03-config-files iguana/etc/iguana/examples
-
-  # test consumers
-  #########################################################
-
-  test_consumer_builds:
-    name: Test consumer builds
-    needs:
-      - download_test_data
-      - build_hipo
-      - build_iguana
-    runs-on: ${{ inputs.runner }}
-    container:
-      image: ${{ inputs.container }}
-    strategy:
-      fail-fast: false
-      matrix:
-        tool: [ cmake, make, meson ]
-    env:
-      CC: gcc
-      CXX: g++
-      build_id: cpp-gcc-release-noROOT # FIXME: ROOT libs sporadically can't be found on some runners; for now use `noROOT` build
-    steps:
-      ### dependencies and test data
-      - uses: actions/checkout@v4
-      - name: install dependency packages
-        run: .github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      - name: get local dependency `hipo`
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_hipo.outputs.key }}
-          path: hipo.tar.zst
-      - name: get iguana build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: install_iguana_${{ env.build_id }}
-      - name: get test data
-        uses: actions/cache/restore@v4
-        with:
-          key: test_data
-          path: test_data.hipo
-      - name: untar artifacts
-        run: |
-          ls *.tar.zst | xargs -I{} tar xvf {}
-          rm -v *.tar.zst
-      ### set env vars
-      - name: set cmake prefix path
-        if: ${{ matrix.tool == 'cmake' }}
-        run: echo CMAKE_PREFIX_PATH=$(pwd)/hipo >> $GITHUB_ENV
-      - name: source iguana environment
-        run: source iguana/bin/this_iguana.sh --verbose --githubCI
-      ### build test
-      - name: build
-        run: .github/test-consumer-build.sh ${{ matrix.tool }}
-      - name: dump rpaths
-        run: .github/rpath-dump.sh install-consumer ${{ inputs.runner }}
-      ### run test
-      - name: run
-        run: install-consumer/bin/iguana-example-00-basic test_data.hipo 1
 
   # documentation
   #########################################################
@@ -591,7 +386,7 @@ jobs:
     name: Collect webpages
     needs:
       - doc_generate
-      - test_iguana
+      - iguana
     runs-on: ${{ inputs.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -642,9 +437,7 @@ jobs:
   final:
     name: Final
     needs:
-      - test_iguana
-      - test_examples
-      - test_consumer_builds
+      - iguana
     runs-on: ${{ inputs.runner }}
     steps:
       - run: exit 0
