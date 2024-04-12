@@ -326,13 +326,13 @@ jobs:
       - run: iguana-example-01-bank-rows.py test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'python' }}
       ### test consumers
-      - name: consumer test: make
+      - name: consumer test make
         run: iguana_src/.github/test-consumer-build.sh make
         if: ${{ matrix.id == 'cpp' }}
-      - name: consumer test: meson
+      - name: consumer test meson
         run: iguana_src/.github/test-consumer-build.sh meson
         if: ${{ matrix.id == 'cpp' }}
-      - name: consumer test: cmake
+      - name: consumer test cmake
         run: CMAKE_PREFIX_PATH=$(pwd)/hipo iguana_src/.github/test-consumer-build.sh cmake
         if: ${{ matrix.id == 'cpp' }}
       ### upload artifacts
