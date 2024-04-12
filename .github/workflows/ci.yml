@@ -343,14 +343,26 @@ jobs:
         if: ${{ matrix.id == 'python' }}
       ### test consumers
       - name: consumer test make
-        run: iguana_src/.github/test-consumer-build.sh make
         if: ${{ matrix.id == 'cpp' }}
+        run: |
+          make -C iguana_src/examples/build_with_make
+          echo "========================================= TEST RUN ========================================="
+          iguana_src/examples/build_with_make/bin/iguana-example-00-basic test_data.hipo 10
       - name: consumer test meson
-        run: iguana_src/.github/test-consumer-build.sh meson
         if: ${{ matrix.id == 'cpp' }}
+        run: |
+          meson setup build_consumer_meson iguana_src/examples/build_with_meson --prefix=$(pwd)/install_consumer_meson
+          meson install -C build_consumer_meson
+          echo "========================================= TEST RUN ========================================="
+          install_consumer_meson/bin/iguana-example-00-basic test_data.hipo 10
       - name: consumer test cmake
-        run: CMAKE_PREFIX_PATH=$(pwd)/hipo iguana_src/.github/test-consumer-build.sh cmake
         if: ${{ matrix.id == 'cpp' }}
+        run: |
+          cmake -B build_consumer_cmake -S iguana_src/examples/build_with_cmake -DCMAKE_PREFIX_PATH=$(pwd)/hipo -G Ninja --install-prefix=$(pwd)/install_consumer_cmake
+          cmake --build build_consumer_cmake
+          cmake --install build_consumer_cmake
+          echo "========================================= TEST RUN ========================================="
+          install_consumer_cmake/bin/iguana-example-00-basic test_data.hipo 10
       ### upload artifacts
       - uses: actions/upload-artifact@v4
         if: always()
