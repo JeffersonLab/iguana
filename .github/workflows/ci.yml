@@ -242,7 +242,7 @@ jobs:
       ### build
       - name: add `ROOT` to `PATH`
         if: ${{ matrix.build_id != 'cpp-gcc-release-noROOT' }}
-        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} # needed for `root-config`
+        run: iguana_src/.github/source-ROOT.sh root # needed for `root-config`
       - name: meson setup
         run: |
           resolve_args=(--cli)
@@ -352,7 +352,7 @@ jobs:
       ### rebuild iguana
       - name: add `ROOT` to `PATH` and `ld` path
         if: ${{ matrix.mode != 'noROOT' }}
-        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld # needed for `root-config` and `ld` path
+        run: iguana_src/.github/source-ROOT.sh root # needed for `root-config` and `ld` path
       - name: meson wipe builddir for macOS re-link # macOS Homebrew installation prefix varies among runners, so wipe the builddir to force re-linking
         if: ${{ inputs.runner == 'macos-latest' }}
         run: meson setup build-iguana iguana_src --wipe
@@ -485,7 +485,7 @@ jobs:
           python -m pip install -r iguana_src/bind/python/requirements.txt
       ### set env vars
       - name: source environment for ROOT
-        run: iguana_src/.github/source-ROOT.sh root ${{ inputs.runner }} ld python # needed for `ld` path and PYTHONPATH
+        run: iguana_src/.github/source-ROOT.sh root # needed for `ld` path and PYTHONPATH
       - name: source iguana environment
         run: source iguana/bin/this_iguana.sh --verbose --githubCI
       - name: dump rpaths
