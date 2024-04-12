@@ -283,7 +283,7 @@ jobs:
             echo "[+++] cat $pcfile"
             cat $pcfile
           done
-      - run: tree iguana installation prefix
+      - run: tree iguana
       ### run tests
       - name: meson test
         working-directory: iguana_build
