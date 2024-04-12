@@ -182,7 +182,7 @@ jobs:
     container:
       image: ${{ inputs.container }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         id:
           - cpp
@@ -218,8 +218,18 @@ jobs:
           key: test_data
           path: test_data.hipo
       ### dependencies
+      ###### system
       - name: install dependency packages
         run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
+      ###### python bindings
+      - name: install python bindings dependencies
+        if: ${{ matrix.id == 'python' }}
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+          python -m pip install -r iguana_src/bind/python/requirements.txt
+      ###### hipo
       - name: get `hipo-withROOT` build
         if: ${{ matrix.id != 'noROOT' }}
         uses: actions/cache/restore@v4
@@ -232,16 +242,22 @@ jobs:
         with:
           key: ${{  needs.build_hipo.outputs.key }}---noROOT
           path: hipo.tar.zst
+      - name: untar hipo build
+        run: tar xf hipo.tar.zst
+      - run: tree hipo
+      ###### ROOT
       - name: get `ROOT` build
         if: ${{ matrix.id != 'noROOT' }}
         uses: actions/cache/restore@v4
         with:
           key: ${{ needs.build_root.outputs.key }}
           path: root.tar.zst
-      - name: untar dependency builds
-        run: ls *.tar.zst | xargs -I{} tar xvf {}
-      - name: tree local dependencies
-        run: tree hipo
+      - name: untar ROOT build
+        run: tar xf root.tar.zst
+      - name: set ROOT environment
+        if: ${{ matrix.id != 'noROOT' }}
+        run: iguana_src/.github/source-ROOT.sh root
+      ###### summarize dependencies
       - name: summarize dependencies
         if: ${{ matrix.id == 'cpp' }}
         run: |
@@ -251,9 +267,6 @@ jobs:
           echo "| \`hipo\` | ${{ env.hipo_ref }} |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       ### build
-      - name: set ROOT environment
-        if: ${{ matrix.id != 'noROOT' }}
-        run: iguana_src/.github/source-ROOT.sh root
       - name: meson setup
         run: |
           meson setup iguana_build iguana_src           \
