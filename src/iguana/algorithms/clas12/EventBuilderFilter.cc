@@ -44,11 +44,6 @@ namespace iguana::clas12 {
     return o_pids.find(pid) != o_pids.end();
   }
 
-  extern "C" bool iguana_clas12_EventBuilderFilter_Filter(void* algo, int const pid)
-  {
-    return reinterpret_cast<EventBuilderFilter*>(algo)->Filter(pid);
-  }
-
   std::deque<bool> EventBuilderFilter::Filter(std::vector<int> const pids) const
   {
     std::deque<bool> result;
