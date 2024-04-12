@@ -39,6 +39,7 @@ jobs:
   #########################################################
 
   download_test_data:
+    name: Download test data
     runs-on: ubuntu-latest
     env:
       type: physics
@@ -253,6 +254,7 @@ jobs:
           key: ${{ needs.build_root.outputs.key }}
           path: root.tar.zst
       - name: untar ROOT build
+        if: ${{ matrix.id != 'noROOT' }}
         run: tar xf root.tar.zst
       - name: set ROOT environment
         if: ${{ matrix.id != 'noROOT' }}
@@ -273,6 +275,7 @@ jobs:
             --prefix=$(pwd)/iguana                      \
             --cmake-prefix-path=$(pwd)/root             \
             --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
+            -Dexamples=true                             \
             -Dtest_data_file=$(pwd)/test_data.hipo      \
             -Dtest_num_events=${{ env.num_events }}     \
             -Dtest_output_dir=$(pwd)/validation_results \
