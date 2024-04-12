@@ -42,7 +42,7 @@ algo_dict = {
     'algorithm': {
       'sources': [ 'clas12/EventBuilderFilter.cc' ],
       'headers': [ 'clas12/EventBuilderFilter.h' ],
-      'bind_fortran': [ 'clas12/EventBuilderFilterBindings.f03' ],
+      'bind_fortran': [ 'clas12/EventBuilderFilterBindings.f03', 'clas12/EventBuilderFilterBindings.cc' ],
     },
     'configs':   [ 'clas12/EventBuilderFilter.yaml' ],
     'test_args': { 'banks': ['REC::Particle'] },
