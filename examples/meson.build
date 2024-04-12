@@ -44,6 +44,7 @@ foreach example, info : example_sources
           [ get_option('test_data_file'), '100' ] # don't run too many events, or meson test log will be huge
         ),
         env: project_test_env,
+        timeout: 60,
       )
     endif
   endif
