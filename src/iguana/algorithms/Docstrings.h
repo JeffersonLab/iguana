@@ -10,13 +10,16 @@
 /// General `iguana` namespace for algorithms and infrastructure.
 namespace iguana {}
 
-/// Namespace for example algorithms
+/// C bindings
+namespace iguana::bindings {}
+
+/// Example algorithms
 namespace iguana::example {}
 
-/// Namespace for CLAS12 algorithms
+/// CLAS12 algorithms
 namespace iguana::clas12 {}
 
-/// Namespace for physics algorithms
+/// Physics algorithms
 namespace iguana::physics {}
 
 /// @}
