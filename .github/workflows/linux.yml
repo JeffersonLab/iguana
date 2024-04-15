@@ -17,6 +17,8 @@ jobs:
       id: linux-latest
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
+      # NOTE: `b_sanitize=memory` is not used because `libc++` needs to be re-compiled with `-fsanitize=memory`, otherwise
+      #        we are bothered by false positives (e.g., from `std::map` insertion)
       matrix: >-
         {
           "id": [
