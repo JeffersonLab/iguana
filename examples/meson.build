@@ -12,7 +12,7 @@ example_sources = {
   },
   'iguana-example-02-dataframes': {
     'sources': [ 'iguana-example-02-dataframes.cc' ],
-    'needs_ROOT': true,
+    'build_this': ROOT_dep.found() and hipo_dep_dataframes_found,
   },
   'iguana-example-03-config-files': {
     'sources':   [ 'iguana-example-03-config-files.cc' ],
@@ -22,8 +22,7 @@ example_sources = {
 
 # build executables and test them
 foreach example, info : example_sources
-  example_needs_ROOT = info.get('needs_ROOT', false)
-  if (example_needs_ROOT and ROOT_dep.found()) or not example_needs_ROOT
+  if(info.get('build_this', true))
     example_exe = executable(
       example,
       sources:             info['sources'],

@@ -1,7 +1,6 @@
 # in-source build artifacts
 /*.ini
-/build*/
-/iguana
+/iguana*/
 /.cache
 
 # doxygen artifacts

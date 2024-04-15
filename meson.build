@@ -90,6 +90,9 @@ endforeach
 message('Dependency library dirs = [', ', '.join(dep_lib_paths), ']')
 message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
 
+# handle HIPO dataframes
+hipo_dep_dataframes_found = hipo_dep.get_variable(pkgconfig: 'with_dataframes', default_value: 'false').to_lower() == 'true'
+
 # handle ROOT
 ROOT_dep_inc_dirs  = []
 ROOT_dep_link_args = []
