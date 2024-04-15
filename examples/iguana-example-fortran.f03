@@ -1,4 +1,15 @@
 program iguana_example_fortran
+  !! Fortran example demonstrating how to read a HIPO file and use its data with Iguana algorithms
+  !!
+  !! **Usage:**
+  !! ```text
+  !! iguana-example-fortran [HIPO_FILE] [NUM_EVENTS]
+  !!
+  !!   HIPO_FILE   the HIPO file to analyze
+  !!
+  !!   NUM_EVENTS  the number of events to analyze;
+  !!               set to 0 to analyze all events
+  !! ```
 
   use, intrinsic :: iso_c_binding
   use iguana_Algorithm
@@ -8,9 +19,11 @@ program iguana_example_fortran
 
   ! -----------------------------------------------
 
+  character(:), allocatable :: in_file !! HIPO file name
+  integer(c_int)            :: num_events !! Number of events to read (set to `0` to read all)
+
   integer                   :: argc, arglen
-  character(:), allocatable :: arg, in_file
-  integer(c_int)            :: num_events
+  character(:), allocatable :: arg
 
   integer :: reader_status
   integer :: counter
@@ -72,7 +85,7 @@ program iguana_example_fortran
 
     ! call iguana filter
     do i=1, nrows
-      accept(i) = action_filter(event_builder_filter, pid(i))
+      accept(i) = iguana_clas12_EventBuilderFilter_Filter(event_builder_filter, pid(i))
     end do
 
     ! print results
