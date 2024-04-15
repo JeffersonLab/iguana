@@ -40,9 +40,9 @@ algo_dict = {
   },
   'clas12::EventBuilderFilter': {
     'algorithm': {
-      'sources': [ 'clas12/EventBuilderFilter.cc' ],
+      'sources': [ 'clas12/EventBuilderFilter.cc', 'clas12/EventBuilderFilterBindings.cc' ],
       'headers': [ 'clas12/EventBuilderFilter.h' ],
-      'bind_fortran': [ 'clas12/EventBuilderFilterBindings.f03', 'clas12/EventBuilderFilterBindings.cc' ],
+      'bind_fortran': [ 'clas12/EventBuilderFilterBindings.f03' ],
     },
     'configs':   [ 'clas12/EventBuilderFilter.yaml' ],
     'test_args': { 'banks': ['REC::Particle'] },
@@ -161,6 +161,7 @@ if get_option('bind_fortran')
     install:             true,
     install_rpath:       ':'.join(project_lib_rpath),
     build_rpath:         ROOT_dep_rpath,
+    fortran_args:        [ '-Wno-unused-dummy-argument', '-Wno-return-type' ], # silence warnings about "empty" C-binding functions and subroutines
   )
 endif
 

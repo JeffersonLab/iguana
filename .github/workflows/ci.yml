@@ -387,14 +387,22 @@ jobs:
       - name: install dependencies
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm doxygen graphviz
+          pacman -S --noconfirm python doxygen graphviz
+          python -m pip install ford
       - name: doxygen
-        run: doxygen doc/Doxyfile
+        run: doxygen doc/gen/Doxyfile
+      - name: ford
+        run: ford doc/gen/FordMainpage.md
       - uses: actions/upload-artifact@v4
         with:
-          name: doxygen
+          name: doc_doxygen
           retention-days: 5
           path: doc/api/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doc_ford
+          retention-days: 5
+          path: doc/fortran/
 
   # deployment
   #########################################################
@@ -413,8 +421,13 @@ jobs:
       - name: download doxygen documentation
         uses: actions/download-artifact@v4
         with:
-          name: doxygen
+          name: doc_doxygen
           path: doxygen
+      - name: download ford documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: doc_ford
+          path: ford
       - name: download coverage report
         uses: actions/download-artifact@v4
         with:
@@ -426,6 +439,7 @@ jobs:
           mkdir pages
           cp iguana_src/.github/pages-index.html pages/index.html
           mv doxygen pages/
+          mv ford pages/
           mv coverage-report pages/
       - run: tree
       - uses: actions/upload-pages-artifact@v3

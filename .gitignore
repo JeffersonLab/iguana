@@ -3,8 +3,9 @@
 /iguana*/
 /.cache
 
-# doxygen artifacts
+# documentation artifacts
 /doc/api
+/doc/fortran
 
 # data files
 *.hipo
