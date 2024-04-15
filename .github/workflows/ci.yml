@@ -282,8 +282,6 @@ jobs:
       - name: dump build log
         if: always()
         run: cat iguana_build/meson-logs/meson-log.txt
-      - name: dump rpaths
-        run: iguana_src/.github/rpath-dump.sh iguana ${{ inputs.runner }}
       - name: cat pkg-config pc files
         run: |
           pcfiles=$(find iguana -type f -name "*.pc")
