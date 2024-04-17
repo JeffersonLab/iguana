@@ -273,7 +273,7 @@ jobs:
             -Dtest_output_dir=$(pwd)/validation_results \
             ${{ matrix.opts }}
       - name: dump build options
-        run: meson configure iguana_build | cat
+        run: meson configure iguana_build --no-pager
       - run: meson compile
         working-directory: iguana_build
       - run: meson install
