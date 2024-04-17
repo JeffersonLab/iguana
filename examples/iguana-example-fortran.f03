@@ -35,7 +35,7 @@ program iguana_example_fortran
 
   integer :: i, j
 
-  type(c_ptr) :: event_builder_filter
+  type(c_ptr) :: event_builder_filter, momentum_corrections
 
   ! -----------------------------------------------
 
@@ -63,17 +63,20 @@ program iguana_example_fortran
     error stop 'please specify a HIPO file'
   end if
 
-  ! create iguana algorithms
-  event_builder_filter = iguana_algo_create('clas12::EventBuilderFilter')
-  ! momentum_corrections = iguana_algo_create('clas12::MomentumCorrection') ! FIXME: can't create 2 algos
-
   ! open the HIPO file
   call hipo_file_open(in_file//c_null_char) ! be sure to terminate with null character
   reader_status = 0
   counter       = 0
 
-  ! start iguana algorithms
+  ! create iguana algorithms
+  event_builder_filter = iguana_algo_create('clas12::EventBuilderFilter')
+  momentum_corrections = iguana_algo_create('clas12::MomentumCorrection')
+  ! set their log levels
+  call iguana_algo_set_log_level(event_builder_filter, 'debug')
+  call iguana_algo_set_log_level(momentum_corrections, 'debug')
+  ! start them
   call iguana_algo_start(event_builder_filter)
+  call iguana_algo_start(momentum_corrections)
 
   ! event loop
   do while(reader_status.eq.0 .and. (num_events.eq.0 .or. counter.lt.num_events))
@@ -99,5 +102,6 @@ program iguana_example_fortran
 
   ! stop and destroy iguana algorithms
   call iguana_algo_stop_and_destroy(event_builder_filter)
+  call iguana_algo_stop_and_destroy(momentum_corrections)
 
 end program

@@ -35,4 +35,10 @@ contains
     type(c_ptr), value, intent(in) :: algo !! the algorithm
   end subroutine
 
+  subroutine iguana_algo_set_log_level(algo, level) bind(C)
+    !! Set the log level of this algorithm
+    type(c_ptr), value, intent(in) :: algo !! the algorithm
+    character(c_char), intent(in) :: level !! the log level
+  end subroutine
+
 end module

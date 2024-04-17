@@ -13,9 +13,9 @@ namespace iguana::bindings {
 
     /// Start an algorithm by calling `Algorithm::Start`
     /// @param algo the algorithm
-    void iguana_algo_start(void* algo)
+    void iguana_algo_start(Algorithm* algo)
     {
-      reinterpret_cast<Algorithm*>(algo)->Start();
+      algo->Start();
     }
 
     /// Stop an algorithm by calling `Algorithm::Stop`
@@ -39,6 +39,14 @@ namespace iguana::bindings {
     {
       iguana_algo_stop(algo);
       iguana_algo_destroy(algo);
+    }
+
+    /// Set the log level of this algorithm
+    /// @param algo the algorithm
+    /// @param level the log level
+    void iguana_algo_set_log_level(Algorithm* algo, char const* level)
+    {
+      algo->SetLogLevel(level);
     }
 
   }
