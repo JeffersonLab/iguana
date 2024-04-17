@@ -1,61 +1,111 @@
 #!/bin/bash
 # `source` this file to set environment variables relevant for this `iguana` installation
 
-# find the iguana installation prefix, with respect to this file
-this_env=${BASH_SOURCE[0]:-$0}
-this_dir=$(cd $(dirname $this_env)/.. && pwd -P)
-
 # parse arguments
-set_ld_path=false
-verbose=false
+arg_verbose=false
+arg_githubCI=false
 for arg in "$@"; do
-  [ "$arg" = "ld"      ] && set_ld_path=true
-  [ "$arg" = "verbose" ] && verbose=true
+  case $arg in
+    --verbose) arg_verbose=true ;;
+    --githubCI) arg_githubCI=true ;;
+    --help|-h)
+      echo "USAGE: source ${BASH_SOURCE[0]:-$0} [OPTIONS]..." >&2
+      echo """
+      OPTIONS:
+
+        --verbose     print what variables are set
+
+        --githubCI    set environment for GitHub CI
+      """ >&2
+      unset arg
+      unset arg_verbose
+      unset arg_githubCI
+      return 2
+      ;;
+    *)
+      echo "ERROR: unknown option '$arg'" >&2
+      unset arg
+      unset arg_verbose
+      unset arg_githubCI
+      return 1
+      ;;
+  esac
 done
+unset arg
+
+# workaround older versions of macOS not having `realpath`
+get_realpath() {
+  echo $(cd $1 && pwd -P)
+}
 
 # append to PKG_CONFIG_PATH
+this_dir=$(get_realpath $(dirname ${BASH_SOURCE[0]:-$0})/..)
 export PKG_CONFIG_PATH=$this_dir/@libdir@/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 dep_pkgconfigdirs=$(pkg-config --variable dep_pkgconfigdirs iguana)
 [ -n "${dep_pkgconfigdirs-}" ] && export PKG_CONFIG_PATH=$dep_pkgconfigdirs${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+unset this_dir
+unset dep_pkgconfigdirs
+
+# append to PATH
+iguana_path=$(pkg-config --variable bindir iguana)
+[ -n "${iguana_path-}" ] && export PATH=$(get_realpath $iguana_path)${PATH:+:${PATH}}
+unset iguana_path
 
 # append to PYTHONPATH
-set_python_path=@python@
-if $set_python_path; then
+if @python@; then
   iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
   [ -n "${iguana_pythonpath-}" ] && export PYTHONPATH=$iguana_pythonpath${PYTHONPATH:+:${PYTHONPATH}}
+  unset iguana_pythonpath
 fi
 
 # append to LD_LIBRARY_PATH or DYLD_LIBRARY_PATH
-if $set_ld_path; then
-  for var in dep_libdirs libdir; do
-    dir=$(pkg-config --variable $var iguana)
-    [ -n "${dir-}" ] && export @ld_path@=$dir${@ld_path@:+:${@ld_path@}}
-  done
-fi
 # FIXME: this won't work well if a user already has all dependency libraries
 # in, for example, `/opt/lib`, but has custom built and installed one
 # elsewhere, e.g., `/tmp/lib`; if `/opt/lib` is listed before `/tmp/lib` in
 # `$LD_LIBRARY_PATH`, the `/opt/lib` library will be used at runtime rather
 # than the one at `/tmp/lib` (cf. FIXME in ../meson.build)
+for var in dep_libdirs libdir; do
+  dir=$(pkg-config --variable $var iguana)
+  [ -n "${dir-}" ] && export @ld_path@=$dir${@ld_path@:+:${@ld_path@}}
+  unset dir
+done
+unset var
 
 # print environment variables
-if $verbose; then
+if $arg_verbose; then
   print_var() { echo "$@" | sed 's/:/\n  /g'; }
-  no_change='has NOT been changed'
   echo """
 Iguana Environment Variables
 ----------------------------
 
-PKG_CONFIG_PATH: (ADDED iguana and dependency pkg-config paths)
+PKG_CONFIG_PATH -- ADDED iguana and dependency pkg-config paths:
   $(print_var ${PKG_CONFIG_PATH-})
 
-PYTHONPATH: ($(if $set_python_path; then echo 'ADDED iguana python bindings'; else echo $no_change; fi))
-  $(print_var ${PYTHONPATH-})
+PATH -- ADDED iguana executables:
+  $(print_var ${PATH-})
 
-@ld_path@: ($(if $set_ld_path; then echo 'ADDED iguana and dependency library paths'; else echo $no_change'; use argument "ld" if you want to add iguana and dependencies'; fi))
+@ld_path@ -- ADDED iguana and dependency library paths:
   $(print_var ${@ld_path@-})
+
+PYTHONPATH -- $(if @python@; then echo 'ADDED iguana python bindings:'; else echo 'has NOT been changed'; fi)
+  $(print_var ${PYTHONPATH-})
 
 ----------------------------
 """
   unset -f print_var
 fi
+
+# export variables for GitHub CI environment
+if $arg_githubCI; then
+  echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
+  echo PATH=$PATH >> $GITHUB_ENV
+  echo @ld_path@=$@ld_path@ >> $GITHUB_ENV
+  if @python@; then
+    echo PYTHONPATH=$PYTHONPATH >> $GITHUB_ENV
+  fi
+fi
+
+# cleanup
+unset arg_verbose
+unset arg_githubCI
+unset -f get_realpath

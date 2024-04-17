@@ -32,7 +32,6 @@ foreach example, info : example_sources
       link_with:           project_libs,
       link_args:           ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
       install:             true,
-      install_rpath:       ':'.join(project_exe_rpath),
       build_rpath:         ROOT_dep_rpath,
     )
     if fs.is_file(get_option('test_data_file'))

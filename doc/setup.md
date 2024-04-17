@@ -140,28 +140,23 @@ meson install   # installs Iguana to your prefix (build option 'prefix')
 <a name="env"></a>
 ## 🟠 Environment Variables (optional)
 The C++ Iguana implementation does not require the use of any environment variables. However,
-- some language bindings may benefit from variables such as `$PYTHONPATH`, for Python
-- you may want to override the linker library search path list (_e.g._, if you have conflicting libraries in it)
+- if Iguana libraries are not in your default linker library search path, you may need to update it, _e.g._ with
+  `$LD_LIBRARY_PATH` (Linux) or `$DYLD_LIBRARY_PATH` (macOS)
+- some language bindings may need variables such as `$PYTHONPATH`, for Python
 
 You may set your own environment variables, but for a quick start with suggested settings,
 the installed file `bin/this_iguana.sh` may be used as
 ```
-source bin/this_iguana.sh [OPTIONAL ARGUMENTS]...
-
-OPTIONAL ARGUMENTS:
-
-   ld       append library paths to LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH);
-            by default these variables are NOT modified
-
-   verbose  print the relevant environment variable values
+source bin/this_iguana.sh
 ```
+Use the `--help` argument to see its full usage guide.
 
-which sets or modifies the following environment variables:
+The following environment variables are set or modified:
 
 | Variable                                                 | Modification                                                                                                                              |
 | ---                                                      | ---                                                                                                                                       |
 | `PKG_CONFIG_PATH`                                        | adds paths to the `pkg-config` files (`.pc`) for dependencies and Iguana; see [note on dependency resolution](dependency_resolution.md)   |
+| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries                                                                                             |
 | `PYTHONPATH`                                             | adds paths to dependency and Iguana Python packages, if Python bindings are installed                                                     |
-| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries, if the optional argument `ld` was used                                                     |
 
 `this_iguana.sh` is compatible with `bash` and `zsh`, but not with `tcsh` or `csh`.
