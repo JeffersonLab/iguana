@@ -7,7 +7,6 @@
 #       'sources':      LIST_OF_ALGORITHM_SOURCE FILES,
 #       'headers':      LIST_OF_ALGORITHM_HEADER_FILES,
 #       'needs_ROOT':   BOOLEAN,  # whether this algorithm needs ROOT or not (default=false),
-#       'bind_fortran': LIST_OF_FORTRAN_BINDING_SOURCE_FILES,
 #     },
 #     'validator': {    # if excluded, a validator test will not be built for this algorithm
 #       'sources':      LIST_OF_VALIDATOR_SOURCE FILES,
@@ -23,7 +22,6 @@ algo_dict = {
     'algorithm': {
       'sources': [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmBindings.cc', 'AlgorithmSequence.cc' ],
       'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'AlgorithmBindings.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
-      'bind_fortran': [ 'AlgorithmBindings.f03' ],
     },
     'validator': {
       'sources': [ 'Validator.cc' ],
@@ -42,7 +40,6 @@ algo_dict = {
     'algorithm': {
       'sources': [ 'clas12/EventBuilderFilter.cc', 'clas12/EventBuilderFilterBindings.cc' ],
       'headers': [ 'clas12/EventBuilderFilter.h' ],
-      'bind_fortran': [ 'clas12/EventBuilderFilterBindings.f03' ],
     },
     'configs':   [ 'clas12/EventBuilderFilter.yaml' ],
     'test_args': { 'banks': ['REC::Particle'] },
@@ -106,7 +103,6 @@ algo_headers = []
 algo_configs = []
 vdor_sources = []
 vdor_headers = []
-algo_fortran_sources = []
 foreach name, info : algo_dict
   # algorithms:
   info_algo = info.get('algorithm')
@@ -127,8 +123,6 @@ foreach name, info : algo_dict
       vdor_headers += info_vdor.get('headers', [])
     endif
   endif
-  # bindings:
-  algo_fortran_sources += info_algo.get('bind_fortran', [])
 endforeach
 
 # build and install algorithms
@@ -148,21 +142,6 @@ install_headers(
   preserve_path: true,
 )
 project_libs += algo_lib
-
-# build and install bindings
-if get_option('bind_fortran')
-  algo_fortran_lib = shared_library(
-    'IguanaAlgorithmsFortranBindings',
-    algo_fortran_sources,
-    include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
-    dependencies:        project_deps,
-    link_with:           project_libs,
-    link_args:           ROOT_dep_link_args,
-    install:             true,
-    build_rpath:         ROOT_dep_rpath,
-    fortran_args:        [ '-Wno-unused-dummy-argument', '-Wno-return-type' ], # silence warnings about "empty" C-binding functions and subroutines
-  )
-endif
 
 # build and install validators
 vdor_lib = shared_library(
