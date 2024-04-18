@@ -1,52 +1,65 @@
-#include "Algorithm.h"
+#include "AlgorithmBindings.h"
 
 namespace iguana::bindings {
   extern "C" {
 
-    /// Create an algorithm
-    /// @param algo_name the name of the algorithm
-    /// @returns a pointer to the algorithm
-    void* iguana_algo_create(char const* algo_name)
+    void iguana_create_()
     {
-      return (void*) AlgorithmFactory::Create(algo_name).release();
+      __boss.size = 0;
     }
 
-    /// Start an algorithm by calling `Algorithm::Start`
-    /// @param algo the algorithm
-    void iguana_algo_start(Algorithm* algo)
+    void iguana_destoy_()
     {
-      algo->Start();
+      for(algo_idx_t i=0; i<__boss.size; i++)
+        iguana_algo_destroy_(i);
     }
 
-    /// Stop an algorithm by calling `Algorithm::Stop`
-    /// @param algo the algorithm
-    void iguana_algo_stop(Algorithm* algo)
+    Algorithm* iguana_get_algo_(algo_idx_t idx)
     {
-      algo->Stop();
+      if(idx >= 0 && idx < __boss.size)
+        return __boss.algos[idx];
+      else
+        fprintf(stderr, "ERROR [iguana_get_algo_]: algorithm number %d is not defined\n", idx);
+      return nullptr;
     }
 
-    /// Destroy an algorithm by calling its destructor
-    /// @param algo the algorithm
-    void iguana_algo_destroy(Algorithm* algo)
+    algo_idx_t iguana_algo_create_(char const* algo_name)
     {
-      algo->~Algorithm();
-      // FIXME: should `delete algo` also be called?
+      if(__boss.size >= MAX_ALGORITHMS || __boss.size < 0) {
+        fprintf(stderr, "ERROR: [iguana_algo_create_]: cannot create more than %d algorithms\n", MAX_ALGORITHMS);
+        fprintf(stderr, "... or did you forget to call `iguana_create_()`?\n");
+        return MAX_ALGORITHMS;
+      }
+      __boss.algos[__boss.size++] = AlgorithmFactory::Create(algo_name).release();
+      return __boss.size - 1;
     }
 
-    /// Call `iguana::bindings::iguana_algo_stop` then `iguana::bindings::iguana_algo_destroy`
-    /// @param algo the algorithm
-    void iguana_algo_stop_and_destroy(Algorithm* algo)
+    void iguana_algo_destroy_(algo_idx_t idx)
     {
-      iguana_algo_stop(algo);
-      iguana_algo_destroy(algo);
+      Algorithm* algo = iguana_get_algo_(idx);
+      if(algo)
+        delete algo;
     }
 
-    /// Set the log level of this algorithm
-    /// @param algo the algorithm
-    /// @param level the log level
-    void iguana_algo_set_log_level(Algorithm* algo, char const* level)
+    void iguana_algo_start_(algo_idx_t idx)
     {
-      algo->SetLogLevel(level);
+      Algorithm* algo = iguana_get_algo_(idx);
+      if(algo)
+        algo->Start();
+    }
+
+    void iguana_algo_stop_(algo_idx_t idx)
+    {
+      Algorithm* algo = iguana_get_algo_(idx);
+      if(algo)
+        algo->Stop();
+    }
+
+    void iguana_algo_set_log_level_(algo_idx_t idx, char const* level)
+    {
+      Algorithm* algo = iguana_get_algo_(idx);
+      if(algo)
+        algo->SetLogLevel(level);
     }
 
   }

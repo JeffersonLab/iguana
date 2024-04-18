@@ -22,7 +22,7 @@ algo_dict = {
   'main': {
     'algorithm': {
       'sources': [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmBindings.cc', 'AlgorithmSequence.cc' ],
-      'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
+      'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'AlgorithmBindings.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
       'bind_fortran': [ 'AlgorithmBindings.f03' ],
     },
     'validator': {
