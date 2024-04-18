@@ -55,6 +55,13 @@ namespace iguana::bindings {
         algo->Stop();
     }
 
+    void iguana_algo_set_name_(algo_idx_t idx, char const* name)
+    {
+      Algorithm* algo = iguana_get_algo_(idx);
+      if(algo)
+        algo->SetName(name);
+    }
+
     void iguana_algo_set_log_level_(algo_idx_t idx, char const* level)
     {
       Algorithm* algo = iguana_get_algo_(idx);
