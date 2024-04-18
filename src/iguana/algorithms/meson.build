@@ -159,7 +159,6 @@ if get_option('bind_fortran')
     link_with:           project_libs,
     link_args:           ROOT_dep_link_args,
     install:             true,
-    install_rpath:       ':'.join(project_lib_rpath),
     build_rpath:         ROOT_dep_rpath,
     fortran_args:        [ '-Wno-unused-dummy-argument', '-Wno-return-type' ], # silence warnings about "empty" C-binding functions and subroutines
   )
