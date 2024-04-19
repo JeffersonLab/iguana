@@ -15,11 +15,6 @@ namespace iguana::bindings{
       algo_idx_t size;
     } algo_boss_t;
 
-    /// The Iguana singleton instance, owning up to `MAX_ALGORITHMS` algorithms.
-    /// Do not access or modify its contents directly, unless you have a good reason to;
-    /// instead, use the functions in this file.
-    algo_boss_t __boss;
-
     /// Create the Iguana instance. You may only create one, and you must destroy
     /// it with `iguana_destroy` when you are done. This instance is the _owner_
     /// of algorithm objects.

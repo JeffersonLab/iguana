@@ -3,6 +3,11 @@
 namespace iguana::bindings {
   extern "C" {
 
+    /// The Iguana singleton instance, owning up to `MAX_ALGORITHMS` algorithms.
+    /// Do not access or modify its contents directly, unless you have a good reason to;
+    /// instead, use the functions in this file.
+    algo_boss_t __boss;
+
     void iguana_create_()
     {
       __boss.size = 0;
