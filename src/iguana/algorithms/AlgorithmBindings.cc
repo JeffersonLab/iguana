@@ -11,6 +11,7 @@ namespace iguana::bindings {
     void iguana_create_()
     {
       __boss.size = 0;
+      __boss.verbose = false;
     }
 
     void iguana_destroy_()
@@ -19,22 +20,34 @@ namespace iguana::bindings {
         iguana_algo_destroy_(&i);
     }
 
+    void iguana_set_verbose_bindings_()
+    {
+      printf("[IGUANA C-BINDING] enable verbose mode\n");
+      __boss.verbose = true;
+    }
+
+    void iguana_set_quiet_bindings_()
+    {
+      printf("[IGUANA C-BINDING] disable verbose mode\n");
+      __boss.verbose = false;
+    }
+
     void iguana_get_algo_(algo_idx_t* algo_idx, Algorithm* algo)
     {
       if(*algo_idx >= 0 && *algo_idx < __boss.size)
         algo = __boss.algos[*algo_idx];
       else {
-        fprintf(stderr, "ERROR [IGUANA]: algorithm number %d is not defined\n", *algo_idx);
+        fprintf(stderr, "[IGUANA C-BINDING] ERROR: algorithm number %d is not defined\n", *algo_idx);
         algo = nullptr;
       }
     }
 
-    void iguana_algo_create_(char const* algo_name, int algo_name_len, algo_idx_t* algo_idx)
+    void iguana_algo_create_(algo_idx_t* algo_idx, char const* algo_name)
     {
-      printf("CREATE ALGORITHM: '%s'\n", algo_name);
+      printf("[IGUANA C-BINDING] create algorithm: '%s'\n", algo_name);
       if(__boss.size >= MAX_ALGORITHMS || __boss.size < 0) {
-        fprintf(stderr, "ERROR: [iguana_algo_create_]: cannot create more than %d algorithms\n", MAX_ALGORITHMS);
-        fprintf(stderr, "... or did you forget to call `iguana_create_()`?\n");
+        fprintf(stderr, "[IGUANA C-BINDING] ERROR: cannot create more than %d algorithms\n", MAX_ALGORITHMS);
+        fprintf(stderr, "[IGUANA C-BINDING]        ... or did you forget to call `iguana_create_()`?\n");
         *algo_idx = MAX_ALGORITHMS;
       }
       else {
@@ -67,7 +80,7 @@ namespace iguana::bindings {
         algo->Stop();
     }
 
-    void iguana_algo_set_name_(algo_idx_t* algo_idx, char const* name, int name_len)
+    void iguana_algo_set_name_(algo_idx_t* algo_idx, char const* name)
     {
       Algorithm* algo = nullptr;
       iguana_get_algo_(algo_idx, algo);
@@ -75,8 +88,9 @@ namespace iguana::bindings {
         algo->SetName(name); // FIXME: string termination
     }
 
-    void iguana_algo_set_log_level_(algo_idx_t* algo_idx, char const* level, int level_len)
+    void iguana_algo_set_log_level_(algo_idx_t* algo_idx, char const* level)
     {
+      printf("[IGUANA C-BINDING] set log level of algorithm %d to '%s'\n", *algo_idx, level);
       Algorithm* algo = nullptr;
       iguana_get_algo_(algo_idx, algo);
       if(algo)

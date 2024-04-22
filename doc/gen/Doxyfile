@@ -298,8 +298,6 @@ ALIASES += action_function{1}="\xrefitem action \"Function Type\" \"List of all 
 # examples
 ALIASES += begin_doc_example="@addtogroup examples Examples^^@{"
 ALIASES += end_doc_example="@}"
-# common docstrings
-ALIASES += fortran_string_len{1}="the length of `\1`; if you are using this function via a Fortran subroutine, you may simply omit this parameter."
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For

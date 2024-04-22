@@ -36,6 +36,8 @@ c     ------------------------------------------------------------------
       integer algo_eb_filter, algo_inc_kin ! FIXME: typedef this?
 
 c     ------------------------------------------------------------------
+c     open the input file
+c     ------------------------------------------------------------------
 
 c     parse arguments
       argc = iargc()
@@ -56,35 +58,53 @@ c     parse arguments
       print *, 'HIPO_FILE: ', trim(in_file)
       print *, 'NUM_EVENTS: ', num_events
 
-c     open the HIPO file
+c     open the input HIPO file
       call hipo_file_open(trim(in_file)) ! `trim` removes trailing space
       reader_status = 0
       counter       = 0
 
 c     ------------------------------------------------------------------
-
 c     create iguana algorithms
+c     ------------------------------------------------------------------
+
 c     before anything for Iguana, call `iguana_create()`; when done, you
 c     must also call `iguana_destroy()` to deallocate the memory
       call iguana_create()
+c     enable verbose printouts for the "C-bindings", the C code that
+c     allows this Fortran code to use the underlying C++ Iguana code;
+c     this is not required, but may be useful if things go wrong...
+      call iguana_set_verbose_bindings()
 c     then create the algorithms
       call iguana_algo_create(
-     &'clas12::EventBuilderFilter',algo_eb_filter)
-      print *, 'algo_eb_filter = ', algo_eb_filter
+     &  algo_eb_filter,
+     &  'clas12::EventBuilderFilter')
+      call iguana_algo_create(
+     &  algo_inc_kin,
+     &  'physics::InclusiveKinematics')
+c     the `algo_` variables are "algorithm indices" (integers); they
+c     reference the Iguana algorithms, and you'll need these indices
+c     to call algorithm functions (namely, "action functions")
+      print *, 'algo_eb_filter: ', algo_eb_filter
+      print *, 'algo_inc_kin: ', algo_inc_kin
+
+c     ------------------------------------------------------------------
+c     configure and start iguana algorithms
+c     ------------------------------------------------------------------
+
+c     set log levels
+      call iguana_algo_set_log_level(algo_eb_filter,'debug')
+      call iguana_algo_set_log_level(algo_inc_kin,'debug')
+
+c     start algorithms (which "locks" their configuration)
+      call iguana_algo_start(algo_eb_filter)
+      call iguana_algo_start(algo_inc_kin)
+
+c     ============================================
+c     FIXME: why is the log level not being set?
+c     ============================================
 
 
-c     event_builder_filter = iguana_algo_create(
-c    &  'clas12::EventBuilderFilter')
-c     momentum_corrections = iguana_algo_create(
-c    &  'clas12::MomentumCorrection')
-c     set their log levels
-c     call iguana_algo_set_log_level(
-c    &  event_builder_filter, 'debug')
-c     call iguana_algo_set_log_level(
-c    &  momentum_corrections, 'debug')
-c     !start them
-c     call iguana_algo_start(event_builder_filter)
-c     call iguana_algo_start(momentum_corrections)
+
 
 c       !event loop
 c     do while(reader_status.eq.0 .and.

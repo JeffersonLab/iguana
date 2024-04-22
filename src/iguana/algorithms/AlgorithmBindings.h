@@ -13,6 +13,7 @@ namespace iguana::bindings{
     {
       Algorithm* algos[MAX_ALGORITHMS];
       algo_idx_t size;
+      bool verbose;
     } algo_boss_t;
 
     /// Create the Iguana instance. You may only create one, and you must destroy
@@ -24,16 +25,25 @@ namespace iguana::bindings{
     /// when you are done using Iguana, to free the allocated memory.
     void iguana_destroy_();
 
+    /// Enable additional runtime printouts for these binding functions. This setting
+    /// is _not_ related to algorithm log levels.
+    /// @see `iguana_set_quiet_bindings_`
+    void iguana_set_verbose_bindings_();
+
+    /// Disable additional runtime printouts for these binding functions. This setting
+    /// is _not_ related to algorithm log levels.
+    /// @see `iguana_set_verbose_bindings_`
+    void iguana_set_quiet_bindings_();
+
     /// Get a pointer to an algorithm. This function is not useful as a Fortran subroutine.
     /// @param [in] algo_idx the algorithm index
     /// @param [out] a pointer to the algorithm, if it exists; if not, `nullptr`
     void iguana_get_algo_(algo_idx_t* algo_idx, Algorithm* algo);
 
     /// Create an algorithm. Be sure to run `iguana_create_()` before creating any algorithm.
-    /// @param [in] algo_name the name of the algorithm
-    /// @param [in] algo_name_len @fortran_string_len{algo_name}
     /// @param [out] the algorithm index
-    void iguana_algo_create_(char const* algo_name, int algo_name_len, algo_idx_t* algo_idx);
+    /// @param [in] algo_name the name of the algorithm
+    void iguana_algo_create_(algo_idx_t* algo_idx, char const* algo_name);
 
     /// Destroy an algorithm. You probably don't need to call this function, since you can
     /// just destroy all algorithms with `iguana_destroy_()`.
@@ -51,14 +61,12 @@ namespace iguana::bindings{
     /// Set the name of an algorithm.
     /// @param [in] algo_idx the algorithm index
     /// @param [in] name the name
-    /// @param [in] name_len @fortran_string_len{name}
-    void iguana_algo_set_name_(algo_idx_t* algo_idx, char const* name, int name_len);
+    void iguana_algo_set_name_(algo_idx_t* algo_idx, char const* name);
 
     /// Set the log level of an algorithm.
     /// @param [in] algo_idx the algorithm index
     /// @param [in] level the log level
-    /// @param [in] level_len @fortran_string_len{level}
-    void iguana_algo_set_log_level_(algo_idx_t* algo_idx, char const* level, int level_len);
+    void iguana_algo_set_log_level_(algo_idx_t* algo_idx, char const* level);
 
   }
 }
