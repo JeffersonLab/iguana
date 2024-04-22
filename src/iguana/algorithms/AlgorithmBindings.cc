@@ -13,7 +13,7 @@ namespace iguana::bindings {
       __boss.size = 0;
     }
 
-    void iguana_destoy_()
+    void iguana_destroy_()
     {
       for(algo_idx_t i=0; i<__boss.size; i++)
         iguana_algo_destroy_(&i);
@@ -31,6 +31,7 @@ namespace iguana::bindings {
 
     void iguana_algo_create_(char const* algo_name, int algo_name_len, algo_idx_t* algo_idx)
     {
+      printf("CREATE ALGORITHM: '%s'\n", algo_name);
       if(__boss.size >= MAX_ALGORITHMS || __boss.size < 0) {
         fprintf(stderr, "ERROR: [iguana_algo_create_]: cannot create more than %d algorithms\n", MAX_ALGORITHMS);
         fprintf(stderr, "... or did you forget to call `iguana_create_()`?\n");

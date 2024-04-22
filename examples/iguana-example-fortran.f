@@ -1,15 +1,15 @@
-c       Fortran example demonstrating how to read a HIPO file and use
-c       its data with Iguana algorithms
-
-c       **Usage:**
-c       ```text
-c       iguana-example-fortran [HIPO_FILE] [NUM_EVENTS]
-
-c         HIPO_FILE   the HIPO file to analyze
-
-c         NUM_EVENTS  the number of events to analyze;
-c                     set to 0 to analyze all events
-c       ```
+c Fortran example demonstrating how to read a HIPO file and use
+c its data with Iguana algorithms
+c
+c **Usage:**
+c ```text
+c iguana-example-fortran [HIPO_FILE] [NUM_EVENTS]
+c
+c   HIPO_FILE   the HIPO file to analyze
+c
+c   NUM_EVENTS  the number of events to analyze;
+c               set to 0 to analyze all events
+c ```
 
       program iguana_example_fortran
       implicit none
@@ -17,7 +17,7 @@ c       ```
 c     ------------------------------------------------------------------
 
       integer*4      argc
-      character*1024 in_file           ! HIPO file
+      character*1024 in_file ! HIPO file
       character*32   num_events_arg
       integer        num_events / 10 / ! num. events to read (0 = all)
 
@@ -40,10 +40,12 @@ c     ------------------------------------------------------------------
 c     parse arguments
       argc = iargc()
       if(argc.lt.1) then
-        print *, 'ARGS:', 'HIPO_FILE', 'NUM_EVENTS'
-        print *, 'HIPO_FILE', 'the input HIPO file'
-        print *, 'NUM_EVENTS', 'the number of events (0 for all)'
-        stop 'error'
+        print *, 'ERROR: please at least specify a HIPO_FILE'
+        print *, ''
+        print *, 'ARGS: ', 'HIPO_FILE', ' ', 'NUM_EVENTS'
+        print *, '  HIPO_FILE: ', 'the input HIPO file'
+        print *, '  NUM_EVENTS: ', 'the number of events (0 for all)'
+        stop
       else
         call getarg(1, in_file)
       end if
@@ -51,39 +53,26 @@ c     parse arguments
         call getarg(2, num_events_arg)
         read(num_events_arg,*) num_events
       end if
-      print *, 'HIPO_FILE:', in_file
-      print *, 'NUM_EVENTS:', num_events
+      print *, 'HIPO_FILE: ', trim(in_file)
+      print *, 'NUM_EVENTS: ', num_events
 
-c     !------------------------------------------------------------------
-c     num_events = 10
-c     argc = command_argument_count()
-c     do i = 0, argc
-c     call get_command_argument(number=i, length=arglen)
-c     allocate(character(arglen) :: arg)
-c     call get_command_argument(number=i, value=arg)
-c     select case(i)
-c     case(0)
-c     if(argc.eq.0) then
-c     print *, 'USAGE: ' // arg // ' [HIPO data file] [number of events (0 for all)]'
-c     end if
-c     case(1)
-c     allocate(character(arglen) :: in_file)
-c     in_file = arg
-c     case(2)
-c     read(arg,*) num_events
-c     end select
-c     deallocate(arg)
-c     end do
-c     if(.not.allocated(in_file)) then
-c     error stop 'please specify a HIPO file'
-c     end if
+c     open the HIPO file
+      call hipo_file_open(trim(in_file)) ! `trim` removes trailing space
+      reader_status = 0
+      counter       = 0
 
-c       !open the HIPO file
-c     call hipo_file_open(in_file//c_null_char) ! be sure to terminate with null character
-c     reader_status = 0
-c     counter       = 0
+c     ------------------------------------------------------------------
 
-c       !create iguana algorithms
+c     create iguana algorithms
+c     before anything for Iguana, call `iguana_create()`; when done, you
+c     must also call `iguana_destroy()` to deallocate the memory
+      call iguana_create()
+c     then create the algorithms
+      call iguana_algo_create(
+     &'clas12::EventBuilderFilter',algo_eb_filter)
+      print *, 'algo_eb_filter = ', algo_eb_filter
+
+
 c     event_builder_filter = iguana_algo_create(
 c    &  'clas12::EventBuilderFilter')
 c     momentum_corrections = iguana_algo_create(
@@ -124,5 +113,12 @@ c     end do
 c       !stop and destroy iguana algorithms
 c     call iguana_algo_stop_and_destroy(event_builder_filter)
 c     call iguana_algo_stop_and_destroy(momentum_corrections)
+
+
+
+
+
+c     don't forget to call `iguana_destroy()` when done with Iguana
+      call iguana_destroy()
 
       end program

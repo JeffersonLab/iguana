@@ -22,7 +22,7 @@ namespace iguana::bindings{
 
     /// Destroy the Iguana instance, along with its algorithms. This must be called
     /// when you are done using Iguana, to free the allocated memory.
-    void iguana_destoy_();
+    void iguana_destroy_();
 
     /// Get a pointer to an algorithm. This function is not useful as a Fortran subroutine.
     /// @param [in] algo_idx the algorithm index
