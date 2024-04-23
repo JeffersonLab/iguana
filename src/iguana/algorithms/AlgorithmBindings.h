@@ -49,7 +49,7 @@ namespace iguana::bindings{
     /// This function is not useful as a Fortran subroutine.
     /// @param [in] algo_idx the algorithm index
     /// @param [out] a pointer to the algorithm, if it exists; if not, `nullptr`
-    void iguana_get_algo_(algo_idx_t* algo_idx, Algorithm* algo);
+    void iguana_get_algo_(algo_idx_t* algo_idx, Algorithm*& algo);
 
     /// Create an algorithm. Be sure to run `iguana_create_()` before creating any algorithm.
     /// @param [out] the algorithm index
