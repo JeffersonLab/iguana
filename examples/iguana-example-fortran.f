@@ -73,7 +73,7 @@ c     must also call `iguana_destroy()` to deallocate the memory
 c     enable verbose printouts for the "C-bindings", the C code that
 c     allows this Fortran code to use the underlying C++ Iguana code;
 c     this is not required, but may be useful if things go wrong...
-      call iguana_set_verbose_bindings()
+      call iguana_bindings_set_verbose()
 c     then create the algorithms
       call iguana_algo_create(
      &  algo_eb_filter,

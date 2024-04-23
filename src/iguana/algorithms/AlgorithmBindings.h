@@ -27,15 +27,26 @@ namespace iguana::bindings{
 
     /// Enable additional runtime printouts for these binding functions. This setting
     /// is _not_ related to algorithm log levels.
-    /// @see `iguana_set_quiet_bindings_`
-    void iguana_set_verbose_bindings_();
+    /// @see `iguana_bindings_set_quiet_`
+    void iguana_bindings_set_verbose_();
 
     /// Disable additional runtime printouts for these binding functions. This setting
     /// is _not_ related to algorithm log levels.
-    /// @see `iguana_set_verbose_bindings_`
-    void iguana_set_quiet_bindings_();
+    /// @see `iguana_bindings_set_verbose_`
+    void iguana_bindings_set_quiet_();
 
-    /// Get a pointer to an algorithm. This function is not useful as a Fortran subroutine.
+    /// Print a log message, only if `iguana_bindings_set_verbose_` was called.
+    /// This function is not useful as a Fortran subroutine.
+    /// @param format `printf` arguments
+    void iguana_bindings_log_(char const* format, ...);
+
+    /// Print an error message.
+    /// This function is not useful as a Fortran subroutine.
+    /// @param format `printf` arguments
+    void iguana_bindings_error_(char const* format, ...);
+
+    /// Get a pointer to an algorithm.
+    /// This function is not useful as a Fortran subroutine.
     /// @param [in] algo_idx the algorithm index
     /// @param [out] a pointer to the algorithm, if it exists; if not, `nullptr`
     void iguana_get_algo_(algo_idx_t* algo_idx, Algorithm* algo);
