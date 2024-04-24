@@ -70,20 +70,22 @@ c     ------------------------------------------------------------------
 c     before anything for Iguana, call `iguana_create()`; when done, you
 c     must also call `iguana_destroy()` to deallocate the memory
       call iguana_create()
-c     enable verbose printouts for the "C-bindings", the C code that
-c     allows this Fortran code to use the underlying C++ Iguana code;
-c     this is not required, but may be useful if things go wrong...
-      call iguana_bindings_set_verbose()
-c     then create the algorithms
+      call iguana_bindings_set_verbose() ! enable additional log print
+
+c     then create the algorithm instances
+c     - the 1st argument is an integer, the algorithm index, which
+c       references the created instance of the algorithm; it will be
+c       set after calling this subroutine and you will need it to call
+c       other iguana subroutines (namely, "action functions")
+c     - the 2nd argument is the algorithm name
       call iguana_algo_create(
      &  algo_eb_filter,
      &  'clas12::EventBuilderFilter')
       call iguana_algo_create(
      &  algo_inc_kin,
      &  'physics::InclusiveKinematics')
-c     the `algo_` variables are "algorithm indices" (integers); they
-c     reference the Iguana algorithms, and you'll need these indices
-c     to call algorithm functions (namely, "action functions")
+
+c     print the algorithm indices
       print *, 'algo_eb_filter: ', algo_eb_filter
       print *, 'algo_inc_kin: ', algo_inc_kin
 
@@ -95,50 +97,45 @@ c     set log levels
       call iguana_algo_set_log_level(algo_eb_filter,'debug')
       call iguana_algo_set_log_level(algo_inc_kin,'debug')
 
-c     start algorithms (which "locks" their configuration)
-      call iguana_algo_start(algo_eb_filter)
-      call iguana_algo_start(algo_inc_kin)
+c     TODO: show how to configure an algorithm using a config file
 
-c     ============================================
-c     FIXME: why is the log level not being set?
-c     ============================================
+c     start all created algorithms, which "locks" their configuration
+      call iguana_start()
 
+c     ------------------------------------------------------------------
+c     event loop
+c     ------------------------------------------------------------------
 
+ 10   if(reader_status.eq.0 .and.
+     &  (num_events.eq.0 .or. counter.lt.num_events)) then
 
+c       read banks
+        call hipo_file_next(reader_status)
+        call hipo_read_bank('REC::Particle', nrows)
+        call hipo_read_int('REC::Particle', 'pid', nr, pid, 50)
 
-c       !event loop
-c     do while(reader_status.eq.0 .and.
-c    &  (num_events.eq.0 .or. counter.lt.num_events))
+c       call iguana filter
+        do 20 i=1, nrows
+          call iguana_clas12_EventBuilderFilter_Filter(
+     &      algo_eb_filter, pid(i), accept(i))
+ 20     continue
 
-c         !read banks
-c     call hipo_file_next(reader_status)
-c     call hipo_read_bank('REC::Particle', nrows)
-c     call hipo_read_int('REC::Particle', 'pid', nr, pid, 50)
+c       print results
+        print *, '>>>>>>> event ', counter
+        print *, '        nrows ', nrows
+        print *, 'PIDs: ', (pid(j), j=1, nrows)
+        print *, 'Accept: ', (accept(j), j=1, nrows)
 
-c         !call iguana filter
-c     do i=1, nrows
-c     accept(i) = iguana_clas12_EventBuilderFilter_Filter(
-c    &event_builder_filter, pid(i))
-c     end do
+        counter = counter + 1
+        goto 10
+      endif
 
-c         !print results
-c     write(*,*) '>>>>>>> event ', counter
-c     write(*,*) '        nrows ', nrows
-c     write(*,*) (pid(j), j=1, nrows)
-c     write(*,*) (accept(j), j=1, nrows)
+c     ------------------------------------------------------------------
+c     cleanup
+c     ------------------------------------------------------------------
 
-c     counter = counter + 1
-c     end do
-
-c       !stop and destroy iguana algorithms
-c     call iguana_algo_stop_and_destroy(event_builder_filter)
-c     call iguana_algo_stop_and_destroy(momentum_corrections)
-
-
-
-
-
-c     don't forget to call `iguana_destroy()` when done with Iguana
-      call iguana_destroy()
+c     don't forget to call `iguana_stop()` to stop the algorithms
+c     and free the allocated memory
+      call iguana_stop()
 
       end program

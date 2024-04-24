@@ -2,24 +2,51 @@
 
 #include "Algorithm.h"
 
-#define MAX_ALGORITHMS 30
-
 namespace iguana::bindings{
   extern "C" {
 
+    /// `Algorithm` instance index type
     typedef int algo_idx_t;
 
+    /// `Algorithm` instance owner type
     typedef struct
     {
-      Algorithm* algos[MAX_ALGORITHMS];
-      algo_idx_t size;
-      bool verbose;
-    } algo_boss_t;
+      std::vector<Algorithm*> algos; /// A list of `Algorithm` instance pointers
+      bool verbose; /// Control printout verbosity
+    } algo_owner_t;
+
+    /// Print a log message, only if `iguana_bindings_set_verbose_` was called.
+    /// @warning This function is not for Fortran
+    /// @param format `printf` arguments
+    void iguana_print_log_(char const* format, ...);
+
+    /// Print an error message.
+    /// @warning This function is not for Fortran
+    /// @param format `printf` arguments
+    void iguana_print_error_(char const* format, ...);
+
+    /// Get a pointer to an algorithm.
+    /// @warning This function is not for Fortran
+    /// @param [in] algo_idx the algorithm index
+    /// @param [in] verbose enable verbose printout
+    /// @returns a pointer to the algorithm, if it exists; if not, `nullptr`
+    Algorithm* iguana_get_algo_(algo_idx_t* algo_idx, bool verbose = false);
 
     /// Create the Iguana instance. You may only create one, and you must destroy
-    /// it with `iguana_destroy` when you are done. This instance is the _owner_
+    /// it with `iguana_stop` or `iguana_destroy` when you are done. This instance is the _owner_
     /// of algorithm objects.
     void iguana_create_();
+
+    /// Start all created algorithm instances, calling `Algorithm::Start` on each.
+    void iguana_start_();
+
+    /// Stop all created algorithm instances, calling `Algorithm::Stop` on each,
+    /// and free the allocated memory.
+    /// @see iguana_stop_and_keep_()
+    void iguana_stop_();
+
+    /// Stop all created algorithm instances, but do not destroy them
+    void iguana_stop_and_keep_();
 
     /// Destroy the Iguana instance, along with its algorithms. This must be called
     /// when you are done using Iguana, to free the allocated memory.
@@ -35,31 +62,10 @@ namespace iguana::bindings{
     /// @see `iguana_bindings_set_verbose_`
     void iguana_bindings_set_quiet_();
 
-    /// Print a log message, only if `iguana_bindings_set_verbose_` was called.
-    /// This function is not useful as a Fortran subroutine.
-    /// @param format `printf` arguments
-    void iguana_bindings_log_(char const* format, ...);
-
-    /// Print an error message.
-    /// This function is not useful as a Fortran subroutine.
-    /// @param format `printf` arguments
-    void iguana_bindings_error_(char const* format, ...);
-
-    /// Get a pointer to an algorithm.
-    /// This function is not useful as a Fortran subroutine.
-    /// @param [in] algo_idx the algorithm index
-    /// @param [out] a pointer to the algorithm, if it exists; if not, `nullptr`
-    void iguana_get_algo_(algo_idx_t* algo_idx, Algorithm*& algo);
-
     /// Create an algorithm. Be sure to run `iguana_create_()` before creating any algorithm.
     /// @param [out] the algorithm index
     /// @param [in] algo_name the name of the algorithm
     void iguana_algo_create_(algo_idx_t* algo_idx, char const* algo_name);
-
-    /// Destroy an algorithm. You probably don't need to call this function, since you can
-    /// just destroy all algorithms with `iguana_destroy_()`.
-    /// @param [in] algo_idx the algorithm index
-    void iguana_algo_destroy_(algo_idx_t* algo_idx);
 
     /// Start an algorithm by calling `Algorithm::Start`.
     /// @param [in] algo_idx the algorithm index

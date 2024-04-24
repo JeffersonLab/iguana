@@ -19,12 +19,7 @@ namespace iguana::bindings {
     /// @param [out] out the return value
     void iguana_clas12_eventbuilderfilter_filter_(algo_idx_t* algo_idx, int* pid, bool* out)
     {
-      Algorithm* algo = nullptr;
-      iguana_get_algo_(algo_idx, algo);
-      if(algo)
-        *out = dynamic_cast<clas12::EventBuilderFilter*>(algo)->Filter(*pid);
-      else
-        *out = false;
+      *out = dynamic_cast<clas12::EventBuilderFilter*>(iguana_get_algo_(algo_idx))->Filter(*pid);
     }
 
   }
