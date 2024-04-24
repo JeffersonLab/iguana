@@ -12,9 +12,16 @@ c               set to 0 to analyze all events
 c ```
 
       program iguana_example_fortran
+      use iso_c_binding
       implicit none
 
 c     ------------------------------------------------------------------
+c     data declarations
+c     ------------------------------------------------------------------
+c     NOTE: using `iso_c_binding` types for input and output of C-bound
+c           functions and subroutines, i.e., for HIPO and Iguana usage;
+c           using standard F77 types may still work, but might be
+c           compiler dependent in some cases
 
 c     program parameters
       integer*4      argc
@@ -23,23 +30,24 @@ c     program parameters
       integer        num_events / 10 / ! num. events to read (0 = all)
 
 c     HIPO and bank variables
-      integer   reader_status, counter ! hipo event loop vars
-      integer   nrows ! number of rows in `REC::Particle`
-      integer   nr ! number of rows that have been read
-      integer   N_MAX ! the maximum number of rows we can read
-      parameter (N_MAX=50)
+      integer        counter ! event counter
+      integer(c_int) reader_status ! hipo event loop vars
+      integer(c_int) nrows ! number of rows in `REC::Particle`
+      integer(c_int) nr ! number of rows that have been read
+      integer        N_MAX ! the maximum number of rows we can read
+      parameter      (N_MAX=50)
 
 c     REC::Particle columns
-      integer pid(N_MAX)
-      real    px(N_MAX), py(N_MAX), pz(N_MAX)
-      integer stat(N_MAX)
+      integer(c_int) pid(N_MAX)
+      real(c_float)  px(N_MAX), py(N_MAX), pz(N_MAX)
+      integer(c_int) stat(N_MAX)
 
 c     iguana algorithm indices
-      integer algo_eb_filter, algo_inc_kin
+      integer(c_int) algo_eb_filter, algo_inc_kin
 
 c     misc.
       integer i
-      logical accept(N_MAX)
+      logical(c_bool) accept(N_MAX)
       real    p, p_max
       integer i_ele
       logical found_ele
@@ -132,7 +140,7 @@ c       read banks
 c       call iguana filter
         print *, 'PID filter:'
         do 20 i=1, nrows
-          call iguana_clas12_EventBuilderFilter_Filter(
+          call iguana_clas12_eventbuilderfilter_filter(
      &      algo_eb_filter, pid(i), accept(i))
           print *, '  ', pid(i), '  =>  accept = ', accept(i)
  20     continue
