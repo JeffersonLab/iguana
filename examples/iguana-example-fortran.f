@@ -40,6 +40,7 @@ c     HIPO and bank variables
 c     REC::Particle columns
       integer(c_int) pid(N_MAX)
       real(c_float)  px(N_MAX), py(N_MAX), pz(N_MAX)
+      real(c_float)  vz(N_MAX)
       integer(c_int) stat(N_MAX)
 
 c     iguana algorithm outputs
@@ -48,7 +49,7 @@ c     iguana algorithm outputs
       real(c_double) Q2, x, y, W, nu ! inclusive kinematics
 
 c     iguana algorithm indices
-      integer(c_int) algo_eb_filter, algo_inc_kin
+      integer(c_int) algo_eb_filter, algo_vz_filter, algo_inc_kin
 
 c     misc.
       integer i
@@ -103,12 +104,11 @@ c     - the 2nd argument is the algorithm name
      &  algo_eb_filter,
      &  'clas12::EventBuilderFilter')
       call iguana_algo_create(
+     &  algo_vz_filter,
+     &  'clas12::ZVertexFilter')
+      call iguana_algo_create(
      &  algo_inc_kin,
      &  'physics::InclusiveKinematics')
-
-c     print the algorithm indices
-      print *, 'algo_eb_filter: ', algo_eb_filter
-      print *, 'algo_inc_kin: ', algo_inc_kin
 
 c     ------------------------------------------------------------------
 c     configure and start iguana algorithms
@@ -116,6 +116,7 @@ c     ------------------------------------------------------------------
 
 c     set log levels
       call iguana_algo_set_log_level(algo_eb_filter,'debug')
+      call iguana_algo_set_log_level(algo_vz_filter,'debug')
       call iguana_algo_set_log_level(algo_inc_kin,'debug')
 
 c     TODO: show how to configure an algorithm using a config file
@@ -139,16 +140,25 @@ c       read banks
         call hipo_read_float('REC::Particle', 'px',     nr, px,   N_MAX)
         call hipo_read_float('REC::Particle', 'py',     nr, py,   N_MAX)
         call hipo_read_float('REC::Particle', 'pz',     nr, pz,   N_MAX)
+        call hipo_read_float('REC::Particle', 'vz',     nr, vz,   N_MAX)
         call hipo_read_int('REC::Particle',   'status', nr, stat, N_MAX)
 
 c       call iguana filters
+c       - the `logical` variable `accept` must be initialized to
+c         `.true.`, since we will use it to "chain" the filters
 c       - the event builder filter trivial: by default it accepts only
 c         `REC::Particle::pid == 11 or -211` (simple example algorithm)
-        print *, 'PID filter:'
+c       - the AND with the z-vertex filter is the final filter, `accept`
+        print *, 'Filter:'
         do 20 i=1, nrows
+          accept(i) = .true.
           call iguana_clas12_eventbuilderfilter_filter(
      &      algo_eb_filter, pid(i), accept(i))
-          print *, '  ', pid(i), '  =>  accept = ', accept(i)
+          call iguana_clas12_zvertexfilter_filter(
+     &      algo_vz_filter, pid(i), accept(i))
+          print *, '  ', pid(i), ' vz = ', vz(i),
+     &      '  =>  accept = ', accept(i)
+          print *, 'WARNING: z-vertex filter is not working!'
  20     continue
 
 c       simple electron finder: trigger and highest |p|

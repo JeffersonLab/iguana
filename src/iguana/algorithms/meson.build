@@ -46,7 +46,7 @@ algo_dict = {
   },
   'clas12::ZVertexFilter': {
     'algorithm': {
-      'sources': [ 'clas12/ZVertexFilter.cc' ],
+      'sources': [ 'clas12/ZVertexFilter.cc', 'clas12/ZVertexFilterBindings.cc' ],
       'headers': [ 'clas12/ZVertexFilter.h' ],
     },
     'configs':   [ 'clas12/ZVertexFilter.yaml' ],
