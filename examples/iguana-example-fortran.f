@@ -16,24 +16,33 @@ c ```
 
 c     ------------------------------------------------------------------
 
+c     program parameters
       integer*4      argc
       character*1024 in_file ! HIPO file
       character*32   num_events_arg
       integer        num_events / 10 / ! num. events to read (0 = all)
 
-      integer reader_status
-      integer counter
-      integer nrows
-      integer nr
+c     HIPO and bank variables
+      integer   reader_status, counter ! hipo event loop vars
+      integer   nrows ! number of rows in `REC::Particle`
+      integer   nr ! number of rows that have been read
+      integer   N_MAX ! the maximum number of rows we can read
+      parameter (N_MAX=50)
 
-      integer MAX_NUM_ROWS
-      parameter (MAX_NUM_ROWS=50)
-      integer pid(MAX_NUM_ROWS)
-      logical accept(MAX_NUM_ROWS)
+c     REC::Particle columns
+      integer pid(N_MAX)
+      real    px(N_MAX), py(N_MAX), pz(N_MAX)
+      integer stat(N_MAX)
 
-      integer i, j
+c     iguana algorithm indices
+      integer algo_eb_filter, algo_inc_kin
 
-      integer algo_eb_filter, algo_inc_kin ! FIXME: typedef this?
+c     misc.
+      integer i
+      logical accept(N_MAX)
+      real    p, p_max
+      integer i_ele
+      logical found_ele
 
 c     ------------------------------------------------------------------
 c     open the input file
@@ -70,7 +79,7 @@ c     ------------------------------------------------------------------
 c     before anything for Iguana, call `iguana_create()`; when done, you
 c     must also call `iguana_destroy()` to deallocate the memory
       call iguana_create()
-      call iguana_bindings_set_verbose() ! enable additional log print
+!     call iguana_bindings_set_verbose() ! enable additional log print
 
 c     then create the algorithm instances
 c     - the 1st argument is an integer, the algorithm index, which
@@ -109,22 +118,45 @@ c     ------------------------------------------------------------------
  10   if(reader_status.eq.0 .and.
      &  (num_events.eq.0 .or. counter.lt.num_events)) then
 
+        print *, '>>>>>>> event ', counter
+
 c       read banks
         call hipo_file_next(reader_status)
         call hipo_read_bank('REC::Particle', nrows)
-        call hipo_read_int('REC::Particle', 'pid', nr, pid, 50)
+        call hipo_read_int('REC::Particle',   'pid',    nr, pid,  N_MAX)
+        call hipo_read_float('REC::Particle', 'px',     nr, px,   N_MAX)
+        call hipo_read_float('REC::Particle', 'py',     nr, py,   N_MAX)
+        call hipo_read_float('REC::Particle', 'pz',     nr, pz,   N_MAX)
+        call hipo_read_int('REC::Particle',   'status', nr, stat, N_MAX)
 
 c       call iguana filter
+        print *, 'PID filter:'
         do 20 i=1, nrows
           call iguana_clas12_EventBuilderFilter_Filter(
      &      algo_eb_filter, pid(i), accept(i))
+          print *, '  ', pid(i), '  =>  accept = ', accept(i)
  20     continue
 
-c       print results
-        print *, '>>>>>>> event ', counter
-        print *, '        nrows ', nrows
-        print *, 'PIDs: ', (pid(j), j=1, nrows)
-        print *, 'Accept: ', (accept(j), j=1, nrows)
+c       simple electron finder: trigger and highest |p|
+        p_max = 0
+        do 30 i=1, nrows
+          if(.not.accept(i)) goto 30
+          if(pid(i).eq.11 .and. stat(i).lt.0) then
+            p = sqrt(px(i)**2 + py(i)**2 + pz(i)**2)
+            if(p.gt.p_max) then
+              i_ele = i
+              p_max = p
+              found_ele = .true.
+            endif
+          endif
+ 30     continue
+
+c       compute DIS kinematics, if electron is found
+        if(found_ele) then
+          print *, '===> found electron'
+        else
+          print *, '===> no electron'
+        endif
 
         counter = counter + 1
         goto 10

@@ -21,14 +21,12 @@ namespace iguana::bindings {
 
     void iguana_print_error_(char const* format, ...)
     {
-      if(__boss.verbose) {
-        va_list args;
-        va_start(args, format);
-        fprintf(stderr, "[IGUANA C-BINDINGS] [ERROR] ");
-        vfprintf(stderr, format, args);
-        fprintf(stderr, "\n");
-        va_end(args);
-      }
+      va_list args;
+      va_start(args, format);
+      fprintf(stderr, "[IGUANA C-BINDINGS] [ERROR] ");
+      vfprintf(stderr, format, args);
+      fprintf(stderr, "\n");
+      va_end(args);
     }
 
     Algorithm* iguana_get_algo_(algo_idx_t* algo_idx, bool verbose)
