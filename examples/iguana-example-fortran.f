@@ -30,11 +30,11 @@ c     program parameters
       integer        num_events / 10 / ! num. events to read (0 = all)
 
 c     HIPO and bank variables
-      integer        counter ! event counter
+      integer        counter       ! event counter
       integer(c_int) reader_status ! hipo event loop vars
-      integer(c_int) nrows ! number of rows in `REC::Particle`
-      integer(c_int) nr ! number of rows that have been read
-      integer        N_MAX ! the maximum number of rows we can read
+      integer(c_int) nrows         ! number of rows in `REC::Particle`
+      integer(c_int) nr            ! number of rows that have been read
+      integer        N_MAX         ! the max number of rows we can read
       parameter      (N_MAX=50)
 
 c     REC::Particle columns
@@ -42,13 +42,17 @@ c     REC::Particle columns
       real(c_float)  px(N_MAX), py(N_MAX), pz(N_MAX)
       integer(c_int) stat(N_MAX)
 
+c     iguana algorithm outputs
+      logical(c_bool) accept(N_MAX)  ! filter
+      real(c_double) qx, qy, qz, qE  ! q vector
+      real(c_double) Q2, x, y, W, nu ! inclusive kinematics
+
 c     iguana algorithm indices
       integer(c_int) algo_eb_filter, algo_inc_kin
 
 c     misc.
       integer i
-      logical(c_bool) accept(N_MAX)
-      real    p, p_max
+      real    p, p_ele
       integer i_ele
       logical found_ele
 
@@ -126,7 +130,7 @@ c     ------------------------------------------------------------------
  10   if(reader_status.eq.0 .and.
      &  (num_events.eq.0 .or. counter.lt.num_events)) then
 
-        print *, '>>>>>>> event ', counter
+        print *, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> event ', counter
 
 c       read banks
         call hipo_file_next(reader_status)
@@ -137,7 +141,9 @@ c       read banks
         call hipo_read_float('REC::Particle', 'pz',     nr, pz,   N_MAX)
         call hipo_read_int('REC::Particle',   'status', nr, stat, N_MAX)
 
-c       call iguana filter
+c       call iguana filters
+c       - the event builder filter trivial: by default it accepts only
+c         `REC::Particle::pid == 11 or -211` (simple example algorithm)
         print *, 'PID filter:'
         do 20 i=1, nrows
           call iguana_clas12_eventbuilderfilter_filter(
@@ -146,14 +152,15 @@ c       call iguana filter
  20     continue
 
 c       simple electron finder: trigger and highest |p|
-        p_max = 0
+        p_ele = 0
+        found_ele = .false.
         do 30 i=1, nrows
           if(.not.accept(i)) goto 30
           if(pid(i).eq.11 .and. stat(i).lt.0) then
             p = sqrt(px(i)**2 + py(i)**2 + pz(i)**2)
-            if(p.gt.p_max) then
+            if(p.gt.p_ele) then
               i_ele = i
-              p_max = p
+              p_ele = p
               found_ele = .true.
             endif
           endif
@@ -162,6 +169,19 @@ c       simple electron finder: trigger and highest |p|
 c       compute DIS kinematics, if electron is found
         if(found_ele) then
           print *, '===> found electron'
+          call iguana_physics_inclusivekinematics_computefromlepton(
+     &      algo_inc_kin,
+     &      px(i_ele), py(i_ele), pz(i_ele),
+     &      qx, qy, qz, qE,
+     &      Q2, x, y, W, nu)
+          print *, '  i: ', i_ele
+          print *, '  p: ', p_ele
+          print *, '  q: (', qx, qy, qz, qE, ')'
+          print *, ' Q2: ', Q2
+          print *, '  x: ', x
+          print *, '  y: ', y
+          print *, '  W: ', W
+          print *, ' nu: ', nu
         else
           print *, '===> no electron'
         endif

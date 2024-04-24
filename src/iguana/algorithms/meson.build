@@ -83,7 +83,7 @@ algo_dict = {
   },
   'physics::InclusiveKinematics': {
     'algorithm': {
-      'sources': [ 'physics/InclusiveKinematics.cc' ],
+      'sources': [ 'physics/InclusiveKinematics.cc', 'physics/InclusiveKinematicsBindings.cc' ],
       'headers': [ 'physics/InclusiveKinematics.h' ],
       'needs_ROOT': true,
     },
