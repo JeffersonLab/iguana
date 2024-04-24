@@ -400,7 +400,7 @@ jobs:
   #########################################################
 
   collect_webpages:
-    if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.id == 'linux-latest' }}
+    if: ${{ github.ref == 'refs/heads/main' && inputs.id == 'linux-latest' }}
     name: Collect webpages
     needs:
       - doc_generate
@@ -434,7 +434,7 @@ jobs:
           path: pages/
 
   deploy_webpages:
-    if: ${{ (github.head_ref == 'main' || github.ref_name == 'main') && inputs.id == 'linux-latest' }}
+    if: ${{ github.ref == 'refs/heads/main' && inputs.id == 'linux-latest' }}
     name: Deploy webpages
     needs: collect_webpages
     permissions:
