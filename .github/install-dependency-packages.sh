@@ -130,6 +130,9 @@ case $runner in
       brew install $pkg
       info_homebrew $pkg
     done
+    ### link homebrew's gcc, for gfortran
+    brew unlink gcc
+    brew link gcc
     ;;
 
   *)
