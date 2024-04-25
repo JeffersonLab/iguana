@@ -8,6 +8,7 @@ set -e
 GENERAL_PACKAGE_LIST_LINUX=(
   python
   gcc
+  gcc-libs # for gfortran
   clang
   make
   cmake
@@ -39,6 +40,7 @@ IGUANA_PACKAGE_LIST_LINUX=(
 # MACOS
 ##############################
 GENERAL_PACKAGE_LIST_MACOS=(
+  gcc
   tree
   ninja
   meson
