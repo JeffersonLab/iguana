@@ -43,4 +43,5 @@ namespace iguana::clas12 {
       /// Configuration options
       std::set<int> o_pids;
   };
+
 }

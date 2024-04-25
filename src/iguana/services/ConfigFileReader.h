@@ -39,12 +39,6 @@ namespace iguana {
       /// @return the found configuration file (with the directory)
       std::string FindFile(std::string const& name);
 
-      /// Return the directory containing a file, by stripping the last
-      /// component of a file name, similarly to the `dirname` command.
-      /// @param name the file name
-      /// @return the parent directory name
-      static std::string DirName(std::string_view name);
-
       /// Convert a full algorithm name to its corresponding default config file name
       /// @param algo_name the algorithm name
       /// @param ext the file extension

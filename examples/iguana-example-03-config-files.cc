@@ -28,7 +28,7 @@ int main(int argc, char** argv)
   if(argc > 1)
     configDir = std::string(argv[1]);
   else
-    configDir = iguana::ConfigFileReader::DirName(argv[0]) + "/../etc/iguana/examples";
+    configDir = iguana::ConfigFileReader::GetConfigInstallationPrefix() + "/examples";
   fmt::print("Using top-level configuration directory {}\n", configDir);
 
   // loop over multiple examples how to use configuration files and set options
@@ -66,8 +66,8 @@ int main(int argc, char** argv)
       algo->SetConfigFile(configDir + "/my_z_vertex_cuts.yaml");
       algo->SetOption("runnum", 5500);
       algo->Start();
-      assert((algo->GetZcutLower() == -8.0));
-      assert((algo->GetZcutUpper() == 7.0));
+      assert((algo->GetZcutLower() == -0.8));
+      assert((algo->GetZcutUpper() == 0.7));
       break;
 
     case 4:
@@ -76,8 +76,8 @@ int main(int argc, char** argv)
       algo->SetConfigDirectory(configDir);
       algo->SetConfigFile("my_z_vertex_cuts.yaml");
       algo->Start();
-      assert((algo->GetZcutLower() == -15.0));
-      assert((algo->GetZcutUpper() == 15.0));
+      assert((algo->GetZcutLower() == -1.5));
+      assert((algo->GetZcutUpper() == 1.3));
       break;
 
     case 5:
@@ -87,8 +87,8 @@ int main(int argc, char** argv)
       // may use that directory instead of the default, and modify any configuration file within.
       algo->SetConfigDirectory(configDir + "/my_config_directory");
       algo->Start();
-      assert((algo->GetZcutLower() == -1.5));
-      assert((algo->GetZcutUpper() == 1.3));
+      assert((algo->GetZcutLower() == -15.0));
+      assert((algo->GetZcutUpper() == 15.0));
       break;
 
     case 6:

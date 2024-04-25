@@ -8,6 +8,7 @@ set -e
 GENERAL_PACKAGE_LIST_LINUX=(
   python
   gcc
+  gcc-fortran
   clang
   make
   cmake
@@ -42,6 +43,7 @@ GENERAL_PACKAGE_LIST_MACOS=(
   tree
   ninja
   meson
+  gcc # for gfortran
   ### ROOT dependencies
   binutils
   libx11
@@ -128,6 +130,9 @@ case $runner in
       brew install $pkg
       info_homebrew $pkg
     done
+    ### link homebrew's gcc, for gfortran
+    brew unlink gcc
+    brew link gcc
     ;;
 
   *)

@@ -1,6 +1,10 @@
 name: MinVer # minimum required-version of dependencies on Linux
 
 on:
+  pull_request:
+  push:
+    branches: [ main ]
+    tags: [ '*' ]
   schedule:
     - cron: '15 7 * * 0' # Sundays at 0715Z
 
@@ -22,9 +26,10 @@ jobs:
             "python"
           ],
           "include": [
-            { "id": "cpp",    "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=true"  },
-            { "id": "noROOT", "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=false" },
-            { "id": "python", "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=true   -Dbind_python=true" }
+            { "id": "cpp",     "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=true"  },
+            { "id": "noROOT",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=false" },
+            { "id": "python",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=true   -Dbind_python=true"  },
+            { "id": "fortran", "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=true   -Dbind_fortran=true" }
           ]
         }
 

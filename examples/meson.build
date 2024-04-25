@@ -18,6 +18,10 @@ example_sources = {
     'sources':   [ 'iguana-example-03-config-files.cc' ],
     'test_args': [ get_option('prefix') / example_config_files_prefix ],
   },
+  'iguana-example-fortran': {
+    'sources':     [ 'iguana-example-fortran.f' ],
+    'build_this':  get_option('bind_fortran')
+  },
 }
 
 # build executables and test them

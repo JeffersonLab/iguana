@@ -3,7 +3,7 @@
 /iguana*/
 /.cache
 
-# doxygen artifacts
+# documentation artifacts
 /doc/api
 
 # data files

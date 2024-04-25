@@ -130,11 +130,13 @@ namespace iguana {
       /// @param yaml_config the custom `YAMLReader` instance
       void SetConfig(std::unique_ptr<YAMLReader>&& yaml_config);
 
-      /// Set a custom configuration file for this algorithm; see also `Algorithm::SetConfigDirectory`
+      /// Set a custom configuration file for this algorithm
+      /// @see `Algorithm::SetConfigDirectory`
       /// @param name the configuration file name
       void SetConfigFile(std::string const& name);
 
-      /// Set a custom configuration file directory for this algorithm; see also `Algorithm::SetConfigFile`
+      /// Set a custom configuration file directory for this algorithm
+      /// @see `Algorithm::SetConfigFile`
       /// @param name the directory name
       void SetConfigDirectory(std::string const& name);
 

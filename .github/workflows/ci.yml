@@ -273,7 +273,7 @@ jobs:
             -Dtest_output_dir=$(pwd)/validation_results \
             ${{ matrix.opts }}
       - name: dump build options
-        run: meson configure iguana_build | cat
+        run: meson configure iguana_build --no-pager
       - run: meson compile
         working-directory: iguana_build
       - run: meson install
@@ -331,6 +331,9 @@ jobs:
         if: ${{ matrix.id == 'python' }}
       - run: iguana-example-01-bank-rows.py test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'python' }}
+      ###### fortran
+      - run: iguana-example-fortran test_data.hipo ${{ env.num_events }}
+        if: ${{ matrix.id == 'fortran' }}
       ### test consumers
       - name: consumer test make
         if: ${{ matrix.id == 'cpp' }}
@@ -389,10 +392,10 @@ jobs:
           pacman -Syu --noconfirm
           pacman -S --noconfirm doxygen graphviz
       - name: doxygen
-        run: doxygen doc/Doxyfile
+        run: doxygen doc/gen/Doxyfile
       - uses: actions/upload-artifact@v4
         with:
-          name: doxygen
+          name: doc_doxygen
           retention-days: 5
           path: doc/api/
 
@@ -413,7 +416,7 @@ jobs:
       - name: download doxygen documentation
         uses: actions/download-artifact@v4
         with:
-          name: doxygen
+          name: doc_doxygen
           path: doxygen
       - name: download coverage report
         uses: actions/download-artifact@v4

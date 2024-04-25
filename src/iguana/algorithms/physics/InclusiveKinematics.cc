@@ -190,7 +190,7 @@ namespace iguana::physics {
   {
     InclusiveKinematicsVars result;
 
-    m_log->Debug("Reconstruct inclusive kinematics from lepton with p=({}, {}, {})", lepton_px, lepton_py, lepton_pz);
+    m_log->Trace("Reconstruct inclusive kinematics from lepton with p=({}, {}, {})", lepton_px, lepton_py, lepton_pz);
 
     ROOT::Math::PxPyPzMVector vec_beam(m_beam.px, m_beam.py, m_beam.pz, m_beam.mass);
     ROOT::Math::PxPyPzMVector vec_target(m_target.px, m_target.py, m_target.pz, m_target.mass);

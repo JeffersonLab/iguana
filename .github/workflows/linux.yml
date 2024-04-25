@@ -39,7 +39,8 @@ jobs:
             { "id": "undefined-sanitizer", "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=undefined -Db_lundef=false -Db_pie=true" },
             { "id": "leak-sanitizer",      "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Drequire_ROOT=true   -Db_sanitize=leak      -Db_lundef=false -Db_pie=true" },
             { "id": "noROOT",              "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Drequire_ROOT=false" },
-            { "id": "python",              "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Drequire_ROOT=true   -Dbind_python=true"    }
+            { "id": "python",              "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Drequire_ROOT=true   -Dbind_python=true"    },
+            { "id": "fortran",             "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Drequire_ROOT=true   -Dbind_fortran=true"   }
           ]
         }
 

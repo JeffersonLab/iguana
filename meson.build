@@ -1,6 +1,6 @@
 project(
   'iguana',
-  'cpp',
+  'cpp', 'fortran',
   license: 'LGPLv3',
   meson_version: '>=1.2',
   default_options: {
