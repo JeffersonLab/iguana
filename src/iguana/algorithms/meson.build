@@ -4,9 +4,11 @@
 #  ========
 #   ALGORITHM_FULL_NAME: {
 #     'algorithm': {
-#       'sources':      LIST_OF_ALGORITHM_SOURCE FILES,
-#       'headers':      LIST_OF_ALGORITHM_HEADER_FILES,
-#       'needs_ROOT':   BOOLEAN,  # whether this algorithm needs ROOT or not (default=false),
+#       'sources':          LIST_OF_ALGORITHM_SOURCE FILES,
+#       'headers':          LIST_OF_ALGORITHM_HEADER_FILES,
+#       'binding_headers':  LIST_OF_BINDING_HEADERS, # for Fortran
+#       'binding_sources':  LIST_OF_BINDING_SOURCES, # for Fortran
+#       'needs_ROOT':       BOOLEAN,  # whether this algorithm needs ROOT or not (default=false),
 #     },
 #     'validator': {    # if excluded, a validator test will not be built for this algorithm
 #       'sources':      LIST_OF_VALIDATOR_SOURCE FILES,
@@ -20,8 +22,10 @@
 algo_dict = {
   'main': {
     'algorithm': {
-      'sources': [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmBindings.cc', 'AlgorithmSequence.cc' ],
-      'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'AlgorithmBindings.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
+      'sources': [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ],
+      'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
+      'binding_sources': [ 'AlgorithmBindings.cc' ],
+      'binding_headers': [ 'AlgorithmBindings.h' ],
     },
     'validator': {
       'sources': [ 'Validator.cc' ],
@@ -38,16 +42,18 @@ algo_dict = {
   },
   'clas12::EventBuilderFilter': {
     'algorithm': {
-      'sources': [ 'clas12/EventBuilderFilter.cc', 'clas12/EventBuilderFilterBindings.cc' ],
+      'sources': [ 'clas12/EventBuilderFilter.cc' ],
       'headers': [ 'clas12/EventBuilderFilter.h' ],
+      'binding_sources': [ 'clas12/EventBuilderFilterBindings.cc' ],
     },
     'configs':   [ 'clas12/EventBuilderFilter.yaml' ],
     'test_args': { 'banks': ['REC::Particle'] },
   },
   'clas12::ZVertexFilter': {
     'algorithm': {
-      'sources': [ 'clas12/ZVertexFilter.cc', 'clas12/ZVertexFilterBindings.cc' ],
+      'sources': [ 'clas12/ZVertexFilter.cc' ],
       'headers': [ 'clas12/ZVertexFilter.h' ],
+      'binding_sources': [ 'clas12/ZVertexFilterBindings.cc' ],
     },
     'configs':   [ 'clas12/ZVertexFilter.yaml' ],
     'test_args': { 'banks': ['REC::Particle'] },
@@ -71,8 +77,9 @@ algo_dict = {
   },
   'clas12::MomentumCorrection': {
     'algorithm': {
-      'sources': [ 'clas12/MomentumCorrection.cc', 'clas12/MomentumCorrectionBindings.cc' ],
+      'sources': [ 'clas12/MomentumCorrection.cc' ],
       'headers': [ 'clas12/MomentumCorrection.h' ],
+      'binding_sources': [ 'clas12/MomentumCorrectionBindings.cc' ],
     },
     'validator': {
       'sources': [ 'clas12/MomentumCorrectionValidator.cc' ],
@@ -83,8 +90,9 @@ algo_dict = {
   },
   'physics::InclusiveKinematics': {
     'algorithm': {
-      'sources': [ 'physics/InclusiveKinematics.cc', 'physics/InclusiveKinematicsBindings.cc' ],
+      'sources': [ 'physics/InclusiveKinematics.cc' ],
       'headers': [ 'physics/InclusiveKinematics.h' ],
+      'binding_sources': [ 'physics/InclusiveKinematicsBindings.cc' ],
       'needs_ROOT': true,
     },
     'validator': {
@@ -110,6 +118,10 @@ foreach name, info : algo_dict
   if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
     algo_sources += info_algo.get('sources', [])
     algo_headers += info_algo.get('headers', [])
+    if(get_option('bind_fortran'))
+      algo_sources += info_algo.get('binding_sources', [])
+      algo_headers += info_algo.get('binding_headers', [])
+    endif
     algo_configs += info.get('configs', [])
   else
     warning('Excluding algorithm "' + name + '", which depends on ROOT')
