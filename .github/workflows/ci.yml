@@ -390,7 +390,7 @@ jobs:
       - name: install dependencies
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm python doxygen graphviz
+          pacman -S --noconfirm doxygen graphviz
       - name: doxygen
         run: doxygen doc/gen/Doxyfile
       - uses: actions/upload-artifact@v4
