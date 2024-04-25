@@ -2,7 +2,7 @@
 
 #include "Algorithm.h"
 
-namespace iguana::bindings{
+namespace iguana::bindings {
   extern "C" {
 
     /// `Algorithm` instance index type
@@ -11,8 +11,10 @@ namespace iguana::bindings{
     /// `Algorithm` instance owner type
     typedef struct
     {
-      std::vector<Algorithm*> algos; /// A list of `Algorithm` instance pointers
-      bool verbose; /// Control printout verbosity
+      /// A list of `Algorithm` instance pointers
+      std::vector<Algorithm*> algos;
+      /// Control printout verbosity
+      bool verbose;
     } algo_owner_t;
 
     /// Print a log message, only if `iguana_bindings_set_verbose_` was called.
@@ -71,7 +73,7 @@ namespace iguana::bindings{
     void iguana_bindings_set_quiet_();
 
     /// Create an algorithm. Be sure to run `iguana_create_()` before creating any algorithm.
-    /// @param [out] the algorithm index
+    /// @param [out] algo_idx the algorithm index
     /// @param [in] algo_name the name of the algorithm
     void iguana_algo_create_(algo_idx_t* algo_idx, char const* algo_name);
 

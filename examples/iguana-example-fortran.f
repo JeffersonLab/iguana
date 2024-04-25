@@ -1,8 +1,15 @@
-c     Fortran example demonstrating how to read a HIPO file and use
-c     its data with Iguana algorithms; run with no arguments to see
-c     the usage guide
-
+      !> @begin_doc_example
+      !> @file iguana-example-fortran.f
+      !> @brief Fortran example demonstrating how to read a HIPO file and use
+      !> its data with Iguana algorithms
+      !> - Run with no arguments to see the usage guide.
+      !> - See `iguana::bindings` for the available Iguana functions for
+      !>   Fortran.
+      !> @end_doc_example
+      !>
+      !> Fortran example program
       program iguana_example_fortran
+
       use iso_c_binding
       implicit none
 
