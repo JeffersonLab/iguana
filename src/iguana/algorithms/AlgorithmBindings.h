@@ -103,5 +103,9 @@ namespace iguana::bindings{
     /// @param [in] algo_idx the algorithm index
     void iguana_algo_stop_(algo_idx_t* algo_idx);
 
+    /// Get the configuration file installation prefix
+    /// @param [in,out] out will be set to the prefix
+    void iguana_getconfiginstallationprefix_(char* out);
+
   }
 }

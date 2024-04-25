@@ -18,10 +18,11 @@ c     program parameters
       integer*4      argc
       character*1024 in_file     ! HIPO file
       integer        num_events  ! number of events to read
-      character*16   num_events_arg
       character*1024 config_file ! YAML configuration file
-      character(kind=c_char, len=1024) in_file_cstr, config_file_cstr
+      character*16   num_events_arg
       logical        config_file_set
+      character(kind=c_char, len=1024)
+     &   in_file_cstr, config_file_cstr, etc_dir
 
 c     HIPO and bank variables
       integer        counter       ! event counter
@@ -60,19 +61,23 @@ c     parse arguments
       config_file_set = .false.
       argc            = iargc()
       if(argc.lt.1) then
+        etc_dir = ''
+        call iguana_getconfiginstallationprefix(etc_dir)
         print *, 'ERROR: please at least specify a HIPO_FILE'
         print *, ''
         print *, 'ARGS: ', 'HIPO_FILE', ' ', 'NUM_EVENTS'
         print *, ''
         print *, '  HIPO_FILE: ', 'the input HIPO file'
         print *, ''
-        print *, '  NUM_EVENTS: ', 'the number of events (0 for all)'
+        print *, '  NUM_EVENTS (optional): ',
+     &    'the number of events (0 for all)'
         print *, '    default: ', num_events
         print *, ''
-        print *, '  CONFIG_FILE: ', 'algorithm configuration file'
+        print *, '  CONFIG_FILE (optional): ',
+     &    'algorithm configuration file'
         print *, '    default: ', 'use the internal defaults'
-        print *, '    example: ',
-     &    '$prefix/etc/iguana/examples/my_z_vertex_cuts.yaml'
+        print *, '    example config file: ',
+     &    trim(etc_dir)//'/examples/my_z_vertex_cuts.yaml'
         stop
       else
         call getarg(1, in_file)

@@ -144,5 +144,10 @@ namespace iguana::bindings {
       iguana_get_algo_(algo_idx, true)->Stop();
     }
 
+    void iguana_getconfiginstallationprefix_(char* out)
+    {
+      sprintf(out, "%s", ConfigFileReader::GetConfigInstallationPrefix().c_str());
+    }
+
   }
 }
