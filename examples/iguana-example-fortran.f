@@ -31,11 +31,11 @@ c     program parameters
      &   in_file_cstr, config_file_cstr, etc_dir
 
 c     HIPO and bank variables
-      integer        counter       ! event counter
-      integer(c_int) reader_status ! hipo event loop vars
-      integer(c_int) nrows         ! number of rows in `REC::Particle`
-      integer(c_int) nr            ! number of rows that have been read
-      integer        N_MAX         ! the max number of rows we can read
+      integer        counter        ! event counter
+      integer(c_int) reader_status  ! hipo event loop vars
+      integer(c_int) nrows, nrows_c ! number of rows
+      integer(c_int) nr             ! unused
+      integer        N_MAX          ! max number of rows we can read
       parameter      (N_MAX=50)
 
 c     REC::Particle columns
@@ -43,6 +43,8 @@ c     REC::Particle columns
       real(c_float)  px(N_MAX), py(N_MAX), pz(N_MAX)
       real(c_float)  vz(N_MAX)
       integer(c_int) stat(N_MAX)
+      integer(c_int) sector(N_MAX)
+      real(c_float)  torus(N_MAX)
 
 c     iguana algorithm outputs
       logical(c_bool) accept(N_MAX)  ! filter
@@ -50,7 +52,8 @@ c     iguana algorithm outputs
       real(c_double) Q2, x, y, W, nu ! inclusive kinematics
 
 c     iguana algorithm indices
-      integer(c_int) algo_eb_filter, algo_vz_filter, algo_inc_kin
+      integer(c_int) algo_eb_filter, algo_vz_filter,
+     &  algo_inc_kin, algo_mom_cor
 
 c     misc.
       integer i
@@ -128,6 +131,9 @@ c     - the 2nd argument is the algorithm name
       call iguana_algo_create(
      &  algo_inc_kin,
      &  'physics::InclusiveKinematics')
+      call iguana_algo_create(
+     &  algo_mom_cor,
+     &  'clas12::MomentumCorrection')
 
 c     ------------------------------------------------------------------
 c     configure and start iguana algorithms
@@ -137,6 +143,7 @@ c     set log levels
       call iguana_algo_set_log_level(algo_eb_filter,'debug')
       call iguana_algo_set_log_level(algo_vz_filter,'debug')
       call iguana_algo_set_log_level(algo_inc_kin,'debug')
+      call iguana_algo_set_log_level(algo_mom_cor,'debug')
 
 c     configure algorithms with a configuration file
       if(config_file_set) then
@@ -153,17 +160,20 @@ c     ------------------------------------------------------------------
  10   if(reader_status.eq.0 .and.
      &  (num_events.eq.0 .or. counter.lt.num_events)) then
 
+        print *, ''
         print *, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> event ', counter
 
 c       read banks
         call hipo_file_next(reader_status)
         call hipo_read_bank('REC::Particle', nrows)
-        call hipo_read_int('REC::Particle',   'pid',    nr, pid,  N_MAX)
-        call hipo_read_float('REC::Particle', 'px',     nr, px,   N_MAX)
-        call hipo_read_float('REC::Particle', 'py',     nr, py,   N_MAX)
-        call hipo_read_float('REC::Particle', 'pz',     nr, pz,   N_MAX)
-        call hipo_read_float('REC::Particle', 'vz',     nr, vz,   N_MAX)
-        call hipo_read_int('REC::Particle',   'status', nr, stat, N_MAX)
+        call hipo_read_bank('RUN::config', nrows_c)
+        call hipo_read_int('REC::Particle', 'pid', nr, pid, N_MAX)
+        call hipo_read_float('REC::Particle', 'px', nr, px, N_MAX)
+        call hipo_read_float('REC::Particle', 'py', nr, py, N_MAX)
+        call hipo_read_float('REC::Particle', 'pz', nr, pz, N_MAX)
+        call hipo_read_float('REC::Particle', 'vz', nr, vz, N_MAX)
+        call hipo_read_int('REC::Particle', 'status', nr, stat, N_MAX)
+        call hipo_read_float('RUN::config', 'torus', nr, torus, N_MAX)
 
 c       call iguana filters
 c       - the `logical` variable `accept` must be initialized to
@@ -171,40 +181,70 @@ c         `.true.`, since we will use it to "chain" the filters
 c       - the event builder filter trivial: by default it accepts only
 c         `REC::Particle::pid == 11 or -211` (simple example algorithm)
 c       - the AND with the z-vertex filter is the final filter, `accept`
-        print *, 'Filter:'
-        do 20 i=1, nrows
+        print *, '===> filter particles with iguana:'
+        do i=1, nrows
           accept(i) = .true.
           call iguana_clas12_eventbuilderfilter_filter(
      &      algo_eb_filter, pid(i), accept(i))
           call iguana_clas12_zvertexfilter_filter(
      &      algo_vz_filter, vz(i), accept(i))
-          print *, '  ', pid(i), ' vz = ', vz(i),
+          print *, '  i = ', i, '  pid = ', pid(i), ' vz = ', vz(i),
      &      '  =>  accept = ', accept(i)
- 20     continue
+        enddo
+
+c       get sector number
+c       FIXME: we have the algorithm `iguana::clas12::SectorFinder`,
+c       but it is not yet compatible with Fortran bindings; until
+c       then, assume the sector number is 1
+        do i=1, nrows
+          sector(i) = 1 ! FIXME
+        enddo
+
+c       momentum corrections
+        if(nrows_c.lt.1) then
+          print *, '===> no RUN::config bank; cannot ',
+     &      'apply momentum corrections'
+        else
+          print *, '===> momentum corrections:'
+          do i=1, nrows
+            if(accept(i)) then
+              print *, '  i = ', i
+              print *, '  before: p = (', px(i), py(i), pz(i), ')'
+              call iguana_clas12_momentumcorrection_transform(
+     &          algo_mom_cor,
+     &          px(i), py(i), pz(i),
+     &          sector(i), pid(i), torus(1))
+              print *, '   after: p = (', px(i), py(i), pz(i), ')'
+            endif
+          enddo
+        endif
 
 c       simple electron finder: trigger and highest |p|
         p_ele = 0
         found_ele = .false.
-        do 30 i=1, nrows
-          if(.not.accept(i)) goto 30
-          if(pid(i).eq.11 .and. stat(i).lt.0) then
-            p = sqrt(px(i)**2 + py(i)**2 + pz(i)**2)
-            if(p.gt.p_ele) then
-              i_ele = i
-              p_ele = p
-              found_ele = .true.
+        print *, '===> finding electron...'
+        do i=1, nrows
+          if(accept(i)) then
+            print *, '  i = ', i, '     status = ', stat(i)
+            if(pid(i).eq.11 .and. stat(i).lt.0) then
+              p = sqrt(px(i)**2 + py(i)**2 + pz(i)**2)
+              if(p.gt.p_ele) then
+                i_ele = i
+                p_ele = p
+                found_ele = .true.
+              endif
             endif
           endif
- 30     continue
+        enddo
         if(found_ele) then
-          print *, '===> found electron'
-          print *, '  i: ', i_ele
-          print *, '  p: ', p_ele
+          print *, '===> found DIS electron:'
+          print *, '  i = ', i_ele
+          print *, '  p = ', p_ele
         else
-          print *, '===> no electron'
+          print *, '===> no DIS electron'
         endif
 
-c       compute DIS kinematics, if electron is found
+c       compute DIS kinematics with iguana, if electron is found
         if(found_ele) then
           call iguana_physics_inclusivekinematics_computefromlepton(
      &      algo_inc_kin,
@@ -212,12 +252,12 @@ c       compute DIS kinematics, if electron is found
      &      qx, qy, qz, qE,
      &      Q2, x, y, W, nu)
           print *, '===> inclusive kinematics:'
-          print *, '  q: (', qx, qy, qz, qE, ')'
-          print *, ' Q2: ', Q2
-          print *, '  x: ', x
-          print *, '  y: ', y
-          print *, '  W: ', W
-          print *, ' nu: ', nu
+          print *, '  q = (', qx, qy, qz, qE, ')'
+          print *, ' Q2 = ', Q2
+          print *, '  x = ', x
+          print *, '  y = ', y
+          print *, '  W = ', W
+          print *, ' nu = ', nu
         endif
 
         counter = counter + 1

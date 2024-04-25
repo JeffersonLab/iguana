@@ -71,7 +71,7 @@ algo_dict = {
   },
   'clas12::MomentumCorrection': {
     'algorithm': {
-      'sources': [ 'clas12/MomentumCorrection.cc' ],
+      'sources': [ 'clas12/MomentumCorrection.cc', 'clas12/MomentumCorrectionBindings.cc' ],
       'headers': [ 'clas12/MomentumCorrection.h' ],
     },
     'validator': {

@@ -47,6 +47,8 @@ namespace iguana::physics {}
 /// call iguana_example_function(a, b)
 /// ```
 ///
+/// To use these bindings with your Fortran code, link against the installed `iguana` libraries.
+///
 /// @see A Fortran example: `iguana-example-fortran.f`
 ///
 /// @{
