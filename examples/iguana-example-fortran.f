@@ -1,10 +1,9 @@
       !> @begin_doc_example
       !> @file iguana-example-fortran.f
       !> @brief Fortran example demonstrating how to read a HIPO file and use
-      !> its data with Iguana algorithms
-      !> - Run with no arguments to see the usage guide.
-      !> - See `iguana::bindings` for the available Iguana functions for
-      !>   Fortran.
+      !> its data with Iguana algorithms.
+      !> Run with no arguments to see the usage guide.
+      !> @see @ref binding_namespaces for the Fortran API guide
       !> @end_doc_example
       !>
       !> Fortran example program

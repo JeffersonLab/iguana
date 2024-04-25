@@ -7,7 +7,7 @@
 ///
 /// @{
 
-/// General `iguana` namespace for algorithms and infrastructure.
+/// General, top-level namespace for algorithms and infrastructure. For algorithms and bindings, see its sub-namespaces.
 namespace iguana {}
 
 /// Example algorithms
@@ -27,9 +27,9 @@ namespace iguana::physics {}
 ///
 /// @brief C bindings, for Fortran usage
 ///
-/// The functions in this namespace are designed to provide bindings for Fortran (and for C).
+/// The functions in these namespaces are designed to provide bindings for Fortran (and for C).
 /// The function names are all lowercase, and end in an underscore, to permit automatic binding
-/// to Fortran 77.
+/// to Fortran 77. Visit each namespace page to view the available functions.
 ///
 /// To use a function in Fortran, call it as a subroutine, but without the final
 /// underscore; use `iso_c_binding` data types for the arguments, otherwise you
@@ -47,7 +47,7 @@ namespace iguana::physics {}
 /// call iguana_example_function(a, b)
 /// ```
 ///
-/// @see A more complete example: `iguana-example-fortran.f`
+/// @see A Fortran example: `iguana-example-fortran.f`
 ///
 /// @{
 

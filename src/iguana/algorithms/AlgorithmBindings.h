@@ -47,7 +47,8 @@ namespace iguana::bindings {
     /// @param [in] name the directory name
     void iguana_set_config_dir_(char const* name);
 
-    /// Start all created algorithm instances, calling `Algorithm::Start` on each.
+    /// Start all created algorithm instances,
+    /// calling `Algorithm::Start` on each.
     void iguana_start_();
 
     /// Stop all created algorithm instances, calling `Algorithm::Stop` on each,
@@ -55,7 +56,8 @@ namespace iguana::bindings {
     /// @see iguana_stop_and_keep_()
     void iguana_stop_();
 
-    /// Stop all created algorithm instances, but do not destroy them
+    /// Stop all created algorithm instances,
+    /// but do not destroy them
     void iguana_stop_and_keep_();
 
     /// Destroy the Iguana instance, along with its algorithms. This must be called
