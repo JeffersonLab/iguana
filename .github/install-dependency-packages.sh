@@ -8,7 +8,7 @@ set -e
 GENERAL_PACKAGE_LIST_LINUX=(
   python
   gcc
-  gcc-libs # for gfortran
+  gcc-fortran
   clang
   make
   cmake
@@ -40,10 +40,10 @@ IGUANA_PACKAGE_LIST_LINUX=(
 # MACOS
 ##############################
 GENERAL_PACKAGE_LIST_MACOS=(
-  gcc
   tree
   ninja
   meson
+  gfortran
   ### ROOT dependencies
   binutils
   libx11
