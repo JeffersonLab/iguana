@@ -1,15 +1,6 @@
-c Fortran example demonstrating how to read a HIPO file and use
-c its data with Iguana algorithms
-c
-c **Usage:**
-c ```text
-c iguana-example-fortran [HIPO_FILE] [NUM_EVENTS]
-c
-c   HIPO_FILE   the HIPO file to analyze
-c
-c   NUM_EVENTS  the number of events to analyze;
-c               set to 0 to analyze all events
-c ```
+c     Fortran example demonstrating how to read a HIPO file and use
+c     its data with Iguana algorithms; run with no arguments to see
+c     the usage guide
 
       program iguana_example_fortran
       use iso_c_binding
