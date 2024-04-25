@@ -67,14 +67,6 @@ namespace iguana {
     throw std::runtime_error("configuration file not found");
   }
 
-  std::string ConfigFileReader::DirName(std::string_view name)
-  {
-    auto result = std::filesystem::path{name}.parent_path().string();
-    if(result == "")
-      result = ".";
-    return result;
-  }
-
   std::string ConfigFileReader::ConvertAlgoNameToConfigName(std::string_view algo_name, std::string_view ext)
   {
     std::string result        = std::string(algo_name);
