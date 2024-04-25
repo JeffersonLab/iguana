@@ -3,12 +3,12 @@ clas12::ZVertexFilter:
 
   # default cuts
   - default:
-    cuts: [ -1.5, 1.3 ]
+    cuts: [ -15.0, 15.0 ]
 
   # RG-A fall2018 inbending
   - runs: [ 4760, 5419 ]
-    cuts: [ -0.5, 0.5 ]
+    cuts: [ -5.0, 3.0 ]
 
   # RG-A fall2018 outbending
   - runs: [ 5420, 5674 ]
-    cuts: [ -0.8, 0.7 ]
+    cuts: [ -8.0, 7.0 ]

@@ -48,11 +48,22 @@ namespace iguana::bindings {
       __boss.verbose = false;
     }
 
+    void iguana_set_config_file_(char const* name)
+    {
+      for(algo_idx_t i = 0; i < algo_idx_t(__boss.algos.size()); i++)
+        iguana_algo_set_config_file_(&i, name);
+    }
+
+    void iguana_set_config_dir_(char const* name)
+    {
+      for(algo_idx_t i = 0; i < algo_idx_t(__boss.algos.size()); i++)
+        iguana_algo_set_config_dir_(&i, name);
+    }
+
     void iguana_start_()
     {
-      iguana_print_debug_("starting all algorithm instances...");
-      for(const auto& algo: __boss.algos)
-        algo->Start();
+      for(algo_idx_t i = 0; i < algo_idx_t(__boss.algos.size()); i++)
+        iguana_algo_start_(&i);
     }
 
     void iguana_stop_()
@@ -63,9 +74,8 @@ namespace iguana::bindings {
 
     void iguana_stop_and_keep_()
     {
-      iguana_print_debug_("stopping all algorithm instances...");
-      for(const auto& algo: __boss.algos)
-        algo->Stop();
+      for(algo_idx_t i = 0; i < algo_idx_t(__boss.algos.size()); i++)
+        iguana_algo_stop_(&i);
     }
 
     void iguana_destroy_()
@@ -98,18 +108,6 @@ namespace iguana::bindings {
       iguana_print_debug_("... created '%s' algo %d at %p", algo_name, *algo_idx, __boss.algos.back());
     }
 
-    void iguana_algo_start_(algo_idx_t* algo_idx)
-    {
-      iguana_print_debug_("start algo %d", *algo_idx);
-      iguana_get_algo_(algo_idx, true)->Start();
-    }
-
-    void iguana_algo_stop_(algo_idx_t* algo_idx)
-    {
-      iguana_print_debug_("stop algo %d", *algo_idx);
-      iguana_get_algo_(algo_idx, true)->Stop();
-    }
-
     void iguana_algo_set_name_(algo_idx_t* algo_idx, char const* name)
     {
       iguana_print_debug_("set algo %d name", *algo_idx);
@@ -120,6 +118,30 @@ namespace iguana::bindings {
     {
       iguana_print_debug_("set algo %d log level", *algo_idx);
       iguana_get_algo_(algo_idx, true)->SetLogLevel(level);
+    }
+
+    void iguana_algo_set_config_file_(algo_idx_t* algo_idx, char const* name)
+    {
+      iguana_print_debug_("set algo %d config file to '%s'", *algo_idx, name);
+      iguana_get_algo_(algo_idx, true)->SetConfigFile(name);
+    }
+
+    void iguana_algo_set_config_dir_(algo_idx_t* algo_idx, char const* name)
+    {
+      iguana_print_debug_("set algo %d config dir to '%s'", *algo_idx, name);
+      iguana_get_algo_(algo_idx, true)->SetConfigDirectory(name);
+    }
+
+    void iguana_algo_start_(algo_idx_t* algo_idx)
+    {
+      iguana_print_debug_("start algo %d", *algo_idx);
+      iguana_get_algo_(algo_idx, true)->Start();
+    }
+
+    void iguana_algo_stop_(algo_idx_t* algo_idx)
+    {
+      iguana_print_debug_("stop algo %d", *algo_idx);
+      iguana_get_algo_(algo_idx, true)->Stop();
     }
 
   }

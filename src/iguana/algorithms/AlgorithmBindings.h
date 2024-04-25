@@ -37,6 +37,14 @@ namespace iguana::bindings{
     /// of algorithm objects.
     void iguana_create_();
 
+    /// Set a custom configuration file for _all_ algorithms
+    /// @param [in] name the configuration file name
+    void iguana_set_config_file_(char const* name);
+
+    /// Set a custom configuration file directory for _all_ algorithms
+    /// @param [in] name the directory name
+    void iguana_set_config_dir_(char const* name);
+
     /// Start all created algorithm instances, calling `Algorithm::Start` on each.
     void iguana_start_();
 
@@ -67,14 +75,6 @@ namespace iguana::bindings{
     /// @param [in] algo_name the name of the algorithm
     void iguana_algo_create_(algo_idx_t* algo_idx, char const* algo_name);
 
-    /// Start an algorithm by calling `Algorithm::Start`.
-    /// @param [in] algo_idx the algorithm index
-    void iguana_algo_start_(algo_idx_t* algo_idx);
-
-    /// Stop an algorithm by calling `Algorithm::Stop`.
-    /// @param [in] algo_idx the algorithm index
-    void iguana_algo_stop_(algo_idx_t* algo_idx);
-
     /// Set the name of an algorithm.
     /// @param [in] algo_idx the algorithm index
     /// @param [in] name the name
@@ -84,6 +84,24 @@ namespace iguana::bindings{
     /// @param [in] algo_idx the algorithm index
     /// @param [in] level the log level
     void iguana_algo_set_log_level_(algo_idx_t* algo_idx, char const* level);
+
+    /// Set a custom configuration file for this algorithm
+    /// @param [in] algo_idx the algorithm index
+    /// @param [in] name the configuration file name
+    void iguana_algo_set_config_file_(algo_idx_t* algo_idx, char const* name);
+
+    /// Set a custom configuration file directory for this algorithm
+    /// @param [in] algo_idx the algorithm index
+    /// @param [in] name the directory name
+    void iguana_algo_set_config_dir_(algo_idx_t* algo_idx, char const* name);
+
+    /// Start an algorithm by calling `Algorithm::Start`.
+    /// @param [in] algo_idx the algorithm index
+    void iguana_algo_start_(algo_idx_t* algo_idx);
+
+    /// Stop an algorithm by calling `Algorithm::Stop`.
+    /// @param [in] algo_idx the algorithm index
+    void iguana_algo_stop_(algo_idx_t* algo_idx);
 
   }
 }

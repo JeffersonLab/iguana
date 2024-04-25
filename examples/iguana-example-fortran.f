@@ -25,9 +25,12 @@ c           compiler dependent in some cases
 
 c     program parameters
       integer*4      argc
-      character*1024 in_file ! HIPO file
-      character*32   num_events_arg
-      integer        num_events / 10 / ! num. events to read (0 = all)
+      character*1024 in_file     ! HIPO file
+      integer        num_events  ! number of events to read
+      character*16   num_events_arg
+      character*1024 config_file ! YAML configuration file
+      character(kind=c_char, len=1024) in_file_cstr, config_file_cstr
+      logical        config_file_set
 
 c     HIPO and bank variables
       integer        counter       ! event counter
@@ -62,26 +65,40 @@ c     open the input file
 c     ------------------------------------------------------------------
 
 c     parse arguments
-      argc = iargc()
+      num_events      = 10
+      config_file_set = .false.
+      argc            = iargc()
       if(argc.lt.1) then
         print *, 'ERROR: please at least specify a HIPO_FILE'
         print *, ''
         print *, 'ARGS: ', 'HIPO_FILE', ' ', 'NUM_EVENTS'
+        print *, ''
         print *, '  HIPO_FILE: ', 'the input HIPO file'
+        print *, ''
         print *, '  NUM_EVENTS: ', 'the number of events (0 for all)'
+        print *, '    default: ', num_events
+        print *, ''
+        print *, '  CONFIG_FILE: ', 'algorithm configuration file'
+        print *, '    default: ', 'use the internal defaults'
+        print *, '    example: ',
+     &    '$prefix/etc/iguana/examples/my_z_vertex_cuts.yaml'
         stop
       else
         call getarg(1, in_file)
+        in_file_cstr = trim(in_file)//c_null_char
       end if
       if(argc.ge.2) then
         call getarg(2, num_events_arg)
         read(num_events_arg,*) num_events
       end if
-      print *, 'HIPO_FILE: ', trim(in_file)
-      print *, 'NUM_EVENTS: ', num_events
+      if(argc.ge.3) then
+        call getarg(3, config_file)
+        config_file_cstr = trim(config_file)//c_null_char
+        config_file_set = .true.
+      endif
 
 c     open the input HIPO file
-      call hipo_file_open(trim(in_file)) ! `trim` removes trailing space
+      call hipo_file_open(in_file_cstr)
       reader_status = 0
       counter       = 0
 
@@ -119,9 +136,12 @@ c     set log levels
       call iguana_algo_set_log_level(algo_vz_filter,'debug')
       call iguana_algo_set_log_level(algo_inc_kin,'debug')
 
-c     TODO: show how to configure an algorithm using a config file
+c     configure algorithms with a configuration file
+      if(config_file_set) then
+        call iguana_set_config_file(config_file_cstr)
+      endif
 
-c     start all created algorithms, which "locks" their configuration
+c     start all algorithms, which "locks" their configuration
       call iguana_start()
 
 c     ------------------------------------------------------------------
@@ -155,10 +175,9 @@ c       - the AND with the z-vertex filter is the final filter, `accept`
           call iguana_clas12_eventbuilderfilter_filter(
      &      algo_eb_filter, pid(i), accept(i))
           call iguana_clas12_zvertexfilter_filter(
-     &      algo_vz_filter, pid(i), accept(i))
+     &      algo_vz_filter, vz(i), accept(i))
           print *, '  ', pid(i), ' vz = ', vz(i),
      &      '  =>  accept = ', accept(i)
-          print *, 'WARNING: z-vertex filter is not working!'
  20     continue
 
 c       simple electron finder: trigger and highest |p|
@@ -175,25 +194,28 @@ c       simple electron finder: trigger and highest |p|
             endif
           endif
  30     continue
+        if(found_ele) then
+          print *, '===> found electron'
+          print *, '  i: ', i_ele
+          print *, '  p: ', p_ele
+        else
+          print *, '===> no electron'
+        endif
 
 c       compute DIS kinematics, if electron is found
         if(found_ele) then
-          print *, '===> found electron'
           call iguana_physics_inclusivekinematics_computefromlepton(
      &      algo_inc_kin,
      &      px(i_ele), py(i_ele), pz(i_ele),
      &      qx, qy, qz, qE,
      &      Q2, x, y, W, nu)
-          print *, '  i: ', i_ele
-          print *, '  p: ', p_ele
+          print *, '===> inclusive kinematics:'
           print *, '  q: (', qx, qy, qz, qE, ')'
           print *, ' Q2: ', Q2
           print *, '  x: ', x
           print *, '  y: ', y
           print *, '  W: ', W
           print *, ' nu: ', nu
-        else
-          print *, '===> no electron'
         endif
 
         counter = counter + 1
