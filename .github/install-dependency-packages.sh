@@ -43,7 +43,7 @@ GENERAL_PACKAGE_LIST_MACOS=(
   tree
   ninja
   meson
-  gfortran
+  gcc # for gfortran
   ### ROOT dependencies
   binutils
   libx11
