@@ -214,6 +214,18 @@ jobs:
       ###### system
       - name: install dependency packages
         run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
+      #
+      #
+      #
+      #
+      #
+      - name: where is fortran
+        run: which gfortran
+      #
+      #
+      #
+      #
+      #
       ###### python bindings
       - name: install python bindings dependencies
         if: ${{ matrix.id == 'python' }}
