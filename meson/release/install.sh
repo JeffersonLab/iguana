@@ -15,7 +15,7 @@ $@
 }
 
 print_var() {
-  echo "$@" | sed 's/:/\n      /g'
+  echo "$@" | sed 's/:/\n  /g'
 }
 
 print_dep_vars() {
