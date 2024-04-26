@@ -7,7 +7,6 @@ project(
     'cpp_std':               'c++17',
     'buildtype':             'release',
     'libdir':                'lib',
-    'pythondir':             'python',
     'pkgconfig.relocatable': 'true',
   },
   version: run_command(
@@ -165,6 +164,7 @@ subdir('src/iguana/algorithms')
 subdir('src/iguana/tests')
 
 # build bindings
+pythondir = 'python'
 if get_option('bind_python')
   subdir('bind/python')
 endif
@@ -196,16 +196,17 @@ configure_file(
   },
 )
 
-# generate module file
+# generate ifarm module file
 configure_file(
   input:   'meson' / 'release' / 'modulefile.in',
-  output:  'modulefile' / meson.project_version(),
+  output:  meson.project_version(),
   install: false,
   configuration: {
     'project':   meson.project_name(),
     'version':   meson.project_version(),
+    'prefix':    '$env(CLAS12_HOME)/$env(OSRELEASE)/local/iguana/$v',
     'bindir':    get_option('bindir'),
     'libdir':    get_option('libdir'),
-    'pythondir': get_option('pythondir'),
+    'pythondir': pythondir,
   },
 )
