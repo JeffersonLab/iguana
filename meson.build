@@ -164,6 +164,7 @@ subdir('src/iguana/algorithms')
 subdir('src/iguana/tests')
 
 # build bindings
+pythondir = 'python'
 if get_option('bind_python')
   subdir('bind/python')
 endif
@@ -186,7 +187,7 @@ endif
 configure_file(
   input:         'meson' / 'this_iguana.sh.in',
   output:        'this_iguana.sh',
-  install:       true,
+  install:       not get_option('make_modulefile'),
   install_dir:   get_option('bindir'),
   configuration: {
     'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
@@ -194,3 +195,20 @@ configure_file(
     'libdir':  get_option('libdir'),
   },
 )
+
+# generate module file
+if(get_option('make_modulefile'))
+  configure_file(
+    input:   'meson' / 'release' / 'modulefile.in',
+    output:  meson.project_version(),
+    install: false,
+    configuration: {
+      'project':   meson.project_name(),
+      'version':   meson.project_version(),
+      'prefix':    '$env(CLAS12_HOME)/$env(OSRELEASE)/local/iguana/$v',
+      'bindir':    get_option('bindir'),
+      'libdir':    get_option('libdir'),
+      'pythondir': pythondir,
+    },
+  )
+endif

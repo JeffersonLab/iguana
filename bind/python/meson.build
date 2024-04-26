@@ -1,8 +1,8 @@
-project_pkg_vars += 'pythonpath=' + '${prefix}' / 'python'
+project_pkg_vars += 'pythonpath=' + '${prefix}' / pythondir
 
 install_subdir(
   'pyiguana',
-  install_dir: 'python',
+  install_dir: pythondir,
 )
 
 python_examples = [
