@@ -32,7 +32,7 @@ namespace iguana {
     m_files.push_front(full_name);
   }
 
-  void ConfigFileReader::PrintDirectories(const Logger::Level level)
+  void ConfigFileReader::PrintDirectories(Logger::Level const level)
   {
     if(m_log->GetLevel() <= level) {
       m_log->Print(level, "{:=^60}", " Configuration file search path order: ");

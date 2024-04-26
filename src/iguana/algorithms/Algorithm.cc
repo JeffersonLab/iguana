@@ -186,7 +186,7 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, std::string const& expected_bank_name) const
+  hipo::bank& Algorithm::GetBank(hipo::banklist& banks, hipo::banklist::size_type const idx, std::string const& expected_bank_name) const
   {
     if(m_rows_only) {
       m_log->Error("algorithm is in 'rows only' mode; cannot call `Run` since banks are not cached; use action function(s) instead");
@@ -250,7 +250,7 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Algorithm::ShowBanks(hipo::banklist& banks, std::string_view message, const Logger::Level level) const
+  void Algorithm::ShowBanks(hipo::banklist& banks, std::string_view message, Logger::Level const level) const
   {
     if(m_log->GetLevel() <= level) {
       if(message != "")
@@ -262,7 +262,7 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Algorithm::ShowBank(hipo::bank& bank, std::string_view message, const Logger::Level level) const
+  void Algorithm::ShowBank(hipo::bank& bank, std::string_view message, Logger::Level const level) const
   {
     if(m_log->GetLevel() <= level) {
       if(message != "")

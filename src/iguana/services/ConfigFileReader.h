@@ -28,7 +28,7 @@ namespace iguana {
 
       /// Print the list of directories (search path)
       /// @param level the log level
-      void PrintDirectories(const Logger::Level level = Logger::info);
+      void PrintDirectories(Logger::Level const level = Logger::info);
 
       /// Find a configuration file by name. You may either give just a file name, or specify the full path and filename.
       /// The following locations are searched, in order:
