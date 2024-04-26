@@ -51,6 +51,7 @@ sourceDir  = $sourceDir
 buildDir   = $buildDir
 installDir = $installDir
 testFile   = $testFile"""
+[ ! -f "$testFile" ] && echo "ERROR: test file does not exist" >&2 && exit 1
 print_dep_vars
 msg "nativeFile = $nativeFile:"
 cat $nativeFile
@@ -84,7 +85,8 @@ echo """
 """
 msg "Next steps:"
 echo """
+- [ ] export LD_LIBRARY_PATH=$installDir/lib:\$LD_LIBRARY_PATH
+- [ ] try running installed binaries: $installDir/bin/
 - [ ] copy the module file to the correct location
 - [ ] module switch iguana/$version
-- [ ] try running installed binaries
 """
