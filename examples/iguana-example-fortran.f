@@ -111,8 +111,7 @@ c     ------------------------------------------------------------------
 c     create iguana algorithms
 c     ------------------------------------------------------------------
 
-c     before anything for Iguana, call `iguana_create()`; when done, you
-c     must also call `iguana_destroy()` to deallocate the memory
+c     before anything for Iguana, call `iguana_create()`
       call iguana_create()
 !     call iguana_bindings_set_verbose() ! enable additional log print
 
