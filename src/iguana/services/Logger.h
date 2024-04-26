@@ -38,12 +38,12 @@ namespace iguana {
       };
 
       /// The default log level
-      static const Level DEFAULT_LEVEL = info;
+      static Level const DEFAULT_LEVEL = info;
 
       /// @param name the name of this logger instance, which will be include in all of its printouts
       /// @param lev the log level
       /// @param enable_style if true, certain printouts will be styled with color and emphasis
-      Logger(std::string_view name = "log", const Level lev = DEFAULT_LEVEL, bool const enable_style = true);
+      Logger(std::string_view name = "log", Level const lev = DEFAULT_LEVEL, bool const enable_style = true);
       ~Logger() {}
 
       /// Set the log level to this level. Log messages with a lower level will not be printed.
@@ -54,7 +54,7 @@ namespace iguana {
       /// Set the log level to this level. Log messages with a lower level will not be printed.
       /// @see `Logger::Level` for available levels.
       /// @param lev the log level
-      void SetLevel(const Level lev);
+      void SetLevel(Level const lev);
 
       /// Get the current log level
       /// @returns the log level
@@ -94,7 +94,7 @@ namespace iguana {
       /// @param message the message to print; this may be a format string, as in `fmt::format`
       /// @param vals values for the format string `message`
       template <typename... VALUES>
-      void Print(const Level lev, std::string_view message, const VALUES... vals) const
+      void Print(Level const lev, std::string_view message, const VALUES... vals) const
       {
         if(lev >= m_level) {
           if(auto it{m_level_names.find(lev)}; it != m_level_names.end()) {

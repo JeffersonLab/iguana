@@ -161,7 +161,7 @@ namespace iguana {
       /// @param idx the index of `banks` of the specified bank
       /// @param expected_bank_name if specified, checks that the specified bank has this name
       /// @return a reference to the bank
-      hipo::bank& GetBank(hipo::banklist& banks, const hipo::banklist::size_type idx, std::string const& expected_bank_name = "") const noexcept(false);
+      hipo::bank& GetBank(hipo::banklist& banks, hipo::banklist::size_type const idx, std::string const& expected_bank_name = "") const noexcept(false);
 
       /// Mask a row, setting all items to zero
       /// @param bank the bank to modify
@@ -188,13 +188,13 @@ namespace iguana {
       /// @param banks the banks to show
       /// @param message if specified, print a header message
       /// @param level the log level
-      void ShowBanks(hipo::banklist& banks, std::string_view message = "", const Logger::Level level = Logger::trace) const;
+      void ShowBanks(hipo::banklist& banks, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
       /// Dump a single bank
       /// @param bank the bank to show
       /// @param message if specified, print a header message
       /// @param level the log level
-      void ShowBank(hipo::bank& bank, std::string_view message = "", const Logger::Level level = Logger::trace) const;
+      void ShowBank(hipo::bank& bank, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
       /// Get an option from the option cache
       /// @param key the key name associated with this option
@@ -258,7 +258,7 @@ namespace iguana {
       /// @param creator the creator function
       /// @param new_banks if this algorithm creates *new* banks, list them here
       /// @returns true if the algorithm has not yet been registered
-      static bool Register(std::string const& name, algo_creator_t creator, const std::vector<std::string> new_banks = {}) noexcept;
+      static bool Register(std::string const& name, algo_creator_t creator, std::vector<std::string> const new_banks = {}) noexcept;
 
       /// Create an algorithm. Throws an exception if the algorithm cannot be created
       /// @param name the name of the algorithm, which was used as an argument in the `AlgorithmFactory::Register` call

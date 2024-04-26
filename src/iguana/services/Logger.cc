@@ -2,7 +2,7 @@
 
 namespace iguana {
 
-  Logger::Logger(std::string_view name, const Level lev, bool const enable_style)
+  Logger::Logger(std::string_view name, Level const lev, bool const enable_style)
       : m_name(name)
       , m_enable_style(enable_style)
   {
@@ -29,7 +29,7 @@ namespace iguana {
     Error("Log level '{}' is not a known log level; the log level will remain at '{}'", lev, m_level_names.at(m_level));
   }
 
-  void Logger::SetLevel(const Level lev)
+  void Logger::SetLevel(Level const lev)
   {
     try {
       auto level_name = m_level_names.at(lev);

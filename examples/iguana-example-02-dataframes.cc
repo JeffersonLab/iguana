@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 
   // print the column names
   fmt::print("DATAFRAME COLUMNS:\n");
-  for(const auto& column_name : frame_init.GetColumnNames())
+  for(auto const& column_name : frame_init.GetColumnNames())
     fmt::print(" - {}\n", column_name);
 
   // run algorithms
@@ -56,21 +56,23 @@ int main(int argc, char** argv)
   // this example chain filters only `REC::Particle::pid`, whereas ideally we want all of `REC::Particle`'s columns
   // to be filtered
   auto frame_filtered = frame_init
-    .Define( // define a filter column, type std::deque<bool> (to avoid std::vector<bool>)
-        "REC_Particle_EventBuilderFilter",
-        [&](std::vector<int> const& pids) { return algo_eventbuilder_filter.Filter(pids); },
-        {"REC_Particle_pid"})
-    .Define( // apply the filtering column to `REC_Particle_pid`
-        "REC_Particle_pid_good",
-        [](std::vector<int> const& pids, std::deque<bool>& filter){
-          std::vector<int> result;
-          for(std::deque<bool>::size_type i = 0; i<filter.size(); i++) {
-            if(filter.at(i))
-              result.push_back(pids.at(i));
-          }
-          return result;
-        },
-        {"REC_Particle_pid", "REC_Particle_EventBuilderFilter"});
+                            .Define( // define a filter column, type std::deque<bool> (to avoid std::vector<bool>)
+                                "REC_Particle_EventBuilderFilter",
+                                [&](std::vector<int> const& pids)
+                                { return algo_eventbuilder_filter.Filter(pids); },
+                                {"REC_Particle_pid"})
+                            .Define( // apply the filtering column to `REC_Particle_pid`
+                                "REC_Particle_pid_good",
+                                [](std::vector<int> const& pids, std::deque<bool>& filter)
+                                {
+                                  std::vector<int> result;
+                                  for(std::deque<bool>::size_type i = 0; i < filter.size(); i++) {
+                                    if(filter.at(i))
+                                      result.push_back(pids.at(i));
+                                  }
+                                  return result;
+                                },
+                                {"REC_Particle_pid", "REC_Particle_EventBuilderFilter"});
 
   // draw
   auto hist = frame_filtered.Histo1D({"pid_filter", "PDG", 6000, -3000, 3000}, "REC_Particle_pid_good");

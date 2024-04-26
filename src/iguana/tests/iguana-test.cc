@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 
   // list of ALL banks needed by the algorithms and validators; we need all of them here,
   // so that the caller does not have to specifiy the banks
-  const std::vector<std::string> all_bank_names = {
+  std::vector<std::string> const all_bank_names = {
       "RUN::config",
       "REC::Particle",
       "REC::Calorimeter",

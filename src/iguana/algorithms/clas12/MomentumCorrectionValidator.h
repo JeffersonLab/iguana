@@ -32,7 +32,7 @@ namespace iguana::clas12 {
       double const m_deltaP_max  = 1.0;
       double const m_deltaP_zoom = 0.2;
 
-      const std::vector<int> u_pdg_list = {
+      std::vector<int> const u_pdg_list = {
           particle::PDG::electron,
           particle::PDG::pi_plus,
           particle::PDG::pi_minus,

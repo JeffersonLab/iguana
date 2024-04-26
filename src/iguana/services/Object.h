@@ -36,7 +36,7 @@ namespace iguana {
       /// Set the log level to this level. Log messages with a lower level will not be printed.
       /// @see `Logger::Level` for available levels.
       /// @param lev the log level
-      void SetLogLevel(const Logger::Level lev);
+      void SetLogLevel(Logger::Level const lev);
 
 
     protected:
