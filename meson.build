@@ -7,6 +7,7 @@ project(
     'cpp_std':               'c++17',
     'buildtype':             'release',
     'libdir':                'lib',
+    'pythondir':             'python',
     'pkgconfig.relocatable': 'true',
   },
   version: run_command(
@@ -192,5 +193,19 @@ configure_file(
     'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
     'python':  get_option('bind_python') ? 'true' : 'false',
     'libdir':  get_option('libdir'),
+  },
+)
+
+# generate module file
+configure_file(
+  input:   'meson' / 'release' / 'modulefile.in',
+  output:  'modulefile' / meson.project_version(),
+  install: false,
+  configuration: {
+    'project':   meson.project_name(),
+    'version':   meson.project_version(),
+    'bindir':    get_option('bindir'),
+    'libdir':    get_option('libdir'),
+    'pythondir': get_option('pythondir'),
   },
 )
