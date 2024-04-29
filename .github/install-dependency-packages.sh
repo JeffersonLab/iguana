@@ -19,10 +19,11 @@ GENERAL_PACKAGE_LIST_LINUX=(
   pkgconf
   ninja
   meson
-  lcov            # for coverage
-  gcovr           # for coverage
-  python-pygments # for coverage report syntax colors
-  llvm            # for `llvm-symbolizer`, for human-readable sanitizer results
+  llvm  # for `llvm-symbolizer`, for human-readable sanitizer results
+  ### coverage
+  python-colorlog
+  python-pygments
+  gcovr
   ### ROOT dependencies
   binutils
   libx11
