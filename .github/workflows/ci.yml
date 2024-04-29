@@ -305,6 +305,7 @@ jobs:
         if: ${{ matrix.id == 'coverage' }}
         run: |
           ninja -C iguana_build coverage-html
+          ninja -C iguana_build coverage-text
           mv iguana_build/meson-logs/coveragereport coverage-report
           echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
