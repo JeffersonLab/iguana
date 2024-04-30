@@ -49,8 +49,6 @@ jobs:
   download_test_data:
     name: Download test data
     runs-on: ubuntu-latest
-    env:
-      type: physics
     steps:
       - uses: actions/cache@v4
         id: cache
@@ -58,12 +56,20 @@ jobs:
           key: test_data
           path: test_data.hipo
           lookup-only: true
-      - name: download
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          wget -nv --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files_${{ env.type }}.tar.zst
-          tar xvf validation_files_${{ env.type }}.tar.zst
-          mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
+    - name: install xrootd-client
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        sudo apt -y update
+        sudo apt -y upgrade
+        sudo apt -y install xrootd-client
+    - name: download
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: xrdcp xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/dst/validation_files.tar.zst ./
+    - name: rename
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        tar xvf validation_files.tar.zst
+        mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
 
   # dependencies
   #########################################################
