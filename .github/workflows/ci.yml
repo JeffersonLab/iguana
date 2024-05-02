@@ -48,21 +48,32 @@ jobs:
 
   download_test_data:
     name: Download test data
-    runs-on: ubuntu-latest
-    env:
-      type: physics
+    runs-on: ubuntu-latest # no need to run this job on other runners
+    outputs:
+      key: ${{ steps.key.outputs.key }}
     steps:
+      - name: key # unique for ${{ inputs.id }}, to avoid cache collisions
+        id: key
+        run: echo key=test_data---${{ inputs.id }}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
       - uses: actions/cache@v4
         id: cache
         with:
-          key: test_data
+          key: ${{ steps.key.outputs.key }}
           path: test_data.hipo
           lookup-only: true
-      - name: download
+      - name: install xrootd-client
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          wget -nv --no-check-certificate http://clasweb.jlab.org/clas12offline/distribution/clas12-timeline/validation_files_${{ env.type }}.tar.zst
-          tar xvf validation_files_${{ env.type }}.tar.zst
+          sudo apt -y update
+          sudo apt -y upgrade
+          sudo apt -y install xrootd-client
+      - name: download
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: xrdcp xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/dst/validation_files.tar.zst ./
+      - name: rename
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          tar xvf validation_files.tar.zst
           mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
 
   # dependencies
@@ -185,6 +196,7 @@ jobs:
   iguana:
     name: Iguana
     needs:
+      - download_test_data
       - build_hipo
       - build_root
     runs-on: ${{ inputs.runner }}
@@ -208,7 +220,7 @@ jobs:
       - name: get test data
         uses: actions/cache/restore@v4
         with:
-          key: test_data
+          key: ${{ needs.download_test_data.outputs.key }}
           path: test_data.hipo
       ### dependencies
       ###### system
