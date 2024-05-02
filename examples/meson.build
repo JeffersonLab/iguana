@@ -21,7 +21,7 @@ example_sources = {
   'iguana-example-fortran': {
     'sources':     [ 'iguana-example-fortran.f' ],
     'build_this':  get_option('bind_fortran'),
-    'link_with':   [ algo_lib, algo_fortran_lib ],
+    'link_with':   get_option('bind_fortran') ? [ algo_lib, algo_fortran_lib ] : [],
   },
 }
 
