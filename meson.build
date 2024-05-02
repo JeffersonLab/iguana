@@ -1,12 +1,14 @@
 project(
   'iguana',
   'cpp', 'fortran',
-  license: 'LGPLv3',
+  license: ['LGPLv3'],
+  license_files: ['LICENSE'],
   meson_version: '>=1.2',
   default_options: {
     'cpp_std':               'c++17',
     'buildtype':             'release',
     'libdir':                'lib',
+    'licensedir':            'share/licenses/iguana',
     'pkgconfig.relocatable': 'true',
   },
   version: run_command(
