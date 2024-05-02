@@ -19,6 +19,8 @@ jobs:
       container: archlinux/archlinux:latest
       # NOTE: `b_sanitize=memory` is not used because `libc++` needs to be re-compiled with `-fsanitize=memory`, otherwise
       #        we are bothered by false positives (e.g., from `std::map` insertion)
+      # FIXME: re-enable ubsan when meson 1.5+ is available:
+      #        { "id": "undefined-sanitizer", "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=undefined -Db_lundef=false -Db_pie=true" },
       matrix: >-
         {
           "id": [
@@ -36,7 +38,6 @@ jobs:
             { "id": "coverage",            "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Dz_require_root=true   -Db_coverage=true"     },
             { "id": "address-sanitizer",   "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=address   -Db_lundef=false -Db_pie=true" },
             { "id": "thread-sanitizer",    "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=thread    -Db_lundef=false -Db_pie=true" },
-            { "id": "undefined-sanitizer", "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=undefined -Db_lundef=false -Db_pie=true" },
             { "id": "leak-sanitizer",      "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=leak      -Db_lundef=false -Db_pie=true" },
             { "id": "noROOT",              "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Dz_require_root=false" },
             { "id": "python",              "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Dz_require_root=true   -Dbind_python=true"    },
