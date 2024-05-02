@@ -20,7 +20,8 @@ example_sources = {
   },
   'iguana-example-fortran': {
     'sources':     [ 'iguana-example-fortran.f' ],
-    'build_this':  get_option('bind_fortran')
+    'build_this':  get_option('bind_fortran'),
+    'link_with':   [ algo_lib, algo_fortran_lib ],
   },
 }
 
@@ -32,7 +33,7 @@ foreach example, info : example_sources
       sources:             info['sources'],
       include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
       dependencies:        project_deps,
-      link_with:           project_libs,
+      link_with:           info.get('link_with', project_libs),
       link_args:           ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
       install:             true,
       build_rpath:         ROOT_dep_rpath,

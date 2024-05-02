@@ -77,7 +77,7 @@ namespace iguana::bindings {
   /// Create an algorithm. Be sure to run `iguana_create_()` before creating any algorithm.
   /// @param [out] algo_idx the algorithm index
   /// @param [in] algo_name the name of the algorithm
-  void iguana_algo_create_(algo_idx_t* algo_idx, char const* algo_name);
+  void iguana_algo_create(algo_idx_t* algo_idx, char const* algo_name);
 
   /// Set the name of an algorithm.
   /// @param [in] algo_idx the algorithm index

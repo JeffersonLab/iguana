@@ -96,7 +96,7 @@ namespace iguana::bindings {
     __boss.verbose = false;
   }
 
-  void iguana_algo_create_(algo_idx_t* algo_idx, char const* algo_name)
+  void iguana_algo_create(algo_idx_t* algo_idx, char const* algo_name)
   {
     iguana_print_debug_("creating algorithm '%s' ...", algo_name);
     *algo_idx = __boss.algos.size();
