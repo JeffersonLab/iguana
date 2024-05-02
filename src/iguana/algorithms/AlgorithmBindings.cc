@@ -32,7 +32,7 @@ namespace iguana::bindings {
   Algorithm* iguana_get_algo_(algo_idx_t* algo_idx, bool verbose)
   {
     if(*algo_idx >= 0 && *algo_idx < algo_idx_t(__boss.algos.size())) {
-      auto& algo = __boss.algos[*algo_idx];
+      auto algo = __boss.algos[*algo_idx].get();
       if(verbose)
         iguana_print_debug_("        algo %d is at %p", *algo_idx, algo);
       if(algo == nullptr)
@@ -81,10 +81,6 @@ namespace iguana::bindings {
   void iguana_destroy_()
   {
     iguana_print_debug_("destroying all algorithm instances...");
-    for(auto& algo : __boss.algos) {
-      iguana_print_debug_("  - destroy %p", algo);
-      delete algo;
-    }
     __boss.algos.clear();
   }
 
@@ -104,8 +100,8 @@ namespace iguana::bindings {
   {
     iguana_print_debug_("creating algorithm '%s' ...", algo_name);
     *algo_idx = __boss.algos.size();
-    __boss.algos.push_back(AlgorithmFactory::Create(algo_name).release());
-    iguana_print_debug_("... created '%s' algo %d at %p", algo_name, *algo_idx, __boss.algos.back());
+    __boss.algos.push_back(AlgorithmFactory::Create(algo_name));
+    iguana_print_debug_("... created '%s' algo %d at %p", algo_name, *algo_idx, __boss.algos.back().get());
   }
 
   void iguana_algo_set_name_(algo_idx_t* algo_idx, char const* name)

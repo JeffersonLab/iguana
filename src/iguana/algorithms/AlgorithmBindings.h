@@ -12,7 +12,7 @@ namespace iguana::bindings {
   typedef struct
   {
       /// A list of `Algorithm` instance pointers
-      std::vector<Algorithm*> algos;
+      std::vector<std::unique_ptr<Algorithm>> algos;
       /// Control printout verbosity
       bool verbose;
   } algo_owner_t;
@@ -34,9 +34,8 @@ namespace iguana::bindings {
   /// @returns a pointer to the algorithm, if it exists; if not, `nullptr`
   Algorithm* iguana_get_algo_(algo_idx_t* algo_idx, bool verbose = false);
 
-  /// Create the Iguana instance. You may only create one, and you must destroy
-  /// it with `iguana_stop` or `iguana_destroy` when you are done. This instance is the _owner_
-  /// of algorithm objects.
+  /// Create the Iguana instance. You may only create one.
+  /// This instance is the _owner_ of algorithm instances.
   void iguana_create_();
 
   /// Set a custom configuration file for _all_ algorithms
@@ -60,8 +59,9 @@ namespace iguana::bindings {
   /// but do not destroy them
   void iguana_stop_and_keep_();
 
-  /// Destroy the Iguana instance, along with its algorithms. This must be called
+  /// Destroy the Iguana instance, along with its algorithms. This can be called
   /// when you are done using Iguana, to free the allocated memory.
+  /// @deprecated This function is no longer required.
   void iguana_destroy_();
 
   /// Enable additional runtime printouts for these binding functions. This setting
