@@ -88,7 +88,9 @@ echo """
 """
 msg "Next steps:"
 echo """
-- [ ] export LD_LIBRARY_PATH=$installDir/lib:\$LD_LIBRARY_PATH
+- [ ] temporarily set the linker path with one of:
+  - bash: export LD_LIBRARY_PATH=$installDir/lib:\$LD_LIBRARY_PATH
+  - tcsh: setenv LD_LIBRARY_PATH $installDir/lib:\$LD_LIBRARY_PATH
 - [ ] try running installed binaries: $installDir/bin/
 - [ ] copy the module file to the correct location
 - [ ] module switch iguana/$tag
