@@ -24,10 +24,10 @@ jobs:
             "python"
           ],
           "include": [
-            { "id": "cpp",     "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=true"  },
-            { "id": "noROOT",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=false" },
-            { "id": "python",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=true   -Dbind_python=true"  },
-            { "id": "fortran", "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Drequire_ROOT=true   -Dbind_fortran=true" }
+            { "id": "cpp",     "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true"  },
+            { "id": "noROOT",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=false" },
+            { "id": "python",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true   -Dbind_python=true"  },
+            { "id": "fortran", "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true   -Dbind_fortran=true" }
           ]
         }
 
