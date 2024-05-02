@@ -48,12 +48,17 @@ jobs:
 
   download_test_data:
     name: Download test data
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # no need to run this job on other runners
+    outputs:
+      key: ${{ steps.key.outputs.key }}
     steps:
+      - name: key # unique for ${{ inputs.id }}, to avoid cache collisions
+        id: key
+        run: echo key=test_data---${{ inputs.id }}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
       - uses: actions/cache@v4
         id: cache
         with:
-          key: test_data
+          key: ${{ steps.key.outputs.key }}
           path: test_data.hipo
           lookup-only: true
       - name: install xrootd-client
@@ -215,7 +220,7 @@ jobs:
       - name: get test data
         uses: actions/cache/restore@v4
         with:
-          key: test_data
+          key: ${{ needs.download_test_data.outputs.key }}
           path: test_data.hipo
       ### dependencies
       ###### system
