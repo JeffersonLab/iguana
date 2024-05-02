@@ -1,7 +1,7 @@
 # Examples
 
 All of the examples (`*.cc`) in [this `examples/` directory](/examples) may be built if the Iguana build
-option `examples` is set to `True`. They will be installed in the `bin/`
+option `install_examples` is set to `True`. They will be installed in the `bin/`
 subdirectory of your Iguana installation. Read the example code to understand how to use Iguana, or
 
 - [View the Examples Documentation](https://jeffersonlab.github.io/iguana/doxygen/group__examples.html)

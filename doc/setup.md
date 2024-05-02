@@ -106,15 +106,18 @@ If you will _install_ `iguana` (recommended), set an installation prefix:
 meson configure --prefix=/path/to/iguana-installation  # must be an ABSOLUTE path
 ```
 
-All build options, their current values, and their descriptions may be found by running
+All build options, their current values, and their descriptions may be found by running one of
 ```bash
-meson configure
+meson configure              # outputs in a pager (`less`); you may scroll, or press 'q' to quit
+meson configure --no-pager   # do not use a pager
 ```
 **but that's a _lot_ of text!** The _most important_ build options are near the bottom, under **"Project options"**.
 
-To set any build option, _e.g._ `examples` to `true` (enables building of Iguana examples), run:
+Alternatively, see [`meson.options`](/meson.options) for the list of project options, and some more details.
+
+To set any build option, _e.g._ `install_examples` to `true`, run:
 ```bash
-meson configure -Dexamples=true
+meson configure -Dinstall_examples=true
 ```
 You can add as many `-D<option>=<value>` arguments as you need.
 

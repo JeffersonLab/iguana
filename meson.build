@@ -42,7 +42,7 @@ hipo_dep = dependency(
 )
 ROOT_dep = dependency(
   'ROOT',
-  required: get_option('require_ROOT'),
+  required: get_option('z_require_root'),
   method:   'cmake',
   version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip()
 )
@@ -181,7 +181,7 @@ pkg.generate(
 )
 
 # build examples
-if get_option('examples')
+if get_option('install_examples')
   subdir('examples')
 endif
 
@@ -189,7 +189,7 @@ endif
 configure_file(
   input:         'meson' / 'this_iguana.sh.in',
   output:        'this_iguana.sh',
-  install:       not get_option('make_modulefile'),
+  install:       get_option('z_install_envfile'),
   install_dir:   get_option('bindir'),
   configuration: {
     'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
@@ -198,19 +198,17 @@ configure_file(
   },
 )
 
-# generate module file
-if(get_option('make_modulefile'))
-  configure_file(
-    input:   'meson' / 'release' / 'modulefile.in',
-    output:  meson.project_version(),
-    install: false,
-    configuration: {
-      'project':   meson.project_name(),
-      'version':   meson.project_version(),
-      'prefix':    '$env(CLAS12_HOME)/$env(OSRELEASE)/local/iguana/$v',
-      'bindir':    get_option('bindir'),
-      'libdir':    get_option('libdir'),
-      'pythondir': pythondir,
-    },
-  )
-endif
+# generate modulefile
+configure_file(
+  input:   'meson' / 'release' / 'modulefile.in',
+  output:  meson.project_version(),
+  install: get_option('z_install_modulefile'),
+  configuration: {
+    'project':   meson.project_name(),
+    'version':   meson.project_version(),
+    'prefix':    '$env(CLAS12_HOME)/$env(OSRELEASE)/local/iguana/$v',
+    'bindir':    get_option('bindir'),
+    'libdir':    get_option('libdir'),
+    'pythondir': pythondir,
+  },
+)
