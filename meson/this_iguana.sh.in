@@ -43,7 +43,6 @@ this_dir=$(get_realpath $(dirname ${BASH_SOURCE[0]:-$0})/..)
 export PKG_CONFIG_PATH=$this_dir/@libdir@/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 dep_pkgconfigdirs=$(pkg-config --variable dep_pkgconfigdirs iguana)
 [ -n "${dep_pkgconfigdirs-}" ] && export PKG_CONFIG_PATH=$dep_pkgconfigdirs${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
-unset this_dir
 unset dep_pkgconfigdirs
 
 # append to PATH
@@ -112,6 +111,7 @@ if $arg_githubCI; then
 fi
 
 # cleanup
+unset this_dir
 unset arg_verbose
 unset arg_githubCI
 unset -f get_realpath
