@@ -47,12 +47,10 @@ namespace iguana::physics {}
 /// call iguana_example_function(a, b)
 /// ```
 ///
-/// To use these bindings with your Fortran code, link against the installed `iguana` libraries; for example,
-/// if you are using a `Makefile`, and `iguana` is installed in `/path/to/iguana`:
-/// ```bash
-/// -L/path/to/iguana/lib -lIguanaAlgorithms -lIguanaFortran
-/// ```
-/// Tip: if you are on `ifarm`, run `module show iguana | grep LD_LIBRARY_PATH` to get the library path (for the `-L` argument).
+/// To use these bindings with your Fortran code, link against the installed `iguana` libraries and include the installed
+/// Fortran module files. If you are on `ifarm`, use the following environment variables:
+/// - `$IGUANA_FORTRAN_FLAGS`: to include the Module (`.mod`) files
+/// - `$IGUANA_FORTRAN_LIBS`: for your linker
 ///
 /// @see A Fortran example: `iguana-example-fortran.f`
 ///

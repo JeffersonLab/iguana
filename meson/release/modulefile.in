@@ -12,3 +12,5 @@ prepend-path PATH @prefix@/@bindir@
 prepend-path LD_LIBRARY_PATH @prefix@/@libdir@
 prepend-path PKG_CONFIG_PATH @prefix@/@libdir@/pkgconfig
 prepend-path PYTHONPATH @prefix@/@pythondir@
+setenv IGUANA_FORTRAN_LIBS '-L@prefix@/@libdir@ @fortran_libs@'
+setenv IGUANA_FORTRAN_FLAGS '-I@prefix@/@fortran_libdir@'

@@ -171,6 +171,22 @@ if get_option('bind_python')
   subdir('bind/python')
 endif
 
+# install fortran module files
+fortran_module_dir     = 'UNUSED'
+fortran_consumer_libs  = 'UNUSED'
+if get_option('bind_fortran')
+  fortran_module_dir = get_option('libdir') / meson.project_name()
+  meson.add_install_script(
+    find_program(files('meson' / 'install-fortran-modules.sh')),
+    meson.project_build_root(),
+    get_option('prefix') / fortran_module_dir,
+  )
+  fortran_consumer_libs = ' '.join([
+    '-l' + algo_lib.name(),
+    '-l' + algo_fortran_lib.name(),
+  ])
+endif
+
 # generate pkg-config file
 pkg.generate(
   name:        meson.project_name(),
@@ -193,8 +209,11 @@ configure_file(
   install_dir:   get_option('bindir'),
   configuration: {
     'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
-    'python':  get_option('bind_python') ? 'true' : 'false',
     'libdir':  get_option('libdir'),
+    'python':  get_option('bind_python') ? 'true' : 'false',
+    'fortran': get_option('bind_fortran') ? 'true' : 'false',
+    'fortran_libdir': fortran_module_dir,
+    'fortran_libs':   fortran_consumer_libs,
   },
 )
 
@@ -212,6 +231,8 @@ if(get_option('z_generate_modulefile'))
       'bindir':    get_option('bindir'),
       'libdir':    get_option('libdir'),
       'pythondir': pythondir,
+      'fortran_libdir': fortran_module_dir,
+      'fortran_libs':   fortran_consumer_libs,
     },
   )
 endif

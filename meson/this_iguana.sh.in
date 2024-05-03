@@ -58,6 +58,12 @@ if @python@; then
   unset iguana_pythonpath
 fi
 
+# set environment variables for Fortran consumers
+if @fortran@; then
+  export IGUANA_FORTRAN_LIBS="-L$this_dir/@libdir@ @fortran_libs@"
+  export IGUANA_FORTRAN_FLAGS="-I$this_dir/@fortran_libdir@"
+fi
+
 # append to LD_LIBRARY_PATH or DYLD_LIBRARY_PATH
 # FIXME: this won't work well if a user already has all dependency libraries
 # in, for example, `/opt/lib`, but has custom built and installed one
