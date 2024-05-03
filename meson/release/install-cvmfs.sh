@@ -31,30 +31,33 @@ sourceDir=$(realpath $(dirname ${BASH_SOURCE[0]:-$0})/../..)
 version=$($sourceDir/meson/detect-version.sh $sourceDir)
 msg "Detected version $version"
 
-if [ $# -ne 3 ]; then
+if [ $# -lt 2 ]; then
   echo """
-  USAGE: $0 [BUILD_PREFIX] [INSTALL_PREFIX] [TEST_HIPO_FILE]
+  USAGE: $0 [INSTALL_PREFIX] [TEST_HIPO_FILE] [TAG(optional)]
 
-    BUILD_PREFIX    build in BUILD_PREFIX-$version
-    INSTALL_PREFIX  install to INSTALL_PREFIX/$version
-    TEST_HIPO_FILE  a sample HIPO file, for running tests
+    INSTALL_PREFIX     install to [INSTALL_PREFIX]/[TAG]
+
+    TEST_HIPO_FILE     a sample HIPO file, for running tests
+
+    TAG                installation tag
+                       default is version number: $version
   """
   print_dep_vars
   exit 2
 fi
-buildDir=$1-$version
-installDir=$(realpath $2)/$version
-testFile=$(realpath $3)
+[ $# -ge 3 ] && tag=$3 || tag=$version
+buildDir=build-$tag
+installDir=$(realpath $1)/$tag
+testFile=$(realpath $2)
 nativeFile=$sourceDir/meson/release/native/release.ini
 echo """
 sourceDir  = $sourceDir
 buildDir   = $buildDir
 installDir = $installDir
-testFile   = $testFile"""
+testFile   = $testFile
+nativeFile = $nativeFile"""
 [ ! -f "$testFile" ] && echo "ERROR: test file does not exist" >&2 && exit 1
 print_dep_vars
-msg "nativeFile = $nativeFile:"
-cat $nativeFile
 printf "\nProceed with installation? [y/N] "
 read proceed
 case $proceed in
@@ -71,6 +74,7 @@ msg "meson setup"
 meson setup $buildDir $sourceDir \
   --native-file=$nativeFile      \
   --prefix=$installDir           \
+  -Dz_module_tag=$tag            \
   -Dtest_data_file=$testFile
 msg "meson install"
 meson install -C $buildDir
@@ -81,12 +85,14 @@ msg "Done installation"
 echo """
   prefix:      $installDir
 
-  moduleFile:  $buildDir/$version
+  moduleFile:  $buildDir/$tag
 """
 msg "Next steps:"
 echo """
-- [ ] export LD_LIBRARY_PATH=$installDir/lib:\$LD_LIBRARY_PATH
+- [ ] temporarily set the linker path with one of:
+  - bash: export LD_LIBRARY_PATH=$installDir/lib:\$LD_LIBRARY_PATH
+  - tcsh: setenv LD_LIBRARY_PATH $installDir/lib:\$LD_LIBRARY_PATH
 - [ ] try running installed binaries: $installDir/bin/
 - [ ] copy the module file to the correct location
-- [ ] module switch iguana/$version
+- [ ] module switch iguana/$tag
 """
