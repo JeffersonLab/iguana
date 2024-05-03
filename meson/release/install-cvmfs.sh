@@ -31,32 +31,33 @@ sourceDir=$(realpath $(dirname ${BASH_SOURCE[0]:-$0})/../..)
 version=$($sourceDir/meson/detect-version.sh $sourceDir)
 msg "Detected version $version"
 
-if [ $# -lt 3 ]; then
+if [ $# -lt 2 ]; then
   echo """
-  USAGE: $0 [BUILD_PREFIX] [INSTALL_PREFIX] [TEST_HIPO_FILE] [TAG(optional)]
+  USAGE: $0 [INSTALL_PREFIX] [TEST_HIPO_FILE] [TAG(optional)]
 
-    BUILD_PREFIX    build in BUILD_PREFIX-$version
-    INSTALL_PREFIX  install to INSTALL_PREFIX/$version
-    TEST_HIPO_FILE  a sample HIPO file, for running tests
-    TAG             if specified, use TAG instead of version number ($version)
+    INSTALL_PREFIX     install to [INSTALL_PREFIX]/[TAG]
+
+    TEST_HIPO_FILE     a sample HIPO file, for running tests
+
+    TAG                installation tag
+                       default is version number: $version
   """
   print_dep_vars
   exit 2
 fi
-[ $# -ge 4 ] && tag=$4 || tag=$version
-buildDir=$1-$tag
-installDir=$(realpath $2)/$tag
-testFile=$(realpath $3)
+[ $# -ge 3 ] && tag=$3 || tag=$version
+buildDir=build-$tag
+installDir=$(realpath $1)/$tag
+testFile=$(realpath $2)
 nativeFile=$sourceDir/meson/release/native/release.ini
 echo """
 sourceDir  = $sourceDir
 buildDir   = $buildDir
 installDir = $installDir
-testFile   = $testFile"""
+testFile   = $testFile
+nativeFile = $nativeFile"""
 [ ! -f "$testFile" ] && echo "ERROR: test file does not exist" >&2 && exit 1
 print_dep_vars
-msg "nativeFile = $nativeFile:"
-cat $nativeFile
 printf "\nProceed with installation? [y/N] "
 read proceed
 case $proceed in
