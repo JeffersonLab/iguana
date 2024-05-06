@@ -172,12 +172,18 @@ if get_option('bind_python')
 endif
 
 # generate pkg-config file
+project_pkg_vars_nonempty = []
+foreach var : project_pkg_vars
+  if not var.endswith('=') # remove empty variable values
+    project_pkg_vars_nonempty += var
+  endif
+endforeach
 pkg.generate(
   name:        meson.project_name(),
   description: project_description,
   libraries:   project_libs,
   requires:    [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
-  variables:   project_pkg_vars,
+  variables:   project_pkg_vars_nonempty,
 )
 
 # build examples
@@ -199,16 +205,19 @@ configure_file(
 )
 
 # generate modulefile
-configure_file(
-  input:   'meson' / 'release' / 'modulefile.in',
-  output:  meson.project_version(),
-  install: get_option('z_install_modulefile'),
-  configuration: {
-    'project':   meson.project_name(),
-    'version':   meson.project_version(),
-    'prefix':    '$env(CLAS12_HOME)/$env(OSRELEASE)/local/iguana/$v',
-    'bindir':    get_option('bindir'),
-    'libdir':    get_option('libdir'),
-    'pythondir': pythondir,
-  },
-)
+if(get_option('z_generate_modulefile'))
+  module_tag = get_option('z_module_tag')=='' ? meson.project_version() : get_option('z_module_tag')
+  configure_file(
+    input:   'meson' / 'release' / 'modulefile.in',
+    output:  module_tag,
+    install: false,
+    configuration: {
+      'project':   meson.project_name(),
+      'version':   module_tag,
+      'prefix':    '$env(CLAS12_HOME)/$env(OSRELEASE)/local/iguana/$v',
+      'bindir':    get_option('bindir'),
+      'libdir':    get_option('libdir'),
+      'pythondir': pythondir,
+    },
+  )
+endif
