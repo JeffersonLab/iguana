@@ -185,10 +185,7 @@ if get_option('bind_fortran')
     '-l' + algo_lib.name(),
     '-l' + algo_fortran_lib.name(),
   ])
-  project_pkg_vars += [
-    'fortran_libs=' + '-L${prefix}' / get_option('libdir') + ' ' + fortran_consumer_libs,
-    'fortran_flags=' + '-I${prefix}' / fortran_module_dir,
-  ]
+  project_pkg_vars += 'fortran_moduledir=' + '${prefix}' / fortran_module_dir
 endif
 
 # generate pkg-config file
@@ -197,7 +194,7 @@ pkg.generate(
   description: project_description,
   libraries:   project_libs,
   requires:    [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
-  unescaped_variables: project_pkg_vars,
+  variables:   project_pkg_vars,
 )
 
 # build examples
