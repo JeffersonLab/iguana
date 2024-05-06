@@ -41,7 +41,7 @@ yamlcpp_dep = dependency(
 hipo_dep = dependency(
   'hipo4',
   method:  'pkg-config',
-  version: '>=4.0.1',
+  version: '>=4.1.0',
 )
 ROOT_dep = dependency(
   'ROOT',
