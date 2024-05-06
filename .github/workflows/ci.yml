@@ -35,8 +35,8 @@ defaults:
     shell: bash
 
 env:
-  hipo_fork: c-dilks/hipo
-  hipo_ref: 3f615258df28295d8dc3c5f02369dbf89dadb9e5 # for libHipoDataFrame in pkg-config
+  hipo_fork: gavalian/hipo
+  hipo_ref: 4.1.0
   # test options
   num_events: 1000
   verbose_test: 'false' # only set this to 'true' if `meson test` fails and you need more output to investigate
