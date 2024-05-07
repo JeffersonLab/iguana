@@ -1,5 +1,5 @@
 #pragma once
-
+#include <fmt/ranges.h>
 #include <functional>
 #include <optional>
 #include <set>
@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <hipo4/bank.h>
+
 
 #include "iguana/algorithms/AlgorithmBoilerplate.h"
 #include "iguana/services/Object.h"
