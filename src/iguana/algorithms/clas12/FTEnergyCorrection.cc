@@ -1,5 +1,4 @@
 #include "FTEnergyCorrection.h"
-#include LorentzTransformer.h
 #include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
