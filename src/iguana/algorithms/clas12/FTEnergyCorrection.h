@@ -6,7 +6,7 @@
 
 namespace iguana::clas12 {
 
-  class FT_Energy_Corr : public Algorithm {
+  class FTEnergyCorrection : public Algorithm {
 
     //###############################################################################################
     //# Variables:
@@ -15,7 +15,7 @@ namespace iguana::clas12 {
     //#      Double_t Px_el, Py_el, Pz_el: 3-momentum components of the corrected electron. 
     //#      TLorentzVector el_new: new electron 4-vector with the corrected energy.
     //################################################################################################
-    DEFINE_IGUANA_ALGORITHM(FT_Energy_Corr, example::FT_Energy_Corr)
+    DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::FTEnergyCorrection)
 
     public:
 
