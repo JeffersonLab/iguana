@@ -4,27 +4,35 @@ namespace iguana {
 
   REGISTER_IGUANA_ALGORITHM(AlgorithmSequence);
 
-  void AlgorithmSequence::Start(hipo::banklist& banks) {
-    for(const auto& algo : m_sequence) algo->Start(banks);
+  void AlgorithmSequence::Start(hipo::banklist& banks)
+  {
+    for(auto const& algo : m_sequence)
+      algo->Start(banks);
   }
-  void AlgorithmSequence::Run(hipo::banklist& banks) const {
-    for(const auto& algo : m_sequence) algo->Run(banks);
+  void AlgorithmSequence::Run(hipo::banklist& banks) const
+  {
+    for(auto const& algo : m_sequence)
+      algo->Run(banks);
   }
-  void AlgorithmSequence::Stop() {
-    for(const auto& algo : m_sequence) algo->Stop();
+  void AlgorithmSequence::Stop()
+  {
+    for(auto const& algo : m_sequence)
+      algo->Stop();
   }
 
-  void AlgorithmSequence::Add(const std::string class_name, const std::string instance_name) {
+  void AlgorithmSequence::Add(std::string const& class_name, std::string const& instance_name)
+  {
     auto algo = AlgorithmFactory::Create(class_name);
-    if(algo==nullptr) {
+    if(algo == nullptr) {
       m_log->Error("algorithm '{}' does not exist", class_name);
       throw std::runtime_error("AlgorithmFactory cannot create non-existent algorithm");
     }
-    algo->SetName(instance_name=="" ? class_name : instance_name);
+    algo->SetName(instance_name == "" ? class_name : instance_name);
     Add(std::move(algo));
   }
 
-  void AlgorithmSequence::Add(algo_t&& algo) {
+  void AlgorithmSequence::Add(algo_t&& algo)
+  {
     auto algoName = algo->GetName();
     m_algo_names.insert({algoName, m_sequence.size()});
     // prepend sequence name to algorithm name
@@ -38,22 +46,24 @@ namespace iguana {
     }
   }
 
-  void AlgorithmSequence::SetName(const std::string name) {
+  void AlgorithmSequence::SetName(std::string_view name)
+  {
     // change the `m_name+"|"` prefix of each algorithm
-    for(const auto& algo : m_sequence) {
+    for(auto const& algo : m_sequence) {
       auto algoName = algo->GetName();
       if(auto pos{algoName.find("|")}; pos != algoName.npos)
-        algo->SetName(name + algoName.substr(pos));
+        algo->SetName(std::string(name) + algoName.substr(pos));
       else
-        algo->SetName(name + "|" + algoName);
+        algo->SetName(std::string(name) + "|" + algoName);
     }
     // then change the object name
     Algorithm::SetName(name);
   }
 
-  void AlgorithmSequence::PrintSequence(Logger::Level level) const {
+  void AlgorithmSequence::PrintSequence(Logger::Level level) const
+  {
     m_log->Print(level, "algorithms in this sequence:");
-    for(const auto& algo : m_sequence)
+    for(auto const& algo : m_sequence)
       m_log->Print(level, " - {}", algo->GetName());
   }
 

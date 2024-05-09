@@ -8,17 +8,30 @@ set -e
 GENERAL_PACKAGE_LIST_LINUX=(
   python
   gcc
+  gcc-fortran
   clang
   make
   cmake
   tree
+  wget
+  git
   which
   pkgconf
   ninja
   meson
-  gcovr           # for coverage
-  python-pygments # for coverage report syntax colors
-  llvm            # for `llvm-symbolizer`, for human-readable sanitizer results
+  llvm  # for `llvm-symbolizer`, for human-readable sanitizer results
+  ### coverage
+  python-colorlog
+  python-pygments
+  gcovr
+  ### ROOT dependencies
+  binutils
+  libx11
+  libxpm
+  libxft
+  libxext
+  openssl
+  gsl
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
@@ -32,6 +45,15 @@ GENERAL_PACKAGE_LIST_MACOS=(
   tree
   ninja
   meson
+  gcc # for gfortran
+  ### ROOT dependencies
+  binutils
+  libx11
+  libxpm
+  libxft
+  libxext
+  openssl
+  gsl
 )
 IGUANA_PACKAGE_LIST_MACOS=(
   fmt
@@ -48,6 +70,9 @@ runner=$1
 verset=$2
 summary_file=pkg_summary.md
 > $summary_file
+
+this_script=${BASH_SOURCE[0]:-$0}
+this_dir=$(cd $(dirname $this_script)/.. && pwd -P)
 
 case $verset in
   latest) echo "[+] Prefer latest version for iguana-specific dependencies" ;;
@@ -87,7 +112,7 @@ case $runner in
       echo "[+] INSTALLING PACKAGE $pkg"
       case $verset in
         latest) pacman -S --noconfirm $pkg ;;
-        minver) pacman -U --noconfirm $(meson/minimum-version.sh $pkg ALA) ;;
+        minver) pacman -U --noconfirm $($this_dir/meson/minimum-version.sh $pkg ALA) ;;
       esac
       info_pacman $pkg
     done
@@ -103,6 +128,9 @@ case $runner in
       brew install $pkg
       info_homebrew $pkg
     done
+    ### link homebrew's gcc, for gfortran
+    brew unlink gcc
+    brew link gcc
     ;;
 
   *)

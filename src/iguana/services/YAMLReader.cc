@@ -1,191 +1,171 @@
 #include "YAMLReader.h"
 
-namespace iguana
-{
-    void YAMLReader::LoadFiles() {
-      for(const auto& file : m_files) {
-        try {
-          m_configs.push_front(YAML::LoadFile(file));
-        }
-        catch (const YAML::Exception &e) {
-          m_log->Error("YAML Exception: {}", e.what());
-        }
-        catch (const std::exception &e) {
-          m_log->Error("Exception: {}", e.what());
-        }
+namespace iguana {
+
+  void YAMLReader::LoadFiles()
+  {
+    m_log->Debug("YAMLReader::LoadFiles():");
+    for(auto const& file : m_files) {
+      try {
+        m_log->Debug(" - load: {}", file);
+        m_configs.push_back({YAML::LoadFile(file), file}); // m_config must be the same ordering as m_files, so `push_back`
+      }
+      catch(const YAML::Exception& e) {
+        m_log->Error(" - YAML Exception: {}", e.what());
+      }
+      catch(std::exception const& e) {
+        m_log->Error(" - Exception: {}", e.what());
       }
     }
+  }
 
-    template <typename T>
-    T YAMLReader::readValue(const std::string &key, T defaultValue, const YAML::Node &node)
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename SCALAR>
+  SCALAR YAMLReader::GetScalar(YAML::Node node)
+  {
+    if(node.IsDefined() && !node.IsNull()) {
+      try {
+        return node.as<SCALAR>();
+      }
+      catch(const YAML::Exception& e) {
+        m_log->Error("YAML Parsing Exception: {}", e.what());
+      }
+      catch(std::exception const& e) {
+        m_log->Error("YAML Misc. Exception: {}", e.what());
+      }
+    }
+    throw std::runtime_error("Failed `GetScalar`");
+  }
+  template int YAMLReader::GetScalar(YAML::Node node);
+  template double YAMLReader::GetScalar(YAML::Node node);
+  template std::string YAMLReader::GetScalar(YAML::Node node);
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename SCALAR>
+  SCALAR YAMLReader::GetScalar(node_path_t node_path)
+  {
+    for(auto const& [config, filename] : m_configs) {
+      auto node = FindNode(config, node_path);
+      if(node.IsDefined() && !node.IsNull())
+        return GetScalar<SCALAR>(node);
+    }
+    throw std::runtime_error("Failed `GetScalar`");
+  }
+  template int YAMLReader::GetScalar(node_path_t node_path);
+  template double YAMLReader::GetScalar(node_path_t node_path);
+  template std::string YAMLReader::GetScalar(node_path_t node_path);
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename SCALAR>
+  std::vector<SCALAR> YAMLReader::GetVector(YAML::Node node)
+  {
+    if(node.IsDefined() && !node.IsNull() && node.IsSequence()) {
+      try {
+        std::vector<SCALAR> result;
+        for(auto const& element : node)
+          result.push_back(element.as<SCALAR>());
+        return result;
+      }
+      catch(const YAML::Exception& e) {
+        m_log->Error("YAML Parsing Exception: {}", e.what());
+      }
+      catch(std::exception const& e) {
+        m_log->Error("YAML Misc. Exception: {}", e.what());
+      }
+    }
+    throw std::runtime_error("Failed `GetVector`");
+  }
+  template std::vector<int> YAMLReader::GetVector(YAML::Node node);
+  template std::vector<double> YAMLReader::GetVector(YAML::Node node);
+  template std::vector<std::string> YAMLReader::GetVector(YAML::Node node);
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename SCALAR>
+  std::vector<SCALAR> YAMLReader::GetVector(node_path_t node_path)
+  {
+    for(auto const& [config, filename] : m_configs) {
+      auto node = FindNode(config, node_path);
+      if(node.IsDefined() && !node.IsNull())
+        return GetVector<SCALAR>(node);
+    }
+    throw std::runtime_error("Failed `GetVector`");
+  }
+  template std::vector<int> YAMLReader::GetVector(node_path_t node_path);
+  template std::vector<double> YAMLReader::GetVector(node_path_t node_path);
+  template std::vector<std::string> YAMLReader::GetVector(node_path_t node_path);
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename SCALAR>
+  YAMLReader::node_finder_t YAMLReader::InRange(std::string const& key, SCALAR val)
+  {
+    return [this, key, val](YAML::Node node) -> YAML::Node
     {
-      for(const auto& config : m_configs) {
-        try
-        {
-            const YAML::Node &targetNode = node.IsNull() ? config : node;
-
-            if (targetNode[key])
-            {
-                return targetNode[key].as<T>();
-            }
-        }
-        catch (const YAML::Exception &e)
-        {
-            // Handle YAML parsing errors
-            m_log->Error("YAML Exception: {}", e.what());
-            return defaultValue;
-        }
-        catch (const std::exception &e)
-        {
-            // Handle other exceptions (e.g., conversion errors)
-            m_log->Error("Exception: {}", e.what());
-            return defaultValue;
+      if(!node.IsSequence()) {
+        m_log->Error("YAML node path expected a sequence at current node");
+        throw std::runtime_error("Failed `InRange`");
+      }
+      // search each sub-node for one with `val` with in the range at `key`
+      for(const auto& sub_node : node) {
+        auto bounds_node = sub_node[key];
+        if(bounds_node.IsDefined()) {
+          auto bounds = GetVector<SCALAR>(bounds_node);
+          if(bounds.size() == 2 && bounds[0] <= val && bounds[1] >= val)
+            return sub_node;
         }
       }
-      // not found in any config
-      return defaultValue;
+      // fallback to the default node
+      for(const auto& sub_node : node) {
+        if(sub_node["default"].IsDefined())
+          return sub_node;
+      }
+      // if no default found, return empty
+      m_log->Error("No default node for `InRange('{}',{})`", key, val);
+      throw std::runtime_error("Failed `InRange`");
+    };
+  }
+  template YAMLReader::node_finder_t YAMLReader::InRange(std::string const& key, int val);
+  template YAMLReader::node_finder_t YAMLReader::InRange(std::string const& key, double val);
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  YAML::Node YAMLReader::FindNode(YAML::Node node, node_path_t node_path)
+  {
+
+    // if `node_path` is empty, we are likely at the end of the node path; end recursion and return `node`
+    if(node_path.empty()) {
+      m_log->Trace("... found");
+      return node;
     }
 
-    // Explicit instantiation for double
-    template double YAMLReader::readValue<double>(const std::string &, const double, const YAML::Node &);
-    // Explicit instantiation for int
-    template int YAMLReader::readValue<int>(const std::string &, const int, const YAML::Node &);
-    // Explicit instantiation for std::string
-    template std::string YAMLReader::readValue<std::string>(const std::string &, const std::string, const YAML::Node &);
-
-    template <typename T>
-    std::vector<T> YAMLReader::readArray(const std::string &key, const std::vector<T> &defaultValue, const YAML::Node &node)
+    // find the next node using the first `node_id_t` in `node_path`
+    auto node_id_visitor = [&node, &m_log = this->m_log](auto&& arg) -> YAML::Node
     {
-      for(const auto& config : m_configs) {
-        try
-        {
-            const YAML::Node &targetNode = node.IsNull() ? config : node;
-
-            if (targetNode[key])
-            {
-                std::vector<T> value;
-                const YAML::Node &arrayNode = targetNode[key];
-                for (const auto &element : arrayNode)
-                {
-                    value.push_back(element.as<T>());
-                }
-                return value;
-            }
-        }
-        catch (const YAML::Exception &e)
-        {
-            // Handle YAML parsing errors
-            m_log->Error("YAML Exception: {}", e.what());
-            return defaultValue;
-        }
-        catch (const std::exception &e)
-        {
-            // Handle other exceptions (e.g., conversion errors)
-            m_log->Error("Exception: {}", e.what());
-            return defaultValue;
-        }
+      using arg_t = std::decay_t<decltype(arg)>;
+      // find a node by key name
+      if constexpr(std::is_same_v<arg_t, std::string>) {
+        m_log->Trace("... by key '{}'", arg);
+        return node[arg];
       }
-      // not found in any config
-      return defaultValue;
-    }
-
-    // Explicit instantiation for double
-    template std::vector<double> YAMLReader::readArray<double>(const std::string &, const std::vector<double> &, const YAML::Node &);
-    // Explicit instantiation for int
-    template std::vector<int> YAMLReader::readArray<int>(const std::string &, const std::vector<int> &, const YAML::Node &);
-    // Explicit instantiation for std::string
-    template std::vector<std::string> YAMLReader::readArray<std::string>(const std::string &, const std::vector<std::string> &, const YAML::Node &);
-
-    template <typename T>
-    T YAMLReader::findKeyAtRunAndPID(
-        const std::string &cutKey,
-        const std::string &runkey,
-        const std::string &pidkey,
-        const std::string &key,
-        const int         runnb,
-        const int         pid,
-        const T           defaultValue
-        )
-    {
-      for(const auto& config : m_configs) {
-        // Accessing the whole sequence of maps
-        const YAML::Node &cutsNode = config[cutKey];
-        if (cutsNode.IsSequence())
-        {
-            for (const auto &runNode : cutsNode)
-            {
-
-                std::vector<int> runs = readArray<int>(runkey, {}, runNode);
-                if (runs.size() == 2 && runs[0] <= runnb && runs[1] >= runnb)
-                {
-                    if (runNode[pidkey].IsDefined())
-                    {
-                        const YAML::Node &pidNode = runNode[pidkey];
-                        return readValue<T>(std::to_string(pid), defaultValue, pidNode);
-                    }
-                    else
-                    {
-                        return readValue<T>(key, defaultValue, runNode);
-                    }
-                }
-            }
-        }
+      // find a node using a `node_finder_t`
+      else {
+        m_log->Trace("... by node finder function");
+        return arg(node);
       }
-      // not found in any config
-      return defaultValue;
-    }
+    };
+    auto result = std::visit(node_id_visitor, node_path.front());
 
-    // Explicit instantiation for double
-    template double YAMLReader::findKeyAtRunAndPID<double>(const std::string &,const std::string &, const std::string &, const std::string &, int, int, const double);
-    // Explicit instantiation for int
-    template int YAMLReader::findKeyAtRunAndPID<int>(const std::string &,const std::string &, const std::string &, const std::string &, int, int, const int);
-    // Explicit instantiation for std::string
-    template std::string YAMLReader::findKeyAtRunAndPID<std::string>(const std::string &,const std::string &, const std::string &, const std::string &, int, int, const std::string);
+    // if the resulting node is not defined, return an empty node; callers must check the result
+    if(!result.IsDefined())
+      return {};
 
-    template <typename T>
-    std::vector<T> YAMLReader::findKeyAtRunAndPIDVector(
-        const std::string &cutKey,
-        const std::string &runkey,
-        const std::string &pidkey,
-        const std::string &key,
-        int runnb,
-        int pid,
-        const std::vector<T> &defaultValue
-        )
-    {
-      for(const auto& config : m_configs) {
-        // Accessing the whole sequence of maps
+    // recurse to the next element of `node_path`
+    node_path.pop_front();
+    return FindNode(result, node_path);
+  }
 
-        const YAML::Node &cutsNode = config[cutKey];
-        if (cutsNode.IsSequence())
-        {
-            for (const auto &runNode : cutsNode)
-            {
-
-                std::vector<int> runs = readArray<int>(runkey, {}, runNode);
-                if (runs.size() == 2 && runs[0] <= runnb && runs[1] >= runnb)
-                {
-                    if (runNode[pidkey].IsDefined())
-                    {
-                        const YAML::Node &pidNode = runNode[pidkey];
-                        return readArray<T>(std::to_string(pid), defaultValue, pidNode);
-                    }
-                    else
-                    {
-                        return readArray<T>(key, defaultValue, runNode);
-                    }
-                }
-            }
-        }
-      }
-      // not found in any config
-      return defaultValue;
-    }
-
-    // Explicit instantiation for double
-    template std::vector<double> YAMLReader::findKeyAtRunAndPIDVector<double>(const std::string &,const std::string &, const std::string &, const std::string &, int, int, const std::vector<double> &);
-    // Explicit instantiation for int
-    template std::vector<int> YAMLReader::findKeyAtRunAndPIDVector<int>(const std::string &,const std::string &, const std::string &, const std::string &, int, int, const std::vector<int> &);
-    // Explicit instantiation for std::string
-    template std::vector<std::string> YAMLReader::findKeyAtRunAndPIDVector<std::string>(const std::string &,const std::string &, const std::string &, const std::string &, int, int, const std::vector<std::string> &);
 }

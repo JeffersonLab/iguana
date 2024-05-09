@@ -1,12 +1,14 @@
 project(
   'iguana',
   'cpp',
-  license: 'LGPLv3',
+  license: ['LGPLv3'],
+  license_files: ['LICENSE'],
   meson_version: '>=1.2',
   default_options: {
     'cpp_std':               'c++17',
     'buildtype':             'release',
     'libdir':                'lib',
+    'licensedir':            'share/licenses/iguana',
     'pkgconfig.relocatable': 'true',
   },
   version: run_command(
@@ -16,6 +18,9 @@ project(
   ).stdout().strip()
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
+
+# initialize binding languanges
+add_languages('fortran', native: false, required: get_option('bind_fortran'))
 
 # meson modules
 pkg = import('pkgconfig')
@@ -35,15 +40,14 @@ yamlcpp_dep = dependency(
 )
 hipo_dep = dependency(
   'hipo4',
-  static:  true,
   method:  'pkg-config',
-  version: '>=4.0.1',
+  version: '>=4.1.0',
 )
 ROOT_dep = dependency(
   'ROOT',
-  required: false,
+  required: get_option('z_require_root'),
   method:   'cmake',
-  version:  '>=6.28'
+  version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip()
 )
 
 # list of dependencies
@@ -91,40 +95,67 @@ endforeach
 message('Dependency library dirs = [', ', '.join(dep_lib_paths), ']')
 message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
 
+# handle HIPO dataframes
+hipo_dep_dataframes_found = hipo_dep.get_variable(pkgconfig: 'with_dataframes', default_value: 'false').to_lower() == 'true'
+
 # handle ROOT
 ROOT_dep_inc_dirs  = []
 ROOT_dep_link_args = []
+ROOT_dep_link_args_for_validators = []
+ROOT_dep_rpath = ''
 if ROOT_dep.found()
   ROOT_dep_inc_dirs += include_directories(run_command('root-config', '--incdir', check: true).stdout().strip())
+  ROOT_libdir = run_command('root-config', '--libdir', check: true).stdout().strip()
   ROOT_dep_link_args += [
-    '-L' + run_command('root-config', '--libdir',   check: true).stdout().strip(),
     # ROOT libraries that we need (safer than `root-config --libs`)
+    '-L' + ROOT_libdir,
     '-lCore',
     '-lGenVector',
+    '-lROOTDataFrame',
+    '-lROOTVecOps',
+    '-lTreePlayer',
   ]
+  ROOT_dep_link_args_for_validators = [
+    # additional ROOT libraries for validators (namely, graphics libraries)
+    '-L' + ROOT_libdir,
+    '-lRIO',
+    '-lHist',
+    '-lGpad',
+  ]
+  ROOT_dep_rpath = ROOT_libdir
 endif
 
 # general project vars
-project_lib_rpath = '$ORIGIN'
 project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ] ) # do NOT include ROOT here
 project_etc       = get_option('sysconfdir') / meson.project_name()
+project_test_env  = environment()
 project_pkg_vars  = [
+  'bindir='            + '${prefix}' / get_option('bindir'),
   'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
   'dep_libdirs='       + ':'.join(dep_lib_paths),
 ]
 
-# executables' rpath
-project_exe_rpath = []
-if host_machine.system() != 'darwin'
-  # FIXME(darwin): not sure how to set multiple rpaths on darwin executables,
-  # aside from running `install_name_tool -add_rpath` post-installation;
-  # luckily, darwin-built executables don't need the `iguana` library path
-  # explictly included in the rpath, so this `if` block just keeps
-  # `project_exe_rpath` minimal. See https://github.com/mesonbuild/meson/issues/5760
-  project_exe_rpath += '$ORIGIN' / '..' / get_option('libdir')
-endif
+# sanitizer settings
+project_test_env.set(
+  'UBSAN_OPTIONS',
+  'halt_on_error=1',
+  'abort_on_error=1',
+  'print_summary=1',
+  'print_stacktrace=1',
+  'suppressions=' + meson.project_source_root() / 'meson' / 'ubsan.supp',
+)
+project_test_env.set(
+  'ASAN_OPTIONS',
+  'halt_on_error=1',
+  'abort_on_error=1',
+  'print_summary=1',
+)
+project_test_env.set(
+  'LSAN_OPTIONS',
+  'suppressions=' + meson.project_source_root() / 'meson' / 'lsan.supp',
+)
 
 # set preprocessor macros
 add_project_arguments(
@@ -138,42 +169,36 @@ subdir('src/iguana/algorithms')
 subdir('src/iguana/tests')
 
 # build bindings
+pythondir = 'python'
 if get_option('bind_python')
   subdir('bind/python')
 endif
 
 # generate pkg-config file
+project_pkg_vars_nonempty = []
+foreach var : project_pkg_vars
+  if not var.endswith('=') # remove empty variable values
+    project_pkg_vars_nonempty += var
+  endif
+endforeach
 pkg.generate(
   name:        meson.project_name(),
   description: project_description,
   libraries:   project_libs,
   requires:    [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
-  variables:   project_pkg_vars,
+  variables:   project_pkg_vars_nonempty,
 )
 
 # build examples
-if get_option('examples')
+if get_option('install_examples')
   subdir('examples')
-endif
-
-# generate documentation
-if get_option('documentation')
-  doxygen = find_program('doxygen', required: false)
-  if doxygen.found()
-    message('Generating documentation...')
-    run_command('doxygen', meson.project_source_root() / 'doc' / 'Doxyfile', check: true)
-    message('...documentation generated.')
-    install_subdir('doc/api', install_dir: 'doc')
-  else
-    warning('Cannot generate documentation since `doxygen` is not found')
-  endif
 endif
 
 # install environment setup file
 configure_file(
   input:         'meson' / 'this_iguana.sh.in',
   output:        'this_iguana.sh',
-  install:       true,
+  install:       get_option('z_install_envfile'),
   install_dir:   get_option('bindir'),
   configuration: {
     'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
@@ -181,3 +206,21 @@ configure_file(
     'libdir':  get_option('libdir'),
   },
 )
+
+# generate modulefile
+if(get_option('z_generate_modulefile'))
+  module_tag = get_option('z_module_tag')=='' ? meson.project_version() : get_option('z_module_tag')
+  configure_file(
+    input:   'meson' / 'release' / 'modulefile.in',
+    output:  module_tag,
+    install: false,
+    configuration: {
+      'project':   meson.project_name(),
+      'version':   module_tag,
+      'prefix':    '$env(CLAS12_HOME)/$env(OSRELEASE)/local/iguana/$v',
+      'bindir':    get_option('bindir'),
+      'libdir':    get_option('libdir'),
+      'pythondir': pythondir,
+    },
+  )
+endif

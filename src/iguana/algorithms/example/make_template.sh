@@ -32,14 +32,15 @@ exName=ExampleAlgorithm
 
 mkdir -p $installDir
 
-for ext in h cc; do
+for ext in h cc yaml; do
   outFile=$installDir/$algo.$ext
   cat $thisDir/$exName.$ext |\
     sed "s;$exName;$algo;g" |\
     sed "s;example::;$namespace::;g" |\
     sed "s;::example;::$namespace;g" |\
     sed "s;iguana::iguana;iguana;g" |\
-    grep -v '//#' \
+    grep -v '// #' |\
+    grep -vE '^# ' \
     > $outFile
   echo Created $outFile
 done

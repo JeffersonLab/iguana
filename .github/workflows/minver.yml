@@ -5,22 +5,50 @@ on:
   push:
     branches: [ main ]
     tags: [ '*' ]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+  schedule:
+    - cron: '15 7 * * 0' # Sundays at 0715Z
 
 jobs:
-  Linux:
+
+  linux:
     name: Linux (minver)
     uses: ./.github/workflows/ci.yml
     with:
+      id: linux-minver
       runner: ubuntu-latest
       container: archlinux/archlinux:latest
       verset: minver
-      test_matrix: >-
+      matrix: >-
         {
+          "id": [
+            "cpp",
+            "noROOT",
+            "python",
+            "fortran"
+          ],
           "include": [
-            { "mode": "test", "CC": "gcc", "CXX": "g++", "buildtype": "release" }
+            { "id": "cpp",     "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true"  },
+            { "id": "noROOT",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=false" },
+            { "id": "python",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true   -Dbind_python=true"  },
+            { "id": "fortran", "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true   -Dbind_fortran=true" }
           ]
         }
+
+  issue_bot:
+    name: Issue bot
+    if: ${{ github.event_name == 'schedule' && ( cancelled() || failure() ) }}
+    runs-on: ubuntu-latest
+    needs: [ linux ]
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_ID: linux-minver
+          RUN_ID: ${{ github.run_id }}
+          REPO_URL: ${{ github.event.repository.html_url }}
+        with:
+          filename: .github/schedule-issue.md

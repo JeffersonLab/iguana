@@ -26,8 +26,13 @@ For Python to be able to find and use these bindings, you need to set some envir
 
 > [!TIP]
 > You may use `this_iguana.sh` to set these variables automatically. Assuming you installed Iguana to `./iguana/`:
-> - on Linux: `source iguana/bin/this_iguana.sh`
-> - on macOS: `source iguana/bin/this_iguana.sh ld` (where `ld` is needed to set `DYLD_LIBRARY_PATH`)
+> ```bash
+> source iguana/bin/this_iguana.sh
+> ```
+
+> [!IMPORTANT]
+> If you have ROOT, you likely already have `cppyy` as part of its installation. Be sure that `$PYTHONPATH`
+> prioritizes ROOT's installation, so the "correct" `cppyy` is used
 
 ## Running the Examples
 

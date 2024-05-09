@@ -1,5 +1,17 @@
-option('examples',        type: 'boolean', value: false, description: 'Build Iguana C++ examples')
-option('documentation',   type: 'boolean', value: false, description: 'Generate API documentation (requires Doxygen)')
-option('test_data_file',  type: 'string',  value: '',    description: 'Sample HIPO file for testing. Must be an absolute path or relative to the build directory. If unspecified, tests are not built')
-option('test_num_events', type: 'string',  value: '10',  description: 'Number of events from `test_data_file` to test')
-option('bind_python',     type: 'boolean', value: false, description: 'Generate Python bindings and their examples')
+# binding options: install support for other languages besides C++
+option('bind_fortran', type: 'boolean', value: false, description: 'Install Fortran bindings')
+option('bind_python',  type: 'boolean', value: false, description: 'Install Python bindings')
+
+# optional installations: install additional objects, such as example executables
+option('install_examples', type: 'boolean', value: false, description: 'Install examples')
+
+# test options: control how tests are run
+option('test_data_file',  type: 'string', value: '',   description: 'Sample HIPO file for testing. Must be an absolute path. If unspecified, tests that need them are not built')
+option('test_num_events', type: 'string', value: '10', description: 'Number of events from `test_data_file` to test')
+option('test_output_dir', type: 'string', value: '',   description: 'Output directory for tests. Must be an absolute path. If unspecified, tests will still run, but will not produce output files.')
+
+# expert options: the defaults should be reasonable for a local installation; different values may be preferred for installation in common areas
+option('z_install_envfile',     type: 'boolean', value: true,  description: 'Install a sourceable environment variable file')
+option('z_generate_modulefile', type: 'boolean', value: false, description: 'Generate an Environment Modules modulefile')
+option('z_module_tag',          type: 'string',  value: '',    description: 'Tag for modulefile. If unspecified, use the version number')
+option('z_require_root',        type: 'boolean', value: false, description: 'Fail if ROOT is not found')

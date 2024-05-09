@@ -4,18 +4,20 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(EventBuilderFilter);
 
-  void EventBuilderFilter::Start(hipo::banklist& banks) {
+  void EventBuilderFilter::Start(hipo::banklist& banks)
+  {
 
     // define options, their default values, and cache them
-    CacheOptionToSet("pids", {11, 211}, o_pids);
+    ParseYAMLConfig();
+    o_pids = GetOptionSet<int>("pids");
 
-    // cache expected bank indices
-    CacheBankIndex(banks, "REC::Particle", b_particle);
-
+    // get expected bank indices
+    b_particle = GetBankIndex(banks, "REC::Particle");
   }
 
 
-  void EventBuilderFilter::Run(hipo::banklist& banks) const {
+  void EventBuilderFilter::Run(hipo::banklist& banks) const
+  {
 
     // get the banks
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
@@ -37,12 +39,21 @@ namespace iguana::clas12 {
   }
 
 
-  bool EventBuilderFilter::Filter(const int pid) const {
+  bool EventBuilderFilter::Filter(int const pid) const
+  {
     return o_pids.find(pid) != o_pids.end();
   }
 
+  std::deque<bool> EventBuilderFilter::Filter(std::vector<int> const pids) const
+  {
+    std::deque<bool> result;
+    for(auto const& pid : pids)
+      result.push_back(Filter(pid));
+    return result;
+  }
 
-  void EventBuilderFilter::Stop() {
+  void EventBuilderFilter::Stop()
+  {
   }
 
 }

@@ -1,0 +1,5 @@
+clas12::SectorFinder:
+  # use the default banks
+  bank: default
+  # or force finder to use a certain bank with eg:
+  #bank: REC::Calorimeter

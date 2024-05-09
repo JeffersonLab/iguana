@@ -1,11 +1,15 @@
 # in-source build artifacts
 /*.ini
-/build*/
-/iguana
+/iguana*/
 /.cache
 
-# doxygen artifacts
+# documentation artifacts
 /doc/api
 
 # data files
 *.hipo
+*.root
+*.png
+
+# overrides
+!doc/logo.png

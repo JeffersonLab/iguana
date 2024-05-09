@@ -12,7 +12,7 @@
 The following sections (🔶) list the dependencies and how to obtain them.
 
 > [!TIP]
-> It's generally better to use your a package manager to install dependencies, _e.g._:
+> It's generally better to use your a package manager to install most dependencies, _e.g._:
 > - macOS Homebrew: `brew install <package>`
 > - Linux (depends on distribution) examples: `apt install <package>`, `dnf install <package>`, `pacman -S <package>`
 > - The name of the package may be different for different package managers; search for and read about the package before installing it
@@ -51,6 +51,17 @@ cmake -S /path/to/hipo_source_code -B build-hipo -DCMAKE_INSTALL_PREFIX=/path/to
 cmake --build build-hipo
 cmake --install build-hipo
 ```
+
+### 🔶 Optional: `ROOT`: Data analysis framework
+<https://root.cern.ch/>
+- ROOT is an **optional** dependency: some algorithms and test code depends on ROOT, but if you do not
+  have ROOT on your system, `iguana` will build everything _except_ ROOT-dependent code
+- It is **NOT recommended** to use your package manager to install ROOT; the most reliable installation
+  method is [building it from source](https://root.cern/install/build_from_source/)
+  - You may need to set the C++ standard to match that used in `iguana`, which is currently 17; to do so,
+    use the build option `-DCMAKE_CXX_STANDARD=17`
+- After installation, depending on ROOT's installation prefix you may also need to set your environment so
+  ROOT may be found; this is typically done by `source /path/to/root/bin/thisroot.sh`
 
 <a name="building"></a>
 ## 🟠 Building and Installing
@@ -95,15 +106,18 @@ If you will _install_ `iguana` (recommended), set an installation prefix:
 meson configure --prefix=/path/to/iguana-installation  # must be an ABSOLUTE path
 ```
 
-All build options, their current values, and their descriptions may be found by running
+All build options, their current values, and their descriptions may be found by running one of
 ```bash
-meson configure
+meson configure              # outputs in a pager (`less`); you may scroll, or press 'q' to quit
+meson configure --no-pager   # do not use a pager
 ```
 **but that's a _lot_ of text!** The _most important_ build options are near the bottom, under **"Project options"**.
 
-To set any build option, _e.g._ `examples` to `true` (enables building of Iguana examples), run:
+Alternatively, see [`meson.options`](/meson.options) for the list of project options, and some more details.
+
+To set any build option, _e.g._ `install_examples` to `true`, run:
 ```bash
-meson configure -Dexamples=true
+meson configure -Dinstall_examples=true
 ```
 You can add as many `-D<option>=<value>` arguments as you need.
 
@@ -129,28 +143,23 @@ meson install   # installs Iguana to your prefix (build option 'prefix')
 <a name="env"></a>
 ## 🟠 Environment Variables (optional)
 The C++ Iguana implementation does not require the use of any environment variables. However,
-- some language bindings may benefit from variables such as `$PYTHONPATH`, for Python
-- you may want to override the linker library search path list (_e.g._, if you have conflicting libraries in it)
+- if Iguana libraries are not in your default linker library search path, you may need to update it, _e.g._ with
+  `$LD_LIBRARY_PATH` (Linux) or `$DYLD_LIBRARY_PATH` (macOS)
+- some language bindings may need variables such as `$PYTHONPATH`, for Python
 
 You may set your own environment variables, but for a quick start with suggested settings,
 the installed file `bin/this_iguana.sh` may be used as
 ```
-source bin/this_iguana.sh [OPTIONAL ARGUMENTS]...
-
-OPTIONAL ARGUMENTS:
-
-   ld       append library paths to LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH);
-            by default these variables are NOT modified
-
-   verbose  print the relevant environment variable values
+source bin/this_iguana.sh
 ```
+Use the `--help` argument to see its full usage guide.
 
-which sets or modifies the following environment variables:
+The following environment variables are set or modified:
 
 | Variable                                                 | Modification                                                                                                                              |
 | ---                                                      | ---                                                                                                                                       |
 | `PKG_CONFIG_PATH`                                        | adds paths to the `pkg-config` files (`.pc`) for dependencies and Iguana; see [note on dependency resolution](dependency_resolution.md)   |
+| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries                                                                                             |
 | `PYTHONPATH`                                             | adds paths to dependency and Iguana Python packages, if Python bindings are installed                                                     |
-| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries, if the optional argument `ld` was used                                                     |
 
 `this_iguana.sh` is compatible with `bash` and `zsh`, but not with `tcsh` or `csh`.

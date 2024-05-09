@@ -1,127 +1,187 @@
 #include <getopt.h>
-#include <iguana/algorithms/AlgorithmSequence.h>
-#include <hipo4/reader.h>
 
-int main(int argc, char **argv) {
+#include "TestAlgorithm.h"
+#include "TestConfig.h"
+#include "TestLogger.h"
+#include "TestValidator.h"
 
-  // parse arguments
-  int                      opt;
-  std::string              command = "";
-  std::string              data_file = "";
-  int                      num_events = 10;
-  std::string              algo_name = "";
+int main(int argc, char** argv)
+{
+  // user parameters
+  std::string command    = "";
+  std::string data_file  = "";
+  int num_events         = 10;
+  std::string algo_name  = "";
+  int test_num           = 0;
+  std::string output_dir = "";
+  bool verbose           = false;
   std::vector<std::string> bank_names;
-  bool verbose = false;
-  auto Usage = [&]() {
-    fmt::print(stderr, "\nUSAGE: {} [OPTIONS]...\n", argv[0]);
+
+  // get the command
+  auto exe           = std::string(argv[0]);
+  auto UsageCommands = [&](int exit_code)
+  {
+    fmt::print(stderr, "\nUSAGE: {} [COMMAND] [OPTIONS]...\n", exe);
+    fmt::print("\n  COMMANDS:\n\n");
+    fmt::print("    {:<20} {}\n", "algorithm", "call `Run` on an algorithm");
+    fmt::print("    {:<20} {}\n", "validator", "run an algorithm's validator");
+    fmt::print("    {:<20} {}\n", "unit", "call `Test` on an algorithm, for unit tests");
+    fmt::print("    {:<20} {}\n", "config", "test config file parsing");
+    fmt::print("    {:<20} {}\n", "logger", "test Logger");
+    fmt::print("\n  OPTIONS:\n\n");
+    fmt::print("    Each command has its own set of OPTIONS; either provide no OPTIONS\n");
+    fmt::print("    or use the --help option for more usage information about a specific command\n");
     fmt::print("\n");
-    fmt::print("  OPTIONS:\n");
-    fmt::print("\n");
-    fmt::print("    {:<20} {}\n\n", "-c COMMAND", "which test command to use:");
-    fmt::print("    {:<20} {:<15} {}\n", "", "algorithm", "call `Run` on an algorithm");
-    fmt::print("    {:<20} {:<15} {}\n", "", "unit", "call `Test` on an algorithm, for unit tests");
-    fmt::print("\n");
-    fmt::print("    {:<20} {}\n", "-f FILE", "input data file, for when COMMAND==algorithm");
-    fmt::print("\n");
-    fmt::print("    {:<20} {}\n", "-n NUM_EVENTS", "number of events from the data file");
-    fmt::print("    {:<20} default: {}\n", "", num_events);
-    fmt::print("\n");
-    fmt::print("    {:<20} {}\n", "-a ALGORITHM", "the name of the algorithm");
-    fmt::print("\n");
-    fmt::print("    {:<20} {}\n", "-b BANKS", "add a bank to process");
-    fmt::print("\n");
-    fmt::print("    {:<20} {}\n", "-v", "increase verbosity");
-    fmt::print("\n");
-    return 2;
+    return exit_code;
   };
-  if(argc==1)
-    return Usage();
-  while((opt=getopt(argc, argv, "c:f:n:a:b:v|")) != -1) {
-    switch(opt) {
-      case 'c':
-        command = std::string(optarg);
-        break;
-      case 'f':
-        data_file = std::string(optarg);
-        break;
-      case 'n':
-        num_events = std::stoi(optarg);
-        break;
-      case 'a':
-        algo_name = std::string(optarg);
-        break;
-      case 'b':
-        bank_names.push_back(std::string(optarg));
-        break;
-      case 'v':
-        verbose = true;
-        break;
-      default:
-        return Usage();
+  if(argc <= 1)
+    return UsageCommands(2);
+  command = std::string(argv[1]);
+  if(command == "--help" || command == "-h")
+    return UsageCommands(2);
+  // omit the command, for getopt
+  argv++;
+  argc--;
+
+  // usage options
+  auto UsageOptions = [&](int exit_code)
+  {
+    std::unordered_map<std::string, std::function<void()>> print_option = {
+        {"f", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-f FILE", "input data file");
+         }},
+        {"n", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-n NUM_EVENTS", "number of events from the data file");
+           fmt::print("    {:<20} set to 0 to process ALL events\n", "");
+           fmt::print("    {:<20} default: {}\n", "", num_events);
+         }},
+
+        {"a-algo", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-a ALGORITHM", "the name of the algorithm");
+         }},
+        {"a-vdor", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-a VALIDATOR", "the name of the validator");
+         }},
+        {"b", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-b BANKS", "add a single bank to process");
+           fmt::print("    {:<20} you may add as many banks as you need (-b BANK1 -b BANK2 ...)\n", "");
+           fmt::print("    {:<20} default: if you do not add any banks, ALL of them will be used\n", "");
+         }},
+
+        {"t", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-t TESTNUM", "test number");
+         }},
+        {"o", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-o OUTPUT_DIR", "if specified, validators will write to this directory");
+         }},
+        {"v", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-v", "increase verbosity");
+         }}};
+    std::vector<std::string> available_options;
+    if(command == "algorithm" || command == "unit") {
+      available_options = {"f", "n", "a-algo", "b"};
     }
-  }
-  if(command == "" || algo_name == "" || bank_names.empty()) {
-    fmt::print(stderr, "ERROR: need at least a command, algorithm name, and banks\n");
-    return Usage();
-  }
-  if(command == "algorithm" && data_file == "") {
-    fmt::print(stderr, "ERROR: need a data file for command 'algorithm'\n");
-    return Usage();
-  }
-  if(verbose) {
-    fmt::print("TEST IGUANA:\n");
-    fmt::print("  {:>20} = {}\n", "command", command);
-    fmt::print("  {:>20} = {}\n", "data_file", data_file);
-    fmt::print("  {:>20} = {}\n", "num_events", num_events);
-    fmt::print("  {:>20} = {}\n", "algo_name", algo_name);
-    fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names,", "));
-    fmt::print("\n");
-  }
-
-  // open the HIPO file; we use 2 readers, one for 'before' (i.e., not passed through iguana), and one for 'after'
-  // (passed through iguana), so we may compare them
-  hipo::reader reader_before(data_file.c_str()); // NOTE: not copy-constructable, so make two separate readers
-  hipo::reader reader_after(data_file.c_str());
-  auto banks_before = reader_before.getBanks(bank_names);
-  auto banks_after  = reader_after.getBanks(bank_names);
-
-  // define the algorithm
-  iguana::AlgorithmSequence seq;
-  seq.Add(algo_name);
-  seq.SetOption(algo_name, "log", verbose ? "debug" : "info");
-
-  // start the algorithm
-  seq.Start(banks_after);
-
-  // event loop
-  int it_ev = 0;
-  while(reader_after.next(banks_after) && (num_events==0 || it_ev++ < num_events)) {
-    // iterate the 'before' reader too
-    reader_before.next(banks_before);
-    // run the algorithm
-    if(command=="algorithm")
-      seq.Run(banks_after);
-    else if(command=="unit") {
-      fmt::print(stderr, "ERROR: unit tests are not yet implemented (TODO)\n");
-      return 1;
+    else if(command == "validator") {
+      available_options = {"f", "n", "a-vdor", "b", "o"};
+    }
+    else if(command == "config") {
+      available_options = {"t"};
+    }
+    else if(command == "logger") {
+      available_options = {};
     }
     else {
       fmt::print(stderr, "ERROR: unknown command '{}'\n", command);
       return 1;
     }
-    // print the banks, before and after
-    if(verbose) {
-      for(decltype(bank_names)::size_type it_bank=0; it_bank < bank_names.size(); it_bank++) {
-        fmt::print("{:=^70}\n", fmt::format(" BEFORE: {} ", bank_names.at(it_bank)));
-        banks_before.at(it_bank).show();
-        fmt::print("{:=^70}\n", fmt::format(" AFTER: {} ", bank_names.at(it_bank)));
-        banks_after.at(it_bank).show();
-        fmt::print("\n");
-      }
+    available_options.push_back("v");
+    fmt::print(stderr, "\nUSAGE: {} {} [OPTIONS]...\n", exe, command);
+    fmt::print("\n  OPTIONS:\n\n");
+    for(auto available_opt : available_options) {
+      print_option.at(available_opt)();
+      fmt::print("\n");
+    }
+    return exit_code;
+  };
+  if(argc <= 2 && command != "logger")
+    return UsageOptions(2);
+  auto first_option = std::string(argv[2]);
+  if(first_option == "--help" || first_option == "-h")
+    return UsageOptions(2);
+
+  // parse option arguments
+  int opt;
+  while((opt = getopt(argc, argv, "hf:n:a:b:t:o:v|")) != -1) {
+    switch(opt) {
+    case 'h':
+      return UsageOptions(2);
+    case 'f':
+      data_file = std::string(optarg);
+      break;
+    case 'n':
+      num_events = std::stoi(optarg);
+      break;
+    case 'a':
+      algo_name = std::string(optarg);
+      break;
+    case 'b':
+      bank_names.push_back(std::string(optarg));
+      break;
+    case 't':
+      test_num = std::stoi(optarg);
+      break;
+    case 'o':
+      output_dir = std::string(optarg);
+      break;
+    case 'v':
+      verbose = true;
+      break;
+    default:
+      return UsageOptions(1);
     }
   }
 
-  // stop the algorithm
-  seq.Stop();
+  // list of ALL banks needed by the algorithms and validators; we need all of them here,
+  // so that the caller does not have to specifiy the banks
+  std::vector<std::string> const all_bank_names = {
+      "RUN::config",
+      "REC::Particle",
+      "REC::Calorimeter",
+      "REC::Track",
+      "REC::Scintillator"};
+  if(bank_names.empty())
+    bank_names = all_bank_names;
+
+  fmt::print("TEST IGUANA:\n");
+  fmt::print("  {:>20} = {}\n", "command", command);
+  fmt::print("  {:>20} = {}\n", "data_file", data_file);
+  fmt::print("  {:>20} = {}\n", "num_events", num_events);
+  fmt::print("  {:>20} = {}\n", "algo_name", algo_name);
+  fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names, ", "));
+  fmt::print("  {:>20} = {}\n", "test_num", test_num);
+  fmt::print("  {:>20} = {}\n", "output_dir", output_dir);
+  fmt::print("\n");
+
+  // run test
+  if(command == "algorithm" || command == "unit")
+    return TestAlgorithm(command, algo_name, bank_names, data_file, num_events, verbose);
+  else if(command == "validator")
+    return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, verbose);
+  else if(command == "config")
+    return TestConfig(test_num, verbose);
+  else if(command == "logger")
+    return TestLogger();
+  else {
+    fmt::print(stderr, "ERROR: unknown command '{}'\n", command);
+    return 1;
+  }
   return 0;
 }

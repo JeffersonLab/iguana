@@ -1,0 +1,21 @@
+example::ExampleAlgorithm:
+
+  # test trees where all node paths are strings
+
+  tree1:
+    scalar1: 1.5
+    scalar2: 2.5
+
+  tree2:
+    tree1:
+      scalar1: 3.5
+    tree2:
+      tree3:
+        vector1: [ gecko, snake ]
+    vector2:
+      - 3
+      - -4
+      - 5
+
+  vector1:
+    - bee
