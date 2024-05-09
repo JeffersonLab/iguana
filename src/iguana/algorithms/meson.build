@@ -79,9 +79,8 @@ algo_dict = {
     'algorithm': {
       'sources': [ 'clas12/FTEnergyCorrection.cc' ],
       'headers': [ 'clas12/FTEnergyCorrection.h' ],
-      'needs_ROOT': true,
     },
-    'test_args': { 'banks': [] }, # FIXME: what banks will this algorithm use?
+    'test_args': { 'banks': ['RECFT::Particle'] },
   },
   'clas12::MomentumCorrection': {
     'algorithm': {

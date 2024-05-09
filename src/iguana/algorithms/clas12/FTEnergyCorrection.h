@@ -3,19 +3,10 @@
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 
-#include <TLorentzVector.h> // FIXME: use `ROOTVecOps` instead
-
 namespace iguana::clas12 {
 
   class FTEnergyCorrection : public Algorithm {
 
-    //###############################################################################################
-    //# Variables:
-    //#      TLorentzVector x: the 4-vector of the electron that needs to have its energy corrected.
-    //#      Double_t E_new: the corrected energy.
-    //#      Double_t Px_el, Py_el, Pz_el: 3-momentum components of the corrected electron. 
-    //#      TLorentzVector el_new: new electron 4-vector with the corrected energy.
-    //################################################################################################
     DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::FTEnergyCorrection)
 
     public:
@@ -24,10 +15,24 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      // Transformation function that returns 4-vector of electron with corrected energy for the Forward Tagger.
-      TLorentzVector Correct(TLorentzVector x) const;
+      /// @action_function{scalar transformer}
+      /// Transformation function that returns 4-vector of electron with corrected energy for the Forward Tagger.
+      /// Currently only validated for Fall 2018 outbending data.
+      /// @param px @f$p_x@f$
+      /// @param py @f$p_y@f$
+      /// @param pz @f$p_z@f$
+      /// @param E @f$E@f$
+      /// @returns an electron 4-vector with the corrected energy for the Forward Tagger.
+      vector4_t Transform(
+          vector_element_t px,
+          vector_element_t py,
+          vector_element_t pz,
+          vector_element_t E) const;
 
     private:
+
+      hipo::banklist::size_type b_ft_particle;
+      double electron_mass;
 
   };
 

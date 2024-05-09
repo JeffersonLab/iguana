@@ -1,43 +1,43 @@
 #include "FTEnergyCorrection.h"
-#include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
-REGISTER_IGUANA_ALGORITHM(FTEnergyCorrection);
+  REGISTER_IGUANA_ALGORITHM(FTEnergyCorrection);
 
-void FTEnergyCorrection::Start(hipo::banklist& banks) {
+  void FTEnergyCorrection::Start(hipo::banklist& banks) {
+    b_ft_particle = GetBankIndex(banks, "RECFT::Particle");
+    electron_mass = particle::mass.at(particle::electron);
+  }
 
-    //# This is where I would call Fiducial Cuts and Banks in a more complex algorithm.
+  void FTEnergyCorrection::Run(hipo::banklist& banks) const {
+    auto& ftParticleBank = GetBank(banks, b_ft_particle, "RECFT::Particle");
+    ShowBank(ftParticleBank, Logger::Header("INPUT FT PARTICLES"));
+    for(int row = 0; row < ftParticleBank.getRows(); row++) {
+      if(ftParticleBank.getInt("pid", row) == particle::PDG::electron) {
+        auto px = ftParticleBank.getFloat("px", row);
+        auto py = ftParticleBank.getFloat("py", row);
+        auto pz = ftParticleBank.getFloat("pz", row);
+        auto E = std::hypot(std::hypot(px, py, pz), electron_mass);
+        auto [px_new, py_new, pz_new, E_new] = Transform(px, py, pz, E);
+        ftParticleBank.putFloat("px", row, px_new);
+        ftParticleBank.putFloat("py", row, py_new);
+        ftParticleBank.putFloat("pz", row, pz_new);
+      }
+    }
+    ShowBank(ftParticleBank, Logger::Header("OUTPUT FT PARTICLES"));
+  }
 
-}
+  vector4_t  FTEnergyCorrection::Transform(
+      vector_element_t px,
+      vector_element_t py,
+      vector_element_t pz,
+      vector_element_t E) const
+  {
+    vector_element_t rho = std::hypot(px, py, pz);
+    vector_element_t E_new = E +  0.0208922 + 0.050158*E - 0.0181107*pow(E,2) + 0.00305671*pow(E,3) - 0.000178235*pow(E,4);
+    return { E_new*(px/rho), E_new*(py/rho), E_new*(pz/rho), E_new };
+  }
 
-void FTEnergyCorrection::Run(hipo::banklist& banks) const {
-
-    //# This is where I would do the big chunk of calculations in a more complex algorithm.
-
-}
-
-
-// This function returns an electron 4-vector with the corrected energy for the Forward Tagger. 
-// Currently only validated for Fall 2018 outbending data.
-
-TLorentzVector  FTEnergyCorrection::Correct(TLorentzVector x) const{
-
-  Double_t E_new, Px_el, Py_el, Pz_el;
-  TLorentzVector el_new;
-  E_new = x.E() +  0.0208922 + 0.050158*x.E() - 0.0181107*pow(x.E(),2) + 0.00305671*pow(x.E(),3) - 0.000178235*pow(x.E(),4);
-
-  Px_el = E_new*(x.Px()/x.Rho());
-  Py_el = E_new*(x.Py()/x.Rho());
-  Pz_el = E_new*(x.Pz()/x.Rho());
-
-  el_new.SetXYZM(Px_el, Py_el, Pz_el, 0.000511);
-
-  return el_new;
-}
-
-void FTEnergyCorrection::Stop() {
-
-
+  void FTEnergyCorrection::Stop() {
   }
 
 }
