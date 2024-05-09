@@ -75,6 +75,14 @@ algo_dict = {
     'configs':   [ 'clas12/LorentzTransformer.yaml' ],
     'test_args': { 'banks': ['REC::Particle'] },
   },
+  'clas12::FTEnergyCorrection': {
+    'algorithm': {
+      'sources': [ 'clas12/FTEnergyCorrection.cc' ],
+      'headers': [ 'clas12/FTEnergyCorrection.h' ],
+      'needs_ROOT': true,
+    },
+    'test_args': { 'banks': [] }, # FIXME: what banks will this algorithm use?
+  },
   'clas12::MomentumCorrection': {
     'algorithm': {
       'sources': [ 'clas12/MomentumCorrection.cc' ],
