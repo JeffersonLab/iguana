@@ -5,6 +5,12 @@
 
 namespace iguana::clas12 {
 
+  /// @brief_algo Forward Tagger energy correction
+  ///
+  /// @begin_doc_algo{Transformer}
+  /// @input_banks{RECFT::Particle}
+  /// @output_banks{RECFT::Particle}
+  /// @end_doc
   class FTEnergyCorrection : public Algorithm {
 
     DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::FTEnergyCorrection)
