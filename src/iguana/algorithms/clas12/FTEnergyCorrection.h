@@ -3,6 +3,8 @@
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 
+#include <TLorentzVector.h> // FIXME: use `ROOTVecOps` instead
+
 namespace iguana::clas12 {
 
   class FTEnergyCorrection : public Algorithm {
@@ -24,13 +26,8 @@ namespace iguana::clas12 {
 
       // Transformation function that returns 4-vector of electron with corrected energy for the Forward Tagger.
       TLorentzVector Correct(TLorentzVector x) const;
-    
+
     private:
-    
-      /// Example integer configuration option
-      int o_exampleInt;
-      /// Example float configuration option
-      double o_exampleFloat;
 
   };
 

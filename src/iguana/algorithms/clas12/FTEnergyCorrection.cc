@@ -35,7 +35,7 @@ TLorentzVector  FTEnergyCorrection::Correct(TLorentzVector x) const{
   return el_new;
 }
 
-void ExampleAlgorithm::Stop() {
+void FTEnergyCorrection::Stop() {
 
 
   }
