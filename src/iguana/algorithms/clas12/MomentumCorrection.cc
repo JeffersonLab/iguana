@@ -8,24 +8,19 @@ namespace iguana::clas12 {
   void MomentumCorrection::Start(hipo::banklist& banks)
   {
     b_particle = GetBankIndex(banks, "REC::Particle");
+    b_sector   = GetBankIndex(banks, "REC::Particle::Sector");
     b_config   = GetBankIndex(banks, "RUN::config");
-
-    m_sector_finder = std::make_unique<SectorFinder>();
-    if(m_rows_only)
-      m_sector_finder->Start();
-    else
-      m_sector_finder->Start(banks);
   }
 
 
   void MomentumCorrection::Run(hipo::banklist& banks) const
   {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
+    auto& sectorBank   = GetBank(banks, b_sector, "REC::Particle::Sector");
     auto& configBank   = GetBank(banks, b_config, "RUN::config");
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     auto torus   = configBank.getFloat("torus", 0);
-    auto sectors = m_sector_finder->Find(banks);
 
     for(int row = 0; row < particleBank.getRows(); row++) {
 
@@ -33,7 +28,7 @@ namespace iguana::clas12 {
           particleBank.getFloat("px", row),
           particleBank.getFloat("py", row),
           particleBank.getFloat("pz", row),
-          sectors.at(row),
+          sectorBank.getInt("sector", row),
           particleBank.getInt("pid", row),
           torus);
       particleBank.putFloat("px", row, px);

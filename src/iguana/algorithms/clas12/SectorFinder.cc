@@ -1,9 +1,8 @@
 #include "SectorFinder.h"
-#include <cassert>
 
 namespace iguana::clas12 {
 
-  REGISTER_IGUANA_ALGORITHM(SectorFinder);
+  REGISTER_IGUANA_ALGORITHM(SectorFinder, "REC::Particle::Sector");
 
   void SectorFinder::Start(hipo::banklist& banks)
   {
@@ -24,40 +23,31 @@ namespace iguana::clas12 {
       b_scint           = GetBankIndex(banks, "REC::Scintillator");
       userSpecifiedBank = false;
     }
+
+    // create the output bank
+    // FIXME: generalize the groupid and itemid
+    auto result_schema = CreateBank(banks, b_result, "REC::Particle::Sector", {"sector/I"}, 0xF000, 2);
+    i_sector = result_schema.getEntryOrder("sector");
   }
 
 
-  // explicitly leave empty, run does nothing
   void SectorFinder::Run(hipo::banklist& banks) const
   {
-  }
+    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
+    auto& resultBank   = GetBank(banks, b_result, "REC::Particle::Sector");
 
-  int SectorFinder::GetSector(hipo::bank const& bank, int const pindex) const
-  {
-    int sector = 0;
-    for(int row = 0; row < bank.getRows(); row++) {
-      if(bank.getInt("pindex", row) == pindex) {
-        return bank.getInt("sector", row);
-      }
-    }
-    return sector;
-  }
-
-  std::vector<int> SectorFinder::Find(hipo::banklist& banks) const
-  {
-    std::vector<int> sectors;
-    auto const& particleBank = GetBank(banks, b_particle, "REC::Particle");
+    // sync new bank with particle bank, and fill it with zeroes
+    resultBank.setRows(particleBank.getRows());
+    //resultBank.getMutableRowList().setList(particleBank.getRowList()); // FIXME: need hipo::rowlist (replaces `.getRows()` style)
+    for(int row = 0; row < resultBank.getRows(); row++)
+      resultBank.putInt(i_sector, row, 0);
 
     // filter the input bank for requested PDG code(s)
     if(userSpecifiedBank) { // if user specified a specific bank
       auto const& userBank = GetBank(banks, b_user);
       for(int row = 0; row < particleBank.getRows(); row++) {
         if(userBank.getRows() > 0) {
-          sectors.push_back(GetSector(userBank, row));
-        }
-        else {
-          // bank may be empty
-          sectors.push_back(0);
+          resultBank.putInt(i_sector, row, GetSector(userBank, row));
         }
       }
     }
@@ -82,27 +72,34 @@ namespace iguana::clas12 {
         }
 
         if(trackSector != 0) {
-          sectors.push_back(trackSector);
+          resultBank.putInt(i_sector, row, trackSector);
         }
         else if(scintSector != 0) {
-          sectors.push_back(scintSector);
+          resultBank.putInt(i_sector, row, scintSector);
         }
         else {
           // FIXME: add even if calSector is 0
           // need an entry per pindex
           // can happen that particle not in FD
           // ie sector is 0
-          sectors.push_back(calSector);
+          resultBank.putInt(i_sector, row, calSector);
         }
       }
     }
 
-    // verify results have the same size as `particleBank`
-    assert((sectors.size() == static_cast<decltype(sectors)::size_type>(particleBank.getRows())));
-
-    return sectors;
+    ShowBank(resultBank, Logger::Header("CREATED BANK"));
   }
 
+  int SectorFinder::GetSector(hipo::bank const& bank, int const pindex) const
+  {
+    int sector = 0;
+    for(int row = 0; row < bank.getRows(); row++) {
+      if(bank.getInt("pindex", row) == pindex) {
+        return bank.getInt("sector", row);
+      }
+    }
+    return sector;
+  }
 
   void SectorFinder::Stop()
   {

@@ -2,7 +2,6 @@
 
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/algorithms/Validator.h"
-#include "iguana/algorithms/clas12/SectorFinder.h"
 
 #include <TCanvas.h>
 #include <TFile.h>
@@ -25,8 +24,7 @@ namespace iguana::clas12 {
     private:
 
       hipo::banklist::size_type b_particle;
-
-      std::unique_ptr<SectorFinder> m_sector_finder;
+      hipo::banklist::size_type b_sector;
 
       double const m_p_max       = 12.0;
       double const m_deltaP_max  = 1.0;

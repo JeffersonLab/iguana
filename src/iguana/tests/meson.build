@@ -18,10 +18,13 @@ if fs.is_file(get_option('test_data_file'))
   foreach name, info : algo_dict
     if info.has_key('test_args')
 
-      # get list of banks
-      bank_args = []
+      # get list of banks and prerequisite algorithms
+      extra_args = []
       foreach bank : info['test_args'].get('banks', [])
-        bank_args += ['-b', bank]
+        extra_args += ['-b', bank]
+      endforeach
+      foreach prerequisite : info['test_args'].get('prerequisites', [])
+        extra_args += ['-p', prerequisite]
       endforeach
 
       # test names cannot have colons
@@ -35,7 +38,7 @@ if fs.is_file(get_option('test_data_file'))
           '-f', get_option('test_data_file'),
           '-n', get_option('test_num_events'),
           '-a', name,
-        ] + bank_args
+        ] + extra_args
         test(
           'algorithm-' + test_name_algo,
           test_exe,
