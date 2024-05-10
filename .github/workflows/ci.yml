@@ -340,7 +340,7 @@ jobs:
       - run: iguana-example-03-config-files iguana/etc/iguana/examples
         if: ${{ matrix.id == 'cpp' }}
       ###### python
-      - run: iguana-example-02-hipopy.py test_data.hipo ${{ env.num_events }}
+      - run: python iguana-example-02-hipopy.py test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'python' }}
       ###### fortran
       - run: iguana-example-fortran test_data.hipo ${{ env.num_events }}
