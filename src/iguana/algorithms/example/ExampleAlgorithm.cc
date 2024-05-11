@@ -79,7 +79,7 @@ namespace iguana::example {
     // # - do NOT use `getRows()`, since that will loop over ALL bank rows; instead,
     // #   use `getRowList()`, which will take into consideration upstream filtering algorithms
     // ############################################################################
-    particleBank.getMutableRowList().filter([&](auto bank, auto row) {                              // FIXME FIXME FIXME: avoid capturing '&'
+    particleBank.getMutableRowList().filter([this, &particleBank](auto bank, auto row) {
       // ############################################################################
       // # get the `pid` and feed it to the `Filter` action function; if the row
       // # is not acceptable, mask it out

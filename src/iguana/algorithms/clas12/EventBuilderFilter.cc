@@ -26,7 +26,7 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // filter the input bank for requested PDG code(s)
-    particleBank.getMutableRowList().filter([&](auto bank, auto row) { // FIXME FIXME FIXME: avoid capturing '&'
+    particleBank.getMutableRowList().filter([this](auto bank, auto row) {
         auto pid    = bank.getInt("pid", row);
         auto accept = Filter(pid);
         m_log->Debug("input PID {} -- accept = {}", pid, accept);
