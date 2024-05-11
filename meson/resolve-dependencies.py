@@ -45,7 +45,10 @@ def use_pkg_config(dep, pc_file, arg):
         pc_path = ''
         for root, dirs, files in os.walk(prefix):
             if pc_file in files:
-                pc_path = root
+                # be sure to choose the INSTALLED .pc file; FIXME: may not work for all dependencies, but so far this is okay
+                if root.split('/')[-1] == 'pkgconfig':
+                    pc_path = root
+                    break
         if pc_path == '':
             print(f'ERROR: cannot find "{pc_file}" in any subdirectory of {arg}', file=sys.stderr)
             exit(1)
