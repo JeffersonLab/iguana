@@ -11,7 +11,7 @@ namespace iguana::clas12 {
   void FTEnergyCorrection::Run(hipo::banklist& banks) const {
     auto& ftParticleBank = GetBank(banks, b_ft_particle, "RECFT::Particle");
     ShowBank(ftParticleBank, Logger::Header("INPUT FT PARTICLES"));
-    for(int row = 0; row < ftParticleBank.getRows(); row++) {
+    for(auto const& row : ftParticleBank.getRowList()) {
       if(ftParticleBank.getInt("pid", row) == particle::PDG::electron) {
         auto px = ftParticleBank.getFloat("px", row);
         auto py = ftParticleBank.getFloat("py", row);
