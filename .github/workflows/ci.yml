@@ -312,6 +312,16 @@ jobs:
           else
             meson test --print-errorlogs
           fi
+      ### run benchmarks
+      - name: benchmark algorithms
+        if: ${{ matrix.id == 'coverage' }} # use the coverage job's GITHUB_STEP_SUMMARY
+        run: |
+          meson test --benchmark -C iguana_build | tee benchmark.txt
+          echo '### Benchmark' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep 'benchmark-algorithm' benchmark.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
       ### coverage
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
