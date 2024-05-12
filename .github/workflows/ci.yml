@@ -354,6 +354,8 @@ jobs:
         if: ${{ matrix.id == 'python' }}
       - run: iguana-example-01-bank-rows.py test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'python' }}
+      - run: iguana-example-02-hipopy.py test_data.hipo ${{ env.num_events }}
+        if: ${{ matrix.id == 'python' }}
       ###### fortran
       - run: iguana-example-fortran test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'fortran' }}
