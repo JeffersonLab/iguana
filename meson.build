@@ -194,7 +194,7 @@ if get_option('install_examples')
   subdir('examples')
 endif
 
-# install environment setup file
+# install environment setup files
 configure_file(
   input:         'meson' / 'this_iguana.sh.in',
   output:        'this_iguana.sh',
@@ -205,6 +205,13 @@ configure_file(
     'python':  get_option('bind_python') ? 'true' : 'false',
     'libdir':  get_option('libdir'),
   },
+)
+configure_file(
+  input:         'meson' / 'this_iguana.tcsh.in',
+  output:        'this_iguana.tcsh',
+  install:       get_option('z_install_envfile'),
+  install_dir:   get_option('bindir'),
+  configuration: {},
 )
 
 # generate modulefile
