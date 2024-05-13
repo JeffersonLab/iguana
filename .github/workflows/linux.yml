@@ -31,7 +31,8 @@ jobs:
             "undefined-sanitizer",
             "leak-sanitizer",
             "noROOT",
-            "python"
+            "python",
+            "fortran"
           ],
           "include": [
             { "id": "cpp",                 "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Dz_require_root=true"  },

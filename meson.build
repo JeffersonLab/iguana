@@ -1,6 +1,6 @@
 project(
   'iguana',
-  'cpp', 'fortran',
+  'cpp',
   license: ['LGPLv3'],
   license_files: ['LICENSE'],
   meson_version: '>=1.2',
@@ -18,6 +18,9 @@ project(
   ).stdout().strip()
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
+
+# initialize binding languanges
+add_languages('fortran', native: false, required: get_option('bind_fortran'))
 
 # meson modules
 pkg = import('pkgconfig')
@@ -38,7 +41,7 @@ yamlcpp_dep = dependency(
 hipo_dep = dependency(
   'hipo4',
   method:  'pkg-config',
-  version: '>=4.0.1',
+  version: '>=4.1.0',
 )
 ROOT_dep = dependency(
   'ROOT',
@@ -189,12 +192,18 @@ if get_option('bind_fortran')
 endif
 
 # generate pkg-config file
+project_pkg_vars_nonempty = []
+foreach var : project_pkg_vars
+  if not var.endswith('=') # remove empty variable values
+    project_pkg_vars_nonempty += var
+  endif
+endforeach
 pkg.generate(
   name:        meson.project_name(),
   description: project_description,
   libraries:   project_libs,
   requires:    [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
-  variables:   project_pkg_vars,
+  variables:   project_pkg_vars_nonempty,
 )
 
 # build examples
