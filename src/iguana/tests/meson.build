@@ -61,7 +61,7 @@ if fs.is_file(get_option('test_data_file'))
           test_args = [
             'validator',
             '-f', get_option('test_data_file'),
-            '-n', get_option('test_num_events'),
+            '-n', '0',
             '-a', name + 'Validator',
           ]
           if get_option('test_output_dir') != ''
