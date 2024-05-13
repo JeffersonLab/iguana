@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # `source` this file to set environment variables relevant for this `iguana` installation
 
 # parse arguments
