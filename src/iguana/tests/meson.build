@@ -30,20 +30,26 @@ if fs.is_file(get_option('test_data_file'))
       # test names cannot have colons
       test_name_algo = name.replace('::', '-')
 
-      # test algorithm
+      # test and benchmark algorithm
       algo_needs_ROOT = info.get('algorithm').get('needs_ROOT', false)
       if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
         test_args = [
           'algorithm',
           '-f', get_option('test_data_file'),
-          '-n', get_option('test_num_events'),
           '-a', name,
         ] + extra_args
         test(
           'algorithm-' + test_name_algo,
           test_exe,
-          args: test_args,
+          args: test_args + [ '-n', get_option('test_num_events') ],
           env: project_test_env,
+        )
+        benchmark(
+          'benchmark-algorithm-' + test_name_algo,
+          test_exe,
+          args: test_args + [ '-n', '0' ], # test all the events
+          env: project_test_env,
+          timeout: 120,
         )
       endif
 
