@@ -22,6 +22,7 @@ banks  = reader.getBanks([
 
 seq = iguana.AlgorithmSequence('pyiguana')
 seq.Add('clas12::EventBuilderFilter')
+seq.Add('clas12::SectorFinder')
 seq.Add('clas12::MomentumCorrection')
 seq.PrintSequence()
 
