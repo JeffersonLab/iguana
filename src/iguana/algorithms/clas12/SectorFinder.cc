@@ -38,15 +38,15 @@ namespace iguana::clas12 {
 
     // sync new bank with particle bank, and fill it with zeroes
     resultBank.setRows(particleBank.getRows());
-    //resultBank.getMutableRowList().setList(particleBank.getRowList()); // FIXME: need hipo::rowlist (replaces `.getRows()` style)
+    resultBank.getMutableRowList().setList(particleBank.getRowList());
     for(int row = 0; row < resultBank.getRows(); row++)
       resultBank.putInt(i_sector, row, 0);
 
     // filter the input bank for requested PDG code(s)
     if(userSpecifiedBank) { // if user specified a specific bank
       auto const& userBank = GetBank(banks, b_user);
-      for(int row = 0; row < particleBank.getRows(); row++) {
-        if(userBank.getRows() > 0) {
+      for(auto const& row : particleBank.getRowList()) {
+        if(userBank.getRowList().size() > 0) {
           resultBank.putInt(i_sector, row, GetSector(userBank, row));
         }
       }
@@ -55,19 +55,19 @@ namespace iguana::clas12 {
       auto const& calBank   = GetBank(banks, b_calorimeter);
       auto const& scintBank = GetBank(banks, b_scint);
       auto const& trackBank = GetBank(banks, b_track);
-      for(int row = 0; row < particleBank.getRows(); row++) {
+      for(auto const& row : particleBank.getRowList()) {
         int trackSector = 0;
-        if(trackBank.getRows() > 0) {
+        if(trackBank.getRowList().size() > 0) {
           trackSector = GetSector(trackBank, row);
         }
 
         int scintSector = 0;
-        if(scintBank.getRows() > 0) {
+        if(scintBank.getRowList().size() > 0) {
           scintSector = GetSector(scintBank, row);
         }
 
         int calSector = 0;
-        if(calBank.getRows() > 0) {
+        if(calBank.getRowList().size() > 0) {
           calSector = GetSector(calBank, row);
         }
 
@@ -93,7 +93,7 @@ namespace iguana::clas12 {
   int SectorFinder::GetSector(hipo::bank const& bank, int const pindex) const
   {
     int sector = 0;
-    for(int row = 0; row < bank.getRows(); row++) {
+    for(auto const& row : bank.getRowList()) {
       if(bank.getInt("pindex", row) == pindex) {
         return bank.getInt("sector", row);
       }

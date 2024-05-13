@@ -58,7 +58,7 @@ int main(int argc, char** argv)
     particleBank.show();
 
     // loop over bank rows
-    for(int row = 0; row < particleBank.getRows(); row++) {
+    for(auto const& row : particleBank.getRowList()) {
 
       // check the PID with EventBuilderFilter
       auto pid = particleBank.getInt("pid", row);

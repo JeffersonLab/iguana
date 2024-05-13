@@ -211,15 +211,6 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Algorithm::MaskRow(hipo::bank& bank, int const row) const
-  {
-    // TODO: need https://github.com/gavalian/hipo/issues/35
-    // until then, just set the PID to -1
-    bank.putInt("pid", row, -1);
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-
   hipo::schema Algorithm::CreateBank(
       hipo::banklist& banks,
       hipo::banklist::size_type& bank_idx,

@@ -22,7 +22,7 @@ namespace iguana::clas12 {
 
     auto torus   = configBank.getFloat("torus", 0);
 
-    for(int row = 0; row < particleBank.getRows(); row++) {
+    for(auto const& row : particleBank.getRowList()) {
 
       auto [px, py, pz] = Transform(
           particleBank.getFloat("px", row),
