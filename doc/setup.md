@@ -150,10 +150,9 @@ The C++ Iguana implementation does not require the use of any environment variab
 You may set your own environment variables, but for a quick start with suggested settings,
 the installed files `bin/this_iguana.sh` and `bin/this_iguana.tcsh` may be used as
 ```
-source bin/this_iguana.sh    # for 'bash' and 'zsh' only
-source bin/this_iguana.tcsh  # for 'tcsh' only
+source bin/this_iguana.sh    # for 'bash' and 'zsh' only; use the --help argument to see more usage options
+source bin/this_iguana.tcsh  # for 'tcsh' only; has no --help option and spawns a 'tcsh' sub-shell
 ```
-Use the `--help` argument to see its full usage guide.
 
 The following environment variables are set or modified:
 
