@@ -275,6 +275,11 @@ jobs:
       ### build
       - name: meson setup
         run: |
+          if [ "${{ matrix.id }}" = "cpp" ]; then
+            validate_all="true" # 'cpp' job will upload validator artifacts, so use all statistics
+          else
+            validate_all="false"
+          fi
           meson setup iguana_build iguana_src           \
             --prefix=$(pwd)/iguana                      \
             --cmake-prefix-path=$(pwd)/root             \
@@ -283,6 +288,7 @@ jobs:
             -Dtest_data_file=$(pwd)/test_data.hipo      \
             -Dtest_num_events=${{ env.num_events }}     \
             -Dtest_output_dir=$(pwd)/validation_results \
+            -Dtest_validator_all_stats=${validate_all}  \
             ${{ matrix.opts }}
       - name: dump build options
         run: meson configure iguana_build --no-pager
