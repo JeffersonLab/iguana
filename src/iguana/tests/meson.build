@@ -61,7 +61,7 @@ if fs.is_file(get_option('test_data_file'))
           test_args = [
             'validator',
             '-f', get_option('test_data_file'),
-            '-n', get_option('test_num_events'),
+            '-n', get_option('test_validator_all_stats') ? '0' : get_option('test_num_events'),
             '-a', name + 'Validator',
           ]
           if get_option('test_output_dir') != ''
@@ -74,6 +74,7 @@ if fs.is_file(get_option('test_data_file'))
             test_exe,
             args: test_args,
             env: project_test_env,
+            timeout: get_option('test_validator_all_stats') ? 0 : 120,
           )
         endif
       endif
