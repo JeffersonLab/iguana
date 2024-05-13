@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # generate a template algorithm from the example algorithm
 
 set -e

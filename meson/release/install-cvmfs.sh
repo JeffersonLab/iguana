@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # automation for deploying new releases
 # this script is for maintainers, not users; users should
