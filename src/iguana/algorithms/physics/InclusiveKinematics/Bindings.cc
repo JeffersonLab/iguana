@@ -1,5 +1,5 @@
-#include "InclusiveKinematics.h"
-#include "iguana/algorithms/AlgorithmBindings.h"
+#include "Algorithm.h"
+#include "iguana/algorithms/Bindings.h"
 
 namespace iguana::bindings::physics {
   extern "C" {

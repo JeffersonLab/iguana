@@ -17,7 +17,7 @@
 /// @end_doc_example
 
 #include <hipo4/RHipoDS.hxx>
-#include <iguana/algorithms/clas12/EventBuilderFilter.h>
+#include <iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h>
 
 #include <TApplication.h>
 #include <TCanvas.h>

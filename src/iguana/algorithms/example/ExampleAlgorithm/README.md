@@ -1,9 +1,9 @@
 # Example Algorithm Template
 
 This directory includes a fully documented, simple example algorithm:
-- [`ExampleAlgorithm.h`](ExampleAlgorithm.h)
-- [`ExampleAlgorithm.cc`](ExampleAlgorithm.cc)
-- [`ExampleAlgorithm.yaml`](ExampleAlgorithm.yaml)
+- [`Algorithm.h`](Algorithm.h)
+- [`Algorithm.cc`](Algorithm.cc)
+- [`Config.yaml`](Config.yaml)
 
 In this code, the following comment styles are used:
 - `// #`: this is a comment which describes in detail what each line of the code does; you probably

@@ -32,9 +32,9 @@ exName=ExampleAlgorithm
 
 mkdir -p $installDir
 
-for ext in h cc yaml; do
-  outFile=$installDir/$algo.$ext
-  cat $thisDir/$exName.$ext |\
+for file in Algorithm.h Algorithm.cc Config.yaml; do
+  outFile=$installDir/$file
+  cat $thisDir/$file |\
     sed "s;$exName;$algo;g" |\
     sed "s;example::;$namespace::;g" |\
     sed "s;::example;::$namespace;g" |\

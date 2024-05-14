@@ -13,8 +13,8 @@
 /// ```
 /// @end_doc_example
 #include <hipo4/reader.h>
-#include <iguana/algorithms/clas12/EventBuilderFilter.h>
-#include <iguana/algorithms/clas12/MomentumCorrection.h>
+#include <iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h>
+#include <iguana/algorithms/clas12/MomentumCorrection/Algorithm.h>
 
 /// main function
 int main(int argc, char** argv)

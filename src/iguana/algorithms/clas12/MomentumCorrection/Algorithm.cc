@@ -1,4 +1,4 @@
-#include "MomentumCorrection.h"
+#include "Algorithm.h"
 #include <cmath>
 
 namespace iguana::clas12 {
