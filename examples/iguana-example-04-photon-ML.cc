@@ -48,16 +48,19 @@ int main(int argc, char** argv)
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::PhotonGBTFilter"); // filter out badly reconstructed photons with machine learning
-
+    
+  // set log levels
+  seq.SetOption("clas12::PhotonGBTFilter", "log", "trace"); // trace is the most verbose
+    
   // start the algorithms
   seq.Start(banks);
 
   // run the algorithm sequence on each event
   int iEvent = 0;
   while(reader.next(banks) && (numEvents == 0 || iEvent++ < numEvents)) {
-    prettyPrint("BEFORE", banks.at(b_particle));
+    // prettyPrint("BEFORE", banks.at(b_particle));
     seq.Run(banks);
-    prettyPrint("AFTER", banks.at(b_particle));
+    // prettyPrint("AFTER", banks.at(b_particle));
   }
 
   // stop algorithms
