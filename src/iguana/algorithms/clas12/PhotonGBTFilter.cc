@@ -8,10 +8,9 @@ namespace iguana::clas12 {
   void PhotonGBTFilter::Start(hipo::banklist& banks)
   {
     ParseYAMLConfig();
-    o_exampleInt    = GetOptionScalar<int>("exampleInt");
-    o_exampleDouble = GetOptionScalar<double>("exampleDouble");
     b_particle = GetBankIndex(banks, "REC::Particle");
-    // CreateBank(.....); // use this to create a new bank
+    b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
+    b_config = GetBankIndex(banks, "RUN::config");
   }
 
 

@@ -37,13 +37,11 @@ namespace iguana::clas12 {
 
     private:
 
-      /// `hipo::banklist` index for the particle bank (as an example)
+      /// `hipo::banklist` 
       hipo::banklist::size_type b_particle;
-
-      /// Example integer configuration option
-      int o_exampleInt;
-      /// Example double configuration option
-      double o_exampleDouble;
+      hipo::banklist::size_type b_calorimeter;
+      hipo::banklist::size_type b_config; // RUN::config
+      
   };
 
 }

@@ -109,7 +109,7 @@ algo_dict = {
       'headers': [ 'clas12/PhotonGBTFilter.h' ],
     },
     'configs':   [ 'clas12/PhotonGBTFilter.yaml' ],
-    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'REC::Track'] },
+    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'RUN::config'] },
   },
 }
 
