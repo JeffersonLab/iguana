@@ -103,6 +103,14 @@ algo_dict = {
     'configs': [ 'physics/InclusiveKinematics.yaml' ],
     'test_args': { 'banks': ['REC::Particle'] },
   },
+  'clas12::PhotonGBTFilter': {
+    'algorithm': {
+      'sources': [ 'clas12/PhotonGBTFilter.cc' ],
+      'headers': [ 'clas12/PhotonGBTFilter.h' ],
+    },
+    'configs':   [ 'clas12/PhotonGBTFilter.yaml' ],
+    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'REC::Track'] },
+  },
 }
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
