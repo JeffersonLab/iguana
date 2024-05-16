@@ -29,15 +29,8 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// **Action function**: checks if the PDG `pid` is positive;
-      /// this is an example action function, please replace it with your own
-      /// @param pid the particle PDG to check
-      /// @returns `true` if `pid` is positive
-      bool Filter(int const pid) const;
-
-
       /// Struct to store calorimeter particle data
-      struct calo_particle_data {
+      struct calo_row_data {
         double pcal_x = 0;
         double pcal_y = 0;
         double pcal_z = 0;
@@ -52,11 +45,25 @@ namespace iguana::clas12 {
         double pcal_m2v = 0;
       };
       
+      /// **Action function**: Classifies the photon for a given event as signal or background
+      /// @param particleBank the REC::Particle hipo bank
+      /// @param caloBank the REC::Calorimeter hipo bank
+      /// @param calo_map the std::map<> of calorimeter data for the event, indexed by pindex
+      /// @param row the row corresponding to the photon being classified
+      /// @returns `true` if the photon is to be considered signal, otherwise `false`
+      bool ClassifyPhoton(hipo::bank const &particleBank, hipo::bank const &caloBank, std::map<int, calo_row_data> calo_map, int const row) const;
+          
+          
       /// **Method**: Gets calorimeter data for particles in the event
       /// @param bank the bank to get data from
-      /// @returns a map with keys as particle indices (pindex) and values as calo_particle_data structs
-      std::map<int, calo_particle_data> GetCaloData(hipo::bank const &bank) const;
-
+      /// @returns a map with keys as particle indices (pindex) and values as calo_row_data structs
+      std::map<int, calo_row_data> GetCaloMap(hipo::bank const &bank) const;
+      
+      /// **Method**: Gets the mass of a particle given its PID
+      /// @param pid the particle ID to get the mass for
+      /// @returns the mass of the particle in GeV; returns 0.0 if the PID is not recognized
+      double GetMass(int pid) const;
+      
     private:
 
       /// `hipo::banklist` 
@@ -64,6 +71,22 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_calorimeter;
       hipo::banklist::size_type b_config; // RUN::config
       
+      const std::unordered_map<int, double> mass_map = {
+          {11, 0.000511},    // electron
+          {-11, 0.000511},   // positron
+          {2212, 0.938272},  // proton
+          {-2212, 0.938272}, // antiproton
+          {2112, 0.939565},  // neutron
+          {-2112, 0.939565}, // antineutron
+          {211, 0.139570},   // pi+
+          {-211, 0.139570},  // pi-
+          {321, 0.493677},   // K+
+          {-321, 0.493677},  // K-
+          {13, 0.105658},    // mu+
+          {-13, 0.105658},   // mu-
+          {310, 0.497611},   // K short
+          {130, 0.497611}    // K long
+      };
       
   };
 
