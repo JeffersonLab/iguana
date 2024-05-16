@@ -1,8 +1,8 @@
-#!/usr/bin/env tcsh
+#!/usr/bin/env @shell@
 set user_command = ($_)
-set IGUANA_TCSH_ENV_FILE=`readlink -f $user_command[2]`
+set IGUANA_CSH_ENV_FILE=`readlink -f $user_command[2]`
 unset user_command
-echo 'Creating `tcsh` sub-shell for iguana environment.'
+echo 'Creating `@shell@` sub-shell for iguana environment.'
 echo ''
 echo 'NOTE: using iguana with this sub-shell is not well-tested; please report'
 echo '      any problems or consider using `bash` or `zsh` and sourcing'
@@ -13,6 +13,6 @@ echo '      should be set to enable merging, e.g. in your `~/.cshrc` file:'
 echo '        set history=10000'
 echo '        set savehist=(10000 merge)'
 echo ''
-bash -c "source `dirname $IGUANA_TCSH_ENV_FILE`/this_iguana.sh && exec tcsh"
-echo 'Exited iguana `tcsh` sub-shell.'
-unset IGUANA_TCSH_ENV_FILE
+bash -c "source `dirname $IGUANA_CSH_ENV_FILE`/this_iguana.sh && exec @shell@"
+echo 'Exited iguana `@shell@` sub-shell.'
+unset IGUANA_CSH_ENV_FILE

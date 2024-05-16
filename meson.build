@@ -199,6 +199,7 @@ if get_option('z_install_envfile')
   configure_file(
     input:         'meson' / 'this_iguana.sh.in',
     output:        'this_iguana.sh',
+    install:       true,
     install_dir:   get_option('bindir'),
     configuration: {
       'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
@@ -206,11 +207,15 @@ if get_option('z_install_envfile')
       'libdir':  get_option('libdir'),
     },
   )
-  install_data(
-    'meson' / 'this_iguana.tcsh.in',
-    rename:      'this_iguana.tcsh',
-    install_dir: get_option('bindir'),
-  )
+  foreach shell : ['csh', 'tcsh']
+    configure_file(
+      input:         'meson' / 'this_iguana.csh.in',
+      output:        'this_iguana.' + shell,
+      install:       true,
+      install_dir:   get_option('bindir'),
+      configuration: {'shell': shell},
+    )
+  endforeach
 endif
 
 # generate modulefile
