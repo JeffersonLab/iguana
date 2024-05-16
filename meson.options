@@ -13,6 +13,4 @@ option('test_validator_all_stats', type: 'boolean', value: false, description: '
 
 # expert options: the defaults should be reasonable for a local installation; different values may be preferred for installation in common areas
 option('z_install_envfile',     type: 'boolean', value: true,  description: 'Install a sourceable environment variable file')
-option('z_generate_modulefile', type: 'boolean', value: false, description: 'Generate an Environment Modules modulefile')
-option('z_module_tag',          type: 'string',  value: '',    description: 'Tag for modulefile. If unspecified, use the version number')
 option('z_require_root',        type: 'boolean', value: false, description: 'Fail if ROOT is not found')

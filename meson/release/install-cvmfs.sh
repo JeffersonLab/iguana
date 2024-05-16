@@ -74,7 +74,6 @@ msg "meson setup"
 meson setup $buildDir $sourceDir \
   --native-file=$nativeFile      \
   --prefix=$installDir           \
-  -Dz_module_tag=$tag            \
   -Dtest_data_file=$testFile
 msg "meson install"
 meson install -C $buildDir
@@ -84,8 +83,6 @@ meson test -C $buildDir
 msg "Done installation"
 echo """
   prefix:      $installDir
-
-  moduleFile:  $buildDir/$tag
 """
 msg "Next steps:"
 echo """
@@ -93,6 +90,6 @@ echo """
   - bash: export LD_LIBRARY_PATH=$installDir/lib:\$LD_LIBRARY_PATH
   - tcsh: setenv LD_LIBRARY_PATH $installDir/lib:\$LD_LIBRARY_PATH
 - [ ] try running installed binaries: $installDir/bin/
-- [ ] copy the module file to the correct location
+- [ ] update clas12-env
 - [ ] module switch iguana/$tag
 """
