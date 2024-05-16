@@ -2,7 +2,7 @@
 #include <iguana/algorithms/clas12/ZVertexFilter/Algorithm.h>
 
 /// @begin_doc_example
-/// @file iguana-example-03-config-files.cc
+/// @file iguana-example-config-files.cc
 /// @brief Example showing how to control algorithm configuration.
 ///
 /// Examples include:
@@ -12,7 +12,7 @@
 ///
 /// @par Usage
 /// ```bash
-/// iguana-example-03-config-files [CONFIG_FILE_DIRECTORY]
+/// iguana-example-config-files [CONFIG_FILE_DIRECTORY]
 ///
 ///   CONFIG_FILE_DIRECTORY    a custom directory with config files
 ///                            (default = an example directory)
