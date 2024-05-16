@@ -50,7 +50,7 @@ algo_dict += [
   },
   {
     'name': 'clas12::SectorFinder',
-    'has_c_binding': false,
+    'has_c_bindings': false,
     'has_validator': false,
     'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator'] },
   },
@@ -110,7 +110,7 @@ foreach algo : algo_dict
     if(get_option('bind_fortran') and algo_has_c_bindings)
       algo_sources += algo_dir / 'Bindings.cc'
     else
-      warning('Algorithm "' + algo_name + '" has no C or Fortran bindings')
+      warning('Algorithm "' + algo_name + '" has no Fortran bindings')
     endif
 
     # config files
