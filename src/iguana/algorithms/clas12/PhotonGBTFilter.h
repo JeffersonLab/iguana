@@ -33,18 +33,18 @@ namespace iguana::clas12 {
 
       /// Struct to store calorimeter particle data
       struct calo_row_data {
-        double pcal_x = 0;
-        double pcal_y = 0;
-        double pcal_z = 0;
-        double ecin_x = 0;
-        double ecin_y = 0;
-        double ecin_z = 0;
-        double ecout_x = 0;
-        double ecout_y = 0;
-        double ecout_z = 0;
-        double pcal_e = 0;
-        double pcal_m2u = 0;
-        double pcal_m2v = 0;
+        double pcal_x = -999;
+        double pcal_y = -999;
+        double pcal_z = -999;
+        double ecin_x = -999;
+        double ecin_y = -999;
+        double ecin_z = -999;
+        double ecout_x = -999;
+        double ecout_y = -999;
+        double ecout_z = -999;
+        double pcal_e = -999;
+        double pcal_m2u = -999;
+        double pcal_m2v = -999;
       };
       
       /// **Action function**: Classifies the photon for a given event as signal or background

@@ -130,6 +130,7 @@ namespace iguana::clas12 {
           auto px = particleBank.getFloat("px",inner_row);
           auto py = particleBank.getFloat("py",inner_row);
           auto pz = particleBank.getFloat("pz",inner_row);
+          auto E  = sqrt(px*px+py*py+pz*pz+mass*mass);
           
           // Get 3-vector that points to the neighboring particle's location in the calorimeter
           ROOT::Math::XYZVector vPART = GetParticleCaloVector(calo_map, inner_row);
@@ -143,7 +144,85 @@ namespace iguana::clas12 {
           // 2 --> charged hadron
           // 3 --> neutral hadron
           int part_type = GetParticleType(pid);
-          std::cout << "The mass of the particle with PID " << pid << " is " << mass << " GeV/c^2" << std::endl;
+          
+          // Logic for filling nearest neighbor variables
+          if(part_type==0) {//photon
+              if (R < 0.1) num_photons_0_1++;
+              if (R < 0.2) num_photons_0_2++;
+              if (R < 0.35) num_photons_0_35++;
+              
+              for (int i=0; i<m_g; ++i) {
+                  if (R < R_gamma[i] || R_gamma[i] == 0) {
+                    int j = m_g - 1;
+                    while (j > i) {
+                        R_gamma[j] = R_gamma[j - 1];
+                        dE_gamma[j] = dE_gamma[j - 1];
+                        Epcal_gamma[j] = Epcal_gamma[j - 1];
+                        m2u_gamma[j] = m2u_gamma[j - 1];
+                        m2v_gamma[j] = m2v_gamma[j - 1];
+                        j--;
+                    }
+                    R_gamma[i] = R;
+                    dE_gamma[i] = gE - E;
+                    Epcal_gamma[i] = calo_map[inner_row].pcal_e;
+                    m2u_gamma[i] = calo_map[inner_row].pcal_m2u;
+                    m2v_gamma[i] = calo_map[inner_row].pcal_m2v;
+                    break;
+                  }
+              }
+          }
+          else if(part_type==1){//electron
+              if(R<R_e || R_e==0){
+                  R_e = R;
+                  dE_e = gE - E;
+              }
+          }
+          else if(part_type==2){//charged hadron
+              for (int i=0; i<m_ch; ++i) {
+                  if (R < R_ch[i] || R_ch[i] == 0) {
+                    int j = m_ch - 1;
+                    while (j > i) {
+                        R_ch[j] = R_ch[j - 1];
+                        dE_ch[j] = dE_ch[j - 1];
+                        Epcal_ch[j] = Epcal_ch[j - 1];
+                        m2u_ch[j] = m2u_ch[j - 1];
+                        m2v_ch[j] = m2v_ch[j - 1];
+                        j--;
+                    }
+                    R_ch[i] = R;
+                    dE_ch[i] = gE- E;
+                    Epcal_ch[i] = calo_map[inner_row].pcal_e;
+                    m2u_ch[i] = calo_map[inner_row].pcal_m2u;
+                    m2v_ch[i] = calo_map[inner_row].pcal_m2v;
+                    break;
+                  }
+                }
+          }
+          else if(part_type==3){//neutral hadron
+              for (int i=0; i<m_nh; ++i) {
+                  if (R < R_nh[i] || R_nh[i] == 0) {
+                    int j = m_nh - 1;
+                    while (j > i) {
+                        R_nh[j] = R_nh[j - 1];
+                        dE_nh[j] = dE_nh[j - 1];
+                        Epcal_nh[j] = Epcal_nh[j - 1];
+                        m2u_nh[j] = m2u_nh[j - 1];
+                        m2v_nh[j] = m2v_nh[j - 1];
+                        j--;
+                    }
+                    R_nh[i] = R;
+                    dE_nh[i] = gE - E;
+                    Epcal_nh[i] = calo_map[inner_row].pcal_e;
+                    m2u_nh[i] = calo_map[inner_row].pcal_m2u;
+                    m2v_nh[i] = calo_map[inner_row].pcal_m2v;
+                    break;
+                  }
+                }
+          }
+          else{//unrecognized OR uncompatible particle type for the trained model
+              continue;
+          }
+          
       }
       
       return true;
@@ -198,8 +277,8 @@ namespace iguana::clas12 {
       // Determine the 3-vector location of where the photon of interest's calo deposition is
       // First we check the pcal coords, then ecin, then ecout
       ROOT::Math::XYZVector v;
-      if (calo_map.at(row).pcal_x == 0) {
-          if (calo_map.at(row).ecin_x == 0) {
+      if (calo_map.at(row).pcal_x == -999) {
+          if (calo_map.at(row).ecin_x == -999) {
               v.SetXYZ(calo_map.at(row).ecout_x, calo_map.at(row).ecout_y, calo_map.at(row).ecout_z);
           } else {
               v.SetXYZ(calo_map.at(row).ecin_x, calo_map.at(row).ecin_y, calo_map.at(row).ecin_z);
