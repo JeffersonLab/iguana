@@ -195,24 +195,28 @@ if get_option('install_examples')
 endif
 
 # install environment setup files
-configure_file(
-  input:         'meson' / 'this_iguana.sh.in',
-  output:        'this_iguana.sh',
-  install:       get_option('z_install_envfile'),
-  install_dir:   get_option('bindir'),
-  configuration: {
-    'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
-    'python':  get_option('bind_python') ? 'true' : 'false',
-    'libdir':  get_option('libdir'),
-  },
-)
-configure_file(
-  input:         'meson' / 'this_iguana.tcsh.in',
-  output:        'this_iguana.tcsh',
-  install:       get_option('z_install_envfile'),
-  install_dir:   get_option('bindir'),
-  configuration: {},
-)
+if get_option('z_install_envfile')
+  configure_file(
+    input:         'meson' / 'this_iguana.sh.in',
+    output:        'this_iguana.sh',
+    install:       true,
+    install_dir:   get_option('bindir'),
+    configuration: {
+      'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
+      'python':  get_option('bind_python') ? 'true' : 'false',
+      'libdir':  get_option('libdir'),
+    },
+  )
+  foreach shell : ['csh', 'tcsh']
+    configure_file(
+      input:         'meson' / 'this_iguana.csh.in',
+      output:        'this_iguana.' + shell,
+      install:       true,
+      install_dir:   get_option('bindir'),
+      configuration: {'shell': shell},
+    )
+  endforeach
+endif
 
 # generate modulefile
 if(get_option('z_generate_modulefile'))
