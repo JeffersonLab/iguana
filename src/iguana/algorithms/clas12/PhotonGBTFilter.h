@@ -1,6 +1,8 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include <Math/Vector3D.h>
+#include <Math/VectorUtil.h>
 
 namespace iguana::clas12 {
 
@@ -59,10 +61,26 @@ namespace iguana::clas12 {
       /// @returns a map with keys as particle indices (pindex) and values as calo_row_data structs
       std::map<int, calo_row_data> GetCaloMap(hipo::bank const &bank) const;
       
+      
+      /// **Method**: Gets the calorimeter vector for a particle in the event
+      /// @param calo_map the map with keys as particle indices (pindex) and values as calo_row_data structs
+      /// @param row the row (particle index) to get the calorimeter data for
+      /// @returns a ROOT::Math::XYZVector with the coordinates of the particle in the calorimeter
+      ROOT::Math::XYZVector GetParticleCaloVector(std::map<int, calo_row_data> const &calo_map, int const row) const;
+      
+      
       /// **Method**: Gets the mass of a particle given its PID
       /// @param pid the particle ID to get the mass for
-      /// @returns the mass of the particle in GeV; returns 0.0 if the PID is not recognized
+      /// @returns the mass of the particle in GeV; returns -1.0 if the PID is not recognized
       double GetMass(int pid) const;
+      
+      
+      /// **Method**: Gets the type of a particle given its PID
+      /// @param pid the particle ID to get the type for
+      /// @returns an integer representing the type of the particle: 
+      /// 0 for electron, 1 for photon, 2 for charged hadron, 3 for neutral hadron; returns -1 if the PID is not recognized
+      int GetParticleType(int pid) const;
+      
       
     private:
 
@@ -73,7 +91,7 @@ namespace iguana::clas12 {
       
       const std::unordered_map<int, double> mass_map = {
           {11, 0.000511},    // electron
-          {-11, 0.000511},   // positron
+          {22, 0.0},         // photon
           {2212, 0.938272},  // proton
           {-2212, 0.938272}, // antiproton
           {2112, 0.939565},  // neutron
@@ -81,11 +99,21 @@ namespace iguana::clas12 {
           {211, 0.139570},   // pi+
           {-211, 0.139570},  // pi-
           {321, 0.493677},   // K+
-          {-321, 0.493677},  // K-
-          {13, 0.105658},    // mu+
-          {-13, 0.105658},   // mu-
-          {310, 0.497611},   // K short
-          {130, 0.497611}    // K long
+          {-321, 0.493677}  // K-
+      };
+      
+      
+      const std::unordered_map<int, int> type_map = {
+          {11, 0},  // electron
+          {22, 1},  // photon
+          {2212, 2}, // proton (charged hadron)
+          {-2212, 2}, // antiproton (charged hadron)
+          {211, 2},  // pi+ (charged hadron)
+          {-211, 2}, // pi- (charged hadron)
+          {321, 2},  // K+ (charged hadron)
+          {-321, 2}, // K- (charged hadron)
+          {2112, 3}, // neutron (neutral hadron)
+          {-2112, 3} // antineutron (neutral hadron)
       };
       
   };

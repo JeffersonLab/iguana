@@ -107,12 +107,42 @@ namespace iguana::clas12 {
       gPx = particleBank.getFloat("px",row);
       gPy = particleBank.getFloat("py",row);
       gPz = particleBank.getFloat("pz",row);
-      gE = sqrt(gPx*gPx+gPy*gPy+gPz*gPz);
       
+      // Set ML features intrinsic to the photon of interest
+      gE = sqrt(gPx*gPx+gPy*gPy+gPz*gPz);
+      gTheta = acos(gPz / gE);
+      gm2u = calo_map[row].pcal_m2u;
+      gm2v = calo_map[row].pcal_m2v;
+      
+      // Get 3-vector that points to the photon of interest's location in the calorimeter
+      ROOT::Math::XYZVector vPOI = GetParticleCaloVector(calo_map, row);
+      
+      // Build nearest neighbor event structure
       // Loop over particles in the event
       for(int inner_row = 0; inner_row < particleBank.getRows(); inner_row++) {
+          // Skip over the particle if it is photon we are trying to classify
+          if (inner_row == row) continue;
+          
           auto pid = particleBank.getInt("pid",inner_row);
           auto mass = GetMass(pid);
+          // Skip over particle if its mass was undefined
+          if (mass == -1.0) continue;
+          auto px = particleBank.getFloat("px",inner_row);
+          auto py = particleBank.getFloat("py",inner_row);
+          auto pz = particleBank.getFloat("pz",inner_row);
+          
+          // Get 3-vector that points to the neighboring particle's location in the calorimeter
+          ROOT::Math::XYZVector vPART = GetParticleCaloVector(calo_map, inner_row);
+          
+          // Get angular distance between photon of interest and particle
+          double R = ROOT::Math::VectorUtil::Angle(vPOI, vPART);
+          
+          // Get 'type' of particle for the neighbor
+          // 0 --> photon
+          // 1 --> electron
+          // 2 --> charged hadron
+          // 3 --> neutral hadron
+          int part_type = GetParticleType(pid);
           std::cout << "The mass of the particle with PID " << pid << " is " << mass << " GeV/c^2" << std::endl;
       }
       
@@ -162,14 +192,42 @@ namespace iguana::clas12 {
       }
       return calo_map;
   }
+
+  ROOT::Math::XYZVector PhotonGBTFilter::GetParticleCaloVector(std::map<int, calo_row_data> const &calo_map, int const row) const {
+      
+      // Determine the 3-vector location of where the photon of interest's calo deposition is
+      // First we check the pcal coords, then ecin, then ecout
+      ROOT::Math::XYZVector v;
+      if (calo_map.at(row).pcal_x == 0) {
+          if (calo_map.at(row).ecin_x == 0) {
+              v.SetXYZ(calo_map.at(row).ecout_x, calo_map.at(row).ecout_y, calo_map.at(row).ecout_z);
+          } else {
+              v.SetXYZ(calo_map.at(row).ecin_x, calo_map.at(row).ecin_y, calo_map.at(row).ecin_z);
+          }
+      } else {
+          v.SetXYZ(calo_map.at(row).pcal_x, calo_map.at(row).pcal_y, calo_map.at(row).pcal_z);
+      }
+
+      return v;
+  }
     
   double PhotonGBTFilter::GetMass(int pid) const {
       auto it = mass_map.find(pid);
       if (it != mass_map.end()) {
           return it->second;
       } else {
-          return 0.0; // Default mass if pid not found
+          return -1.0; // Default mass if pid not found
       }
+  }
+    
+
+  int PhotonGBTFilter::GetParticleType(int pid) const {
+    auto it = type_map.find(pid);
+    if (it != type_map.end()) {
+        return it->second;
+    } else {
+        return -1; // Default type if pid not found
+    }
   }
   void PhotonGBTFilter::Stop()
   {
