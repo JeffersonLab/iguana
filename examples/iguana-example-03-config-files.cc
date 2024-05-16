@@ -1,5 +1,5 @@
 #include <cassert>
-#include <iguana/algorithms/clas12/ZVertexFilter.h>
+#include <iguana/algorithms/clas12/ZVertexFilter/Algorithm.h>
 
 /// @begin_doc_example
 /// @file iguana-example-03-config-files.cc

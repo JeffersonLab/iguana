@@ -106,11 +106,13 @@ foreach algo : algo_dict
       algo_headers += algo_dir / src_file
     endforeach
 
-    # C bindings
-    if(get_option('bind_fortran') and algo_has_c_bindings)
-      algo_sources += algo_dir / 'Bindings.cc'
-    else
-      warning('Algorithm "' + algo_name + '" has no Fortran bindings')
+    # C/Fortran bindings
+    if get_option('bind_fortran')
+      if algo_has_c_bindings
+        algo_sources += algo_dir / 'Bindings.cc'
+      else
+        warning('Algorithm "' + algo_name + '" has no Fortran bindings')
+      endif
     endif
 
     # config files
