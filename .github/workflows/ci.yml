@@ -275,6 +275,11 @@ jobs:
       ### build
       - name: meson setup
         run: |
+          if [ "${{ matrix.id }}" = "cpp" ]; then
+            validate_all="true" # 'cpp' job will upload validator artifacts, so use all statistics
+          else
+            validate_all="false"
+          fi
           meson setup iguana_build iguana_src           \
             --prefix=$(pwd)/iguana                      \
             --cmake-prefix-path=$(pwd)/root             \
@@ -283,6 +288,7 @@ jobs:
             -Dtest_data_file=$(pwd)/test_data.hipo      \
             -Dtest_num_events=${{ env.num_events }}     \
             -Dtest_output_dir=$(pwd)/validation_results \
+            -Dtest_validator_all_stats=${validate_all}  \
             ${{ matrix.opts }}
       - name: dump build options
         run: meson configure iguana_build --no-pager
@@ -312,6 +318,16 @@ jobs:
           else
             meson test --print-errorlogs
           fi
+      ### run benchmarks
+      - name: benchmark algorithms
+        if: ${{ matrix.id == 'coverage' }} # use the coverage job's GITHUB_STEP_SUMMARY
+        run: |
+          meson test --benchmark -C iguana_build | tee benchmark.txt
+          echo '### Benchmark' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep 'benchmark-algorithm' benchmark.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
       ### coverage
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
@@ -343,6 +359,8 @@ jobs:
       - run: iguana-example-00-basic.py test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'python' }}
       - run: iguana-example-01-bank-rows.py test_data.hipo ${{ env.num_events }}
+        if: ${{ matrix.id == 'python' }}
+      - run: iguana-example-02-hipopy.py test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'python' }}
       ###### fortran
       - run: iguana-example-fortran test_data.hipo ${{ env.num_events }}

@@ -59,11 +59,11 @@ namespace iguana::physics {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& result_bank   = GetBank(banks, b_result, "physics::InclusiveKinematics");
 
-    if(result_bank.getRows() == 0) {
+    if(result_bank.getRowList().size() == 0) {
       m_log->Debug("skip this event, since it has no inclusive kinematics results");
       return;
     }
-    if(result_bank.getRows() > 1) {
+    if(result_bank.getRowList().size() > 1) {
       m_log->Warn("found event with more than 1 inclusive kinematics bank rows; only the first row will be used");
     }
 

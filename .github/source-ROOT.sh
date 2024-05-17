@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # source ROOT environment for CI
 set -e
 set -u

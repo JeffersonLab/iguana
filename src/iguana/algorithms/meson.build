@@ -16,7 +16,10 @@
 #       'needs_ROOT':   BOOLEAN,  # whether this validator needs ROOT or not (default=false)
 #     },
 #     'configs':        LIST_OF_ALGORITHM_CONFIG_FILES,
-#     'test_args':      DICTIONARY_FOR_TESTING_ARGS,  # if excluded, tests won't run for this algorithm
+#     'test_args': {    DICTIONARY_FOR_TESTING_ARGS,  # if excluded, tests won't run for this algorithm
+#       'banks':          LIST_OF_BANKS # only those that are needed to test this algorithm
+#       'prerequisites':  LIST_OF_PREREQUISITE_ALGORITHMS # those that are required to `Run` before this one
+#     },
 #   }
 #
 algo_dict = {
@@ -86,7 +89,10 @@ algo_dict = {
       'headers': [ 'clas12/MomentumCorrectionValidator.h' ],
       'needs_ROOT': true,
     },
-    'test_args': { 'banks': ['RUN::config', 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator'] },
+    'test_args': {
+      'banks': ['RUN::config', 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator'],
+      'prerequisites': ['clas12::SectorFinder'],
+    },
   },
   'physics::InclusiveKinematics': {
     'algorithm': {
