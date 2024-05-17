@@ -49,8 +49,12 @@ int main(int argc, char** argv)
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::PhotonGBTFilter"); // filter out badly reconstructed photons with machine learning
     
-  // set log levels
-  seq.SetOption("clas12::PhotonGBTFilter", "log", "trace"); // trace is the most verbose
+  // Options for Photon ML
+  //std::string log_level = "trace";
+  std::string log_level = "debug";
+  seq.SetOption("clas12::PhotonGBTFilter", "log", log_level);    // set log levels
+  seq.SetOption("clas12::PhotonGBTFilter", "pass", 2);         // Use specific 'pass' cooking
+  seq.SetOption("clas12::PhotonGBTFilter", "threshold", 0.78); // Desired threshold for photon ML
     
   // start the algorithms
   seq.Start(banks);

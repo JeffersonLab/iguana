@@ -14,7 +14,7 @@ namespace iguana::clas12 {
     
     o_pass      = GetCachedOption<int>("pass").value_or(0);
     o_threshold = GetCachedOption<double>("threshold").value_or(0);
-      
+    
   }
 
 
@@ -330,7 +330,7 @@ namespace iguana::clas12 {
       
       double prediction = 1-1/(1+exp(-sigmoid_x));               // Calculate predictive value for "signal"
                                                                  // [0,1] --> Closer to 1 == Photon is Signal
-      std::cout << prediction << " , " << o_threshold << std::endl;
+
       return (prediction>o_threshold);
   }
   std::map<int, PhotonGBTFilter::calo_row_data> PhotonGBTFilter::GetCaloMap(hipo::bank const& bank) const
