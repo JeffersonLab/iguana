@@ -1,6 +1,10 @@
 #pragma once
 
+#include "iguana/algorithms/machine_learning/photon_gbt/RGA_inbending.cpp"
+#include "iguana/algorithms/machine_learning/photon_gbt/RGA_outbending.cpp"
+#include "iguana/algorithms/machine_learning/photon_gbt/RGC_Summer2022.cpp"
 #include "iguana/algorithms/Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 #include <Math/Vector3D.h>
 #include <Math/VectorUtil.h>
 
@@ -47,15 +51,36 @@ namespace iguana::clas12 {
         double pcal_m2v = -999;
       };
       
+      /// **Method**: Applies pid purity cuts to photons, compatible to how the GBT models are trained
+      /// @param E energy of the photon
+      /// @param Epcal energy the photon has deposited in the pre-shower calorimeter
+      /// @param theta lab angle of the photon with respect to the beam direction (radians)
+      /// @returns `true` if the photon passes the pid purity cuts, `false` otherwise
+      bool PidPurityPhotonFilter(float const E, float const Epcal, float const theta) const;
+      
+      
+      /// **Method**: Applies forward detector cut using REC::Particle Theta
+      /// @param theta lab angle of the particle with respect to the beam direction (radians)
+      /// @returns `true` if the particle's theta is within the forward detector coverage, `false` otherwise
+      bool ForwardDetectorFilter(float const theta) const;
+      
       /// **Action function**: Classifies the photon for a given event as signal or background
       /// @param particleBank the REC::Particle hipo bank
       /// @param caloBank the REC::Calorimeter hipo bank
       /// @param calo_map the std::map<> of calorimeter data for the event, indexed by pindex
       /// @param row the row corresponding to the photon being classified
+      /// @param runnum the current run number
       /// @returns `true` if the photon is to be considered signal, otherwise `false`
-      bool ClassifyPhoton(hipo::bank const &particleBank, hipo::bank const &caloBank, std::map<int, calo_row_data> calo_map, int const row) const;
-          
-          
+      bool Filter(hipo::bank const &particleBank, hipo::bank const &caloBank, std::map<int, calo_row_data> calo_map, int const row, int const runnum) const;
+      
+      
+      /// **Method**: Calls the appropriate CatBoost model for the given run group, classifying the photon of interest
+      /// @param input_data the input features of the model
+      /// @param runnum the run number associated to the event
+      /// @returns `true` if the 
+      bool ClassifyPhoton(std::vector<float> const &input_data, int const runnum) const;
+      
+      
       /// **Method**: Gets calorimeter data for particles in the event
       /// @param bank the bank to get data from
       /// @returns a map with keys as particle indices (pindex) and values as calo_row_data structs
@@ -89,21 +114,11 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_calorimeter;
       hipo::banklist::size_type b_config; // RUN::config
       
-      const std::unordered_map<int, double> mass_map = {
-          {11, 0.000511},    // electron
-          {22, 0.0},         // photon
-          {2212, 0.938272},  // proton
-          {-2212, 0.938272}, // antiproton
-          {2112, 0.939565},  // neutron
-          {-2112, 0.939565}, // antineutron
-          {211, 0.139570},   // pi+
-          {-211, 0.139570},  // pi-
-          {321, 0.493677},   // K+
-          {-321, 0.493677}  // K-
-      };
+      /// Threshold value for model predictions
+      float o_threshold = 0.78;
       
-      
-      const std::unordered_map<int, int> type_map = {
+      // Particle Type Map
+      const std::unordered_map<int, int> o_type_map = {
           {11, 0},  // electron
           {22, 1},  // photon
           {2212, 2}, // proton (charged hadron)
@@ -115,7 +130,7 @@ namespace iguana::clas12 {
           {2112, 3}, // neutron (neutral hadron)
           {-2112, 3} // antineutron (neutral hadron)
       };
-      
+
   };
 
 }
