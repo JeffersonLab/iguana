@@ -12,16 +12,14 @@ namespace iguana::clas12 {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::EventBuilderFilter");
+    m_algo_seq->Add("clas12::SectorFinder");
     m_algo_seq->Add("clas12::MomentumCorrection");
     m_algo_seq->SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", u_pdg_list);
     m_algo_seq->Start(banks);
 
-    // define the sector finder
-    m_sector_finder = std::make_unique<SectorFinder>();
-    m_sector_finder->Start(banks);
-
     // get bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
+    b_sector   = GetBankIndex(banks, "REC::Particle::Sector");
 
     // set an output file
     auto output_dir = GetOutputDirectory();
@@ -53,10 +51,10 @@ namespace iguana::clas12 {
   void MomentumCorrectionValidator::Run(hipo::banklist& banks) const
   {
     // get the momenta before
-    // FIXME: will need to refactor this once we have HIPO iterators
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
+    auto& sector_bank   = GetBank(banks, b_sector, "REC::Particle::Sector");
     std::vector<double> p_measured;
-    for(int row = 0; row < particle_bank.getRows(); row++)
+    for(auto const& row : particle_bank.getRowList())
       p_measured.push_back(std::hypot(
           particle_bank.getFloat("px", row),
           particle_bank.getFloat("py", row),
@@ -65,19 +63,14 @@ namespace iguana::clas12 {
     // run the momentum corrections
     m_algo_seq->Run(banks);
 
-    // get the sectors
-    auto sectors = m_sector_finder->Find(banks);
-
     // lock the mutex, so we can mutate plots
     std::scoped_lock<std::mutex> lock(m_mutex);
 
     // fill the plots
-    for(int row = 0; row < particle_bank.getRows(); row++) {
+    for(auto const& row : particle_bank.getRowList()) {
 
       auto pdg    = particle_bank.getInt("pid", row);
-      auto sector = sectors.at(row);
-      if(pdg == -1)
-        continue; // FIXME: will need to refactor this once we have HIPO iterators
+      auto sector = sector_bank.getInt("sector", row);
 
       // skip central particle, or unknown sector
       if(sector == 0)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # create a new branch and commit changes from clang-format
 set -e
 set -u

@@ -2,7 +2,6 @@
 
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
-#include "iguana/algorithms/clas12/SectorFinder.h"
 
 namespace iguana::clas12 {
 
@@ -71,13 +70,10 @@ namespace iguana::clas12 {
 
     private:
 
-      /// `hipo::banklist` index for the particle bank
+      /// `hipo::banklist` indices
       hipo::banklist::size_type b_particle;
-      /// `hipo::banklist` index for the config bank
+      hipo::banklist::size_type b_sector;
       hipo::banklist::size_type b_config;
-
-      /// sector finder
-      std::unique_ptr<SectorFinder> m_sector_finder;
   };
 
 }

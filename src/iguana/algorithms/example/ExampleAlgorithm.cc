@@ -75,22 +75,24 @@ namespace iguana::example {
 
     // ############################################################################
     // # loop over the bank rows
+    // # - since this example is a filtering algorithm, we call `getMutableRowList().filter`
+    // # - do NOT use `getRows()`, since that will loop over ALL bank rows; instead,
+    // #   use `getRowList()`, which will take into consideration upstream filtering algorithms
     // ############################################################################
-    for(int row = 0; row < particleBank.getRows(); row++) {
+    particleBank.getMutableRowList().filter([this, &particleBank](auto bank, auto row) {
       // ############################################################################
       // # get the `pid` and feed it to the `Filter` action function; if the row
       // # is not acceptable, mask it out
       // ############################################################################
       auto pid    = particleBank.getInt("pid", row);
       auto accept = Filter(pid);
-      if(!accept)
-        MaskRow(particleBank, row);
       // ############################################################################
       // # print a useful debugging method (see `Logger.h` for details, or other
       // # algorithms for examples of how to use the logger)
       // ############################################################################
       m_log->Debug("input PID {} -- accept = {}", pid, accept);
-    }
+      return accept ? 1 : 0;
+      });
 
     // ############################################################################
     // # dump the modified bank (only if the log level is low enough); this is also optional

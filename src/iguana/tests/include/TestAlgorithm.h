@@ -6,6 +6,7 @@
 inline int TestAlgorithm(
     std::string command,
     std::string algo_name,
+    std::vector<std::string> prerequisite_algos,
     std::vector<std::string> bank_names,
     std::string data_file,
     int num_events,
@@ -31,6 +32,8 @@ inline int TestAlgorithm(
 
   // define the algorithm
   iguana::AlgorithmSequence seq;
+  for(auto const& prerequisite_algo : prerequisite_algos)
+    seq.Add(prerequisite_algo);
   seq.Add(algo_name);
   seq.SetName("TEST");
   seq.PrintSequence();

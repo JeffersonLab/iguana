@@ -26,13 +26,12 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // filter the input bank for requested PDG code(s)
-    for(int row = 0; row < particleBank.getRows(); row++) {
-      auto pid    = particleBank.getInt("pid", row);
-      auto accept = Filter(pid);
-      if(!accept)
-        MaskRow(particleBank, row);
-      m_log->Debug("input PID {} -- accept = {}", pid, accept);
-    }
+    particleBank.getMutableRowList().filter([this](auto bank, auto row) {
+        auto pid    = bank.getInt("pid", row);
+        auto accept = Filter(pid);
+        m_log->Debug("input PID {} -- accept = {}", pid, accept);
+        return accept ? 1 : 0;
+        });
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));

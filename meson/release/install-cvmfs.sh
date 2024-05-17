@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # automation for deploying new releases
 # this script is for maintainers, not users; users should
@@ -31,24 +31,20 @@ sourceDir=$(realpath $(dirname ${BASH_SOURCE[0]:-$0})/../..)
 version=$($sourceDir/meson/detect-version.sh $sourceDir)
 msg "Detected version $version"
 
-if [ $# -lt 2 ]; then
+if [ $# -ne 3 ]; then
   echo """
-  USAGE: $0 [INSTALL_PREFIX] [TEST_HIPO_FILE] [TAG(optional)]
+  USAGE: $0 [BUILD_DIR] [INSTALL_PREFIX] [TEST_HIPO_FILE]
 
-    INSTALL_PREFIX     install to [INSTALL_PREFIX]/[TAG]
-
+    BUILD_DIR          build directory
+    INSTALL_PREFIX     install to [INSTALL_PREFIX]
     TEST_HIPO_FILE     a sample HIPO file, for running tests
-
-    TAG                installation tag
-                       default is version number: $version
   """
   print_dep_vars
   exit 2
 fi
-[ $# -ge 3 ] && tag=$3 || tag=$version
-buildDir=build-$tag
-installDir=$(realpath $1)/$tag
-testFile=$(realpath $2)
+buildDir=$1
+installDir=$(realpath $2)
+testFile=$(realpath $3)
 nativeFile=$sourceDir/meson/release/native/release.ini
 echo """
 sourceDir  = $sourceDir
@@ -74,7 +70,6 @@ msg "meson setup"
 meson setup $buildDir $sourceDir \
   --native-file=$nativeFile      \
   --prefix=$installDir           \
-  -Dz_module_tag=$tag            \
   -Dtest_data_file=$testFile
 msg "meson install"
 meson install -C $buildDir
@@ -84,8 +79,6 @@ meson test -C $buildDir
 msg "Done installation"
 echo """
   prefix:      $installDir
-
-  moduleFile:  $buildDir/$tag
 """
 msg "Next steps:"
 echo """
@@ -93,6 +86,6 @@ echo """
   - bash: export LD_LIBRARY_PATH=$installDir/lib:\$LD_LIBRARY_PATH
   - tcsh: setenv LD_LIBRARY_PATH $installDir/lib:\$LD_LIBRARY_PATH
 - [ ] try running installed binaries: $installDir/bin/
-- [ ] copy the module file to the correct location
-- [ ] module switch iguana/$tag
+- [ ] update clas12-env
+- [ ] module switch, then test
 """

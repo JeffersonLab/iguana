@@ -46,7 +46,7 @@ namespace iguana::clas12 {
         boost_vec = {0, 0, o_beam_energy / std::hypot(o_beam_energy, 0.000511)};
       }
       // boost each particle
-      for(int row = 0; row < particleBank.getRows(); row++) {
+      for(auto const& row : particleBank.getRowList()) {
         auto [px, py, pz, e] = Boost(
             particleBank.getFloat("px", row),
             particleBank.getFloat("py", row),

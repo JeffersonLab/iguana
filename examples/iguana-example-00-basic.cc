@@ -50,6 +50,7 @@ int main(int argc, char** argv)
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID
+  seq.Add("clas12::SectorFinder"); // get the sector for each particle
   seq.Add("clas12::MomentumCorrection"); // momentum corrections
 
   // set log levels

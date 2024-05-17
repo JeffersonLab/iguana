@@ -18,29 +18,38 @@ if fs.is_file(get_option('test_data_file'))
   foreach name, info : algo_dict
     if info.has_key('test_args')
 
-      # get list of banks
-      bank_args = []
+      # get list of banks and prerequisite algorithms
+      extra_args = []
       foreach bank : info['test_args'].get('banks', [])
-        bank_args += ['-b', bank]
+        extra_args += ['-b', bank]
+      endforeach
+      foreach prerequisite : info['test_args'].get('prerequisites', [])
+        extra_args += ['-p', prerequisite]
       endforeach
 
       # test names cannot have colons
       test_name_algo = name.replace('::', '-')
 
-      # test algorithm
+      # test and benchmark algorithm
       algo_needs_ROOT = info.get('algorithm').get('needs_ROOT', false)
       if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
         test_args = [
           'algorithm',
           '-f', get_option('test_data_file'),
-          '-n', get_option('test_num_events'),
           '-a', name,
-        ] + bank_args
+        ] + extra_args
         test(
           'algorithm-' + test_name_algo,
           test_exe,
-          args: test_args,
+          args: test_args + [ '-n', get_option('test_num_events') ],
           env: project_test_env,
+        )
+        benchmark(
+          'benchmark-algorithm-' + test_name_algo,
+          test_exe,
+          args: test_args + [ '-n', '0' ], # test all the events
+          env: project_test_env,
+          timeout: 120,
         )
       endif
 
@@ -52,7 +61,7 @@ if fs.is_file(get_option('test_data_file'))
           test_args = [
             'validator',
             '-f', get_option('test_data_file'),
-            '-n', get_option('test_num_events'),
+            '-n', get_option('test_validator_all_stats') ? '0' : get_option('test_num_events'),
             '-a', name + 'Validator',
           ]
           if get_option('test_output_dir') != ''
@@ -65,6 +74,7 @@ if fs.is_file(get_option('test_data_file'))
             test_exe,
             args: test_args,
             env: project_test_env,
+            timeout: get_option('test_validator_all_stats') ? 0 : 120,
           )
         endif
       endif

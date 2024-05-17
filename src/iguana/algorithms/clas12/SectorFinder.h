@@ -25,11 +25,6 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// finds the sector for all rows in REC::Particle
-      /// @param banks the list of banks to process
-      /// @returns std::vector of sector numbers
-      std::vector<int> Find(hipo::banklist& banks) const;
-
       /// get sector from bank for a given pindex
       /// @param bank bank to get sector from
       /// @param pindex index in bank for which to get sector
@@ -44,7 +39,11 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_track;
       hipo::banklist::size_type b_scint;
       hipo::banklist::size_type b_user;
+      hipo::banklist::size_type b_result;
       bool userSpecifiedBank{false};
+
+      // `b_result` bank item indices
+      int i_sector;
 
       /// Configuration options
       std::string o_bankname;
