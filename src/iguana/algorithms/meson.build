@@ -107,6 +107,7 @@ algo_dict = {
     'algorithm': {
       'sources': [ 'clas12/PhotonGBTFilter.cc' ],
       'headers': [ 'clas12/PhotonGBTFilter.h' ],
+      'needs_ROOT': true,
     },
     'validator': {
       'sources': [ 'clas12/PhotonGBTFilterValidator.cc' ],

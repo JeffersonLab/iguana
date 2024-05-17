@@ -120,7 +120,7 @@ namespace iguana::clas12 {
       /// Integer for the event reconstruction pass
       int o_pass = 1;
       
-      // Particle Type Map
+      /// Particle Type Map
       const std::unordered_map<int, int> type_map = {
           {11, 0},  // electron
           {22, 1},  // photon
