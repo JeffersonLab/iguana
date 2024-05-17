@@ -62,9 +62,9 @@ int main(int argc, char** argv)
   // run the algorithm sequence on each event
   int iEvent = 0;
   while(reader.next(banks) && (numEvents == 0 || iEvent++ < numEvents)) {
-    // prettyPrint("BEFORE", banks.at(b_particle));
+    prettyPrint("BEFORE", banks.at(b_particle));
     seq.Run(banks);
-    // prettyPrint("AFTER", banks.at(b_particle));
+    prettyPrint("AFTER", banks.at(b_particle));
   }
 
   // stop algorithms

@@ -108,6 +108,11 @@ algo_dict = {
       'sources': [ 'clas12/PhotonGBTFilter.cc' ],
       'headers': [ 'clas12/PhotonGBTFilter.h' ],
     },
+    'validator': {
+      'sources': [ 'clas12/PhotonGBTFilterValidator.cc' ],
+      'headers': [ 'clas12/PhotonGBTFilterValidator.h' ],
+      'needs_ROOT': true,
+    },
     'configs':   [ 'clas12/PhotonGBTFilter.yaml' ],
     'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'RUN::config'] },
   },
