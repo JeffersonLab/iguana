@@ -12,14 +12,15 @@ namespace iguana::clas12 {
     b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
     b_config = GetBankIndex(banks, "RUN::config");
     
+    o_pass      = GetCachedOption<int>("pass").value_or(0);
+    o_threshold = GetCachedOption<double>("threshold").value_or(0);
+      
   }
 
 
     
   void PhotonGBTFilter::Run(hipo::banklist& banks) const
   {
-      
-
       
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& caloBank     = GetBank(banks, b_calorimeter, "REC::Calorimeter");
@@ -302,9 +303,10 @@ namespace iguana::clas12 {
 
   bool PhotonGBTFilter::ClassifyPhoton(std::vector<float> const &input_data, int const runnum) const
   {
-      // Assign the correct function based on runnum
+
       double sigmoid_x = 0.0; // Input to sigmoid
       
+      // Assign the correct function based on runnum
       if (runnum>=5032&&runnum<=5332) { // Fall2018 RGA Inbending
           sigmoid_x = ApplyCatboostModel_RGA_inbending(input_data); 
       } else if (runnum>=5333&&runnum<=5666) { // Fall2018 RGA Outbending
@@ -328,7 +330,7 @@ namespace iguana::clas12 {
       
       double prediction = 1-1/(1+exp(-sigmoid_x));               // Calculate predictive value for "signal"
                                                                  // [0,1] --> Closer to 1 == Photon is Signal
-      std::cout << prediction << std::endl;
+      std::cout << prediction << " , " << o_threshold << std::endl;
       return (prediction>o_threshold);
   }
   std::map<int, PhotonGBTFilter::calo_row_data> PhotonGBTFilter::GetCaloMap(hipo::bank const& bank) const
@@ -401,8 +403,8 @@ namespace iguana::clas12 {
     
 
   int PhotonGBTFilter::GetParticleType(int pid) const {
-    auto it = o_type_map.find(pid);
-    if (it != o_type_map.end()) {
+    auto it = type_map.find(pid);
+    if (it != type_map.end()) {
         return it->second;
     } else {
         return -1; // Default type if pid not found

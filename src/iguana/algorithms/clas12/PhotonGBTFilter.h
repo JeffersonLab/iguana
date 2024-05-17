@@ -115,10 +115,13 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_config; // RUN::config
       
       /// Threshold value for model predictions
-      float o_threshold = 0.78;
+      double o_threshold = 0.78;
+      
+      /// Integer for the event reconstruction pass
+      int o_pass = 1;
       
       // Particle Type Map
-      const std::unordered_map<int, int> o_type_map = {
+      const std::unordered_map<int, int> type_map = {
           {11, 0},  // electron
           {22, 1},  // photon
           {2212, 2}, // proton (charged hadron)
