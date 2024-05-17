@@ -20,7 +20,7 @@ example_sources = {
   },
   'iguana-example-fortran': {
     'sources':     [ 'iguana-example-fortran.f' ],
-    'build_this':  get_option('bind_fortran')
+    'build_this':  get_option('bind_fortran') and ROOT_dep.found(), # depends on physics::InclusiveKinematics, which depends on ROOT
   },
 }
 

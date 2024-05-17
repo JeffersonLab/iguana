@@ -4,6 +4,10 @@ algo_dict = [
     'name': 'main',
     'directory': '.',
     'has_config': false,
+    'has_c_bindings': true,
+    'has_validator': true,
+    'algorithm_needs_ROOT': false,
+    'validator_needs_ROOT': false,
     'add_algorithm_sources': [ 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ],
     'add_algorithm_headers': [ 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
   }
