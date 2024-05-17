@@ -82,6 +82,9 @@ if @root@; then
   unset var
 fi
 
+# set config file path; append, rather than prepend, in case the user already has their own
+export IGUANA_CONFIG_PATH=${IGUANA_CONFIG_PATH:+${IGUANA_CONFIG_PATH}:}$IGUANA/@etcdir@
+
 # print environment variables
 if $arg_verbose; then
   print_var() { echo "$@" | sed 's/:/\n  /g'; }
@@ -107,6 +110,9 @@ ROOT_INCLUDE_PATH -- $(if @root@; then echo 'ADDED iguana and dependency include
 PYTHONPATH -- $(if @python@; then echo 'ADDED iguana python bindings:'; else echo 'has NOT been changed'; fi)
   $(print_var ${PYTHONPATH-})
 
+IGUANA_CONFIG_PATH -- ADDED iguana algorithms' default configuration directory
+  $(print_var ${IGUANA_CONFIG_PATH-})
+
 ----------------------------
 """
   unset -f print_var
@@ -117,6 +123,7 @@ if $arg_githubCI; then
   echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
   echo PATH=$PATH >> $GITHUB_ENV
   echo @ld_path@=$@ld_path@ >> $GITHUB_ENV
+  echo IGUANA_CONFIG_PATH=$IGUANA_CONFIG_PATH >> $GITHUB_ENV
   if @python@; then
     echo PYTHONPATH=$PYTHONPATH >> $GITHUB_ENV
   fi
