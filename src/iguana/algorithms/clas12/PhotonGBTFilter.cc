@@ -34,13 +34,11 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
       
     // Loop over each photon in the particleBank to classify it
-    for(int row = 0; row < particleBank.getRows(); row++) {
-      auto pid    = particleBank.getInt("pid", row);
-      if (pid!=22) continue;
-      auto accept = Filter(particleBank, caloBank, calo_map, row, runnum);
-      if(!accept)
-        MaskRow(particleBank, row);
-    }
+    particleBank.getMutableRowList().filter([this](auto bank, auto row) {
+      auto pid = bank.getInt("pid", row);
+      if (pid!=22) return true;
+      return Filter(bank, caloBank, calo_map, row, runnum);
+    });
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
