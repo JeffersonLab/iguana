@@ -11,7 +11,7 @@ hipo_dep   = dependency('hipo4')
 iguana_dep = dependency('iguana')
 
 # build and install the executable
-example_bin = 'iguana-example-00-basic'
+example_bin = 'iguana-example-basic'
 executable(
   example_bin,
   example_bin + '.cc',

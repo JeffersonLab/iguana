@@ -1,4 +1,4 @@
-#include "EventBuilderFilter.h"
+#include "Algorithm.h"
 
 namespace iguana::clas12 {
 

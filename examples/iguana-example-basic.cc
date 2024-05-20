@@ -1,11 +1,11 @@
 /// @begin_doc_example
 /// These are examples which demonstrate how to use Iguana in C++ analysis code. See each one for its usage guide.
-/// @file iguana-example-00-basic.cc
+/// @file iguana-example-basic.cc
 /// @brief Example using full HIPO banks with Iguana This example requires the
 /// user to have the C++ `hipo::bank` objects; see other examples if you do not have these banks in this format.
 /// @par Usage
 /// ```bash
-/// iguana-example-00-basic [HIPO_FILE] [NUM_EVENTS]
+/// iguana-example-basic [HIPO_FILE] [NUM_EVENTS]
 ///
 ///   HIPO_FILE   the HIPO file to analyze
 ///
