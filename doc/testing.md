@@ -25,6 +25,22 @@ For further usage of `meson test`, for example how to run a single test or contr
 ```bash
 meson test --help
 ```
+
+List all available tests:
+```bash
+meson test --list
+```
+
+Run one test, _e.g._, the `MomentumCorrection` validator:
+```bash
+meson test validator-clas12-MomentumCorrection
+```
+
+Run a suite of tests, _e.g._, all validators:
+```bash
+meson test --suite validator
+```
+
 > [!TIP]
 > - if you are testing on a _large_ data set, you may need to increase the timeout with the `-t` option
 >   and parallelize with the `-j` option

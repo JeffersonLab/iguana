@@ -45,6 +45,7 @@ if fs.is_file(get_option('test_data_file'))
         test(
           'algorithm-' + test_name_algo,
           test_exe,
+          suite: ['algorithm'],
           args: test_args + [ '-n', get_option('test_num_events') ],
           env: project_test_env,
         )
@@ -74,6 +75,7 @@ if fs.is_file(get_option('test_data_file'))
           test(
             'validator-' + test_name_algo,
             test_exe,
+            suite: ['validator'],
             args: test_args,
             env: project_test_env,
             timeout: get_option('test_validator_all_stats') ? 0 : 120,
