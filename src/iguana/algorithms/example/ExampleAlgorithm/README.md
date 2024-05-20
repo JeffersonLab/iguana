@@ -24,7 +24,7 @@ src/iguana/algorithms/example/make_starter.sh AwesomeAlgorithm clas12
 ```
 
 Once you have generated your new algorithm:
-- [ ] add it to the [appropriate `meson.build` file](src/iguana/algorithms/meson.build), so your algorithm is built
+- [ ] add it to the [appropriate `meson.build` file](/src/iguana/algorithms/meson.build), so your algorithm is built
 - [ ] add your algorithm files and your name (GitHub handle or email address) to the [`CODEOWNERS` file](/CODEOWNERS)
 - [ ] consider writing a **Validator** algorithm, for example, one that draws validation plots used to check if your algorithm is working;
       see existing algorithms for examples, and [documentation here](/doc/testing.md)
