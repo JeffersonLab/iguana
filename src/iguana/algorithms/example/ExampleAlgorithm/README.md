@@ -1,9 +1,11 @@
 # Example Algorithm Template
 
 This directory includes a fully documented, simple example algorithm:
-- [`Algorithm.h`](Algorithm.h)
-- [`Algorithm.cc`](Algorithm.cc)
-- [`Config.yaml`](Config.yaml)
+- Algorithm implementation: [`Algorithm.h`](Algorithm.h) and [`Algorithm.cc`](Algorithm.cc)
+- Algorithm configuration: [`Config.yaml`](Config.yaml)
+
+> [!NOTE]
+> The filenames must be consistent (_e.g._, `Algorithm.h` for the algorithm header), but you are free to add additional files and subdirectories as needed
 
 In this code, the following comment styles are used:
 - `// #`: this is a comment which describes in detail what each line of the code does; you probably
