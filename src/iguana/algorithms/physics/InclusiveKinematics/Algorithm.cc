@@ -1,4 +1,4 @@
-#include "InclusiveKinematics.h"
+#include "Algorithm.h"
 
 // ROOT
 #include <Math/Vector4D.h>

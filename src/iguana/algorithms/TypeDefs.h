@@ -1,5 +1,6 @@
 /// @file
 /// @brief Type definitions for common objects used in algorithms
+#pragma once
 
 #include <string>
 #include <tuple>

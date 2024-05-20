@@ -15,28 +15,32 @@ test_exe = executable(
 
 # test algorithms and validators
 if fs.is_file(get_option('test_data_file'))
-  foreach name, info : algo_dict
-    if info.has_key('test_args')
+  foreach algo : algo_dict
+    if algo.has_key('test_args')
+
+      algo_name          = algo.get('name')
+      algo_has_validator = algo.get('has_validator', true)
+      algo_needs_ROOT    = algo.get('algorithm_needs_ROOT', false)
+      vdor_needs_ROOT    = algo.get('validator_needs_ROOT', true)
 
       # get list of banks and prerequisite algorithms
       extra_args = []
-      foreach bank : info['test_args'].get('banks', [])
+      foreach bank : algo['test_args'].get('banks', [])
         extra_args += ['-b', bank]
       endforeach
-      foreach prerequisite : info['test_args'].get('prerequisites', [])
+      foreach prerequisite : algo['test_args'].get('prerequisites', [])
         extra_args += ['-p', prerequisite]
       endforeach
 
       # test names cannot have colons
-      test_name_algo = name.replace('::', '-')
+      test_name_algo = algo_name.replace('::', '-')
 
       # test and benchmark algorithm
-      algo_needs_ROOT = info.get('algorithm').get('needs_ROOT', false)
       if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
         test_args = [
           'algorithm',
           '-f', get_option('test_data_file'),
-          '-a', name,
+          '-a', algo_name,
         ] + extra_args
         test(
           'algorithm-' + test_name_algo,
@@ -54,26 +58,25 @@ if fs.is_file(get_option('test_data_file'))
       endif
 
       # test validator
-      if info.has_key('validator')
-        vdor_needs_ROOT = info.get('validator').get('needs_ROOT', false)
-        test_name_vdor = test_name_algo + 'Validator'
+      if algo_has_validator
         if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
           test_args = [
             'validator',
             '-f', get_option('test_data_file'),
-            '-n', get_option('test_num_events'),
-            '-a', name + 'Validator',
+            '-n', get_option('test_validator_all_stats') ? '0' : get_option('test_num_events'),
+            '-a', algo_name + 'Validator',
           ]
           if get_option('test_output_dir') != ''
-            vdor_output_dir = get_option('test_output_dir') / test_name_vdor
+            vdor_output_dir = get_option('test_output_dir') / test_name_algo
             run_command('mkdir', '-p', vdor_output_dir, check: true)
             test_args += [ '-o', vdor_output_dir ]
           endif
           test(
-            'validator-' + test_name_vdor,
+            'validator-' + test_name_algo,
             test_exe,
             args: test_args,
             env: project_test_env,
+            timeout: get_option('test_validator_all_stats') ? 0 : 120,
           )
         endif
       endif

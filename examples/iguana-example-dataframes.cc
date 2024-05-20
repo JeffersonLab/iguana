@@ -1,9 +1,9 @@
 /// @begin_doc_example
-/// @file iguana-example-02-dataframes.cc
+/// @file iguana-example-dataframes.cc
 /// @brief Example using HIPO data frames with Iguana. Requires ROOT.
 /// @par Usage
 /// ```bash
-/// iguana-example-02-dataframes [HIPO_FILE] [NUM_EVENTS] [INTERACTIVE_MODE]
+/// iguana-example-dataframes [HIPO_FILE] [NUM_EVENTS] [INTERACTIVE_MODE]
 ///
 ///   HIPO_FILE         the HIPO file to analyze
 ///
@@ -17,7 +17,7 @@
 /// @end_doc_example
 
 #include <hipo4/RHipoDS.hxx>
-#include <iguana/algorithms/clas12/EventBuilderFilter.h>
+#include <iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h>
 
 #include <TApplication.h>
 #include <TCanvas.h>

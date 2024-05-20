@@ -6,12 +6,11 @@ option('bind_python',  type: 'boolean', value: false, description: 'Install Pyth
 option('install_examples', type: 'boolean', value: false, description: 'Install examples')
 
 # test options: control how tests are run
-option('test_data_file',  type: 'string', value: '',   description: 'Sample HIPO file for testing. Must be an absolute path. If unspecified, tests that need them are not built')
-option('test_num_events', type: 'string', value: '10', description: 'Number of events from `test_data_file` to test')
-option('test_output_dir', type: 'string', value: '',   description: 'Output directory for tests. Must be an absolute path. If unspecified, tests will still run, but will not produce output files.')
+option('test_data_file',           type: 'string',  value: '',    description: 'Sample HIPO file for testing. Must be an absolute path. If unspecified, tests that need them are not built')
+option('test_num_events',          type: 'string',  value: '10',  description: 'Number of events from `test_data_file` to test')
+option('test_output_dir',          type: 'string',  value: '',    description: 'Output directory for tests. Must be an absolute path. If unspecified, tests will still run, but will not produce output files.')
+option('test_validator_all_stats', type: 'boolean', value: false, description: 'If true, use all statistics for validators, rather than `test_num_events`')
 
 # expert options: the defaults should be reasonable for a local installation; different values may be preferred for installation in common areas
 option('z_install_envfile',     type: 'boolean', value: true,  description: 'Install a sourceable environment variable file')
-option('z_generate_modulefile', type: 'boolean', value: false, description: 'Generate an Environment Modules modulefile')
-option('z_module_tag',          type: 'string',  value: '',    description: 'Tag for modulefile. If unspecified, use the version number')
 option('z_require_root',        type: 'boolean', value: false, description: 'Fail if ROOT is not found')

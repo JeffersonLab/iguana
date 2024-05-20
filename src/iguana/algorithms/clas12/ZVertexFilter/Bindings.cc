@@ -1,5 +1,5 @@
-#include "ZVertexFilter.h"
-#include "iguana/algorithms/AlgorithmBindings.h"
+#include "Algorithm.h"
+#include "iguana/algorithms/Bindings.h"
 
 namespace iguana::bindings {
   extern "C" {
