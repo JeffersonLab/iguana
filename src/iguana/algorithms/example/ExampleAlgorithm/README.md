@@ -13,14 +13,14 @@ In this code, the following comment styles are used:
 - `///`: this is a `docstring` for [Doxygen](https://www.doxygen.nl/), for automated documentation generation;
   you'll need to use these when documenting your algorithm
 
-To generate a template algorithm (without the `// #` comments) so you may get
-started coding, run the `make_template.sh` script here:
+To generate a starter algorithm (without the `// #` comments) so you may get
+started coding, run the `make_starter.sh` script here:
 ```bash
 # run with no arguments to see usage
-src/iguana/algorithms/example/make_template.sh
+src/iguana/algorithms/example/make_starter.sh
 
 # example: make a CLAS12 algorithm called AwesomeAlgorithm
-src/iguana/algorithms/example/make_template.sh AwesomeAlgorithm clas12 src/iguana/algorithms/clas12
+src/iguana/algorithms/example/make_starter.sh AwesomeAlgorithm clas12
 ```
 
 Once you have generated your new algorithm:
