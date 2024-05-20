@@ -17,6 +17,28 @@ namespace iguana {
   /// 4-vector container type
   using vector4_t = std::tuple<vector_element_t, vector_element_t, vector_element_t, vector_element_t>;
 
+  /// Struct to store calorimeter particle data
+  struct calo_row_data {
+    double pcal_x = -999;
+    double pcal_y = -999;
+    double pcal_z = -999;
+    double ecin_x = -999;
+    double ecin_y = -999;
+    double ecin_z = -999;
+    double ecout_x = -999;
+    double ecout_y = -999;
+    double ecout_z = -999;
+    double pcal_e = -999;
+    double pcal_m2u = -999;
+    double pcal_m2v = -999;
+    double ecin_e = -999;
+    double ecin_m2u = -999;
+    double ecin_m2v = -999;
+    double ecout_e = -999;
+    double ecout_m2u = -999;
+    double ecout_m2v = -999;
+  };    
+
   /// Light-weight namespace for particle constants
   namespace particle {
     // clang-format off

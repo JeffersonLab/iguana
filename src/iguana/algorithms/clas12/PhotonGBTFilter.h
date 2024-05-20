@@ -34,22 +34,6 @@ namespace iguana::clas12 {
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
-
-      /// Struct to store calorimeter particle data
-      struct calo_row_data {
-        double pcal_x = -999;
-        double pcal_y = -999;
-        double pcal_z = -999;
-        double ecin_x = -999;
-        double ecin_y = -999;
-        double ecin_z = -999;
-        double ecout_x = -999;
-        double ecout_y = -999;
-        double ecout_z = -999;
-        double pcal_e = -999;
-        double pcal_m2u = -999;
-        double pcal_m2v = -999;
-      };
       
       /// **Method**: Applies pid purity cuts to photons, compatible to how the GBT models are trained
       /// @param E energy of the photon
@@ -135,5 +119,6 @@ namespace iguana::clas12 {
       };
 
   };
-
+    
 }
+

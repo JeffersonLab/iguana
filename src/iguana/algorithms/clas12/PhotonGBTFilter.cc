@@ -331,9 +331,9 @@ namespace iguana::clas12 {
 
       return (prediction>o_threshold);
   }
-  std::map<int, PhotonGBTFilter::calo_row_data> PhotonGBTFilter::GetCaloMap(hipo::bank const& bank) const
+  std::map<int, calo_row_data> PhotonGBTFilter::GetCaloMap(hipo::bank const& bank) const
   {
-      std::map<int, PhotonGBTFilter::calo_row_data> calo_map;
+      std::map<int, calo_row_data> calo_map;
       
       for(int row = 0; row < bank.getRows(); row++){
           auto pindex = bank.getInt("pindex",row);
