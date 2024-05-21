@@ -53,6 +53,11 @@ algo_dict += [
     'test_args': { 'banks': ['REC::Particle'] },
   },
   {
+    'name': 'clas12::FiducialFilter',
+    'has_validator': true,
+    'test_args': { 'banks': ['REC::Particle', 'REC::Traj', 'RUN::config'] },
+  },
+  {
     'name': 'clas12::SectorFinder',
     'has_c_bindings': false,
     'has_validator': false,

@@ -7,6 +7,7 @@
 #include <variant>
 #include <vector>
 
+#include <fmt/ranges.h>
 #include <hipo4/bank.h>
 
 #include "iguana/algorithms/AlgorithmBoilerplate.h"

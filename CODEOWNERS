@@ -4,6 +4,7 @@
 # @c-dilks                     Christopher Dilks
 # @RichCap                     Richard Capobianco
 # @rtysonCLAS12                Richard Tyson
+# @Gregtom3                    Gregory Matousek
 #################################################################################
 
 * @c-dilks
@@ -11,3 +12,7 @@ src/iguana/algorithms/clas12/MomentumCorrection/* @RichCap @c-dilks
 src/iguana/algorithms/clas12/ZVertexFilter/* @rtysonCLAS12
 src/iguana/algorithms/clas12/SectorFinder/* @rtysonCLAS12
 src/iguana/services/YAMLReader.* @rtysonCLAS12 @c-dilks
+
+* @Gregtom3
+src/iguana/algorithms/clas12/PhotonGBTFilter/* @Gregtom3
+src/iguana/algorithms/clas12/FiducialFilter/* @Gregtom3
