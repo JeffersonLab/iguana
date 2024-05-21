@@ -86,7 +86,8 @@ int main(int argc, char** argv)
          }},
         {"o", [&]()
          {
-           fmt::print("    {:<20} {}\n", "-o OUTPUT_DIR", "if specified, validators will write to this directory");
+           fmt::print("    {:<20} {}\n", "-o OUTPUT_DIR", fmt::format("if specified, {} output will write to this directory;", command));
+           fmt::print("    {:<20} if not specified, output will not be written\n", "");
          }},
         {"v", [&]()
          {
