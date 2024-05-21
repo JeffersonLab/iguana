@@ -347,20 +347,20 @@ jobs:
         run: source iguana/bin/this_iguana.sh --verbose --githubCI
       ### test installed examples
       ###### cpp
-      - run: iguana-example-00-basic test_data.hipo ${{ env.num_events }}
+      - run: iguana-example-basic test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'cpp' }}
-      - run: iguana-example-01-bank-rows test_data.hipo ${{ env.num_events }}
+      - run: iguana-example-bank-rows test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'cpp' }}
-      - run: iguana-example-02-dataframes test_data.hipo ${{ env.num_events }}
+      - run: iguana-example-dataframes test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'cpp' }}
-      - run: iguana-example-03-config-files iguana/etc/iguana/examples
+      - run: iguana-example-config-files iguana/etc/iguana/examples
         if: ${{ matrix.id == 'cpp' }}
       ###### python
-      - run: iguana-example-00-basic.py test_data.hipo ${{ env.num_events }}
+      - run: iguana-example-basic.py test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'python' }}
-      - run: iguana-example-01-bank-rows.py test_data.hipo ${{ env.num_events }}
+      - run: iguana-example-bank-rows.py test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'python' }}
-      - run: iguana-example-02-hipopy.py test_data.hipo ${{ env.num_events }}
+      - run: iguana-example-hipopy.py test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'python' }}
       ###### fortran
       - run: iguana-example-fortran test_data.hipo ${{ env.num_events }}
@@ -371,14 +371,14 @@ jobs:
         run: |
           make -C iguana_src/examples/build_with_make
           echo "========================================= TEST RUN ========================================="
-          iguana_src/examples/build_with_make/bin/iguana-example-00-basic test_data.hipo 10
+          iguana_src/examples/build_with_make/bin/iguana-example-basic test_data.hipo 10
       - name: consumer test meson
         if: ${{ matrix.id == 'cpp' }}
         run: |
           meson setup build_consumer_meson iguana_src/examples/build_with_meson --prefix=$(pwd)/install_consumer_meson
           meson install -C build_consumer_meson
           echo "========================================= TEST RUN ========================================="
-          install_consumer_meson/bin/iguana-example-00-basic test_data.hipo 10
+          install_consumer_meson/bin/iguana-example-basic test_data.hipo 10
       - name: consumer test cmake
         if: ${{ matrix.id == 'cpp' }}
         run: |
@@ -386,7 +386,7 @@ jobs:
           cmake --build build_consumer_cmake
           cmake --install build_consumer_cmake
           echo "========================================= TEST RUN ========================================="
-          install_consumer_cmake/bin/iguana-example-00-basic test_data.hipo 10
+          install_consumer_cmake/bin/iguana-example-basic test_data.hipo 10
       ### upload artifacts
       - uses: actions/upload-artifact@v4
         if: always()

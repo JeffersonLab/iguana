@@ -1,5 +1,5 @@
-#include "EventBuilderFilter.h"
-#include "iguana/algorithms/AlgorithmBindings.h"
+#include "Algorithm.h"
+#include "iguana/algorithms/Bindings.h"
 
 namespace iguana::bindings::clas12 {
   extern "C" {

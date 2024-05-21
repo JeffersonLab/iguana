@@ -73,7 +73,7 @@ namespace iguana {
     std::string::size_type it = 0;
     while((it = result.find("::", it)) != std::string::npos)
       result.replace(it, 2, "/");
-    return "algorithms/" + result + "." + std::string(ext);
+    return "algorithms/" + result + "/Config." + std::string(ext);
   }
 
 }

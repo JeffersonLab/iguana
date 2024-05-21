@@ -8,8 +8,8 @@ import os.path as osp
 # include the header files that you need
 pyiguana.include(
         'hipo4/reader.h',
-        'iguana/algorithms/clas12/EventBuilderFilter.h',
-        'iguana/algorithms/clas12/MomentumCorrection.h',
+        'iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h',
+        'iguana/algorithms/clas12/MomentumCorrection/Algorithm.h',
         )
 # then import the bound namespaces (must be after including the headers)
 from cppyy.gbl import hipo, iguana

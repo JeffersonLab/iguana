@@ -18,7 +18,7 @@ pkg_check_modules(hipo4 REQUIRED IMPORTED_TARGET hipo4)
 pkg_check_modules(iguana REQUIRED IMPORTED_TARGET iguana)
 
 # build and install the executable
-set(EXAMPLE_BIN iguana-example-00-basic)
+set(EXAMPLE_BIN iguana-example-basic)
 add_executable(${EXAMPLE_BIN})
 target_sources(${EXAMPLE_BIN} PRIVATE ${EXAMPLE_BIN}.cc)
 target_link_libraries(${EXAMPLE_BIN} PUBLIC PkgConfig::iguana PkgConfig::hipo4)
