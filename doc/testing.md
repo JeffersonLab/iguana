@@ -1,9 +1,24 @@
 # Testing and Validating Algorithms
 
-## Running a Single Test
+There are 2 ways to run tests:
+- `iguana-test`: an installed executable used for running single tests
+- `meson test`: automates the usage of `iguana-test`
 
-The installed executable `iguana-test` is used for running single tests. Run
-it with no arguments for a usage guide. For example:
+Both of these assume you are currently in your **build directory**.
+Iguana must first be **installed**, so the compiled algorithms can find certain dependent files.
+
+## `iguana-test`
+
+`iguana-test` is found both in the installation's `bin/` directory and in your build directory,
+```bash
+src/iguana/tests/iguana-test
+```
+Run `iguana-test` for a usage guide:
+```bash
+iguana-test
+iguana-test validator # usage of the 'validator' command
+```
+For example,
 ```bash
 iguana/bin/iguana-test validator -f data.hipo -n 0 -a clas12::MomentumCorrectionValidator -o validation_plots
 ```
@@ -11,44 +26,44 @@ will run the validator `MomentumCorrectionValidator` and write its output to `./
 - your installation `prefix` is `./iguana`
 - your data are found in `./data.hipo`
 
-## Running All of the Tests
+## `meson test`
 
-While in your build directory, you may run
+Just run
 ```bash
 meson test
 ```
-to run all available tests. However, depending on your build options, not all of them may run. For example,
+to run all available tests. However, depending on your build options, not all of them may succeed. For example,
 since the `validator` tests need input data, you need to set the build option `test_data_file` to a sample input
-file, otherwise tests which need input data will not run.
+file, otherwise tests which need input data will fail. For such failing tests, you may use the `--test-args` option
+to override the default ones used for the underlying `iguana-test`.
 
-For further usage of `meson test`, for example how to run a single test or control verbosity, run
+For further usage of `meson test`, see:
 ```bash
 meson test --help
 ```
-
-List all available tests:
+Here are some example useful `meson test` commands:
 ```bash
-meson test --list
-```
+# listing
+meson test --list                    # list all available tests
+meson test --list --suite validator  # list the 'validator' tests
+meson test --list --suite algorithm  # list the 'algorithm' tests
 
-Run one test, _e.g._, the `MomentumCorrection` validator:
-```bash
-meson test validator-clas12-MomentumCorrection
-```
+# run a single test, with the following name according to 'meson test --list':
+#   iguana:validator / validator-clas12-MyAlgorithm
+meson test validator-clas12-MyAlgorithm           # just run it
+meson test validator-clas12-MyAlgorithm --verbose # show output (stdout and stderr)
 
-Run a suite of tests, _e.g._, all validators:
-```bash
-meson test --suite validator
+# 'iguana-test validator' is under the hood; you may pass arguments to it with '--test-args':
+meson test validator-clas12-MyAlgorithm --test-args '-f my_hipo_file.hipo -n 300'
+
+# running multiple tests
+meson test --suite validator      # run all of the validator tests
+meson test --suite validator -j4  # with 4 parallel processes
 ```
 
 > [!TIP]
 > - if you are testing on a _large_ data set, you may need to increase the timeout with the `-t` option
 >   and parallelize with the `-j` option
-> - if a test is failing, use `--print-errorlogs` to see the `stderr` stream and add `--no-stdsplit` if you need to see the `stdout` stream;
->   if the streams' outputs are mixed up or not appearing, try prepending `stdbuf` as:
->   ```bash
->   stdbuf -o0 meson test [OPTIONS]...
->   ```
 
 > [!NOTE]
 > All of the available tests run on the Continuous Integration (CI), so if you are developing and you submit a pull
