@@ -55,7 +55,7 @@ iguana:validator / validator-clas12-MyAlgorithm
 To run this test (which may fail, see below):
 ```bash
 meson test validator-clas12-MyAlgorithm           # just run it
-meson test validator-clas12-MyAlgorithm --verbose # show output (stdout and stderr)
+meson test validator-clas12-MyAlgorithm --verbose # run and show output (stdout and stderr)
 ```
 If you have not supplied the required arguments, in particular the input data
 file, the test will fail. For the `validator` and `algorithm` test suites,
@@ -68,11 +68,11 @@ meson test validator-clas12-MyAlgorithm --verbose --test-args '-f ../my_hipo_fil
 See above for `iguana-test` usage guidance.
 
 Alternatively to using `--test-args`, you may set _default_ `iguana-test`
-arguments using Iguana **build options**. The options that are relevant for
-tests are prefixed by `test_`; you may set them using `meson configure` and
-re-running `meson install`; see [the setup guide](setup.md) if you are not
-familiar with build options. Using `--test-args` will override these build
-options.
+arguments using Iguana **build options**:
+- The options that are relevant for tests are prefixed by `test_`
+- Set options using `meson configure` and re-running `meson install`
+  (see [the setup guide for guidance](setup.md))
+- Using `--test-args` will override these build options.
 
 ### Running multiple tests
 
