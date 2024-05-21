@@ -18,8 +18,8 @@ example_sources = {
     'sources':   [ 'iguana-example-config-files.cc' ],
     'test_args': [ get_option('prefix') / example_config_files_prefix ],
   },
-  'iguana-example-04-photon-ML': {
-    'sources': [ 'iguana-example-04-photon-ML.cc' ],
+  'iguana-example-photon-ML': {
+    'sources': [ 'iguana-example-photon-ML.cc' ],
   },
   'iguana-example-fortran': {
     'sources':     [ 'iguana-example-fortran.f' ],
