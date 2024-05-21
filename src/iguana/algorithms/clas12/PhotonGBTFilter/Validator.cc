@@ -1,4 +1,4 @@
-#include "PhotonGBTFilterValidator.h"
+#include "Validator.h"
 namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(PhotonGBTFilterValidator);

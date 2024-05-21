@@ -1,4 +1,7 @@
-#include "PhotonGBTFilter.h"
+#include "Algorithm.h"
+#include "models/RGA_inbending.cpp"
+#include "models/RGA_outbending.cpp"
+#include "models/RGC_Summer2022.cpp"
 
 namespace iguana::clas12 {
 

@@ -1,8 +1,5 @@
 #pragma once
 
-#include "iguana/algorithms/machine_learning/photon_gbt/RGA_inbending.cpp"
-#include "iguana/algorithms/machine_learning/photon_gbt/RGA_outbending.cpp"
-#include "iguana/algorithms/machine_learning/photon_gbt/RGC_Summer2022.cpp"
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 #include <Math/Vector3D.h>

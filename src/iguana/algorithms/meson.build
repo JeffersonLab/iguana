@@ -79,14 +79,9 @@ algo_dict += [
     'test_args': { 'banks': ['REC::Particle'] },
   },
   {
-    'name': 'clas12:PhotonGBTFilter',
+    'name': 'clas12::PhotonGBTFilter',
     'has_c_bindings': false,
     'algorithm_needs_ROOT': true,
-    'add_algorithm_sources': [
-      'models/RGA_inbending.cpp',
-      'models/RGA_outbending.cpp',
-      'models/RGC_Summer2022.cpp',
-    ],
     'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'RUN::config'] },
   }
 ]
