@@ -57,7 +57,7 @@ namespace iguana::clas12 {
       mutable std::unordered_map<int, TH2D*> u_DC3_before;
       
       mutable std::unordered_map<int, TH2D*> u_DC1_after;
-      mutable std::unordered_map<int, TH2D*> u_DC2_after;
+      mutable std::unordered_map<int, TH2D*> u_DC2_after; 
       mutable std::unordered_map<int, TH2D*> u_DC3_after;
   };
 

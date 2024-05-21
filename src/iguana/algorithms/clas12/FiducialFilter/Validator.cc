@@ -9,7 +9,6 @@ namespace iguana::clas12 {
 
   void FiducialFilterValidator::Start(hipo::banklist& banks)
   {
-    return;
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::EventBuilderFilter");
@@ -19,7 +18,8 @@ namespace iguana::clas12 {
 
     // get bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
-
+    b_traj = GetBankIndex(banks, "REC::Traj"); 
+      
     // set an output file
     auto output_dir = GetOutputDirectory();
     if(output_dir) {
@@ -84,7 +84,6 @@ namespace iguana::clas12 {
 
   void FiducialFilterValidator::Run(hipo::banklist& banks) const
   {
-    return;
     // get the momenta before
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& trajBank      = GetBank(banks, b_traj, "REC::Traj");
@@ -127,7 +126,6 @@ namespace iguana::clas12 {
 
   void FiducialFilterValidator::Stop()
   {
-    return;
     if(GetOutputDirectory()) {
       int n_cols = 2;
       int n_rows = 2;

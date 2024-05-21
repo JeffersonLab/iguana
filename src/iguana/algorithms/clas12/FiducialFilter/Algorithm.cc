@@ -22,7 +22,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& trajBank     = GetBank(banks, b_traj, "REC::Traj");
     auto& configBank   = GetBank(banks, b_config, "RUN::config");
-    auto torus  = configBank.getInt("torus", 0);    
+    auto torus  = (int)configBank.getFloat("torus", 0);    
     
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
