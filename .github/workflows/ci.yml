@@ -365,6 +365,10 @@ jobs:
       ###### fortran
       - run: iguana-example-fortran test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'fortran' }}
+      ### test ROOT macro
+      - name: test iguana_example_ROOT_macro.C
+        run: root -b -q iguana_src/examples/iguana_example_ROOT_macro.C
+        if: ${{ matrix.id == 'cpp' }}
       ### test consumers
       - name: consumer test make
         if: ${{ matrix.id == 'cpp' }}
