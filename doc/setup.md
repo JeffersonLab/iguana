@@ -161,3 +161,4 @@ The following environment variables are set or modified:
 | `PKG_CONFIG_PATH`                                        | adds paths to the `pkg-config` files (`.pc`) for dependencies and Iguana; see [note on dependency resolution](dependency_resolution.md)   |
 | `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries                                                                                             |
 | `PYTHONPATH`                                             | adds paths to dependency and Iguana Python packages, if Python bindings are installed                                                     |
+| `ROOT_INCLUDE_PATH`                                      | adds paths to dependency and Iguana header files, for usage in ROOT                                                                       |

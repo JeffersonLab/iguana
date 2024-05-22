@@ -62,8 +62,9 @@ foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, ROOT_dep ]
 endforeach
 
 # make a list of dependency library and include directories
-dep_lib_paths = []
-dep_inc_paths = []
+dep_lib_dirs       = []
+dep_include_dirs   = []
+dep_pkgconfig_dirs = []
 foreach dep : dep_list
   ### handle pkg-config deps
   if dep.type_name() == 'pkgconfig'
@@ -80,15 +81,23 @@ foreach dep : dep_list
   else
     error('Cannot determine how dependency "' + dep.name() + '" was found')
   endif
-  ### append to `dep_lib_paths` and `dep_inc_paths`, omitting duplicates
+  ### append to `dep_lib_dirs`
   foreach libdir : libdirs
-    if not dep_lib_paths.contains(libdir)
-      dep_lib_paths += libdir
+    if not dep_lib_dirs.contains(libdir)
+      dep_lib_dirs += libdir
+    endif
+    ### append to `dep_pkgconfig_dirs`
+    if dep.type_name() == 'pkgconfig'
+      pkgconfigdir = libdir / 'pkgconfig'
+      if not dep_pkgconfig_dirs.contains(pkgconfigdir)
+        dep_pkgconfig_dirs += pkgconfigdir
+      endif
     endif
   endforeach
+  ### append to `dep_include_dirs`
   foreach incdir : incdirs
-    if not dep_inc_paths.contains(incdir)
-      dep_inc_paths += incdir
+    if not dep_include_dirs.contains(incdir)
+      dep_include_dirs += incdir
     endif
   endforeach
 endforeach
@@ -131,8 +140,9 @@ project_etc       = get_option('sysconfdir') / meson.project_name()
 project_test_env  = environment()
 project_pkg_vars  = [
   'bindir='            + '${prefix}' / get_option('bindir'),
-  'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
-  'dep_libdirs='       + ':'.join(dep_lib_paths),
+  'dep_pkgconfigdirs=' + ':'.join(dep_pkgconfig_dirs),
+  'dep_libdirs='       + ':'.join(dep_lib_dirs),
+  'dep_includedirs='   + ':'.join(dep_include_dirs),
 ]
 
 # sanitizer settings
@@ -203,6 +213,7 @@ if get_option('z_install_envfile')
       'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
       'python':  get_option('bind_python') ? 'true' : 'false',
       'libdir':  get_option('libdir'),
+      'root':    ROOT_dep.found() ? 'true' : 'false',
     },
   )
   foreach shell : ['csh', 'tcsh']

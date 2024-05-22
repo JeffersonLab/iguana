@@ -71,6 +71,16 @@ for var in dep_libdirs libdir; do
 done
 unset var
 
+# append to ROOT_INCLUDE_PATH
+if @root@; then
+  for var in dep_includedirs includedir; do
+    dir=$(pkg-config --variable $var iguana)
+    [ -n "${dir-}" ] && export ROOT_INCLUDE_PATH=$dir${ROOT_INCLUDE_PATH:+:${ROOT_INCLUDE_PATH}}
+    unset dir
+  done
+  unset var
+fi
+
 # print environment variables
 if $arg_verbose; then
   print_var() { echo "$@" | sed 's/:/\n  /g'; }
@@ -87,6 +97,9 @@ PATH -- ADDED iguana executables:
 @ld_path@ -- ADDED iguana and dependency library paths:
   $(print_var ${@ld_path@-})
 
+ROOT_INCLUDE_PATH -- $(if @root@; then echo 'ADDED iguana and dependency include paths:'; else echo 'has NOT been changed'; fi)
+  $(print_var ${ROOT_INCLUDE_PATH-})
+
 PYTHONPATH -- $(if @python@; then echo 'ADDED iguana python bindings:'; else echo 'has NOT been changed'; fi)
   $(print_var ${PYTHONPATH-})
 
@@ -102,6 +115,9 @@ if $arg_githubCI; then
   echo @ld_path@=$@ld_path@ >> $GITHUB_ENV
   if @python@; then
     echo PYTHONPATH=$PYTHONPATH >> $GITHUB_ENV
+  fi
+  if @root@; then
+    echo ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH >> $GITHUB_ENV
   fi
 fi
 
