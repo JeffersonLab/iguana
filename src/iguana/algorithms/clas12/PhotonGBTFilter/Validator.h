@@ -26,6 +26,9 @@ namespace iguana::clas12 {
     private:
       
       void FillHistograms(const std::vector<ROOT::Math::PxPyPzEVector>& photons, int idx) const;
+      void InitializeHistograms();
+      void ConfigureHistogram(TH1F* hist, int color);
+      
       hipo::banklist::size_type b_particle;
       
       std::vector<int> const u_pdg_list = {

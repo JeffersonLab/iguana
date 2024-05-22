@@ -82,6 +82,7 @@ algo_dict += [
     'name': 'clas12::PhotonGBTFilter',
     'has_c_bindings': false,
     'algorithm_needs_ROOT': true,
+    'has_validator': true,
     'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'RUN::config'] },
   }
 ]

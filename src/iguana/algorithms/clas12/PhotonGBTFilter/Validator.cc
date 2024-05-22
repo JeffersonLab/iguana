@@ -22,59 +22,7 @@ namespace iguana::clas12 {
       m_output_file          = new TFile(m_output_file_basename + ".root", "RECREATE");
     }
       
-    // Create the histograms for "before"
-    h_Mgg[0] = new TH1F("h_Mgg_before", ";M_{#gamma#gamma} [GeV]", 100, 0, 0.5);
-    h_P[0] = new TH1F("h_P_before", ";P(#gamma) [GeV]", 100, 0, 2);
-    h_Th[0] = new TH1F("h_Th_before", ";#theta(#gamma) [deg]", 100, 0, 50);
-    h_Phi[0] = new TH1F("h_Phi_before", ";#phi(#gamma) [deg]", 100, -180, 180);
-
-    // Set properties for "before" histograms
-    h_Mgg[0]->SetLineColor(kBlack);
-    h_Mgg[0]->SetLineWidth(2);
-    h_Mgg[0]->GetXaxis()->SetTitleSize(0.06);
-    h_Mgg[0]->GetYaxis()->SetTitleSize(0.06);
-
-    h_P[0]->SetLineColor(kBlack);
-    h_P[0]->SetLineWidth(2);
-    h_P[0]->GetXaxis()->SetTitleSize(0.06);
-    h_P[0]->GetYaxis()->SetTitleSize(0.06);
-
-    h_Th[0]->SetLineColor(kBlack);
-    h_Th[0]->SetLineWidth(2);
-    h_Th[0]->GetXaxis()->SetTitleSize(0.06);
-    h_Th[0]->GetYaxis()->SetTitleSize(0.06);
-
-    h_Phi[0]->SetLineColor(kBlack);
-    h_Phi[0]->SetLineWidth(2);
-    h_Phi[0]->GetXaxis()->SetTitleSize(0.06);
-    h_Phi[0]->GetYaxis()->SetTitleSize(0.06);
-
-    // Create the histograms for "after"
-    h_Mgg[1] = new TH1F("h_Mgg_after", ";M_{#gamma#gamma} [GeV]", 100, 0, 0.5);
-    h_P[1] = new TH1F("h_P_after", ";P(#gamma) [GeV]", 100, 0, 2);
-    h_Th[1] = new TH1F("h_Th_after", ";#theta(#gamma) [deg]", 100, 0, 50);
-    h_Phi[1] = new TH1F("h_Phi_after", ";#phi(#gamma) [deg]", 100, -180, 180);
-
-    // Set properties for "after" histograms
-    h_Mgg[1]->SetLineColor(kRed);
-    h_Mgg[1]->SetLineWidth(2);
-    h_Mgg[1]->GetXaxis()->SetTitleSize(0.06);
-    h_Mgg[1]->GetYaxis()->SetTitleSize(0.06);
-
-    h_P[1]->SetLineColor(kRed);
-    h_P[1]->SetLineWidth(2);
-    h_P[1]->GetXaxis()->SetTitleSize(0.06);
-    h_P[1]->GetYaxis()->SetTitleSize(0.06);
-
-    h_Th[1]->SetLineColor(kRed);
-    h_Th[1]->SetLineWidth(2);
-    h_Th[1]->GetXaxis()->SetTitleSize(0.06);
-    h_Th[1]->GetYaxis()->SetTitleSize(0.06);
-
-    h_Phi[1]->SetLineColor(kRed);
-    h_Phi[1]->SetLineWidth(2);
-    h_Phi[1]->GetXaxis()->SetTitleSize(0.06);
-    h_Phi[1]->GetYaxis()->SetTitleSize(0.06);
+    InitializeHistograms();
   }
 
   void PhotonGBTFilterValidator::Run(hipo::banklist& banks) const
@@ -114,7 +62,35 @@ namespace iguana::clas12 {
     FillHistograms(filtered_photons, 1);
 
   }
+    
+  void PhotonGBTFilterValidator::InitializeHistograms() {
+    std::vector<std::pair<int, TString>> histInfos = {
+        {0, "before"},
+        {1, "after"}
+    };
 
+    for (const auto& [idx, label] : histInfos) {
+        h_Mgg[idx] = new TH1F(Form("h_Mgg_%s", label.Data()), ";M_{#gamma#gamma} [GeV]", 100, 0, 0.5);
+        h_P[idx] = new TH1F(Form("h_P_%s", label.Data()), ";P(#gamma) [GeV]", 100, 0, 2);
+        h_Th[idx] = new TH1F(Form("h_Th_%s", label.Data()), ";#theta(#gamma) [deg]", 100, 0, 50);
+        h_Phi[idx] = new TH1F(Form("h_Phi_%s", label.Data()), ";#phi(#gamma) [deg]", 100, -180, 180);
+        
+        int color = (idx == 0) ? kBlack : kRed;
+        
+        ConfigureHistogram(h_Mgg[idx], color);
+        ConfigureHistogram(h_P[idx], color);
+        ConfigureHistogram(h_Th[idx], color);
+        ConfigureHistogram(h_Phi[idx], color);
+    }
+  }
+
+  void PhotonGBTFilterValidator::ConfigureHistogram(TH1F* hist, int color) {
+    hist->SetLineColor(color);
+    hist->SetLineWidth(2);
+    hist->GetXaxis()->SetTitleSize(0.06);
+    hist->GetYaxis()->SetTitleSize(0.06);
+  }
+    
   void PhotonGBTFilterValidator::FillHistograms(const std::vector<ROOT::Math::PxPyPzEVector>& photons, int idx) const
   {
     for (const auto& photon : photons) {

@@ -270,7 +270,7 @@ namespace iguana::clas12 {
           static_cast<float>(gm2u), static_cast<float>(gm2v), static_cast<float>(R_e),
           static_cast<float>(dE_e)
       };
-
+ 
       for (int i = 0; i < m_g; ++i) {
           input_data.push_back(static_cast<float>(R_gamma[i]));
           input_data.push_back(static_cast<float>(dE_gamma[i]));
