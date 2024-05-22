@@ -61,7 +61,7 @@ namespace iguana::clas12 {
   bool PhotonGBTFilter::ForwardDetectorFilter(float const theta) const
   {
       // Apply forward detector cut
-      if( theta*180/3.14159265<5 || theta*180/3.14159265>35 ) return false;
+      if( theta*180/M_PI<5 || theta*180/M_PI>35 ) return false;
       return true;
   }
     
