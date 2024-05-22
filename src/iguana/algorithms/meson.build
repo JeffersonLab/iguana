@@ -147,6 +147,8 @@ foreach algo : algo_dict
         vdor_headers += algo_dir / src_file
       endforeach
     endif
+  else
+    warning('Algorithm "' + algo_name + '" has no Validator; use at your own risk!')
   endif
 
 endforeach
