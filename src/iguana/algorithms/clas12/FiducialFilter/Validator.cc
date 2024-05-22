@@ -147,7 +147,7 @@ namespace iguana::clas12 {
                   u_DC3_before.at(pdg)->Draw("colz");
               }
           }
-          canv->SaveAs(m_output_file_basename + "_before_sector" + std::to_string(r+1) + ".png");
+          canv->SaveAs(m_output_file_basename + "_before_DC" + std::to_string(r+1) + ".png");
       }
         
       for(int r=0;r<3;r++){
@@ -171,7 +171,7 @@ namespace iguana::clas12 {
                   u_DC3_after.at(pdg)->Draw("colz");
               }
           }
-          canv->SaveAs(m_output_file_basename + "_after_sector" + std::to_string(r+1) + ".png");
+          canv->SaveAs(m_output_file_basename + "_after_DC" + std::to_string(r+1) + ".png");
       } 
       m_output_file->Write();
       m_log->Info("Wrote output file {}", m_output_file->GetName());
