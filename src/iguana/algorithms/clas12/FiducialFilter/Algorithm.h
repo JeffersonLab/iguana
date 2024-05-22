@@ -5,15 +5,15 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex
+  /// @brief_algo Filter the `REC::Particle` bank by applying DC (drift chamber) fiducial cuts
   ///
   /// @begin_doc_algo{Filter}
-  /// @input_banks{REC::Particle}
+  /// @input_banks{REC::Particle, REC::Traj, RUN::config}
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
   /// @begin_doc_config
-  /// @config_param{cuts | list[double] | lower and upper @f$z@f$-vertex cuts; run-range dependent}
+  /// @config_param{pass | int | cook type to use for assigning fiducial cuts}
   /// @end_doc
   class FiducialFilter : public Algorithm
   {

@@ -14,6 +14,9 @@ namespace iguana::clas12 {
     b_config   = GetBankIndex(banks, "RUN::config");
       
     o_pass      = GetCachedOption<int>("pass").value_or(1);
+    if(o_pass!=1){
+        m_log->Warn("FiducialFilter only contains fiducial cuts for pass1...we will default to using those...");
+    }
       
   }
 
@@ -48,6 +51,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
 
   bool FiducialFilter::Filter(traj_row_data const traj_row, int const torus, int const pid) const
   {
+
     if(pid==11) return DC_fiducial_cut_XY_pass1(traj_row, torus, pid);
     else if(pid==211 || pid==-211 || pid==2212){
         if(torus==-1) return DC_fiducial_cut_theta_phi_pass1(traj_row, torus, pid);

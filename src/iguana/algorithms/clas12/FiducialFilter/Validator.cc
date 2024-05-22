@@ -105,9 +105,6 @@ namespace iguana::clas12 {
     // run the fiducial cuts
     m_algo_seq->Run(banks);
 
-    // lock the mutex, so we can mutate plots
-    // std::scoped_lock<std::mutex> lock(m_mutex);
-
     // fill the plots
     for(auto const& row : particle_bank.getRowList()) {
 
@@ -234,8 +231,6 @@ namespace iguana::clas12 {
                 break;
           }
       }
-      
-      
       
       return traj_map;      
   }
