@@ -2,6 +2,7 @@
 
 #include <fmt/color.h>
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <functional>
 #include <unordered_map>
 
