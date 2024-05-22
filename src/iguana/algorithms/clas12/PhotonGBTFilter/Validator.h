@@ -21,11 +21,11 @@ namespace iguana::clas12 {
 
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
-      void FillHistograms(const std::vector<ROOT::Math::PxPyPzEVector>& photons, int idx) const;
       void Stop() override;
 
     private:
-
+      
+      void FillHistograms(const std::vector<ROOT::Math::PxPyPzEVector>& photons, int idx) const;
       hipo::banklist::size_type b_particle;
       
       std::vector<int> const u_pdg_list = {
