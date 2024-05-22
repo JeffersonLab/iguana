@@ -15,9 +15,8 @@ namespace iguana::clas12 {
     b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
     b_config = GetBankIndex(banks, "RUN::config");
     
-    o_pass      = GetCachedOption<int>("pass").value_or(0);
-    o_threshold = GetCachedOption<double>("threshold").value_or(0);
-    
+    o_pass      = GetOptionScalar<int>("pass",{});
+    o_threshold = GetOptionScalar<double>("threshold",{});
   }
 
 
@@ -331,6 +330,7 @@ namespace iguana::clas12 {
       
       double prediction = 1-1/(1+exp(-sigmoid_x));               // Calculate predictive value for "signal"
                                                                  // [0,1] --> Closer to 1 == Photon is Signal
+      std::cout << prediction <<">"<<o_threshold<< std::endl;
 
       return (prediction>o_threshold);
   }
