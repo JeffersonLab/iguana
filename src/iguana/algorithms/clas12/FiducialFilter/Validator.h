@@ -29,18 +29,18 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_traj;
       
-      double const DC1xleft   = -500;
-      double const DC1xright  = 500;
-      double const DC1ybottom = -500;
-      double const DC1ytop    = 500;
-      double const DC2xleft   = -500;
-      double const DC2xright  = 500;
-      double const DC2ybottom = -500;
-      double const DC2ytop    = 500;
-      double const DC3xleft   = -500;
-      double const DC3xright  = 500;
-      double const DC3ybottom = -500;
-      double const DC3ytop    = 500;
+      double const DC1xleft   = -200;
+      double const DC1xright  = 200;
+      double const DC1ybottom = -200;
+      double const DC1ytop    = 200;
+      double const DC2xleft   = -200;
+      double const DC2xright  = 200;
+      double const DC2ybottom = -200;
+      double const DC2ytop    = 200;
+      double const DC3xleft   = -200;
+      double const DC3xright  = 200;
+      double const DC3ybottom = -200;
+      double const DC3ytop    = 200;
       
       double const PI = 3.14159265;
       

@@ -216,7 +216,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
 
 
         double calc_phi_min = minparams[this_pid][sector - 1][r][0] + minparams[this_pid][sector - 1][r][1] * std::log(theta_DCr) 
-          + minparams[this_pid][sector - 1][r][2] * theta_DCr + minparams[pid][sector - 1][r][3] * theta_DCr * theta_DCr;
+          + minparams[this_pid][sector - 1][r][2] * theta_DCr + minparams[this_pid][sector - 1][r][3] * theta_DCr * theta_DCr;
 
         double calc_phi_max = maxparams[this_pid][sector - 1][r][0] + maxparams[this_pid][sector - 1][r][1] * std::log(theta_DCr)
           + maxparams[this_pid][sector - 1][r][2] * theta_DCr + maxparams[this_pid][sector - 1][r][3] * theta_DCr * theta_DCr;
