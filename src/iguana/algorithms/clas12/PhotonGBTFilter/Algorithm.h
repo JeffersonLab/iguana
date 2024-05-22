@@ -31,6 +31,28 @@ namespace iguana::clas12 {
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// **Struct**: Forward declaration of calorimeter data struct
+      struct calo_row_data {
+        double pcal_x = -999;
+        double pcal_y = -999;
+        double pcal_z = -999;
+        double ecin_x = -999;
+        double ecin_y = -999;
+        double ecin_z = -999;
+        double ecout_x = -999;
+        double ecout_y = -999;
+        double ecout_z = -999;
+        double pcal_e = -999;
+        double pcal_m2u = -999;
+        double pcal_m2v = -999;
+        double ecin_e = -999;
+        double ecin_m2u = -999;
+        double ecin_m2v = -999;
+        double ecout_e = -999;
+        double ecout_m2u = -999;
+        double ecout_m2v = -999;
+      }; 
       
       /// **Method**: Applies pid purity cuts to photons, compatible to how the GBT models are trained
       /// @param E energy of the photon
@@ -52,7 +74,7 @@ namespace iguana::clas12 {
       /// @param row the row corresponding to the photon being classified
       /// @param runnum the current run number
       /// @returns `true` if the photon is to be considered signal, otherwise `false`
-      bool Filter(hipo::bank const &particleBank, hipo::bank const &caloBank, std::map<int, calo_row_data> calo_map, int const row, int const runnum) const;
+      bool Filter(hipo::bank const &particleBank, hipo::bank const &caloBank, std::map<int, PhotonGBTFilter::calo_row_data> calo_map, int const row, int const runnum) const;
       
       
       /// **Method**: Calls the appropriate CatBoost model for the given run group, classifying the photon of interest
@@ -65,14 +87,14 @@ namespace iguana::clas12 {
       /// **Method**: Gets calorimeter data for particles in the event
       /// @param bank the bank to get data from
       /// @returns a map with keys as particle indices (pindex) and values as calo_row_data structs
-      std::map<int, calo_row_data> GetCaloMap(hipo::bank const &bank) const;
+      std::map<int, PhotonGBTFilter::calo_row_data> GetCaloMap(hipo::bank const &bank) const;
       
       
       /// **Method**: Gets the calorimeter vector for a particle in the event
       /// @param calo_map the map with keys as particle indices (pindex) and values as calo_row_data structs
       /// @param row the row (particle index) to get the calorimeter data for
       /// @returns a ROOT::Math::XYZVector with the coordinates of the particle in the calorimeter
-      ROOT::Math::XYZVector GetParticleCaloVector(std::map<int, calo_row_data> const &calo_map, int const row) const;
+      ROOT::Math::XYZVector GetParticleCaloVector(std::map<int, PhotonGBTFilter::calo_row_data> const &calo_map, int const row) const;
       
       
       /// **Method**: Gets the mass of a particle given its PID
@@ -114,7 +136,8 @@ namespace iguana::clas12 {
           {2112, 3}, // neutron (neutral hadron)
           {-2112, 3} // antineutron (neutral hadron)
       };
-
+      
+      
   };
     
 }

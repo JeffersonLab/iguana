@@ -65,7 +65,7 @@ namespace iguana::clas12 {
       return true;
   }
     
-  bool PhotonGBTFilter::Filter(hipo::bank const &particleBank, hipo::bank const &caloBank, std::map<int, calo_row_data> calo_map, int const row, int const runnum) const
+  bool PhotonGBTFilter::Filter(hipo::bank const &particleBank, hipo::bank const &caloBank, std::map<int, PhotonGBTFilter::calo_row_data> calo_map, int const row, int const runnum) const
   {
 
       // Set variables native to the photon we are classifying
@@ -334,9 +334,9 @@ namespace iguana::clas12 {
 
       return (prediction>o_threshold);
   }
-  std::map<int, calo_row_data> PhotonGBTFilter::GetCaloMap(hipo::bank const& bank) const
+  std::map<int, PhotonGBTFilter::calo_row_data> PhotonGBTFilter::GetCaloMap(hipo::bank const& bank) const
   {
-      std::map<int, calo_row_data> calo_map;
+      std::map<int, PhotonGBTFilter::calo_row_data> calo_map;
       
       for(int row = 0; row < bank.getRows(); row++){
           auto pindex = bank.getInt("pindex",row);
@@ -350,7 +350,7 @@ namespace iguana::clas12 {
           
           // Ensure an entry exists in the map for the given pindex
           if (calo_map.find(pindex) == calo_map.end()) {
-            calo_map[pindex] = calo_row_data();
+            calo_map[pindex] = PhotonGBTFilter::calo_row_data();
           }
           
           switch(layer){
@@ -377,7 +377,7 @@ namespace iguana::clas12 {
       return calo_map;
   }
 
-  ROOT::Math::XYZVector PhotonGBTFilter::GetParticleCaloVector(std::map<int, calo_row_data> const &calo_map, int const row) const {
+  ROOT::Math::XYZVector PhotonGBTFilter::GetParticleCaloVector(std::map<int, PhotonGBTFilter::calo_row_data> const &calo_map, int const row) const {
       // Determine the 3-vector location of where the photon of interest's calo deposition is
       // First we check the pcal coords, then ecin, then ecout
       ROOT::Math::XYZVector v;
