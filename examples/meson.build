@@ -18,9 +18,6 @@ example_sources = {
     'sources':   [ 'iguana-example-config-files.cc' ],
     'test_args': [ get_option('prefix') / example_config_files_prefix ],
   },
-  'iguana-example-photon-ML': {
-    'sources': [ 'iguana-example-photon-ML.cc' ],
-  },
   'iguana-example-fortran': {
     'sources':     [ 'iguana-example-fortran.f' ],
     'build_this':  get_option('bind_fortran') and ROOT_dep.found(), # depends on physics::InclusiveKinematics, which depends on ROOT
