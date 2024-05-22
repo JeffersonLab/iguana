@@ -119,8 +119,8 @@ namespace iguana::clas12 {
   {
     for (const auto& photon : photons) {
         h_P.at(idx)->Fill(photon.P());
-        h_Th.at(idx)->Fill(photon.Theta() * 180.0 / 3.1415);
-        h_Phi.at(idx)->Fill(photon.Phi() * 180.0 / 3.1415);
+        h_Th.at(idx)->Fill(photon.Theta() * 180.0 / M_PI);
+        h_Phi.at(idx)->Fill(photon.Phi() * 180.0 / M_PI);
     }
 
     for (size_t i = 0; i < photons.size(); ++i) {
