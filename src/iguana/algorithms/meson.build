@@ -66,6 +66,13 @@ algo_dict += [
     'test_args': { 'banks': ['REC::Particle'] },
   },
   {
+    'name': 'clas12::FTEnergyCorrection',
+    'has_config': false,
+    'has_c_bindings': false,
+    'has_validator': false,
+    'test_args': { 'banks': ['RECFT::Particle'] },
+  },
+  {
     'name': 'clas12::MomentumCorrection',
     'has_config': false,
     'test_args': {
@@ -147,6 +154,8 @@ foreach algo : algo_dict
         vdor_headers += algo_dir / src_file
       endforeach
     endif
+  else
+    warning('Algorithm "' + algo_name + '" has no Validator; use at your own risk!')
   endif
 
 endforeach
