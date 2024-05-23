@@ -36,9 +36,10 @@ namespace iguana::clas12 {
 
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
-      void Stop() override;
-
-      /// **Struct**: Forward declaration of calorimeter data struct
+      void Stop() override;   
+      
+    private:
+      
       struct calo_row_data {
         double pcal_x = 0;
         double pcal_y = 0;
@@ -59,9 +60,6 @@ namespace iguana::clas12 {
         double ecout_m2u = 0;
         double ecout_m2v = 0;
       }; 
-      
-      
-    private:
       
       /// **Method**: Applies pid purity cuts to photons, compatible to how the GBT models are trained
       /// @param E energy of the photon
