@@ -60,6 +60,9 @@ namespace iguana::clas12 {
         double ecout_m2v = 0;
       }; 
       
+      
+    private:
+      
       /// **Method**: Applies pid purity cuts to photons, compatible to how the GBT models are trained
       /// @param E energy of the photon
       /// @param Epcal energy the photon has deposited in the pre-shower calorimeter
@@ -109,18 +112,11 @@ namespace iguana::clas12 {
       double GetMass(int pid) const;
       
       
-      /// **Method**: Gets the type of a particle given its PID
-      /// @param pid the particle ID to get the type for
-      /// @returns an integer representing the type of the particle: 
-      int GetParticleType(int pid) const;
-      
       /// **Method**: Gets the model function for the run number
       /// @param runnum the run of the associated event
       /// @returns GBT function for the run period
       std::function<double(std::vector<float> const &)> getModelFunction(int runnum) const;
       
-    private:
-
       /// `hipo::banklist` 
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_calorimeter;
@@ -131,20 +127,6 @@ namespace iguana::clas12 {
       
       /// Integer for the event reconstruction pass
       int o_pass = 1;
-      
-      /// Particle Type Map
-      const std::unordered_map<int, int> type_map = {
-          {11, 1},  // electron
-          {22, 0},  // photon
-          {2212, 2}, // proton (charged hadron)
-          {-2212, 2}, // antiproton (charged hadron)
-          {211, 2},  // pi+ (charged hadron)
-          {-211, 2}, // pi- (charged hadron)
-          {321, 2},  // K+ (charged hadron)
-          {-321, 2}, // K- (charged hadron)
-          {2112, 3}, // neutron (neutral hadron)
-          {-2112, 3} // antineutron (neutral hadron)
-      };
     
       /// Map for the GBT Models to use depending on pass and run number
       const std::map<std::tuple<int, int, int>, std::function<double(std::vector<float> const &)>> modelMap = {

@@ -153,6 +153,7 @@ namespace iguana::clas12 {
           
           auto pid = particleBank.getInt("pid",inner_row);
           auto mass = GetMass(pid);
+          
           // Skip over particle if its mass was undefined
           if (mass == -1.0) continue;
           auto px = particleBank.getFloat("px",inner_row);
@@ -170,15 +171,8 @@ namespace iguana::clas12 {
           // Get angular distance between photon of interest and particle
           double R = ROOT::Math::VectorUtil::Angle(vPOI, vPART);
 
-          // Get 'type' of particle for the neighbor
-          // 0 --> photon
-          // 1 --> electron
-          // 2 --> charged hadron
-          // 3 --> neutral hadron
-          int part_type = GetParticleType(pid);
-          
           // Logic for filling nearest neighbor variables
-          if(part_type==0) {//photon
+          if(pid==22) {//photon
               
               // Apply Photon Purity Cuts to ensure this neighbor can be used in classification
               if ( PidPurityPhotonFilter(E,calo_map[inner_row].pcal_e,th)==false ) continue;
@@ -207,13 +201,13 @@ namespace iguana::clas12 {
                   }
               }
           }
-          else if(part_type==1){//electron
+          else if(pid==11){//electron
               if(R<R_e || R_e==0){
                   R_e = R;
                   dE_e = gE - E;
               }
           }
-          else if(part_type==2){//charged hadron
+          else if(pid==2212||pid==-2212||pid==211||pid==-211||pid==321||pid==-321){//charged hadron
               for (int i=0; i<m_ch; ++i) {
                   if (R < R_ch[i] || R_ch[i] == 0) {
                     int j = m_ch - 1;
@@ -234,7 +228,7 @@ namespace iguana::clas12 {
                   }
                 }
           }
-          else if(part_type==3){//neutral hadron
+          else if(pid==2112||pid==-2112){//neutral hadron
               for (int i=0; i<m_nh; ++i) {
                   if (R < R_nh[i] || R_nh[i] == 0) {
                     int j = m_nh - 1;
@@ -371,16 +365,6 @@ namespace iguana::clas12 {
       } else {
         return -1.0; // Default mass if pid not found
       }
-  }
-    
-
-  int PhotonGBTFilter::GetParticleType(int pid) const {
-    auto it = type_map.find(pid);
-    if (it != type_map.end()) {
-        return it->second;
-    } else {
-        return -1; // Default type if pid not found
-    }
   }
     
   std::function<double(std::vector<float> const &)> PhotonGBTFilter::getModelFunction(int runnum) const {
