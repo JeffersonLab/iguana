@@ -2,6 +2,12 @@
 
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
+#include "models/RGA_inbending_pass1.cpp"
+#include "models/RGA_outbending_pass1.cpp"
+#include "models/RGA_inbending_pass2.cpp"
+#include "models/RGA_outbending_pass2.cpp"
+#include "models/RGC_Summer2022_pass1.cpp"
+
 #include <Math/Vector3D.h>
 #include <Math/VectorUtil.h>
 
@@ -34,24 +40,24 @@ namespace iguana::clas12 {
 
       /// **Struct**: Forward declaration of calorimeter data struct
       struct calo_row_data {
-        double pcal_x = -999;
-        double pcal_y = -999;
-        double pcal_z = -999;
-        double ecin_x = -999;
-        double ecin_y = -999;
-        double ecin_z = -999;
-        double ecout_x = -999;
-        double ecout_y = -999;
-        double ecout_z = -999;
-        double pcal_e = -999;
-        double pcal_m2u = -999;
-        double pcal_m2v = -999;
-        double ecin_e = -999;
-        double ecin_m2u = -999;
-        double ecin_m2v = -999;
-        double ecout_e = -999;
-        double ecout_m2u = -999;
-        double ecout_m2v = -999;
+        double pcal_x = 0;
+        double pcal_y = 0;
+        double pcal_z = 0;
+        double ecin_x = 0;
+        double ecin_y = 0;
+        double ecin_z = 0;
+        double ecout_x = 0;
+        double ecout_y = 0;
+        double ecout_z = 0;
+        double pcal_e = 0;
+        double pcal_m2u = 0;
+        double pcal_m2v = 0;
+        double ecin_e = 0;
+        double ecin_m2u = 0;
+        double ecin_m2v = 0;
+        double ecout_e = 0;
+        double ecout_m2u = 0;
+        double ecout_m2v = 0;
       }; 
       
       /// **Method**: Applies pid purity cuts to photons, compatible to how the GBT models are trained
@@ -106,9 +112,12 @@ namespace iguana::clas12 {
       /// **Method**: Gets the type of a particle given its PID
       /// @param pid the particle ID to get the type for
       /// @returns an integer representing the type of the particle: 
-      /// 0 for electron, 1 for photon, 2 for charged hadron, 3 for neutral hadron; returns -1 if the PID is not recognized
       int GetParticleType(int pid) const;
       
+      /// **Method**: Gets the model function for the run number
+      /// @param runnum the run of the associated event
+      /// @returns GBT function for the run period
+      std::function<double(std::vector<float> const &)> getModelFunction(int runnum) const;
       
     private:
 
@@ -125,8 +134,8 @@ namespace iguana::clas12 {
       
       /// Particle Type Map
       const std::unordered_map<int, int> type_map = {
-          {11, 0},  // electron
-          {22, 1},  // photon
+          {11, 1},  // electron
+          {22, 0},  // photon
           {2212, 2}, // proton (charged hadron)
           {-2212, 2}, // antiproton (charged hadron)
           {211, 2},  // pi+ (charged hadron)
@@ -136,9 +145,26 @@ namespace iguana::clas12 {
           {2112, 3}, // neutron (neutral hadron)
           {-2112, 3} // antineutron (neutral hadron)
       };
-      
-      
+    
+      /// Map for the GBT Models to use depending on pass and run number
+      const std::map<std::tuple<int, int, int>, std::function<double(std::vector<float> const &)>> modelMap = {
+            {{5032, 5332, 1}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Fall2018 RGA Inbending
+            {{5032, 5332, 2}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Fall2018 RGA Inbending
+            {{5333, 5666, 1}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_outbending_pass1(data); }}, // Fall2018 RGA Outbending
+            {{5333, 5666, 2}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_outbending_pass2(data); }}, // Fall2018 RGA Outbending
+            {{6616, 6783, 1}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Spring2019 RGA Inbending
+            {{6616, 6783, 2}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Spring2019 RGA Inbending
+            {{6156, 6603, 1}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Spring2019 RGB Inbending
+            {{6156, 6603, 2}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Spring2019 RGB Inbending
+            {{11093, 11283, 1}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_outbending_pass1(data); }}, // Fall2019 RGB Outbending
+            {{11093, 11283, 2}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_outbending_pass2(data); }}, // Fall2019 RGB Outbending
+            {{11284, 11300, 1}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Fall2019 RGB BAND Inbending
+            {{11284, 11300, 2}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Fall2019 RGB BAND Inbending
+            {{11323, 11571, 1}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Spring2020 RGB Inbending
+            {{11323, 11571, 2}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Spring2020 RGB Inbending
+            {{16042, 16772, 1}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGC_Summer2022_pass1(data); }}, // Summer2022 RGC Inbending
+            {{16042, 16772, 2}, [this](std::vector<float> const &data) { return ApplyCatboostModel_RGC_Summer2022_pass1(data); }} // Summer2022 RGC Inbending (no pass2 currently)
+       };
   };
     
 }
-

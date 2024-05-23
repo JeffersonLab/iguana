@@ -1,7 +1,4 @@
 #include "Algorithm.h"
-#include "models/RGA_inbending.cpp"
-#include "models/RGA_outbending.cpp"
-#include "models/RGC_Summer2022.cpp"
 
 namespace iguana::clas12 {
 
@@ -172,7 +169,7 @@ namespace iguana::clas12 {
           
           // Get angular distance between photon of interest and particle
           double R = ROOT::Math::VectorUtil::Angle(vPOI, vPART);
-          
+
           // Get 'type' of particle for the neighbor
           // 0 --> photon
           // 1 --> electron
@@ -270,29 +267,29 @@ namespace iguana::clas12 {
           static_cast<float>(dE_e)
       };
  
-      for (int i = 0; i < m_g; ++i) {
-          input_data.push_back(static_cast<float>(R_gamma[i]));
-          input_data.push_back(static_cast<float>(dE_gamma[i]));
-          input_data.push_back(static_cast<float>(Epcal_gamma[i]));
-          input_data.push_back(static_cast<float>(m2u_gamma[i]));
-          input_data.push_back(static_cast<float>(m2v_gamma[i]));
-      }
+      
+      for (int i = 0; i < m_g; ++i) input_data.push_back(static_cast<float>(R_gamma[i]));
+      for (int i = 0; i < m_g; ++i) input_data.push_back(static_cast<float>(dE_gamma[i]));
+      for (int i = 0; i < m_g; ++i) input_data.push_back(static_cast<float>(Epcal_gamma[i]));
+      for (int i = 0; i < m_g; ++i) input_data.push_back(static_cast<float>(m2u_gamma[i]));
+      for (int i = 0; i < m_g; ++i) input_data.push_back(static_cast<float>(m2v_gamma[i]));
+      
 
-      for (int i = 0; i < m_ch; ++i) {
-          input_data.push_back(static_cast<float>(R_ch[i]));
-          input_data.push_back(static_cast<float>(dE_ch[i]));
-          input_data.push_back(static_cast<float>(Epcal_ch[i]));
-          input_data.push_back(static_cast<float>(m2u_ch[i]));
-          input_data.push_back(static_cast<float>(m2v_ch[i]));
-      }
+       
+      for (int i = 0; i < m_ch; ++i) input_data.push_back(static_cast<float>(R_ch[i]));
+      for (int i = 0; i < m_ch; ++i) input_data.push_back(static_cast<float>(dE_ch[i]));
+      for (int i = 0; i < m_ch; ++i) input_data.push_back(static_cast<float>(Epcal_ch[i]));
+      for (int i = 0; i < m_ch; ++i) input_data.push_back(static_cast<float>(m2u_ch[i]));
+      for (int i = 0; i < m_ch; ++i) input_data.push_back(static_cast<float>(m2v_ch[i]));
+      
 
-      for (int i = 0; i < m_nh; ++i) {
-          input_data.push_back(static_cast<float>(R_nh[i]));
-          input_data.push_back(static_cast<float>(dE_nh[i]));
-          input_data.push_back(static_cast<float>(Epcal_nh[i]));
-          input_data.push_back(static_cast<float>(m2u_nh[i]));
-          input_data.push_back(static_cast<float>(m2v_nh[i]));
-      }
+      
+      for (int i = 0; i < m_nh; ++i) input_data.push_back(static_cast<float>(R_nh[i]));
+      for (int i = 0; i < m_nh; ++i) input_data.push_back(static_cast<float>(dE_nh[i]));
+      for (int i = 0; i < m_nh; ++i) input_data.push_back(static_cast<float>(Epcal_nh[i]));
+      for (int i = 0; i < m_nh; ++i) input_data.push_back(static_cast<float>(m2u_nh[i]));
+      for (int i = 0; i < m_nh; ++i) input_data.push_back(static_cast<float>(m2v_nh[i]));
+      
 
       input_data.push_back(static_cast<float>(num_photons_0_1));
       input_data.push_back(static_cast<float>(num_photons_0_2));
@@ -301,39 +298,13 @@ namespace iguana::clas12 {
       return ClassifyPhoton(input_data, runnum);
   }
 
-  bool PhotonGBTFilter::ClassifyPhoton(std::vector<float> const &input_data, int const runnum) const
-  {
-
-      double sigmoid_x = 0.0; // Input to sigmoid
-      
-      // Assign the correct function based on runnum
-      if (runnum>=5032&&runnum<=5332) { // Fall2018 RGA Inbending
-          sigmoid_x = ApplyCatboostModel_RGA_inbending(input_data); 
-      } else if (runnum>=5333&&runnum<=5666) { // Fall2018 RGA Outbending
-          sigmoid_x = ApplyCatboostModel_RGA_outbending(input_data); 
-      } else if (runnum>=6616&&runnum<=6783) { // Spring2019 RGA Inbending
-          sigmoid_x = ApplyCatboostModel_RGA_inbending(input_data); 
-      } else if (runnum>=6156&&runnum<=6603) { // Spring2019 RGB Inbending
-          sigmoid_x = ApplyCatboostModel_RGA_inbending(input_data); 
-      } else if (runnum>=11093&&runnum<=11283) { // Fall2019 RGB Outbending
-          sigmoid_x = ApplyCatboostModel_RGA_outbending(input_data); 
-      } else if (runnum>=11284&&runnum<=11300) { // Fall2019 RGB BAND Inbending
-          sigmoid_x = ApplyCatboostModel_RGA_inbending(input_data); 
-      } else if (runnum>=11323&&runnum<=11571) { // Spring2020 RGB Inbending
-          sigmoid_x = ApplyCatboostModel_RGA_inbending(input_data); 
-      } else if (runnum>=16042&&runnum<=16772) { // Summer2022 RGC Inbending
-          sigmoid_x = ApplyCatboostModel_RGC_Summer2022(input_data); 
-      } else { // Unknown, defaulting to RG-A inbending
-          m_log->Warn("Run Number {} has no matching PhotonGBT model...Defaulting to RGA inbending...",runnum);
-          sigmoid_x = ApplyCatboostModel_RGA_inbending(input_data); 
-      }
-      
-      double prediction = 1-1/(1+exp(-sigmoid_x));               // Calculate predictive value for "signal"
-                                                                 // [0,1] --> Closer to 1 == Photon is Signal
-      std::cout << prediction <<">"<<o_threshold<< std::endl;
-
-      return (prediction>o_threshold);
+  bool PhotonGBTFilter::ClassifyPhoton(std::vector<float> const &input_data, int const runnum) const {
+    auto modelFunction = getModelFunction(runnum);
+    double sigmoid_x = modelFunction(input_data);
+    double prediction = 1 / (1 + exp(-sigmoid_x));
+    return (prediction > o_threshold);
   }
+
   std::map<int, PhotonGBTFilter::calo_row_data> PhotonGBTFilter::GetCaloMap(hipo::bank const& bank) const
   {
       std::map<int, PhotonGBTFilter::calo_row_data> calo_map;
@@ -381,8 +352,8 @@ namespace iguana::clas12 {
       // Determine the 3-vector location of where the photon of interest's calo deposition is
       // First we check the pcal coords, then ecin, then ecout
       ROOT::Math::XYZVector v;
-      if (calo_map.at(row).pcal_x == -999) {
-          if (calo_map.at(row).ecin_x == -999) {
+      if (calo_map.at(row).pcal_x == 0) {
+          if (calo_map.at(row).ecin_x == 0) {
               v.SetXYZ(calo_map.at(row).ecout_x, calo_map.at(row).ecout_y, calo_map.at(row).ecout_z);
           } else {
               v.SetXYZ(calo_map.at(row).ecin_x, calo_map.at(row).ecin_y, calo_map.at(row).ecin_z);
@@ -394,13 +365,13 @@ namespace iguana::clas12 {
   }
 
   double PhotonGBTFilter::GetMass(int pid) const {
-  auto it = particle::mass.find(static_cast<particle::PDG>(pid));
-  if (it != particle::mass.end()) {
-    return it->second;
-  } else {
-    return -1.0; // Default mass if pid not found
+      auto it = particle::mass.find(static_cast<particle::PDG>(pid));
+      if (it != particle::mass.end()) {
+        return it->second;
+      } else {
+        return -1.0; // Default mass if pid not found
+      }
   }
-}
     
 
   int PhotonGBTFilter::GetParticleType(int pid) const {
@@ -411,6 +382,20 @@ namespace iguana::clas12 {
         return -1; // Default type if pid not found
     }
   }
+    
+  std::function<double(std::vector<float> const &)> PhotonGBTFilter::getModelFunction(int runnum) const {
+
+    for (const auto &entry : modelMap) {
+        if (runnum >= std::get<0>(entry.first) && runnum <= std::get<1>(entry.first) && o_pass == std::get<2>(entry.first)) {
+            return entry.second;
+        }
+    }
+
+    // Default to RGA inbending pass1 if no match found
+    m_log->Warn("Run Number {} with pass {} has no matching PhotonGBT model...Defaulting to RGA inbending pass1...", runnum, o_pass);
+    return [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); };
+  }
+
   void PhotonGBTFilter::Stop()
   {
   }

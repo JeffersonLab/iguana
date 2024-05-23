@@ -31,7 +31,7 @@ namespace iguana::clas12 {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     
     std::vector<ROOT::Math::PxPyPzEVector> photons;
-    for(int row = 0; row < particle_bank.getRows(); row++){
+    for(auto const& row : particle_bank.getRowList()) {
         auto pid = particle_bank.getInt("pid",row);
         if(pid!=22) continue;
         float px = particle_bank.getFloat("px",row);
@@ -46,7 +46,7 @@ namespace iguana::clas12 {
     m_algo_seq->Run(banks);
       
     std::vector<ROOT::Math::PxPyPzEVector> filtered_photons;
-    for(int row = 0; row < particle_bank.getRows(); row++){
+    for(auto const& row : particle_bank.getRowList()) {
         auto pid = particle_bank.getInt("pid",row);
         if(pid!=22) continue;
         float px = particle_bank.getFloat("px",row);
@@ -70,13 +70,13 @@ namespace iguana::clas12 {
     };
 
     for (const auto& [idx, label] : histInfos) {
-        h_Mgg[idx] = new TH1F(Form("h_Mgg_%s", label.Data()), ";M_{#gamma#gamma} [GeV]", 100, 0, 0.5);
+        h_Mgg[idx] = new TH1F(Form("h_Mgg_%s", label.Data()), ";M_{#gamma#gamma} [GeV]", 100, 0.02, 0.5);
         h_P[idx] = new TH1F(Form("h_P_%s", label.Data()), ";P(#gamma) [GeV]", 100, 0, 2);
-        h_Th[idx] = new TH1F(Form("h_Th_%s", label.Data()), ";#theta(#gamma) [deg]", 100, 0, 50);
+        h_Th[idx] = new TH1F(Form("h_Th_%s", label.Data()), ";#theta(#gamma) [deg]", 100, 0, 36);
         h_Phi[idx] = new TH1F(Form("h_Phi_%s", label.Data()), ";#phi(#gamma) [deg]", 100, -180, 180);
         
         int color = (idx == 0) ? kBlack : kRed;
-        
+
         ConfigureHistogram(h_Mgg[idx], color);
         ConfigureHistogram(h_P[idx], color);
         ConfigureHistogram(h_Th[idx], color);
