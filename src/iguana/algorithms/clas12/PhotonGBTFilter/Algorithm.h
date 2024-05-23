@@ -100,10 +100,9 @@ namespace iguana::clas12 {
       
       
       /// **Method**: Gets the calorimeter vector for a particle in the event
-      /// @param calo_map the map with keys as particle indices (pindex) and values as calo_row_data structs
-      /// @param row the row (particle index) to get the calorimeter data for
+      /// @param crd data struct of a single REC::Calorimeter's row data
       /// @returns a ROOT::Math::XYZVector with the coordinates of the particle in the calorimeter
-      ROOT::Math::XYZVector GetParticleCaloVector(std::map<int, PhotonGBTFilter::calo_row_data> const &calo_map, int const row) const;
+      ROOT::Math::XYZVector GetParticleCaloVector(PhotonGBTFilter::calo_row_data calo_row) const;
       
       
       /// **Method**: Gets the mass of a particle given its PID

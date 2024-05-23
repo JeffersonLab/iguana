@@ -139,7 +139,9 @@ namespace iguana::clas12 {
       
       
       // Get 3-vector that points to the photon of interest's location in the calorimeter
-      ROOT::Math::XYZVector vPOI = GetParticleCaloVector(calo_map, row);
+      auto calo_POI = calo_map.at(row);
+      ROOT::Math::XYZVector vPOI = GetParticleCaloVector(calo_POI);
+
       
       // Build nearest neighbor event structure
       // Loop over particles in the event
@@ -150,6 +152,7 @@ namespace iguana::clas12 {
           // Check if the key exists in the calo_map
           // This skips over REC::Particle entries without a REC::Calorimeter entry
           if (calo_map.find(inner_row) == calo_map.end()) continue;
+          auto calo_PART = calo_map.at(inner_row);
           
           auto pid = particleBank.getInt("pid",inner_row);
           auto mass = GetMass(pid);
@@ -166,8 +169,8 @@ namespace iguana::clas12 {
           if (ForwardDetectorFilter(th)==false) continue;
           
           // Get 3-vector that points to the neighboring particle's location in the calorimeter
-          ROOT::Math::XYZVector vPART = GetParticleCaloVector(calo_map, inner_row);
-          
+          ROOT::Math::XYZVector vPART = GetParticleCaloVector(calo_PART);
+
           // Get angular distance between photon of interest and particle
           double R = ROOT::Math::VectorUtil::Angle(vPOI, vPART);
 
@@ -175,7 +178,7 @@ namespace iguana::clas12 {
           if(pid==22) {//photon
               
               // Apply Photon Purity Cuts to ensure this neighbor can be used in classification
-              if ( PidPurityPhotonFilter(E,calo_map[inner_row].pcal_e,th)==false ) continue;
+              if ( PidPurityPhotonFilter(E,calo_PART.pcal_e,th)==false ) continue;
               
               if (R < 0.1) num_photons_0_1++;
               if (R < 0.2) num_photons_0_2++;
@@ -194,9 +197,9 @@ namespace iguana::clas12 {
                     }
                     R_gamma[i] = R;
                     dE_gamma[i] = gE - E;
-                    Epcal_gamma[i] = calo_map[inner_row].pcal_e;
-                    m2u_gamma[i] = calo_map[inner_row].pcal_m2u;
-                    m2v_gamma[i] = calo_map[inner_row].pcal_m2v;
+                    Epcal_gamma[i] = calo_PART.pcal_e;
+                    m2u_gamma[i] = calo_PART.pcal_m2u;
+                    m2v_gamma[i] = calo_PART.pcal_m2v;
                     break;
                   }
               }
@@ -221,9 +224,9 @@ namespace iguana::clas12 {
                     }
                     R_ch[i] = R;
                     dE_ch[i] = gE- E;
-                    Epcal_ch[i] = calo_map[inner_row].pcal_e;
-                    m2u_ch[i] = calo_map[inner_row].pcal_m2u;
-                    m2v_ch[i] = calo_map[inner_row].pcal_m2v;
+                    Epcal_ch[i] = calo_PART.pcal_e;
+                    m2u_ch[i] = calo_PART.pcal_m2u;
+                    m2v_ch[i] = calo_PART.pcal_m2v;
                     break;
                   }
                 }
@@ -242,9 +245,9 @@ namespace iguana::clas12 {
                     }
                     R_nh[i] = R;
                     dE_nh[i] = gE - E;
-                    Epcal_nh[i] = calo_map[inner_row].pcal_e;
-                    m2u_nh[i] = calo_map[inner_row].pcal_m2u;
-                    m2v_nh[i] = calo_map[inner_row].pcal_m2v;
+                    Epcal_nh[i] = calo_PART.pcal_e;
+                    m2u_nh[i] = calo_PART.pcal_m2u;
+                    m2v_nh[i] = calo_PART.pcal_m2v;
                     break;
                   }
                 }
@@ -342,18 +345,18 @@ namespace iguana::clas12 {
       return calo_map;
   }
 
-  ROOT::Math::XYZVector PhotonGBTFilter::GetParticleCaloVector(std::map<int, PhotonGBTFilter::calo_row_data> const &calo_map, int const row) const {
+  ROOT::Math::XYZVector PhotonGBTFilter::GetParticleCaloVector(PhotonGBTFilter::calo_row_data calo_row)  const {
       // Determine the 3-vector location of where the photon of interest's calo deposition is
       // First we check the pcal coords, then ecin, then ecout
       ROOT::Math::XYZVector v;
-      if (calo_map.at(row).pcal_x == 0) {
-          if (calo_map.at(row).ecin_x == 0) {
-              v.SetXYZ(calo_map.at(row).ecout_x, calo_map.at(row).ecout_y, calo_map.at(row).ecout_z);
+      if (calo_row.pcal_x == 0) {
+          if (calo_row.ecin_x == 0) {
+              v.SetXYZ(calo_row.ecout_x, calo_row.ecout_y, calo_row.ecout_z);
           } else {
-              v.SetXYZ(calo_map.at(row).ecin_x, calo_map.at(row).ecin_y, calo_map.at(row).ecin_z);
+              v.SetXYZ(calo_row.ecin_x, calo_row.ecin_y, calo_row.ecin_z);
           }
       } else {
-          v.SetXYZ(calo_map.at(row).pcal_x, calo_map.at(row).pcal_y, calo_map.at(row).pcal_z);
+          v.SetXYZ(calo_row.pcal_x, calo_row.pcal_y, calo_row.pcal_z);
       }
       return v;
   }
