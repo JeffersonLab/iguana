@@ -30,7 +30,7 @@ namespace iguana::example {
   ///
   /// Provide a more detailed description of your algorithm here.
   ///
-  /// @begin_doc_algo{Filter}
+  /// @begin_doc_algo{example::ExampleAlgorithm | Filter}
   /// @input_banks{REC::Particle}
   /// @output_banks{REC::Particle}
   /// @end_doc
