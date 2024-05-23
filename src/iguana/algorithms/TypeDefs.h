@@ -17,20 +17,7 @@ namespace iguana {
   /// 4-vector container type
   using vector4_t = std::tuple<vector_element_t, vector_element_t, vector_element_t, vector_element_t>;
 
-  /// Struct to store trajectory particle data
-  struct traj_row_data {
-    double x1 = -999;
-    double x2 = -999;
-    double x3 = -999;
-    double y1 = -999;
-    double y2 = -999;
-    double y3 = -999;
-    double z1 = -999;
-    double z2 = -999;
-    double z3 = -999;
-    int sector= 0;
-  };    
-    
+
   /// Light-weight namespace for particle constants
   namespace particle {
     // clang-format off

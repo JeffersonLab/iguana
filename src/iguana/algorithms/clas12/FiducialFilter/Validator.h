@@ -20,12 +20,25 @@ namespace iguana::clas12 {
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
-
-      std::map<int, traj_row_data> GetTrajMap(hipo::bank const &bank) const;
-      int determineSectorDC(float x, float y, float z) const;
       
     private:
-
+     /// Struct to store trajectory particle data
+     struct traj_row_data {
+        double x1 = -999;
+        double x2 = -999;
+        double x3 = -999;
+        double y1 = -999;
+        double y2 = -999;
+        double y3 = -999;
+        double z1 = -999;
+        double z2 = -999;
+        double z3 = -999;
+        int sector= 0;
+      }; 
+      
+      std::map<int, FiducialFilterValidator::traj_row_data> GetTrajMap(hipo::bank const &bank) const;
+      int determineSectorDC(float x, float y, float z) const;
+      
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_traj;
       

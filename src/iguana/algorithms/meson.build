@@ -55,6 +55,7 @@ algo_dict += [
   {
     'name': 'clas12::FiducialFilter',
     'has_validator': true,
+    'has_c_bindings': false,
     'test_args': { 'banks': ['REC::Particle', 'REC::Traj', 'RUN::config'] },
   },
   {

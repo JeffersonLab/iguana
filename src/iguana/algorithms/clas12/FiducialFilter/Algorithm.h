@@ -26,12 +26,30 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
+      
+      
+    private:
+      
+     /// Struct to store trajectory particle data
+     struct traj_row_data {
+        double x1 = -999;
+        double x2 = -999;
+        double x3 = -999;
+        double y1 = -999;
+        double y2 = -999;
+        double y3 = -999;
+        double z1 = -999;
+        double z2 = -999;
+        double z3 = -999;
+        int sector= 0;
+      };    
+    
       /// @action_function{scalar filter} checks if the particle passes fiducial cuts
       /// @param traj_row data struct of the particle in REC::Traj
       /// @param torus toroidal magnetic field sign
       /// @param pid pid of the particle
       /// @returns `true` if passes fiducial cuts
-      bool Filter(traj_row_data const traj_row, int const torus, int const pid) const;
+      bool Filter(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const;
 
       
       /// **Method**: Examines XY fiducial cut for pass1
@@ -39,7 +57,7 @@ namespace iguana::clas12 {
       /// @param torus toroidal magnetic field sign
       /// @param pid pid of the particle
       /// @returns `true` if passes fiducial cuts
-      bool DC_fiducial_cut_XY_pass1(traj_row_data const traj_row, int const torus, int const pid) const;
+      bool DC_fiducial_cut_XY_pass1(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const;
       
       
       /// **Method**: Examines Theta Phi fiducial cut for pass1
@@ -47,13 +65,13 @@ namespace iguana::clas12 {
       /// @param torus toroidal magnetic field sign
       /// @param pid pid of the particle
       /// @returns `true` if passes fiducial cuts
-      bool DC_fiducial_cut_theta_phi_pass1(traj_row_data const traj_row, int const torus, int const pid) const;
+      bool DC_fiducial_cut_theta_phi_pass1(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const;
           
           
       /// **Method**: Gets trajectory data for particles in the event
       /// @param bank the bank to get data from
       /// @returns a map with keys as particle indices (pindex) and values as traj_row_data structs
-      std::map<int, traj_row_data> GetTrajMap(hipo::bank const &bank) const;
+      std::map<int, FiducialFilter::traj_row_data> GetTrajMap(hipo::bank const &bank) const;
       
       
       /// **Method**: Gets trajectory data for particles in the event
@@ -63,8 +81,6 @@ namespace iguana::clas12 {
       /// @returns sector number in DC
       int determineSectorDC(float x, float y, float z) const;
       
-      
-    private:
       /// `hipo::banklist` 
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_traj;

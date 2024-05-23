@@ -195,9 +195,9 @@ namespace iguana::clas12 {
 
   }
     
-  std::map<int, traj_row_data> FiducialFilterValidator::GetTrajMap(hipo::bank const &bank) const
+  std::map<int, FiducialFilterValidator::traj_row_data> FiducialFilterValidator::GetTrajMap(hipo::bank const &bank) const
   {
-      std::map<int, traj_row_data> traj_map;
+      std::map<int, FiducialFilterValidator::traj_row_data> traj_map;
       
       for(int row = 0; row < bank.getRows(); row++){
           auto pindex = bank.getInt("pindex",row);
@@ -208,7 +208,7 @@ namespace iguana::clas12 {
           
           // Ensure an entry exists in the map for the given pindex
           if (traj_map.find(pindex) == traj_map.end()) {
-            traj_map[pindex] = traj_row_data();
+            traj_map[pindex] = FiducialFilterValidator::traj_row_data();
           }
           
           switch(layer){

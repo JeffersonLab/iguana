@@ -49,7 +49,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
 }
 
-  bool FiducialFilter::Filter(traj_row_data const traj_row, int const torus, int const pid) const
+  bool FiducialFilter::Filter(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const
   {
 
     if(pid==11) return DC_fiducial_cut_XY_pass1(traj_row, torus, pid);
@@ -63,7 +63,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
 
     
 
-  bool FiducialFilter::DC_fiducial_cut_XY_pass1(traj_row_data const traj_row, int const torus, int const pid) const
+  bool FiducialFilter::DC_fiducial_cut_XY_pass1(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const
   {
     
       const auto minparams = ((torus==-1) ? minparams_in_XY_pass1 : minparams_out_XY_pass1);
@@ -160,7 +160,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
       return true;
     }    
     
-  bool FiducialFilter::DC_fiducial_cut_theta_phi_pass1(traj_row_data const traj_row, int const torus, int const pid) const{
+  bool FiducialFilter::DC_fiducial_cut_theta_phi_pass1(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const{
       
       const auto minparams = ((torus==-1) ? minparams_in_theta_phi_pass1 : minparams_out_theta_phi_pass1);
       const auto maxparams = ((torus==-1) ? maxparams_in_theta_phi_pass1 : maxparams_out_theta_phi_pass1);
@@ -230,9 +230,9 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
       }
       return true;
   }
-  std::map<int, traj_row_data> FiducialFilter::GetTrajMap(hipo::bank const &bank) const
+  std::map<int, FiducialFilter::traj_row_data> FiducialFilter::GetTrajMap(hipo::bank const &bank) const
   {
-      std::map<int, traj_row_data> traj_map;
+      std::map<int, FiducialFilter::traj_row_data> traj_map;
       
       for(int row = 0; row < bank.getRows(); row++){
           auto pindex = bank.getInt("pindex",row);
@@ -243,7 +243,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
           
           // Ensure an entry exists in the map for the given pindex
           if (traj_map.find(pindex) == traj_map.end()) {
-            traj_map[pindex] = traj_row_data();
+            traj_map[pindex] = FiducialFilter::traj_row_data();
           }
           
           switch(layer){
