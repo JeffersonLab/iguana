@@ -82,9 +82,9 @@ namespace iguana::clas12 {
       
       //Define the variables "m_g" , "m_ch" , "m_nh" 
       //Should not be changed because the model was trained with this specific set of inputs
-      int m_g = 3; // Number of neighboring gammas
-      int m_ch = 2; // Number of neighboring charged hadrons (protons, pions, kaons)
-      int m_nh = 2; // Number of neighboring neutral hadrons (neutrons)
+      int const m_g = 3; // Number of neighboring gammas
+      int const m_ch = 2; // Number of neighboring charged hadrons (protons, pions, kaons)
+      int const m_nh = 2; // Number of neighboring neutral hadrons (neutrons)
 
       double R_e = 0;
       double dE_e = 0;
