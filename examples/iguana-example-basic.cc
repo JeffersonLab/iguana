@@ -36,7 +36,7 @@ int main(int argc, char** argv)
   int const numEvents    = argc > argi ? std::stoi(argv[argi++]) : 1;
 
   // read input file
-  hipo::reader reader(inFileName);
+  hipo::reader reader(inFileName,{0});
 
   // set banks
   hipo::banklist banks = reader.getBanks({"RUN::config",
