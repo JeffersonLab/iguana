@@ -7,7 +7,7 @@ namespace iguana::clas12 {
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
-    m_algo_seq->Add("clas12::PhotonGBTFilter");
+    m_algo_seq->Add("clas12::PhotonGBTFilter"); 
     m_algo_seq->Add("clas12::EventBuilderFilter");
     m_algo_seq->SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", u_pdg_list);
     m_algo_seq->Start(banks);
