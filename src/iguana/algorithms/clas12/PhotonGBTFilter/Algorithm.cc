@@ -33,6 +33,8 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
       
     // Loop over each photon in the particleBank to classify it
+    // Here we loop over the particleBank RowList
+    // This ensures we are only concerned with filtering photons that passed upstream filters
     particleBank.getMutableRowList().filter([this, &caloBank, &calo_map, runnum](auto bank, auto row) {
         auto pid = bank.getInt("pid", row);
         if (pid != 22) return true;
@@ -145,6 +147,9 @@ namespace iguana::clas12 {
       
       // Build nearest neighbor event structure
       // Loop over particles in the event
+      // Here we loop over particleBank.getRows(), which ignores upstream filters
+      // This is critical as the GBTs were trained on identifying nearest neighbors for the whole REC::Particle bank
+      // Only considering nearest neighbor particles that pass upstream filters would call the accuracy of the model into question
       for(int inner_row = 0; inner_row < particleBank.getRows(); inner_row++) {
           // Skip over the particle if it is photon we are trying to classify
           if (inner_row == row) continue;
