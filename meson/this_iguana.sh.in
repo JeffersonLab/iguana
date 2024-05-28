@@ -38,11 +38,11 @@ get_realpath() {
   echo $(cd $1 && pwd -P)
 }
 
-# set IGUANA_PREFIX
-export IGUANA_PREFIX=$(get_realpath $(dirname ${BASH_SOURCE[0]:-$0})/..)
+# set IGUANA prefix
+export IGUANA=$(get_realpath $(dirname ${BASH_SOURCE[0]:-$0})/..)
 
 # prepend to PKG_CONFIG_PATH
-export PKG_CONFIG_PATH=$IGUANA_PREFIX/@libdir@/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+export PKG_CONFIG_PATH=$IGUANA/@libdir@/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 dep_pkgconfigdirs=$(pkg-config --variable dep_pkgconfigdirs iguana)
 [ -n "${dep_pkgconfigdirs-}" ] && export PKG_CONFIG_PATH=$dep_pkgconfigdirs${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 unset dep_pkgconfigdirs
@@ -89,8 +89,8 @@ if $arg_verbose; then
 Iguana Environment Variables
 ----------------------------
 
-IGUANA_PREFIX -- SET
-  $IGUANA_PREFIX
+IGUANA -- SET
+  $IGUANA
 
 PKG_CONFIG_PATH -- ADDED iguana and dependency pkg-config paths:
   $(print_var ${PKG_CONFIG_PATH-})
