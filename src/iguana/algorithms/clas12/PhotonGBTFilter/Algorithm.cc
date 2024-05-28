@@ -310,7 +310,8 @@ namespace iguana::clas12 {
   std::map<int, PhotonGBTFilter::calo_row_data> PhotonGBTFilter::GetCaloMap(hipo::bank const& bank) const
   {
       std::map<int, PhotonGBTFilter::calo_row_data> calo_map;
-      
+      // Loop over REC::Calorimeter rows
+      // Here we use bank.getRows() to purposefully ignore upstream filters
       for(int row = 0; row < bank.getRows(); row++){
           auto pindex = bank.getInt("pindex",row);
           auto x      = bank.getFloat("x",row);
