@@ -1,6 +1,17 @@
+/// @begin_doc_example
+/// @file iguana_example_ROOT_macro.C
+/// @brief Very simple example showing how to load and use an Iguana algorithm in a ROOT macro; this example
+/// only runs the algorithm and does not require any input data.
+/// @par Usage
+/// ```bash
+/// root -b -q iguana_example_ROOT_macro.C
+/// ```
+/// @end_doc_example
+
 #include <TSystem.h>
 #include <iguana/algorithms/physics/InclusiveKinematics/Algorithm.h>
 
+/// example ROOT macro function
 void iguana_example_ROOT_macro() {
 
   // load the iguana algorithms library
