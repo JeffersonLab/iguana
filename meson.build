@@ -61,11 +61,15 @@ foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, ROOT_dep ]
   endif
 endforeach
 
-# make a list of dependency library and include directories
+# pkgconfig configuration: make a list of dependency library and include directories
 dep_lib_dirs       = []
 dep_include_dirs   = []
 dep_pkgconfig_dirs = []
 foreach dep : dep_list
+  ### skip ROOT (handled differently, and most ROOT users already have it in their environment)
+  if dep.name() == 'ROOT'
+    continue
+  endif
   ### handle pkg-config deps
   if dep.type_name() == 'pkgconfig'
     libdirs = [ dep.get_variable(pkgconfig: 'libdir') ]
