@@ -154,10 +154,12 @@ source bin/this_iguana.sh    # for 'bash' and 'zsh' only; use the --help argumen
 source bin/this_iguana.tcsh  # for 'tcsh' only; has no --help option and spawns a 'tcsh' sub-shell
 ```
 
-The following environment variables are set or modified:
+The following environment variables are set or modified; not all of them are needed for all users:
 
 | Variable                                                 | Modification                                                                                                                              |
 | ---                                                      | ---                                                                                                                                       |
 | `PKG_CONFIG_PATH`                                        | adds paths to the `pkg-config` files (`.pc`) for dependencies and Iguana; see [note on dependency resolution](dependency_resolution.md)   |
 | `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries                                                                                             |
 | `PYTHONPATH`                                             | adds paths to dependency and Iguana Python packages, if Python bindings are installed                                                     |
+| `ROOT_INCLUDE_PATH`                                      | adds paths to dependency and Iguana header files, for usage in ROOT                                                                       |
+| `IGUANA`                                                 | the path to the Iguana installation prefix, equivalent to `pkg-config iguana --variable prefix`; this is only for consumers that do not use `pkg-config` or the other standard environment variables, however usage of this variable is _discouraged_ since the installation layout may vary |
