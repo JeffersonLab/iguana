@@ -154,7 +154,7 @@ source bin/this_iguana.sh    # for 'bash' and 'zsh' only; use the --help argumen
 source bin/this_iguana.tcsh  # for 'tcsh' only; has no --help option and spawns a 'tcsh' sub-shell
 ```
 
-The following environment variables are set or modified:
+The following environment variables are set or modified; not all of them are needed for all users:
 
 | Variable                                                 | Modification                                                                                                                              |
 | ---                                                      | ---                                                                                                                                       |
