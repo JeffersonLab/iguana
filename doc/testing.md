@@ -63,9 +63,13 @@ file, the test will fail. For the `validator` and `algorithm` test suites,
 underlying test executable commands; you may pass arguments to them using the
 `--test-args` option; for example:
 ```bash
-meson test validator-clas12-MyAlgorithm --verbose --test-args '-f ../my_hipo_file.hipo -n 300 -o ../validator_output'
+meson test validator-clas12-MyAlgorithm --verbose --test-args '\-f ../my_hipo_file.hipo \-n 300 \-o ../validator_output'
 ```
 See above for `iguana-test` usage guidance.
+
+> [!NOTE]
+> Note the usage of an escaped hyphen, `\-` instead of `-`; depending on your system, you may or may not need to use escaped hyphens in
+> `--test-args` arguments, otherwise you will see errors such as `argument --test-args: expected one argument`.
 
 Alternatively to using `--test-args`, you may set _default_ `iguana-test`
 arguments using Iguana **build options**:
