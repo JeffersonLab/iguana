@@ -1,7 +1,6 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
-#include "iguana/algorithms/TypeDefs.h"
 #include "models/RGA_inbending_pass1.cpp"
 #include "models/RGA_outbending_pass1.cpp"
 #include "models/RGA_inbending_pass2.cpp"
@@ -18,7 +17,7 @@ namespace iguana::clas12 {
   ///
   /// For each photon (labeled the photon of interest or POI), we obtain its intrinsic features (energy, angle, pcal edep, etc.) and features corresponding to its nearest neighbors (angle of proximity, energy difference, etc.). This requires the reading of both the REC::Particle and REC::Calorimeter banks. An input std::vector<float> is produced and passed to the pretrained GBT models, which yield a classification score between 0 and 1. An option variable `threshold` then determines the minimum photon `p-value` to survive the cut.
   ///
-  /// @begin_doc_algo{Filter}
+  /// @begin_doc_algo{clas12::PhotonGBTFilter | Filter}
   /// @input_banks{REC::Particle, REC::Calorimeter, RUN::config}
   /// @output_banks{REC::Particle}
   /// @end_doc
