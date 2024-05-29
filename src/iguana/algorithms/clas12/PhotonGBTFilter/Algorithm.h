@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 #include "models/RGA_inbending_pass1.cpp"
 #include "models/RGA_outbending_pass1.cpp"
 #include "models/RGA_inbending_pass2.cpp"
