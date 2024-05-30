@@ -6,7 +6,7 @@ namespace iguana::clas12 {
 
   /// @brief_algo Find the sector for all rows in `REC::Particle`
   ///
-  /// @begin_doc_algo{Creator}
+  /// @begin_doc_algo{clas12::SectorFinder | Creator}
   /// @input_banks{REC::Particle}
   /// @output_banks{%REC::Particle::Sector}
   /// @end_doc

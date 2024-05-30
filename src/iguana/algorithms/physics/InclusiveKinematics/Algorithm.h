@@ -23,7 +23,7 @@ namespace iguana::physics {
 
   /// @brief_algo Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
   ///
-  /// @begin_doc_algo{Creator}
+  /// @begin_doc_algo{physics::InclusiveKinematics | Creator}
   /// @input_banks{REC::Particle}
   /// @output_banks{%physics::InclusiveKinematics}
   /// @end_doc

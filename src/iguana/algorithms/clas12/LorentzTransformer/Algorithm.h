@@ -7,7 +7,7 @@ namespace iguana::clas12 {
 
   /// @brief_algo Lorentz transform momenta in `REC::Particle` (or similar banks)
   ///
-  /// @begin_doc_algo{Transformer}
+  /// @begin_doc_algo{clas12::LorentzTransformer | Transformer}
   /// @input_banks{REC::Particle}
   /// @output_banks{REC::Particle}
   /// @end_doc

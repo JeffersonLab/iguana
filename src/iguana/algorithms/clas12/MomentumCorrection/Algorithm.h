@@ -9,7 +9,7 @@ namespace iguana::clas12 {
   ///
   /// Adapted from <https://clasweb.jlab.org/wiki/index.php/CLAS12_Momentum_Corrections#tab=Correction_Code>
   ///
-  /// @begin_doc_algo{Transformer}
+  /// @begin_doc_algo{clas12::MomentumCorrection | Transformer}
   /// @input_banks{RUN::config, REC::Particle, REC::Particle::Sector}
   /// @output_banks{REC::Particle}
   /// @end_doc
