@@ -7,7 +7,7 @@ namespace iguana::clas12 {
 
   /// @brief_algo Forward Tagger energy correction
   ///
-  /// @begin_doc_algo{Transformer}
+  /// @begin_doc_algo{clas12::FTEnergyCorrection | Transformer}
   /// @input_banks{RECFT::Particle}
   /// @output_banks{RECFT::Particle}
   /// @end_doc
