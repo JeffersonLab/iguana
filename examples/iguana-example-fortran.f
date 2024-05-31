@@ -10,6 +10,7 @@
       program iguana_example_fortran
 
       use iso_c_binding
+      use iguana_algorithm
       implicit none
 
 c     ------------------------------------------------------------------

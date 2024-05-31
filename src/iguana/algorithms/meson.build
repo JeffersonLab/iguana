@@ -100,6 +100,7 @@ algo_headers = []
 algo_configs = []
 vdor_sources = []
 vdor_headers = []
+fortran_sources = []
 
 foreach algo : algo_dict
 
@@ -128,6 +129,9 @@ foreach algo : algo_dict
     if get_option('bind_fortran')
       if algo_has_c_bindings
         algo_sources += algo_dir / 'Bindings.cc'
+        if algo_name == 'main' ############## FIXME remove this `if` condition when each `Bindings.cc` has a `Bindings.f03`
+          fortran_sources += 'Bindings.f03'
+        endif
       else
         warning('Algorithm "' + algo_name + '" has no Fortran bindings')
       endif
@@ -177,6 +181,21 @@ install_headers(
   preserve_path: true,
 )
 project_libs += algo_lib
+
+# build and install bindings
+if get_option('bind_fortran')
+  algo_fortran_lib = shared_library(
+    'IguanaFortran',
+    fortran_sources,
+    include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
+    dependencies:        project_deps,
+    link_with:           project_libs,
+    link_args:           ROOT_dep_link_args,
+    install:             true,
+    build_rpath:         ROOT_dep_rpath,
+    fortran_args:        [ '-Wno-unused-dummy-argument', '-Wno-return-type' ], # silence warnings about "empty" C-binding functions and subroutines
+  )
+endif
 
 # build and install validators
 vdor_lib = shared_library(

@@ -47,7 +47,10 @@ namespace iguana::physics {}
 /// call iguana_example_function(a, b)
 /// ```
 ///
-/// To use these bindings with your Fortran code, link against the installed `iguana` libraries.
+/// To use these bindings with your Fortran code, link against the installed `iguana` libraries and include the installed
+/// Fortran module files. If you are on `ifarm`, use the following environment variables:
+/// - `$IGUANA_FORTRAN_FLAGS`: to include the Module (`.mod`) files
+/// - `$IGUANA_FORTRAN_LIBS`: for your linker
 ///
 /// @see A Fortran example: `iguana-example-fortran.f`
 ///
