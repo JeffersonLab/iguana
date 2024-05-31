@@ -6,6 +6,7 @@ project(
   meson_version: '>=1.2',
   default_options: {
     'cpp_std':               'c++17',
+    'fortran_std':           'f2018',    ###### FIXME: needed for strings?
     'buildtype':             'release',
     'libdir':                'lib',
     'licensedir':            'share/licenses/iguana',
@@ -20,7 +21,7 @@ project(
 project_description = 'Implementation Guardian of Analysis Algorithms'
 
 # initialize binding languanges
-add_languages('fortran', native: false, required: get_option('bind_fortran'))
+# add_languages('fortran', native: false, required: get_option('bind_fortran'))
 
 # meson modules
 pkg = import('pkgconfig')
@@ -235,6 +236,7 @@ if get_option('z_install_envfile')
       'libdir':  get_option('libdir'),
       'root':    ROOT_dep.found() ? 'true' : 'false',
       'python':  get_option('bind_python') ? 'true' : 'false',
+      'fortran': get_option('bind_fortran') ? 'true' : 'false',
       'fortran_libdir': fortran_module_dir,
       'fortran_libs':   fortran_consumer_libs,
     },
