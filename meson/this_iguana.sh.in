@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # `source` this file to set environment variables relevant for this `iguana` installation
 
 # parse arguments
@@ -38,19 +38,21 @@ get_realpath() {
   echo $(cd $1 && pwd -P)
 }
 
-# append to PKG_CONFIG_PATH
-this_dir=$(get_realpath $(dirname ${BASH_SOURCE[0]:-$0})/..)
-export PKG_CONFIG_PATH=$this_dir/@libdir@/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+# set IGUANA prefix
+export IGUANA=$(get_realpath $(dirname ${BASH_SOURCE[0]:-$0})/..)
+
+# prepend to PKG_CONFIG_PATH
+export PKG_CONFIG_PATH=$IGUANA/@libdir@/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 dep_pkgconfigdirs=$(pkg-config --variable dep_pkgconfigdirs iguana)
 [ -n "${dep_pkgconfigdirs-}" ] && export PKG_CONFIG_PATH=$dep_pkgconfigdirs${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 unset dep_pkgconfigdirs
 
-# append to PATH
+# prepend to PATH
 iguana_path=$(pkg-config --variable bindir iguana)
 [ -n "${iguana_path-}" ] && export PATH=$(get_realpath $iguana_path)${PATH:+:${PATH}}
 unset iguana_path
 
-# append to PYTHONPATH
+# prepend to PYTHONPATH
 if @python@; then
   iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
   [ -n "${iguana_pythonpath-}" ] && export PYTHONPATH=$iguana_pythonpath${PYTHONPATH:+:${PYTHONPATH}}
@@ -63,7 +65,7 @@ if @fortran@; then
   export IGUANA_FORTRAN_FLAGS="-I$this_dir/@fortran_libdir@"
 fi
 
-# append to LD_LIBRARY_PATH or DYLD_LIBRARY_PATH
+# prepend to LD_LIBRARY_PATH or DYLD_LIBRARY_PATH
 # FIXME: this won't work well if a user already has all dependency libraries
 # in, for example, `/opt/lib`, but has custom built and installed one
 # elsewhere, e.g., `/tmp/lib`; if `/opt/lib` is listed before `/tmp/lib` in
@@ -76,12 +78,25 @@ for var in dep_libdirs libdir; do
 done
 unset var
 
+# prepend to ROOT_INCLUDE_PATH
+if @root@; then
+  for var in dep_includedirs includedir; do
+    dir=$(pkg-config --variable $var iguana)
+    [ -n "${dir-}" ] && export ROOT_INCLUDE_PATH=$dir${ROOT_INCLUDE_PATH:+:${ROOT_INCLUDE_PATH}}
+    unset dir
+  done
+  unset var
+fi
+
 # print environment variables
 if $arg_verbose; then
   print_var() { echo "$@" | sed 's/:/\n  /g'; }
   echo """
 Iguana Environment Variables
 ----------------------------
+
+IGUANA -- SET
+  $IGUANA
 
 PKG_CONFIG_PATH -- ADDED iguana and dependency pkg-config paths:
   $(print_var ${PKG_CONFIG_PATH-})
@@ -91,6 +106,9 @@ PATH -- ADDED iguana executables:
 
 @ld_path@ -- ADDED iguana and dependency library paths:
   $(print_var ${@ld_path@-})
+
+ROOT_INCLUDE_PATH -- $(if @root@; then echo 'ADDED iguana and dependency include paths:'; else echo 'has NOT been changed'; fi)
+  $(print_var ${ROOT_INCLUDE_PATH-})
 
 PYTHONPATH -- $(if @python@; then echo 'ADDED iguana python bindings:'; else echo 'has NOT been changed'; fi)
   $(print_var ${PYTHONPATH-})
@@ -107,6 +125,9 @@ if $arg_githubCI; then
   echo @ld_path@=$@ld_path@ >> $GITHUB_ENV
   if @python@; then
     echo PYTHONPATH=$PYTHONPATH >> $GITHUB_ENV
+  fi
+  if @root@; then
+    echo ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH >> $GITHUB_ENV
   fi
 fi
 

@@ -14,76 +14,73 @@ test_exe = executable(
 )
 
 # test algorithms and validators
-if fs.is_file(get_option('test_data_file'))
-  foreach name, info : algo_dict
-    if info.has_key('test_args')
+foreach algo : algo_dict
+  if algo.has_key('test_args')
 
-      # get list of banks and prerequisite algorithms
-      extra_args = []
-      foreach bank : info['test_args'].get('banks', [])
-        extra_args += ['-b', bank]
-      endforeach
-      foreach prerequisite : info['test_args'].get('prerequisites', [])
-        extra_args += ['-p', prerequisite]
-      endforeach
+    algo_name          = algo.get('name')
+    algo_has_validator = algo.get('has_validator', true)
+    algo_needs_ROOT    = algo.get('algorithm_needs_ROOT', false)
+    vdor_needs_ROOT    = algo.get('validator_needs_ROOT', true)
 
-      # test names cannot have colons
-      test_name_algo = name.replace('::', '-')
+    # test names cannot have colons
+    test_name_algo = algo_name.replace('::', '-')
 
-      # test and benchmark algorithm
-      algo_needs_ROOT = info.get('algorithm').get('needs_ROOT', false)
-      if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
-        test_args = [
-          'algorithm',
-          '-f', get_option('test_data_file'),
-          '-a', name,
-        ] + extra_args
-        test(
-          'algorithm-' + test_name_algo,
-          test_exe,
-          args: test_args + [ '-n', get_option('test_num_events') ],
-          env: project_test_env,
-        )
-        benchmark(
-          'benchmark-algorithm-' + test_name_algo,
-          test_exe,
-          args: test_args + [ '-n', '0' ], # test all the events
-          env: project_test_env,
-          timeout: 120,
-        )
+    # test and benchmark algorithm
+    if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
+      test_args = [ 'algorithm', '-a', algo_name ]
+      if fs.is_file(get_option('test_data_file'))
+        test_args += [ '-f', get_option('test_data_file') ]
       endif
-
-      # test validator
-      if info.has_key('validator')
-        vdor_needs_ROOT = info.get('validator').get('needs_ROOT', false)
-        test_name_vdor = test_name_algo + 'Validator'
-        if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
-          test_args = [
-            'validator',
-            '-f', get_option('test_data_file'),
-            '-n', get_option('test_num_events'),
-            '-a', name + 'Validator',
-          ]
-          if get_option('test_output_dir') != ''
-            vdor_output_dir = get_option('test_output_dir') / test_name_vdor
-            run_command('mkdir', '-p', vdor_output_dir, check: true)
-            test_args += [ '-o', vdor_output_dir ]
-          endif
-          test(
-            'validator-' + test_name_vdor,
-            test_exe,
-            args: test_args,
-            env: project_test_env,
-          )
-        endif
-      endif
-
+      foreach bank : algo['test_args'].get('banks', [])
+        test_args += ['-b', bank]
+      endforeach
+      foreach prerequisite : algo['test_args'].get('prerequisites', [])
+        test_args += ['-p', prerequisite]
+      endforeach
+      test(
+        'algorithm-' + test_name_algo,
+        test_exe,
+        suite: ['algorithm'],
+        args: test_args + [ '-n', get_option('test_num_events') ],
+        env: project_test_env,
+      )
+      benchmark(
+        'benchmark-algorithm-' + test_name_algo,
+        test_exe,
+        args: test_args + [ '-n', '0' ], # test all the events
+        env: project_test_env,
+        timeout: 0,
+      )
     endif
-  endforeach
-else
-  stat_file = get_option('test_data_file')=='' ? 'provided' : 'found'
-  message('Test sample file NOT ' + stat_file + '; you may run algorithm tests manually with `' + get_option('prefix') / get_option('bindir') / test_exe_name + '`')
-endif
+
+    # test validator
+    if algo_has_validator
+      if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
+        test_args = [
+          'validator',
+          '-n', get_option('test_validator_all_stats') ? '0' : get_option('test_num_events'),
+          '-a', algo_name + 'Validator',
+        ]
+        if fs.is_file(get_option('test_data_file'))
+          test_args += [ '-f', get_option('test_data_file') ]
+        endif
+        if get_option('test_output_dir') != ''
+          vdor_output_dir = get_option('test_output_dir') / test_name_algo
+          test_args += [ '-o', vdor_output_dir ]
+        endif
+        test(
+          'validator-' + test_name_algo,
+          test_exe,
+          suite: ['validator'],
+          args: test_args,
+          env: project_test_env,
+          timeout: get_option('test_validator_all_stats') ? 0 : 120,
+        )
+      endif
+    endif
+
+  endif
+endforeach
 
 # test usage guide for each iguana-test command
 foreach command : ['', 'unknown', 'algorithm', 'validator', 'unit', 'config']

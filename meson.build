@@ -61,10 +61,15 @@ foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, ROOT_dep ]
   endif
 endforeach
 
-# make a list of dependency library and include directories
-dep_lib_paths = []
-dep_inc_paths = []
+# pkgconfig configuration: make a list of dependency library and include directories
+dep_lib_dirs       = []
+dep_include_dirs   = []
+dep_pkgconfig_dirs = []
 foreach dep : dep_list
+  ### skip ROOT (handled differently, and most ROOT users already have it in their environment)
+  if dep.name() == 'ROOT'
+    continue
+  endif
   ### handle pkg-config deps
   if dep.type_name() == 'pkgconfig'
     libdirs = [ dep.get_variable(pkgconfig: 'libdir') ]
@@ -80,20 +85,26 @@ foreach dep : dep_list
   else
     error('Cannot determine how dependency "' + dep.name() + '" was found')
   endif
-  ### append to `dep_lib_paths` and `dep_inc_paths`, omitting duplicates
+  ### append to `dep_lib_dirs`
   foreach libdir : libdirs
-    if not dep_lib_paths.contains(libdir)
-      dep_lib_paths += libdir
+    if not dep_lib_dirs.contains(libdir)
+      dep_lib_dirs += libdir
+    endif
+    ### append to `dep_pkgconfig_dirs`
+    if dep.type_name() == 'pkgconfig'
+      pkgconfigdir = libdir / 'pkgconfig'
+      if not dep_pkgconfig_dirs.contains(pkgconfigdir)
+        dep_pkgconfig_dirs += pkgconfigdir
+      endif
     endif
   endforeach
+  ### append to `dep_include_dirs`
   foreach incdir : incdirs
-    if not dep_inc_paths.contains(incdir)
-      dep_inc_paths += incdir
+    if not dep_include_dirs.contains(incdir)
+      dep_include_dirs += incdir
     endif
   endforeach
 endforeach
-message('Dependency library dirs = [', ', '.join(dep_lib_paths), ']')
-message('Dependency include dirs = [', ', '.join(dep_inc_paths), ']')
 
 # handle HIPO dataframes
 hipo_dep_dataframes_found = hipo_dep.get_variable(pkgconfig: 'with_dataframes', default_value: 'false').to_lower() == 'true'
@@ -133,8 +144,9 @@ project_etc       = get_option('sysconfdir') / meson.project_name()
 project_test_env  = environment()
 project_pkg_vars  = [
   'bindir='            + '${prefix}' / get_option('bindir'),
-  'dep_pkgconfigdirs=' + ':'.join(get_option('pkg_config_path')),
-  'dep_libdirs='       + ':'.join(dep_lib_paths),
+  'dep_pkgconfigdirs=' + ':'.join(dep_pkgconfig_dirs),
+  'dep_libdirs='       + ':'.join(dep_lib_dirs),
+  'dep_includedirs='   + ':'.join(dep_include_dirs),
 ]
 
 # sanitizer settings
@@ -211,38 +223,29 @@ if get_option('install_examples')
   subdir('examples')
 endif
 
-# install environment setup file
-configure_file(
-  input:         'meson' / 'this_iguana.sh.in',
-  output:        'this_iguana.sh',
-  install:       get_option('z_install_envfile'),
-  install_dir:   get_option('bindir'),
-  configuration: {
-    'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
-    'libdir':  get_option('libdir'),
-    'python':  get_option('bind_python') ? 'true' : 'false',
-    'fortran': get_option('bind_fortran') ? 'true' : 'false',
-    'fortran_libdir': fortran_module_dir,
-    'fortran_libs':   fortran_consumer_libs,
-  },
-)
-
-# generate modulefile
-if(get_option('z_generate_modulefile'))
-  module_tag = get_option('z_module_tag')=='' ? meson.project_version() : get_option('z_module_tag')
+# install environment setup files
+if get_option('z_install_envfile')
   configure_file(
-    input:   'meson' / 'release' / 'modulefile.in',
-    output:  module_tag,
-    install: false,
+    input:         'meson' / 'this_iguana.sh.in',
+    output:        'this_iguana.sh',
+    install:       true,
+    install_dir:   get_option('bindir'),
     configuration: {
-      'project':   meson.project_name(),
-      'version':   module_tag,
-      'prefix':    '$env(CLAS12_HOME)/$env(OSRELEASE)/local/iguana/$v',
-      'bindir':    get_option('bindir'),
-      'libdir':    get_option('libdir'),
-      'pythondir': pythondir,
+      'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
+      'libdir':  get_option('libdir'),
+      'root':    ROOT_dep.found() ? 'true' : 'false',
+      'python':  get_option('bind_python') ? 'true' : 'false',
       'fortran_libdir': fortran_module_dir,
       'fortran_libs':   fortran_consumer_libs,
     },
   )
+  foreach shell : ['csh', 'tcsh']
+    configure_file(
+      input:         'meson' / 'this_iguana.csh.in',
+      output:        'this_iguana.' + shell,
+      install:       true,
+      install_dir:   get_option('bindir'),
+      configuration: {'shell': shell},
+    )
+  endforeach
 endif

@@ -1,117 +1,98 @@
-# dictionary for info about each algorithm
+# start the algorithm dictionary list with the infrastructure sources
+algo_dict = [
+  {
+    'name': 'main',
+    'directory': '.',
+    'has_config': false,
+    'has_c_bindings': true,
+    'has_validator': true,
+    'algorithm_needs_ROOT': false,
+    'validator_needs_ROOT': false,
+    'add_algorithm_sources': [ 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ],
+    'add_algorithm_headers': [ 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
+  }
+]
+
+# list of dictionaries for info about each algorithm
 #
 #  example:
 #  ========
-#   ALGORITHM_FULL_NAME: {
-#     'algorithm': {
-#       'sources':          LIST_OF_ALGORITHM_SOURCE FILES,
-#       'headers':          LIST_OF_ALGORITHM_HEADER_FILES,
-#       'binding_headers':  LIST_OF_BINDING_HEADERS, # for C bindings
-#       'binding_sources':  LIST_OF_BINDING_SOURCES, # for C bindings
-#       'binding_fortran':  LIST_OF_FORTRAN_MODULES, # for Fortran -> C bindings
-#       'needs_ROOT':       BOOLEAN,  # whether this algorithm needs ROOT or not (default=false),
-#     },
-#     'validator': {    # if excluded, a validator test will not be built for this algorithm
-#       'sources':      LIST_OF_VALIDATOR_SOURCE FILES,
-#       'headers':      LIST_OF_VALIDATOR_HEADER_FILES,
-#       'needs_ROOT':   BOOLEAN,  # whether this validator needs ROOT or not (default=false)
-#     },
-#     'configs':        LIST_OF_ALGORITHM_CONFIG_FILES,
-#     'test_args': {    DICTIONARY_FOR_TESTING_ARGS,  # if excluded, tests won't run for this algorithm
-#       'banks':          LIST_OF_BANKS # only those that are needed to test this algorithm
-#       'prerequisites':  LIST_OF_PREREQUISITE_ALGORITHMS # those that are required to `Run` before this one
+#   {
+#     'name':                str         # algorithm name (REQUIRED)
+#     'directory':           str         # algorithm source code directory (default is based on 'name', replacing '::' with '/')
+#     'has_config':          bool        # assumes Config.yaml exists (default=true)
+#     'has_c_bindings':      bool        # assumes Bindings.cc exists (default=true)
+#     'has_validator':       bool        # assumes Validator{cc,h} exist (default=true)
+#     'algorithm_needs_ROOT': bool       # whether this algorithm needs ROOT or not (default=false)
+#     'validator_needs_ROOT': bool       # whether this validator needs ROOT or not (default=true)
+#     'add_algorithm_sources': list[str] # list of additional algorithm source files (default=[])
+#     'add_algorithm_headers': list[str] # list of additional algorithm header files (default=[])
+#     'add_validator_sources': list[str] # list of additional validator source files (default=[])
+#     'add_validator_headers': list[str] # list of additional validator header files (default=[])
+#     'test_args': {    dict[str],       # if excluded, tests won't run for this algorithm
+#       'banks':          list[str]      # list of banks that are needed to test this algorithm
+#       'prerequisites':  list[str]      # list of algorithms that that are required to `Run` before this one
 #     },
 #   }
 #
-algo_dict = {
-  'main': {
-    'algorithm': {
-      'sources': [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ],
-      'headers': [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
-      'binding_sources': [ 'AlgorithmBindings.cc' ],
-      'binding_headers': [ 'AlgorithmBindings.h' ],
-      'binding_fortran': [ 'AlgorithmBindings.f03' ],
-    },
-    'validator': {
-      'sources': [ 'Validator.cc' ],
-      'headers': [ 'Validator.h' ],
-    },
-  },
-  'example::ExampleAlgorithm': {
-    'algorithm': {
-      'sources': [ 'example/ExampleAlgorithm.cc' ],
-      'headers': [ 'example/ExampleAlgorithm.h' ],
-    },
-    'configs':   [ 'example/ExampleAlgorithm.yaml' ],
+algo_dict += [
+  {
+    'name': 'example::ExampleAlgorithm',
+    'has_c_bindings': false,
+    'has_validator': false,
     'test_args': { 'banks': ['REC::Particle'] },
   },
-  'clas12::EventBuilderFilter': {
-    'algorithm': {
-      'sources': [ 'clas12/EventBuilderFilter.cc' ],
-      'headers': [ 'clas12/EventBuilderFilter.h' ],
-      'binding_sources': [ 'clas12/EventBuilderFilterBindings.cc' ],
-    },
-    'configs':   [ 'clas12/EventBuilderFilter.yaml' ],
+  {
+    'name': 'clas12::EventBuilderFilter',
+    'has_validator': false,
     'test_args': { 'banks': ['REC::Particle'] },
   },
-  'clas12::ZVertexFilter': {
-    'algorithm': {
-      'sources': [ 'clas12/ZVertexFilter.cc' ],
-      'headers': [ 'clas12/ZVertexFilter.h' ],
-      'binding_sources': [ 'clas12/ZVertexFilterBindings.cc' ],
-    },
-    'configs':   [ 'clas12/ZVertexFilter.yaml' ],
+  {
+    'name': 'clas12::ZVertexFilter',
+    'has_validator': false,
     'test_args': { 'banks': ['REC::Particle'] },
   },
-  'clas12::SectorFinder': {
-    'algorithm': {
-      'sources': [ 'clas12/SectorFinder.cc' ],
-      'headers': [ 'clas12/SectorFinder.h' ],
-    },
-    'configs':   [ 'clas12/SectorFinder.yaml' ],
+  {
+    'name': 'clas12::SectorFinder',
+    'has_c_bindings': false,
+    'has_validator': false,
     'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator'] },
   },
-  'clas12::LorentzTransformer': {
-    'algorithm': {
-      'sources': [ 'clas12/LorentzTransformer.cc' ],
-      'headers': [ 'clas12/LorentzTransformer.h' ],
-      'needs_ROOT': true,
-    },
-    'configs':   [ 'clas12/LorentzTransformer.yaml' ],
+  {
+    'name': 'clas12::LorentzTransformer',
+    'algorithm_needs_ROOT': true,
+    'has_c_bindings': false,
+    'has_validator': false,
     'test_args': { 'banks': ['REC::Particle'] },
   },
-  'clas12::MomentumCorrection': {
-    'algorithm': {
-      'sources': [ 'clas12/MomentumCorrection.cc' ],
-      'headers': [ 'clas12/MomentumCorrection.h' ],
-      'binding_sources': [ 'clas12/MomentumCorrectionBindings.cc' ],
-    },
-    'validator': {
-      'sources': [ 'clas12/MomentumCorrectionValidator.cc' ],
-      'headers': [ 'clas12/MomentumCorrectionValidator.h' ],
-      'needs_ROOT': true,
-    },
+  {
+    'name': 'clas12::FTEnergyCorrection',
+    'has_config': false,
+    'has_c_bindings': false,
+    'has_validator': false,
+    'test_args': { 'banks': ['RECFT::Particle'] },
+  },
+  {
+    'name': 'clas12::MomentumCorrection',
+    'has_config': false,
     'test_args': {
       'banks': ['RUN::config', 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator'],
       'prerequisites': ['clas12::SectorFinder'],
     },
   },
-  'physics::InclusiveKinematics': {
-    'algorithm': {
-      'sources': [ 'physics/InclusiveKinematics.cc' ],
-      'headers': [ 'physics/InclusiveKinematics.h' ],
-      'binding_sources': [ 'physics/InclusiveKinematicsBindings.cc' ],
-      'needs_ROOT': true,
-    },
-    'validator': {
-      'sources': [ 'physics/InclusiveKinematicsValidator.cc' ],
-      'headers': [ 'physics/InclusiveKinematicsValidator.h' ],
-      'needs_ROOT': true,
-    },
-    'configs': [ 'physics/InclusiveKinematics.yaml' ],
+  {
+    'name': 'physics::InclusiveKinematics',
+    'algorithm_needs_ROOT': true,
     'test_args': { 'banks': ['REC::Particle'] },
   },
-}
+  {
+    'name': 'clas12::PhotonGBTFilter',
+    'has_c_bindings': false,
+    'algorithm_needs_ROOT': true,
+    'has_validator': true,
+    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'RUN::config'] },
+  }
+]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
 algo_sources = []
@@ -120,31 +101,67 @@ algo_configs = []
 vdor_sources = []
 vdor_headers = []
 fortran_sources = []
-foreach name, info : algo_dict
+
+foreach algo : algo_dict
+
+  algo_name           = algo.get('name')
+  algo_dir            = algo.get('directory', '/'.join(algo_name.split('::')))
+  algo_has_config     = algo.get('has_config', true)
+  algo_has_c_bindings = algo.get('has_c_bindings', true)
+  algo_has_validator  = algo.get('has_validator', true)
+  algo_needs_ROOT     = algo.get('algorithm_needs_ROOT', false)
+  vdor_needs_ROOT     = algo.get('validator_needs_ROOT', true)
+
   # algorithms:
-  info_algo = info.get('algorithm')
-  algo_needs_ROOT = info_algo.get('needs_ROOT', false)
   if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
-    algo_sources += info_algo.get('sources', [])
-    algo_headers += info_algo.get('headers', [])
-    if(get_option('bind_fortran'))
-      algo_sources += info_algo.get('binding_sources', [])
-      algo_headers += info_algo.get('binding_headers', [])
-      fortran_sources += info_algo.get('binding_fortran', [])
+
+    # sources and headers
+    algo_sources += algo_dir / 'Algorithm.cc'
+    algo_headers += algo_dir / 'Algorithm.h'
+    foreach src_file : algo.get('add_algorithm_sources', [])
+      algo_sources += algo_dir / src_file
+    endforeach
+    foreach src_file : algo.get('add_algorithm_headers', [])
+      algo_headers += algo_dir / src_file
+    endforeach
+
+    # C/Fortran bindings
+    if get_option('bind_fortran')
+      if algo_has_c_bindings
+        algo_sources += algo_dir / 'Bindings.cc'
+        if algo_name == 'main' ############## FIXME remove this `if` condition when each `Bindings.cc` has a `Bindings.f03`
+          fortran_sources += 'Bindings.f03'
+        endif
+      else
+        warning('Algorithm "' + algo_name + '" has no Fortran bindings')
+      endif
     endif
-    algo_configs += info.get('configs', [])
+
+    # config files
+    if algo_has_config
+      algo_configs += algo_dir / 'Config.yaml'
+    endif
+
   else
-    warning('Excluding algorithm "' + name + '", which depends on ROOT')
+    warning('Excluding algorithm "' + algo_name + '", which depends on ROOT')
   endif
+
   # validators:
-  if info.has_key('validator')
-    info_vdor = info.get('validator')
-    vdor_needs_ROOT = info_vdor.get('needs_ROOT', false)
+  if algo_has_validator
     if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
-      vdor_sources += info_vdor.get('sources', [])
-      vdor_headers += info_vdor.get('headers', [])
+      vdor_sources += algo_dir / 'Validator.cc'
+      vdor_headers += algo_dir / 'Validator.h'
+      foreach src_file : algo.get('add_validator_sources', [])
+        vdor_sources += algo_dir / src_file
+      endforeach
+      foreach src_file : algo.get('add_validator_headers', [])
+        vdor_headers += algo_dir / src_file
+      endforeach
     endif
+  else
+    warning('Algorithm "' + algo_name + '" has no Validator; use at your own risk!')
   endif
+
 endforeach
 
 # build and install algorithms

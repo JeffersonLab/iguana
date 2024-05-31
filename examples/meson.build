@@ -4,23 +4,23 @@ install_subdir('config', install_dir: example_config_files_prefix, strip_directo
 
 # example source information
 example_sources = {
-  'iguana-example-00-basic': {
-    'sources': [ 'iguana-example-00-basic.cc' ],
+  'iguana-example-basic': {
+    'sources': [ 'iguana-example-basic.cc' ],
   },
-  'iguana-example-01-bank-rows': {
-    'sources': [ 'iguana-example-01-bank-rows.cc' ],
+  'iguana-example-bank-rows': {
+    'sources': [ 'iguana-example-bank-rows.cc' ],
   },
-  'iguana-example-02-dataframes': {
-    'sources': [ 'iguana-example-02-dataframes.cc' ],
+  'iguana-example-dataframes': {
+    'sources': [ 'iguana-example-dataframes.cc' ],
     'build_this': ROOT_dep.found() and hipo_dep_dataframes_found,
   },
-  'iguana-example-03-config-files': {
-    'sources':   [ 'iguana-example-03-config-files.cc' ],
+  'iguana-example-config-files': {
+    'sources':   [ 'iguana-example-config-files.cc' ],
     'test_args': [ get_option('prefix') / example_config_files_prefix ],
   },
   'iguana-example-fortran': {
     'sources':     [ 'iguana-example-fortran.f' ],
-    'build_this':  get_option('bind_fortran'),
+    'build_this':  get_option('bind_fortran') and ROOT_dep.found(), # depends on physics::InclusiveKinematics, which depends on ROOT
     'link_with':   get_option('bind_fortran') ? [ algo_lib, algo_fortran_lib ] : [],
   },
 }
@@ -42,6 +42,7 @@ foreach example, info : example_sources
       test(
         example,
         example_exe,
+        suite: ['example'],
         args: info.get(
           'test_args',
           [ get_option('test_data_file'), '100' ] # don't run too many events, or meson test log will be huge
