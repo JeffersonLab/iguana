@@ -44,7 +44,7 @@ namespace iguana::clas12 {
         int sector= 0;
       };    
     
-      /// @action_function{scalar filter} checks if the particle passes fiducial cuts
+      /// **Method**: checks if the particle passes fiducial cuts
       /// @param traj_row data struct of the particle in REC::Traj
       /// @param torus toroidal magnetic field sign
       /// @param pid pid of the particle
