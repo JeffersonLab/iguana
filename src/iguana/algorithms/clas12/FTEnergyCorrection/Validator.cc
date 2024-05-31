@@ -27,14 +27,13 @@ namespace iguana::clas12 {
       m_output_file          = new TFile(m_output_file_basename + ".root", "RECREATE");
 
     }
-    InitializeHistograms();
     }
 
 
   void FTEnergyCorrectionValidator::Run(hipo::banklist& banks) const
   {
     // get the momenta before
-    auto& ParticleBank = GetBank(banks, b_particle, "REC::Particle");
+    auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     double px_el, py_el, pz_el, E_el;
     double px_pim, py_pim, pz_pim;
     double px_pip, py_pip, pz_pip;
@@ -47,80 +46,80 @@ namespace iguana::clas12 {
 
     for(auto const& row : particle_bank.getRowList()){
 
-          if(ParticleBank.getInt("pid", row) == particle::PDG::electron){
+          if(particle_bank.getInt("pid", row) == particle::PDG::electron){
 
-            px_el = ParticleBank.getFloat("px", row);
-            py_el = ParticleBank.getFloat("py", row);
-            pz_el = ParticleBank.getFloat("pz", row);
+            px_el = particle_bank.getFloat("px", row);
+            py_el = particle_bank.getFloat("py", row);
+            pz_el = particle_bank.getFloat("pz", row);
             electron.SetXYZM(px_el, py_el, pz_el, electron_mass);
           }
 
-          if(ParticleBank.getInt("pid", row) == particle::PDG::pion_minus){
+          if(particle_bank.getInt("pid", row) == particle::PDG::pi_minus){
 
-            px_pim = ParticleBank.getFloat("px", row);
-            py_pim = ParticleBank.getFloat("py", row);
-            pz_pim = ParticleBank.getFloat("pz", row);
+            px_pim = particle_bank.getFloat("px", row);
+            py_pim = particle_bank.getFloat("py", row);
+            pz_pim = particle_bank.getFloat("pz", row);
             pion_minus.SetXYZM(px_pim, py_pim, pz_pim, 0.139600);
           }
 
-          if(ParticleBank.getInt("pid", row) == particle::PDG::pion_plus){
+          if(particle_bank.getInt("pid", row) == particle::PDG::pi_plus){
 
-            px_pip = ParticleBank.getFloat("px", row);
-            py_pip = ParticleBank.getFloat("py", row);
-            pz_pip = ParticleBank.getFloat("pz", row);
+            px_pip = particle_bank.getFloat("px", row);
+            py_pip = particle_bank.getFloat("py", row);
+            pz_pip = particle_bank.getFloat("pz", row);
             pion_plus.SetXYZM(px_pip, py_pip, pz_pip, 0.139600);
           }
 
-          if(ParticleBank.getInt("pid", row) == particle::PDG::proton){
+          if(particle_bank.getInt("pid", row) == particle::PDG::proton){
 
-            px_pr = ParticleBank.getFloat("px", row);
-            py_pr = ParticleBank.getFloat("py", row);
-            pz_pr = ParticleBank.getFloat("pz", row);
+            px_pr = particle_bank.getFloat("px", row);
+            py_pr = particle_bank.getFloat("py", row);
+            pz_pr = particle_bank.getFloat("pz", row);
             proton.SetXYZM(px_pr, py_pr, pz_pr, 0.938272);
           }
           miss_el =  beam + target - pion_minus - pion_plus - proton;
-          DeltaE = miss_el.E() - el.E();
-          h_beforecorr->Fill(el.E(), DeltaE);
+          DeltaE = miss_el.E() - electron.E();
+          h_beforecorr->Fill(electron.E(), DeltaE);
     }
     // run the energy corrections
     m_algo_seq->Run(banks);
 
     for(auto const& row : particle_bank.getRowList()){
 
-          if(ParticleBank.getInt("pid", row) == particle::PDG::electron){
+          if(particle_bank.getInt("pid", row) == particle::PDG::electron){
 
-            px_el = ParticleBank.getFloat("px", row);
-            py_el = ParticleBank.getFloat("py", row);
-            pz_el = ParticleBank.getFloat("pz", row);
+            px_el = particle_bank.getFloat("px", row);
+            py_el = particle_bank.getFloat("py", row);
+            pz_el = particle_bank.getFloat("pz", row);
             electron.SetXYZM(px_el, py_el, pz_el, electron_mass);
           }
 
-          if(ParticleBank.getInt("pid", row) == particle::PDG::pion_minus){
+          if(particle_bank.getInt("pid", row) == particle::PDG::pi_minus){
 
-            px_pim = ParticleBank.getFloat("px", row);
-            py_pim = ParticleBank.getFloat("py", row);
-            pz_pim = ParticleBank.getFloat("pz", row);
+            px_pim = particle_bank.getFloat("px", row);
+            py_pim = particle_bank.getFloat("py", row);
+            pz_pim = particle_bank.getFloat("pz", row);
             pion_minus.SetXYZM(px_pim, py_pim, pz_pim, 0.139600);
           }
 
-          if(ParticleBank.getInt("pid", row) == particle::PDG::pion_plus){
+          if(particle_bank.getInt("pid", row) == particle::PDG::pi_plus){
 
-            px_pip = ParticleBank.getFloat("px", row);
-            py_pip = ParticleBank.getFloat("py", row);
-            pz_pip = ParticleBank.getFloat("pz", row);
+            px_pip = particle_bank.getFloat("px", row);
+            py_pip = particle_bank.getFloat("py", row);
+            pz_pip = particle_bank.getFloat("pz", row);
             pion_plus.SetXYZM(px_pip, py_pip, pz_pip, 0.139600);
           }
 
-          if(ParticleBank.getInt("pid", row) == particle::PDG::proton){
+          if(particle_bank.getInt("pid", row) == particle::PDG::proton){
 
-            px_pr = ParticleBank.getFloat("px", row);
-            py_pr = ParticleBank.getFloat("py", row);
-            pz_pr = ParticleBank.getFloat("pz", row);
+            px_pr = particle_bank.getFloat("px", row);
+            py_pr = particle_bank.getFloat("py", row);
+            pz_pr = particle_bank.getFloat("pz", row);
             proton.SetXYZM(px_pr, py_pr, pz_pr, 0.938272);
           }
           miss_el =  beam + target - pion_minus - pion_plus - proton;
-          DeltaE = miss_el.E() - el.E();
-          h_aftercorr->Fill(el.E(), DeltaE);
+          DeltaE = miss_el.E() - electron.E();
+          h_aftercorr->Fill(electron.E(), DeltaE);
     }
       
   }
@@ -147,7 +146,7 @@ namespace iguana::clas12 {
                       h_beforecorr->Draw("colz");
                       break;
                   case 1:
-                      h_aftercorr->Draw("colz")
+                      h_aftercorr->Draw("colz");
                       break;
               }
           }

@@ -1,14 +1,12 @@
 #pragma once
 
-#include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/Validator.h"
 #include "iguana/algorithms/TypeDefs.h"
-#include <TH1F.h>
+#include <TH2D.h>
 #include <TFile.h>
 #include <TCanvas.h>
 #include <TStyle.h>
 #include <Math/Vector4D.h>
-#include <map>
 
 namespace iguana::clas12 {
 
@@ -46,15 +44,14 @@ namespace iguana::clas12 {
     private:
       
       // How can I change this FillHistograms function so it works for TH2D histograms? I'm probably being stupid.
-      void InitializeHistograms();
       hipo::banklist::size_type b_particle;
       double electron_mass;
-      std::vector<int> const u_pdg_list = {particle::PDG::electron, particle::PDG::pion_plus, particle::PDG::pion_minus, particle::PDG::proton};
+      std::vector<int> const u_pdg_list = {particle::PDG::electron, particle::PDG::pi_plus, particle::PDG::pi_minus, particle::PDG::proton};
       TString m_output_file_basename;
       TFile* m_output_file;
 
-      std::map<float, TH2D*> h_beforecorr;
-      std::map<float, TH2D*> h_aftercorr;
+      TH2D* h_beforecorr;
+      TH2D* h_aftercorr;
   };
 
 }
