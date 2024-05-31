@@ -7,7 +7,7 @@ namespace iguana::clas12 {
 
   /// @brief_algo Filter the `REC::Particle` bank by applying DC (drift chamber) fiducial cuts
   ///
-  /// @begin_doc_algo{Filter}
+  /// @begin_doc_algo{clas12::FiducialFilter | Filter}
   /// @input_banks{REC::Particle, REC::Traj, RUN::config}
   /// @output_banks{REC::Particle}
   /// @end_doc
