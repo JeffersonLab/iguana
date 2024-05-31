@@ -37,7 +37,7 @@ namespace iguana::clas12 {
 
     private:
 
-      hipo::banklist::size_type b_ft_particle;
+      hipo::banklist::size_type b_particle;
       double electron_mass;
 
   };
