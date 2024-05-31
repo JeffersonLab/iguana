@@ -171,7 +171,7 @@ project_test_env.set(
 
 # set preprocessor macros
 add_project_arguments(
-  '-DIGUANA_ETC="' + get_option('prefix') / project_etc + '"',
+  '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etc + '"',
   language: ['cpp'],
 )
 
