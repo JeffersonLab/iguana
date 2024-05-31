@@ -23,8 +23,8 @@ algo_dict = [
 #     'has_config':          bool        # assumes Config.yaml exists (default=true)
 #     'has_c_bindings':      bool        # assumes Bindings.cc exists (default=true)
 #     'has_validator':       bool        # assumes Validator{cc,h} exist (default=true)
-#     'algorithm_needs_ROOT: bool        # whether this algorithm needs ROOT or not (default=false)
-#     'validator_needs_ROOT: bool        # whether this validator needs ROOT or not (default=true)
+#     'algorithm_needs_ROOT': bool       # whether this algorithm needs ROOT or not (default=false)
+#     'validator_needs_ROOT': bool       # whether this validator needs ROOT or not (default=true)
 #     'add_algorithm_sources': list[str] # list of additional algorithm source files (default=[])
 #     'add_algorithm_headers': list[str] # list of additional algorithm header files (default=[])
 #     'add_validator_sources': list[str] # list of additional validator source files (default=[])
@@ -85,6 +85,13 @@ algo_dict += [
     'algorithm_needs_ROOT': true,
     'test_args': { 'banks': ['REC::Particle'] },
   },
+  {
+    'name': 'clas12::PhotonGBTFilter',
+    'has_c_bindings': false,
+    'algorithm_needs_ROOT': true,
+    'has_validator': true,
+    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'RUN::config'] },
+  }
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
@@ -147,6 +154,8 @@ foreach algo : algo_dict
         vdor_headers += algo_dir / src_file
       endforeach
     endif
+  else
+    warning('Algorithm "' + algo_name + '" has no Validator; use at your own risk!')
   endif
 
 endforeach

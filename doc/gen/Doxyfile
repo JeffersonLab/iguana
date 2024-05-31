@@ -286,7 +286,7 @@ TAB_SIZE               = 4
 ALIASES =
 # algorithm properties
 ALIASES += brief_algo="@brief **%Algorithm:** "
-ALIASES += begin_doc_algo{1}="\xrefitem algo \"Algorithm Type:\" \"List of all Algorithms\" \1 \par %Algorithm Properties:^^<table>"
+ALIASES += begin_doc_algo{2|}="\par %Algorithm Name:^^&emsp;&emsp;&emsp;`%\1`\xrefitem algo \"Algorithm Type:\" \"List of all Algorithms\" \2 \par %Algorithm Inputs and Outputs:^^<table>"
 ALIASES += input_banks{1}="<tr><td>**Input Banks**</td><td>`\1`</td></tr>"
 ALIASES += output_banks{1}="<tr><td>**Output Banks**</td><td>`\1`</td></tr>"
 ALIASES += end_doc="</table>"
@@ -997,7 +997,7 @@ INPUT_FILE_ENCODING    =
 # provided as doxygen C comment), *.py, *.pyw, *.f90, *.f95, *.f03, *.f08,
 # *.f18, *.f, *.for, *.vhd, *.vhdl, *.ucf, *.qsf and *.ice.
 
-FILE_PATTERNS          = *.h iguana-example-*.cc Bindings.cc *.f
+FILE_PATTERNS          = *.h iguana-example-*.cc Bindings.cc *.f *.C
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.

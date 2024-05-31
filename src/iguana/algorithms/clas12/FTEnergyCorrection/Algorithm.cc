@@ -33,8 +33,13 @@ namespace iguana::clas12 {
       vector_element_t E) const
   {
     vector_element_t rho = std::hypot(px, py, pz);
-    vector_element_t E_new = E +  0.0208922 + 0.050158*E - 0.0181107*pow(E,2) + 0.00305671*pow(E,3) - 0.000178235*pow(E,4);
+    vector_element_t E_new = CorrectEnergy(E);
     return { E_new*(px/rho), E_new*(py/rho), E_new*(pz/rho), E_new };
+  }
+
+  vector_element_t FTEnergyCorrection::CorrectEnergy(vector_element_t E) const
+  {
+    return E +  0.0208922 + 0.050158*E - 0.0181107*pow(E,2) + 0.00305671*pow(E,3) - 0.000178235*pow(E,4);
   }
 
   void FTEnergyCorrection::Stop() {
