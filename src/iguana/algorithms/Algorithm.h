@@ -7,7 +7,6 @@
 #include <variant>
 #include <vector>
 
-#include <fmt/ranges.h>
 #include <hipo4/bank.h>
 
 
