@@ -347,7 +347,7 @@ jobs:
         run: |
           mv iguana relocated
           source relocated/bin/this_iguana.sh --verbose # do not use --githubCI option, since we want this environment to be for only this step
-          relocated/bin/iguana-example-00-basic test_data.hipo ${{ env.num_events }}
+          relocated/bin/iguana-example-basic test_data.hipo ${{ env.num_events }}
           mv relocated iguana
       ### set iguana environment, since the next steps will check the iguana installation
       - name: set iguana environment
