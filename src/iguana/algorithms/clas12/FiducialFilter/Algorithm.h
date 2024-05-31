@@ -87,7 +87,7 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_config;
       
       /// Pi
-      const double PI = 3.14159265;
+      const double PI = M_PI;
       
       /// Pass Reconstruction
       int o_pass = 1;
