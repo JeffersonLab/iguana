@@ -61,8 +61,8 @@ fi
 
 # set environment variables for Fortran consumers
 if @fortran@; then
-  export IGUANA_FORTRAN_LIBS="-L$this_dir/@libdir@ @fortran_libs@"
-  export IGUANA_FORTRAN_FLAGS="-I$this_dir/@fortran_libdir@"
+  export IGUANA_FORTRAN_LIBS="-L$IGUANA/@libdir@ @fortran_libs@"
+  export IGUANA_FORTRAN_FLAGS="-I$IGUANA/@fortran_libdir@"
 fi
 
 # prepend to LD_LIBRARY_PATH or DYLD_LIBRARY_PATH
@@ -132,7 +132,6 @@ if $arg_githubCI; then
 fi
 
 # cleanup
-unset this_dir
 unset arg_verbose
 unset arg_githubCI
 unset -f get_realpath
