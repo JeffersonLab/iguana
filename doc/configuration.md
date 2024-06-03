@@ -47,7 +47,7 @@ physics::AlgorithmA
 physics::AlgorithmB
   value: 3
 ```
-Custom YAML file, widening `AlgorithmA`'s `cuts` and increasing `AlgorithmB`'s `value':
+Custom YAML file, widening `AlgorithmA`'s `cuts` and increasing `AlgorithmB`'s `value`:
 ```yaml
 ### custom YAML file
 physics::AlgorithmA
