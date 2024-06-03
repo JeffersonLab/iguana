@@ -143,13 +143,13 @@ c     ------------------------------------------------------------------
 
 c     set log levels (don't forget `//c_null_char`)
       call iguana_algo_set_log_level(
-        algo_eb_filter, 'debug'//c_null_char)
+     &  algo_eb_filter, 'debug'//c_null_char)
       call iguana_algo_set_log_level(
-        algo_vz_filter, 'debug'//c_null_char)
+     &  algo_vz_filter, 'debug'//c_null_char)
       call iguana_algo_set_log_level(
-        algo_inc_kin, 'debug'//c_null_char)
+     &  algo_inc_kin, 'debug'//c_null_char)
       call iguana_algo_set_log_level(
-        algo_mom_cor, 'debug'//c_null_char)
+     &  algo_mom_cor, 'debug'//c_null_char)
 
 c     configure algorithms with a configuration file
       if(config_file_set) then
