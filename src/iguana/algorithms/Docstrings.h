@@ -41,13 +41,38 @@ namespace iguana::physics {}
 /// ```
 /// To use this in Fortran:
 /// ```fortran
-/// use iso_c_binding
-/// integer(c_int) a
-/// real(c_float) b
-/// call iguana_example_function(a, b)
+/// c     use the ISO_C_BINDING module:
+///       use iso_c_binding
+/// c     function arguments must be ISO_C_BINDING kinds:
+///       integer(c_int) a
+///       real(c_float) b
+/// c     example function call:
+///       call iguana_example_function(a, b)
 /// ```
 ///
-/// To use these bindings with your Fortran code, link against the installed `iguana` libraries.
+/// If the C function has a string parameter (`char const*`), make sure that the string that you pass
+/// has the correct termination (`c_null_char`), even if it's a string literal; for example, the C function
+/// ```cpp
+/// void iguana_example_function_(char const* str);
+/// ```
+/// must be called in Fortran like this:
+/// ```fortran
+/// c     string variables need to be BOTH trimmed AND terminated:
+///       character*1024 str
+///       str = 'sample_string'
+///       call iguana_example_function(trim(str)//c_null_char)
+///
+/// c     string literals just need to be terminated:
+///       call iguana_example_function('sample_string'//c_null_char)
+/// ```
+///
+/// To use these bindings with your Fortran code, link against the installed `iguana` libraries;
+/// for example, if you use a `Makefile`, you may set the linking arguments to `$(IGUANA_LIBS)`,
+/// ```make
+/// IGUANA_LIBS = $(shell pkg-config iguana --libs --maximum-traverse-depth 2)
+/// ```
+/// then use `$(IGUANA_LIBS)` in your compilation calls. If you need to link Iguana dependency libraries
+/// too, remove the `--maximum-traverse-depth 2` argument.
 ///
 /// @see A Fortran example: `iguana-example-fortran.f`
 ///

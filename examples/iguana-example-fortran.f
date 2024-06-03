@@ -121,28 +121,35 @@ c       references the created instance of the algorithm; it will be
 c       set after calling this subroutine and you will need it to call
 c       other iguana subroutines (namely, "action functions")
 c     - the 2nd argument is the algorithm name
+c       IMPORTANT: any time you pass a string to iguana, be sure that
+c                  it has the correct termination by appending:
+c                  `//c_null_char`
       call iguana_algo_create(
      &  algo_eb_filter,
-     &  'clas12::EventBuilderFilter')
+     &  'clas12::EventBuilderFilter'//c_null_char)
       call iguana_algo_create(
      &  algo_vz_filter,
-     &  'clas12::ZVertexFilter')
+     &  'clas12::ZVertexFilter'//c_null_char)
       call iguana_algo_create(
      &  algo_inc_kin,
-     &  'physics::InclusiveKinematics')
+     &  'physics::InclusiveKinematics'//c_null_char)
       call iguana_algo_create(
      &  algo_mom_cor,
-     &  'clas12::MomentumCorrection')
+     &  'clas12::MomentumCorrection'//c_null_char)
 
 c     ------------------------------------------------------------------
 c     configure and start iguana algorithms
 c     ------------------------------------------------------------------
 
-c     set log levels
-      call iguana_algo_set_log_level(algo_eb_filter,'debug')
-      call iguana_algo_set_log_level(algo_vz_filter,'debug')
-      call iguana_algo_set_log_level(algo_inc_kin,'debug')
-      call iguana_algo_set_log_level(algo_mom_cor,'debug')
+c     set log levels (don't forget `//c_null_char`)
+      call iguana_algo_set_log_level(
+        algo_eb_filter, 'debug'//c_null_char)
+      call iguana_algo_set_log_level(
+        algo_vz_filter, 'debug'//c_null_char)
+      call iguana_algo_set_log_level(
+        algo_inc_kin, 'debug'//c_null_char)
+      call iguana_algo_set_log_level(
+        algo_mom_cor, 'debug'//c_null_char)
 
 c     configure algorithms with a configuration file
       if(config_file_set) then
