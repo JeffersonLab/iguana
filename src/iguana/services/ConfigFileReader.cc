@@ -1,6 +1,7 @@
 #include "ConfigFileReader.h"
 #include <filesystem>
 #include <cstdlib>
+#include <sstream>
 
 namespace iguana {
 
