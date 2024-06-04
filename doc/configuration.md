@@ -12,7 +12,7 @@ There are a few ways to configure the algorithms; see the sections below for the
 > [!NOTE]
 > If the Iguana installation is relocated, the environment variable `$IGUANA_CONFIG_PATH` _must_ be used at runtime.
 
-## Copy the default directory, and modify
+## Option 1: Copy the default directory, and modify
 
 First, copy the default configuration directory to your work area, or to your analysis code source tree; we'll call the copied directory `my_iguana_config`, as an example. If `$IGUANA_CONFIG_PATH` is the default configuration directory (_i.e._ you have not set or modified this variable yourself), you may run:
 ```bash
@@ -31,7 +31,7 @@ Paths which appear first in `$IGUANA_CONFIG_PATH` will be prioritized when the a
 
 2. Use `Algorithm::SetConfigDirectory` instead of prepending `$IGUANA_CONFIG_PATH`.
 
-## Write your own YAML file
+## Option 2: Write your own YAML file
 
 Make a new YAML file, containing just the options you want to override; use `Algorithm::SetConfigFile` to use this file for each algorithm.
 See existing algorithms' configuration, and just copy what you need into your own YAML file; be mindful of the indentation, and that the top-level set of YAML nodes are the algorithm names. For example:
