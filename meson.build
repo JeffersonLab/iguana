@@ -171,7 +171,7 @@ project_test_env.set(
 
 # set preprocessor macros
 add_project_arguments(
-  '-DIGUANA_ETC="' + get_option('prefix') / project_etc + '"',
+  '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etc + '"',
   language: ['cpp'],
 )
 
@@ -218,6 +218,7 @@ if get_option('z_install_envfile')
       'python':  get_option('bind_python') ? 'true' : 'false',
       'libdir':  get_option('libdir'),
       'root':    ROOT_dep.found() ? 'true' : 'false',
+      'etcdir':  project_etc,
     },
   )
   foreach shell : ['csh', 'tcsh']

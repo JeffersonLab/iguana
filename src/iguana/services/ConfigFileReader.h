@@ -15,6 +15,9 @@ namespace iguana {
       ConfigFileReader(std::string_view name = "config");
 
       /// Get the config files' _fixed_ installation prefix
+      /// @warning if the Iguana installation is _relocated_, this directory will **not** be correct,
+      /// since it is compiled in the shared library; as a fallback, you may use the environment variable
+      /// `$IGUANA_CONFIG_PATH`.
       /// @return the absolute path to the installed configuration file directory
       static std::string GetConfigInstallationPrefix();
 

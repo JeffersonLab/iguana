@@ -57,7 +57,7 @@ int main(int argc, char** argv)
   seq.SetOption("clas12::EventBuilderFilter", "log", "debug");
   seq.SetOption("clas12::MomentumCorrection", "log", "debug");
 
-  // set algorithm options
+  // set algorithm options (overrides configuration files)
   seq.SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", {11, 211, -211});
 
   // start the algorithms
