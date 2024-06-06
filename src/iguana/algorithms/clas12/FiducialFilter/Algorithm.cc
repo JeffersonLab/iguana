@@ -26,7 +26,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& trajBank     = GetBank(banks, b_traj, "REC::Traj");
     auto& configBank   = GetBank(banks, b_config, "RUN::config");
-    auto torus  = (int)configBank.getFloat("torus", 0);    
+    auto torus  = configBank.getFloat("torus", 0);    
     
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
@@ -49,13 +49,13 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
 }
 
-  bool FiducialFilter::Filter(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const
+  bool FiducialFilter::Filter(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const
   {
 
     if(pid==11) return DC_fiducial_cut_XY_pass1(traj_row, torus, pid);
     else if(pid==211 || pid==-211 || pid==2212){
-        if(torus==-1) return DC_fiducial_cut_theta_phi_pass1(traj_row, torus, pid);
-        else if(torus==1) return DC_fiducial_cut_XY_pass1(traj_row, torus, pid);
+        if(torus<0) return DC_fiducial_cut_theta_phi_pass1(traj_row, torus, pid);
+        else if(torus>0) return DC_fiducial_cut_XY_pass1(traj_row, torus, pid);
         else return true;
     }
     return true;
@@ -63,11 +63,11 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
 
     
 
-  bool FiducialFilter::DC_fiducial_cut_XY_pass1(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const
+  bool FiducialFilter::DC_fiducial_cut_XY_pass1(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const
   {
     
-      const auto minparams = ((torus==-1) ? minparams_in_XY_pass1 : minparams_out_XY_pass1);
-      const auto maxparams = ((torus==-1) ? maxparams_in_XY_pass1 : maxparams_out_XY_pass1);
+      const auto minparams = ((torus<0) ? minparams_in_XY_pass1 : minparams_out_XY_pass1);
+      const auto maxparams = ((torus<0) ? maxparams_in_XY_pass1 : maxparams_out_XY_pass1);
       double X=0;
       double Y=0;
       for(int r = 0 ; r < 3; r++){
@@ -160,10 +160,10 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
       return true;
     }    
     
-  bool FiducialFilter::DC_fiducial_cut_theta_phi_pass1(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const{
+  bool FiducialFilter::DC_fiducial_cut_theta_phi_pass1(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const{
       
-      const auto minparams = ((torus==-1) ? minparams_in_theta_phi_pass1 : minparams_out_theta_phi_pass1);
-      const auto maxparams = ((torus==-1) ? maxparams_in_theta_phi_pass1 : maxparams_out_theta_phi_pass1);
+      const auto minparams = ((torus<0) ? minparams_in_theta_phi_pass1 : minparams_out_theta_phi_pass1);
+      const auto maxparams = ((torus<0) ? maxparams_in_theta_phi_pass1 : maxparams_out_theta_phi_pass1);
       double theta_DCr = 5000;
       double phi_DCr_raw = 5000;
       double x=0;

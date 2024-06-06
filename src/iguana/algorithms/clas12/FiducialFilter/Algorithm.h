@@ -48,7 +48,7 @@ namespace iguana::clas12 {
       /// @param torus toroidal magnetic field sign
       /// @param pid pid of the particle
       /// @returns `true` if passes fiducial cuts
-      bool Filter(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const;
+      bool Filter(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const;
 
       
       /// **Method**: Examines XY fiducial cut for pass1
@@ -56,7 +56,7 @@ namespace iguana::clas12 {
       /// @param torus toroidal magnetic field sign
       /// @param pid pid of the particle
       /// @returns `true` if passes fiducial cuts
-      bool DC_fiducial_cut_XY_pass1(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const;
+      bool DC_fiducial_cut_XY_pass1(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const;
       
       
       /// **Method**: Examines Theta Phi fiducial cut for pass1
@@ -64,7 +64,7 @@ namespace iguana::clas12 {
       /// @param torus toroidal magnetic field sign
       /// @param pid pid of the particle
       /// @returns `true` if passes fiducial cuts
-      bool DC_fiducial_cut_theta_phi_pass1(FiducialFilter::traj_row_data const traj_row, int const torus, int const pid) const;
+      bool DC_fiducial_cut_theta_phi_pass1(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const;
           
           
       /// **Method**: Gets trajectory data for particles in the event
