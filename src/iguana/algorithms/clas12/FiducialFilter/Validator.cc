@@ -1,4 +1,5 @@
 #include "Validator.h"
+#include "Algorithm.h"
 
 #include <TProfile.h>
 #include <TStyle.h>
@@ -88,7 +89,7 @@ namespace iguana::clas12 {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& trajBank      = GetBank(banks, b_traj, "REC::Traj");
     // get a pindex'd map of the REC::Traj data
-    auto traj_map = GetTrajMap(trajBank);
+    auto traj_map = FiducialFilter::GetTrajMap(trajBank);
     
     for(auto const& row : particle_bank.getRowList()){
         auto pid = particle_bank.getInt("pid", row);
@@ -177,61 +178,5 @@ namespace iguana::clas12 {
       m_log->Info("Wrote output file {}", m_output_file->GetName());
       m_output_file->Close();
     }
-  }
-
-
-  int FiducialFilterValidator::determineSectorDC(float x, float y, float z) const
-  {
-      float phi = 180 / PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)),
-                       x /sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
-      if(phi<30 && phi>=-30){return 1;}
-      else if(phi<90 && phi>=30){return 2;}
-      else if(phi<150 && phi>=90){return 3;}
-      else if(phi>=150 || phi<-150){return 4;}
-      else if(phi<-90 && phi>=-150){return 5;}
-      else if(phi<-30 && phi>-90){return 6;}
-
-      return 0;
-
-  }
-    
-  std::map<int, FiducialFilterValidator::traj_row_data> FiducialFilterValidator::GetTrajMap(hipo::bank const &bank) const
-  {
-      std::map<int, FiducialFilterValidator::traj_row_data> traj_map;
-      
-      for(int row = 0; row < bank.getRows(); row++){
-          auto pindex = bank.getInt("pindex",row);
-          auto x      = bank.getFloat("x",row);
-          auto y      = bank.getFloat("y",row);
-          auto z      = bank.getFloat("z",row);
-          auto layer  = bank.getInt("layer",row);
-          
-          // Ensure an entry exists in the map for the given pindex
-          if (traj_map.find(pindex) == traj_map.end()) {
-            traj_map[pindex] = FiducialFilterValidator::traj_row_data();
-          }
-          
-          switch(layer){
-              case 6: // first DC
-                traj_map[pindex].x1 = x;
-                traj_map[pindex].y1 = y;
-                traj_map[pindex].z1 = z;
-                break;
-              case 18: // second DC
-                traj_map[pindex].x2 = x;
-                traj_map[pindex].y2 = y;
-                traj_map[pindex].z2 = z;
-                // Determine Sector from the center of the DC
-                traj_map[pindex].sector = determineSectorDC(traj_map[pindex].x2,traj_map[pindex].y2,traj_map[pindex].z2);
-                break;
-              case 36: // third DC
-                traj_map[pindex].x3 = x;
-                traj_map[pindex].y3 = y;
-                traj_map[pindex].z3 = z;
-                break;
-          }
-      }
-      
-      return traj_map;      
   }
 }

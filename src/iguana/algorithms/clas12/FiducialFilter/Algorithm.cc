@@ -92,36 +92,36 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
 
         if(sector == 2)
           {
-        const double X_new = X * std::cos(-60 * PI / 180) - Y * std::sin(-60 * PI / 180);
-        Y = X * std::sin(-60 * PI / 180) + Y * std::cos(-60 * PI / 180);
+        const double X_new = X * std::cos(-60 * M_PI / 180) - Y * std::sin(-60 * M_PI / 180);
+        Y = X * std::sin(-60 * M_PI / 180) + Y * std::cos(-60 * M_PI / 180);
         X = X_new;
           }
 
         if(sector == 3)
           {
-        const double X_new = X * std::cos(-120 * PI / 180) - Y * std::sin(-120 * PI / 180);
-        Y = X * std::sin(-120 * PI / 180) + Y * std::cos(-120 * PI / 180);
+        const double X_new = X * std::cos(-120 * M_PI / 180) - Y * std::sin(-120 * M_PI / 180);
+        Y = X * std::sin(-120 * M_PI / 180) + Y * std::cos(-120 * M_PI / 180);
         X = X_new;
           }
 
         if(sector == 4)
           {
-        const double X_new = X * std::cos(-180 * PI / 180) - Y * std::sin(-180 * PI / 180);
-        Y = X * std::sin(-180 * PI / 180) + Y * std::cos(-180 * PI / 180);
+        const double X_new = X * std::cos(-180 * M_PI / 180) - Y * std::sin(-180 * M_PI / 180);
+        Y = X * std::sin(-180 * M_PI / 180) + Y * std::cos(-180 * M_PI / 180);
         X = X_new;
           }
 
         if(sector == 5)
           {
-        const double X_new = X * std::cos(120 * PI / 180) - Y * std::sin(120 * PI / 180);
-        Y = X * std::sin(120 * PI / 180) + Y * std::cos(120 * PI / 180);
+        const double X_new = X * std::cos(120 * M_PI / 180) - Y * std::sin(120 * M_PI / 180);
+        Y = X * std::sin(120 * M_PI / 180) + Y * std::cos(120 * M_PI / 180);
         X = X_new;
           }
 
         if(sector == 6)
           {
-        const double X_new = X * std::cos(60 * PI / 180) - Y * std::sin(60 * PI / 180);
-        Y = X * std::sin(60 * PI / 180) + Y * std::cos(60 * PI / 180);
+        const double X_new = X * std::cos(60 * M_PI / 180) - Y * std::sin(60 * M_PI / 180);
+        Y = X * std::sin(60 * M_PI / 180) + Y * std::cos(60 * M_PI / 180);
         X = X_new;
           }
 
@@ -190,8 +190,8 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
         }
         int sector = traj_row.sector;
 
-        theta_DCr = 180 / PI * acos(z / sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
-        phi_DCr_raw = 180 / PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)), 
+        theta_DCr = 180 / M_PI * acos(z / sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
+        phi_DCr_raw = 180 / M_PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)), 
                        x /sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
 
         double phi_DCr = 5000;
@@ -230,7 +230,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
       }
       return true;
   }
-  std::map<int, FiducialFilter::traj_row_data> FiducialFilter::GetTrajMap(hipo::bank const &bank) const
+  std::map<int, FiducialFilter::traj_row_data> FiducialFilter::GetTrajMap(hipo::bank const &bank)
   {
       std::map<int, FiducialFilter::traj_row_data> traj_map;
       
@@ -272,9 +272,9 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
       return traj_map;      
   }
       
-  int FiducialFilter::determineSectorDC(float x, float y, float z) const
+  int FiducialFilter::determineSectorDC(float x, float y, float z)
   {
-      float phi = 180 / PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)),
+      float phi = 180 / M_PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)),
                        x /sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
       if(phi<30 && phi>=-30){return 1;}
       else if(phi<90 && phi>=30){return 2;}
