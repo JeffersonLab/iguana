@@ -4,26 +4,26 @@ namespace iguana::clas12 {
   REGISTER_IGUANA_ALGORITHM(FTEnergyCorrection);
 
   void FTEnergyCorrection::Start(hipo::banklist& banks) {
-    b_ft_particle = GetBankIndex(banks, "RECFT::Particle");
+    b_particle = GetBankIndex(banks, "REC::Particle");
     electron_mass = particle::mass.at(particle::electron);
   }
 
   void FTEnergyCorrection::Run(hipo::banklist& banks) const {
-    auto& ftParticleBank = GetBank(banks, b_ft_particle, "RECFT::Particle");
-    ShowBank(ftParticleBank, Logger::Header("INPUT FT PARTICLES"));
-    for(auto const& row : ftParticleBank.getRowList()) {
-      if(ftParticleBank.getInt("pid", row) == particle::PDG::electron) {
-        auto px = ftParticleBank.getFloat("px", row);
-        auto py = ftParticleBank.getFloat("py", row);
-        auto pz = ftParticleBank.getFloat("pz", row);
+    auto& ParticleBank = GetBank(banks, b_particle, "REC::Particle");
+    ShowBank(ParticleBank, Logger::Header("INPUT PARTICLES"));
+    for(auto const& row : ParticleBank.getRowList()) {
+      if(ParticleBank.getInt("pid", row) == particle::PDG::electron) {
+        auto px = ParticleBank.getFloat("px", row);
+        auto py = ParticleBank.getFloat("py", row);
+        auto pz = ParticleBank.getFloat("pz", row);
         auto E = std::hypot(std::hypot(px, py, pz), electron_mass);
         auto [px_new, py_new, pz_new, E_new] = Transform(px, py, pz, E);
-        ftParticleBank.putFloat("px", row, px_new);
-        ftParticleBank.putFloat("py", row, py_new);
-        ftParticleBank.putFloat("pz", row, pz_new);
+        ParticleBank.putFloat("px", row, px_new);
+        ParticleBank.putFloat("py", row, py_new);
+        ParticleBank.putFloat("pz", row, pz_new);
       }
     }
-    ShowBank(ftParticleBank, Logger::Header("OUTPUT FT PARTICLES"));
+    ShowBank(ParticleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
   vector4_t  FTEnergyCorrection::Transform(
