@@ -37,7 +37,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
     particleBank.getMutableRowList().filter([this, &traj_map, torus](hipo::bank& bank, int row) {
         // Check if this particle has a REC::Traj component
         if (auto it{traj_map.find(row)}; it != traj_map.end()) {
-          auto traj_row = it->second
+          auto traj_row = it->second;
           auto pid = bank.getInt("pid", row);
           return Filter(traj_row, torus, pid);
         }
