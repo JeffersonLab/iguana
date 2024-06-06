@@ -36,13 +36,12 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this, &traj_map, torus](hipo::bank& bank, int row) {
         // Check if this particle has a REC::Traj component
-        if (traj_map.find(row) == traj_map.end()) {
-            return false; // particle not in REC::traj
+        if (auto it{traj_map.find(row)}; it != traj_map.end()) {
+          auto traj_row = it->second
+          auto pid = bank.getInt("pid", row);
+          return Filter(traj_row, torus, pid);
         }
-        auto traj_row = traj_map.at(row); 
-        auto pid = bank.getInt("pid", row);
-        auto accept  = Filter(traj_row, torus, pid);
-        return accept;
+        else return false; // particle not in REC::traj
     });
 
     // dump the modified bank
