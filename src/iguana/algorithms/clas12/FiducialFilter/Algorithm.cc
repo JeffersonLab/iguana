@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "Pass1CutData.h"
 
 namespace iguana::clas12 {
 
