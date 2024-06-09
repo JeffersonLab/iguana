@@ -9,15 +9,26 @@ namespace iguana::clas12 {
 
     // Read YAML config file with cuts for a given run number.
     ParseYAMLConfig();
-    o_runnum = GetCachedOption<int>("runnum").value_or(0); // FIXME: should be set form RUN::config
-    o_zcuts  = GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
-    if(o_zcuts.size() != 2) {
-      m_log->Error("configuration option 'cuts' must be an array of size 2, but it is {}", PrintOptionValue("cuts"));
-      throw std::runtime_error("bad configuration");
-    }
 
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
+    b_config   = GetBankIndex(banks, "RUN::config");
+  }
+
+  void ZVertexFilter::Reload(int const& runnum) const
+  {
+    auto o_runnum = GetRunNum();
+    if(o_runnum != runnum) {
+      oa_runnum.store(runnum);
+      // FIXME: `GetOptionVector` is not const
+      // auto o_zcuts = GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
+      // if(o_zcuts.size() != 2) {
+      //   m_log->Error("configuration option 'cuts' must be an array of size 2, but it is {}", PrintOptionValue("cuts"));
+      //   throw std::runtime_error("bad configuration");
+      // }
+      // oa_zcut_low.store(o_zcuts[0]);
+      // oa_zcut_high.store(o_zcuts[1]);
+    }
   }
 
   void ZVertexFilter::Run(hipo::banklist& banks) const
@@ -25,9 +36,20 @@ namespace iguana::clas12 {
 
     // get the banks
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
+    auto& configBank   = GetBank(banks, b_config, "RUN::config");
+
+    // get the zcuts
+    Reload(configBank.getInt("run", 0));
 
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
+
+    //
+    //
+    // FIXME: would it be faster to do ONE atomic load of the z-vertex cuts here,
+    // before looping over particles?
+    //
+    //
 
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this](auto bank, auto row) {
@@ -48,17 +70,17 @@ namespace iguana::clas12 {
 
   int ZVertexFilter::GetRunNum() const
   {
-    return o_runnum;
+    return oa_runnum.load();
   }
 
   double ZVertexFilter::GetZcutLower() const
   {
-    return o_zcuts.at(0);
+    return oa_zcut_low.load();
   }
 
   double ZVertexFilter::GetZcutUpper() const
   {
-    return o_zcuts.at(1);
+    return oa_zcut_high.load();
   }
 
   void ZVertexFilter::Stop()

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include "iguana/algorithms/Algorithm.h"
 
 namespace iguana::clas12 {
@@ -25,6 +26,10 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
+      /// @reload_function
+      /// @param runnum run number
+      void Reload(int const& runnum) const;
+
       /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds
       /// @param zvertex the particle Z Vertex to check
       /// @returns `true` if `zvertex` is within specified bounds
@@ -38,14 +43,15 @@ namespace iguana::clas12 {
       double GetZcutUpper() const;
 
     private:
-      /// `hipo::banklist` index for the particle bank
-      hipo::banklist::size_type b_particle;
+
+      /// `hipo::banklist` indices
+      hipo::banklist::size_type b_particle, b_config;
 
       /// Run number
-      int o_runnum;
+      mutable std::atomic<int> oa_runnum;
 
-      /// Z-vertex cut
-      std::vector<double> o_zcuts;
+      /// Z-vertex cuts
+      mutable std::atomic<double> oa_zcut_low, oa_zcut_high;
   };
 
 }

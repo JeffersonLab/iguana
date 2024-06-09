@@ -93,6 +93,16 @@ foreach command : ['', 'unknown', 'algorithm', 'validator', 'unit', 'config']
   )
 endforeach
 
+# test multithreading
+foreach test_num : [ '1' ]
+  test(
+    'multithreading_' + test_num,
+    test_exe,
+    args: [ '-t', test_num, '-n', '1000', '-v' ],
+    env: project_test_env,
+    )
+endforeach
+
 # test config files
 foreach test_num : [ '1', '2', '3' ]
   config_file_name = 'test_' + test_num + '.yaml'

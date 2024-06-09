@@ -50,7 +50,7 @@ algo_dict += [
   {
     'name': 'clas12::ZVertexFilter',
     'has_validator': false,
-    'test_args': { 'banks': ['REC::Particle'] },
+    'test_args': { 'banks': ['REC::Particle', 'RUN::config'] },
   },
   {
     'name': 'clas12::SectorFinder',

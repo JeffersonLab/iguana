@@ -3,6 +3,7 @@
 #include "TestAlgorithm.h"
 #include "TestConfig.h"
 #include "TestLogger.h"
+#include "TestMultithreading.h"
 #include "TestValidator.h"
 
 int main(int argc, char** argv)
@@ -26,6 +27,7 @@ int main(int argc, char** argv)
     fmt::print("\n  COMMANDS:\n\n");
     fmt::print("    {:<20} {}\n", "algorithm", "call `Run` on an algorithm");
     fmt::print("    {:<20} {}\n", "validator", "run an algorithm's validator");
+    fmt::print("    {:<20} {}\n", "multithreading", "test multithreaded behavior");
     fmt::print("    {:<20} {}\n", "unit", "call `Test` on an algorithm, for unit tests");
     fmt::print("    {:<20} {}\n", "config", "test config file parsing");
     fmt::print("    {:<20} {}\n", "logger", "test Logger");
@@ -99,6 +101,9 @@ int main(int argc, char** argv)
     }
     else if(command == "validator") {
       available_options = {"f", "n", "a-vdor", "b", "o"};
+    }
+    else if(command == "multithreading") {
+      available_options = {"t", "n"};
     }
     else if(command == "config") {
       available_options = {"t"};
@@ -187,6 +192,8 @@ int main(int argc, char** argv)
     return TestAlgorithm(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, verbose);
   else if(command == "validator")
     return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, verbose);
+  else if(command == "multithreading")
+    return TestMultithreading(test_num, num_events, verbose);
   else if(command == "config")
     return TestConfig(test_num, verbose);
   else if(command == "logger")
