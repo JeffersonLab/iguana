@@ -9,6 +9,7 @@ namespace iguana::clas12 {
 
     // Read YAML config file with cuts for a given run number.
     ParseYAMLConfig();
+    oa_runnum.store(0);
 
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
@@ -17,9 +18,9 @@ namespace iguana::clas12 {
 
   void ZVertexFilter::Reload(int const& runnum) const
   {
-    auto o_runnum = GetRunNum();
+    auto o_runnum = oa_runnum.exchange(runnum);
     if(o_runnum != runnum) {
-      oa_runnum.store(runnum);
+      m_log->Debug("run number changed {} -> {}", o_runnum, runnum);
       // FIXME: `GetOptionVector` is not const
       // auto o_zcuts = GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
       // if(o_zcuts.size() != 2) {
