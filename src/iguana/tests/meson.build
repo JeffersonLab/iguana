@@ -98,7 +98,7 @@ foreach test_num : [ '1' ]
   test(
     'multithreading_' + test_num,
     test_exe,
-    args: [ 'multithreading', '-t', test_num, '-n', '1000', '-v' ],
+    args: [ 'multithreading', '-t', test_num, '-n', '100000', '-v' ],
     env: project_test_env,
     )
 endforeach
