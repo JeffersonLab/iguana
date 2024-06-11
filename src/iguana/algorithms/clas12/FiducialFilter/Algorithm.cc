@@ -39,6 +39,8 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
         // Check if this particle has a REC::Traj component
         if (auto it{traj_map.find(row)}; it != traj_map.end()) {
           auto traj_row = it->second;
+          // Reject particles with undefined sector
+          if(traj_row.sector==-1) return false;
           auto pid = bank.getInt("pid", row);
           return Filter(traj_row, torus, pid);
         }
@@ -281,9 +283,9 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
       else if(phi<150 && phi>=90){return 3;}
       else if(phi>=150 || phi<-150){return 4;}
       else if(phi<-90 && phi>=-150){return 5;}
-      else if(phi<-30 && phi>-90){return 6;}
+      else if(phi<-30 && phi>=-90){return 6;}
 
-      return 0;
+      return -1;
 
   }
     
