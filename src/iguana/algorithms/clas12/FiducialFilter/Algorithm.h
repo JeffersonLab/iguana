@@ -25,7 +25,6 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// Struct to store trajectory particle data
       struct traj_row_data {
         double x1 = -999;
         double x2 = -999;
