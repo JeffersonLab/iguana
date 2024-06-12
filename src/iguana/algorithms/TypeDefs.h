@@ -17,6 +17,7 @@ namespace iguana {
   /// 4-vector container type
   using vector4_t = std::tuple<vector_element_t, vector_element_t, vector_element_t, vector_element_t>;   
 
+
   /// Light-weight namespace for particle constants
   namespace particle {
     // clang-format off

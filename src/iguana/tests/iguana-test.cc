@@ -167,7 +167,8 @@ int main(int argc, char** argv)
       "REC::Particle",
       "REC::Calorimeter",
       "REC::Track",
-      "REC::Scintillator"};
+      "REC::Scintillator",
+      "REC::Traj"};
   if(bank_names.empty())
     bank_names = all_bank_names;
 
