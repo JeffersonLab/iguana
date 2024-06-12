@@ -295,6 +295,8 @@ ALIASES += begin_doc_config="\par Configuration Options:^^<table><tr><th>Name</t
 ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
 # action functions
 ALIASES += action_function{1}="\xrefitem action \"Function Type\" \"List of all Action Functions\" \1 \brief **Action Function:** "
+# reload functions
+ALIASES += reload_function="**Reload Function:** reloads certain configuration parameters for this algorithm. If you use _scalar action functions_, this function must be called first."
 # examples
 ALIASES += begin_doc_example="@addtogroup examples Examples^^@{"
 ALIASES += end_doc_example="@}"
