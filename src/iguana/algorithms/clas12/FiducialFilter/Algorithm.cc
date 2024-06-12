@@ -54,11 +54,16 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
   bool FiducialFilter::Filter(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const
   {
 
+    if(torus!=1&&torus!=-1){
+        m_log->Warn("torus={}...value must be either -1 or 1, otherwise fiducial cuts are not defined...filtering out all particles...",torus);
+        return false;
+    }
+    
     if(pid==11) return DC_fiducial_cut_XY_pass1(traj_row, torus, pid);
     else if(pid==211 || pid==-211 || pid==2212){
         if(torus<0) return DC_fiducial_cut_theta_phi_pass1(traj_row, torus, pid);
         else if(torus>0) return DC_fiducial_cut_XY_pass1(traj_row, torus, pid);
-        else return true;
+        else return false; 
     }
     return true;
   }
