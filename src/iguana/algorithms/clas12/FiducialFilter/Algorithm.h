@@ -25,7 +25,9 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
+      /// structure to hold `REC::Traj` data
       struct traj_row_data {
+        /// @cond NO_DOC
         double x1 = -999;
         double x2 = -999;
         double x3 = -999;
@@ -36,6 +38,7 @@ namespace iguana::clas12 {
         double z2 = -999;
         double z3 = -999;
         int sector= -1;
+        /// @endcond
       };
 
       /// **Method**: Gets trajectory data for particles in the event
