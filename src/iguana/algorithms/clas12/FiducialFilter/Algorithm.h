@@ -36,7 +36,7 @@ namespace iguana::clas12 {
         double z1 = -999;
         double z2 = -999;
         double z3 = -999;
-        int sector= 0;
+        int sector= -1;
       };
 
       /// **Method**: Gets trajectory data for particles in the event
