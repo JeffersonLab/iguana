@@ -16,6 +16,7 @@ int main(int argc, char** argv)
   std::string output_dir = "";
   bool verbose           = false;
   std::vector<std::string> bank_names;
+  std::vector<std::string> prerequisite_algos;
 
   // get the command
   auto exe           = std::string(argv[0]);
@@ -72,14 +73,21 @@ int main(int argc, char** argv)
            fmt::print("    {:<20} you may add as many banks as you need (-b BANK1 -b BANK2 ...)\n", "");
            fmt::print("    {:<20} default: if you do not add any banks, ALL of them will be used\n", "");
          }},
-
+        {"p", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-p PREREQUISITE_ALGOS", "add a prerequisite algorithm");
+           fmt::print("    {:<20} these are the algorithms needed upstream of ALGORITHM\n", "");
+           fmt::print("    {:<20} this option is repeatable\n", "");
+           fmt::print("    {:<20} default: no prerequisites\n", "");
+         }},
         {"t", [&]()
          {
            fmt::print("    {:<20} {}\n", "-t TESTNUM", "test number");
          }},
         {"o", [&]()
          {
-           fmt::print("    {:<20} {}\n", "-o OUTPUT_DIR", "if specified, validators will write to this directory");
+           fmt::print("    {:<20} {}\n", "-o OUTPUT_DIR", fmt::format("if specified, {} output will write to this directory;", command));
+           fmt::print("    {:<20} if not specified, output will not be written\n", "");
          }},
         {"v", [&]()
          {
@@ -87,7 +95,7 @@ int main(int argc, char** argv)
          }}};
     std::vector<std::string> available_options;
     if(command == "algorithm" || command == "unit") {
-      available_options = {"f", "n", "a-algo", "b"};
+      available_options = {"f", "n", "a-algo", "b", "p"};
     }
     else if(command == "validator") {
       available_options = {"f", "n", "a-vdor", "b", "o"};
@@ -119,7 +127,7 @@ int main(int argc, char** argv)
 
   // parse option arguments
   int opt;
-  while((opt = getopt(argc, argv, "hf:n:a:b:t:o:v|")) != -1) {
+  while((opt = getopt(argc, argv, "hf:n:a:b:p:t:o:v|")) != -1) {
     switch(opt) {
     case 'h':
       return UsageOptions(2);
@@ -134,6 +142,9 @@ int main(int argc, char** argv)
       break;
     case 'b':
       bank_names.push_back(std::string(optarg));
+      break;
+    case 'p':
+      prerequisite_algos.push_back(std::string(optarg));
       break;
     case 't':
       test_num = std::stoi(optarg);
@@ -151,12 +162,13 @@ int main(int argc, char** argv)
 
   // list of ALL banks needed by the algorithms and validators; we need all of them here,
   // so that the caller does not have to specifiy the banks
-  const std::vector<std::string> all_bank_names = {
+  std::vector<std::string> const all_bank_names = {
       "RUN::config",
       "REC::Particle",
       "REC::Calorimeter",
       "REC::Track",
-      "REC::Scintillator"};
+      "REC::Scintillator",
+      "REC::Traj"};
   if(bank_names.empty())
     bank_names = all_bank_names;
 
@@ -166,13 +178,14 @@ int main(int argc, char** argv)
   fmt::print("  {:>20} = {}\n", "num_events", num_events);
   fmt::print("  {:>20} = {}\n", "algo_name", algo_name);
   fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names, ", "));
+  fmt::print("  {:>20} = {}\n", "prerequisite_algos", fmt::join(prerequisite_algos, ", "));
   fmt::print("  {:>20} = {}\n", "test_num", test_num);
   fmt::print("  {:>20} = {}\n", "output_dir", output_dir);
   fmt::print("\n");
 
   // run test
   if(command == "algorithm" || command == "unit")
-    return TestAlgorithm(command, algo_name, bank_names, data_file, num_events, verbose);
+    return TestAlgorithm(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, verbose);
   else if(command == "validator")
     return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, verbose);
   else if(command == "config")

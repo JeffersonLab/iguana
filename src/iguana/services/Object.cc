@@ -28,7 +28,7 @@ namespace iguana {
     m_log->SetLevel(lev);
   }
 
-  void Object::SetLogLevel(const Logger::Level lev)
+  void Object::SetLogLevel(Logger::Level const lev)
   {
     m_log->SetLevel(lev);
   }

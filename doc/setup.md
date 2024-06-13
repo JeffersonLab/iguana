@@ -106,15 +106,18 @@ If you will _install_ `iguana` (recommended), set an installation prefix:
 meson configure --prefix=/path/to/iguana-installation  # must be an ABSOLUTE path
 ```
 
-All build options, their current values, and their descriptions may be found by running
+All build options, their current values, and their descriptions may be found by running one of
 ```bash
-meson configure
+meson configure              # outputs in a pager (`less`); you may scroll, or press 'q' to quit
+meson configure --no-pager   # do not use a pager
 ```
 **but that's a _lot_ of text!** The _most important_ build options are near the bottom, under **"Project options"**.
 
-To set any build option, _e.g._ `examples` to `true` (enables building of Iguana examples), run:
+Alternatively, see [`meson.options`](/meson.options) for the list of project options, and some more details.
+
+To set any build option, _e.g._ `install_examples` to `true`, run:
 ```bash
-meson configure -Dexamples=true
+meson configure -Dinstall_examples=true
 ```
 You can add as many `-D<option>=<value>` arguments as you need.
 
@@ -140,28 +143,24 @@ meson install   # installs Iguana to your prefix (build option 'prefix')
 <a name="env"></a>
 ## 🟠 Environment Variables (optional)
 The C++ Iguana implementation does not require the use of any environment variables. However,
-- some language bindings may benefit from variables such as `$PYTHONPATH`, for Python
-- you may want to override the linker library search path list (_e.g._, if you have conflicting libraries in it)
+- if Iguana libraries are not in your default linker library search path, you may need to update it, _e.g._ with
+  `$LD_LIBRARY_PATH` (Linux) or `$DYLD_LIBRARY_PATH` (macOS)
+- some language bindings may need variables such as `$PYTHONPATH`, for Python
 
 You may set your own environment variables, but for a quick start with suggested settings,
-the installed file `bin/this_iguana.sh` may be used as
+the installed files `bin/this_iguana.sh` and `bin/this_iguana.tcsh` may be used as
 ```
-source bin/this_iguana.sh [OPTIONAL ARGUMENTS]...
-
-OPTIONAL ARGUMENTS:
-
-   ld       append library paths to LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH);
-            by default these variables are NOT modified
-
-   verbose  print the relevant environment variable values
+source bin/this_iguana.sh    # for 'bash' and 'zsh' only; use the --help argument to see more usage options
+source bin/this_iguana.tcsh  # for 'tcsh' only; has no --help option and spawns a 'tcsh' sub-shell
 ```
 
-which sets or modifies the following environment variables:
+The following environment variables are set or modified; not all of them are needed for all users:
 
 | Variable                                                 | Modification                                                                                                                              |
 | ---                                                      | ---                                                                                                                                       |
 | `PKG_CONFIG_PATH`                                        | adds paths to the `pkg-config` files (`.pc`) for dependencies and Iguana; see [note on dependency resolution](dependency_resolution.md)   |
+| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries                                                                                             |
 | `PYTHONPATH`                                             | adds paths to dependency and Iguana Python packages, if Python bindings are installed                                                     |
-| `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries, if the optional argument `ld` was used                                                     |
-
-`this_iguana.sh` is compatible with `bash` and `zsh`, but not with `tcsh` or `csh`.
+| `ROOT_INCLUDE_PATH`                                      | adds paths to dependency and Iguana header files, for usage in ROOT                                                                       |
+| `IGUANA_CONFIG_PATH`                                     | path to iguana algorithm configuration files (`.yaml`); users may override this with their own path; multiple paths may be specified, delimited by colons (`:`), where paths listed first will override paths listed later (similar behavior as `$PATH`); this variable is _only_ necessary if the Iguana installation has been relocated |
+| `IGUANA`                                                 | the path to the Iguana installation prefix, equivalent to `pkg-config iguana --variable prefix`; this is only for consumers that do not use `pkg-config` or the other standard environment variables, however usage of this variable is _discouraged_ since the installation layout may vary |

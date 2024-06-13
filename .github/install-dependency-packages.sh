@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -8,6 +8,7 @@ set -e
 GENERAL_PACKAGE_LIST_LINUX=(
   python
   gcc
+  gcc-fortran
   clang
   make
   cmake
@@ -17,12 +18,12 @@ GENERAL_PACKAGE_LIST_LINUX=(
   which
   pkgconf
   ninja
-  # meson # FIXME: temporarly using ALA for older version
-  doxygen         # for documentation
-  graphviz        # for `dot` for documentation
-  gcovr           # for coverage
-  python-pygments # for coverage report syntax colors
-  llvm            # for `llvm-symbolizer`, for human-readable sanitizer results
+  meson
+  llvm  # for `llvm-symbolizer`, for human-readable sanitizer results
+  ### coverage
+  python-colorlog
+  python-pygments
+  gcovr
   ### ROOT dependencies
   binutils
   libx11
@@ -44,6 +45,7 @@ GENERAL_PACKAGE_LIST_MACOS=(
   tree
   ninja
   meson
+  gcc # for gfortran
   ### ROOT dependencies
   binutils
   libx11
@@ -114,10 +116,6 @@ case $runner in
       esac
       info_pacman $pkg
     done
-    ### FIXME: install older meson version
-    pacman -U --noconfirm https://archive.archlinux.org/packages/m/meson/meson-1.3.2-1-any.pkg.tar.zst
-    echo "MESON VERSION:"
-    meson --version
     ;;
 
   macos*)
@@ -130,6 +128,9 @@ case $runner in
       brew install $pkg
       info_homebrew $pkg
     done
+    ### link homebrew's gcc, for gfortran
+    brew unlink gcc
+    brew link gcc
     ;;
 
   *)

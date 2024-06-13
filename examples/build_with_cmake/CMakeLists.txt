@@ -17,13 +17,8 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(hipo4 REQUIRED IMPORTED_TARGET hipo4)
 pkg_check_modules(iguana REQUIRED IMPORTED_TARGET iguana)
 
-# set the rpath to use the link path
-# - this is so that the executable knows where the dependency libraries are
-# - alternatively, set $LD_LIBRARY_PATH before running your executables ($DYLD_LIBRARY_PATH on macOS)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 # build and install the executable
-set(EXAMPLE_BIN iguana-example-00-basic)
+set(EXAMPLE_BIN iguana-example-basic)
 add_executable(${EXAMPLE_BIN})
 target_sources(${EXAMPLE_BIN} PRIVATE ${EXAMPLE_BIN}.cc)
 target_link_libraries(${EXAMPLE_BIN} PUBLIC PkgConfig::iguana PkgConfig::hipo4)

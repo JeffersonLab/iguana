@@ -1,0 +1,5 @@
+# ACLiC artifacts
+*.so
+*.dylib
+*.d
+*.pcm

@@ -1,0 +1,14 @@
+# Cut values for different run periods
+clas12::ZVertexFilter:
+
+  # default cuts
+  - default:
+    cuts: [ -15.0, 15.0 ]
+
+  # RG-A fall2018 inbending
+  - runs: [ 4760, 5419 ]
+    cuts: [ -5.0, 3.0 ]
+
+  # RG-A fall2018 outbending
+  - runs: [ 5420, 5674 ]
+    cuts: [ -8.0, 7.0 ]

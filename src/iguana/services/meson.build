@@ -18,7 +18,6 @@ services_lib = shared_library(
   include_directories: project_inc,
   dependencies:        project_deps,
   install:             true,
-  install_rpath:       project_lib_rpath,
 )
 project_libs += services_lib
 

@@ -8,10 +8,6 @@ on:
   schedule:
     - cron: '15 7 * * 0' # Sundays at 0715Z
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
-
 jobs:
 
   macOS:
@@ -20,11 +16,19 @@ jobs:
     with:
       id: macOS
       runner: macos-latest
-      test_matrix: >-
+      matrix: >-
         {
+          "id": [
+            "cpp",
+            "noROOT",
+            "python",
+            "fortran"
+          ],
           "include": [
-            { "mode": "test",   "build_id": "cpp-gcc-release",        "CC": "gcc", "CXX": "g++", "buildtype": "release" },
-            { "mode": "noROOT", "build_id": "cpp-gcc-release-noROOT", "CC": "gcc", "CXX": "g++", "buildtype": "release" }
+            { "id": "cpp",     "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true"  },
+            { "id": "noROOT",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=false" },
+            { "id": "python",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true   -Dbind_python=true"  },
+            { "id": "fortran", "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true   -Dbind_fortran=true" }
           ]
         }
 

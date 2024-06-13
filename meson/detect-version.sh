@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # detect the version number from the latest git tag
 set -e
 [ $# -ne 1 ] && echo "USAGE: $0 [GIT_REPO]" >&2 && exit 2

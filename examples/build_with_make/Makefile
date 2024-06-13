@@ -6,13 +6,6 @@ CFLAGS := -std=c++17
 IGUANA_INCLUDES  := $(shell pkg-config --cflags iguana)
 IGUANA_LIBRARIES := $(shell pkg-config --libs   iguana)
 
-# set rpath
-# - this is so that the executable knows where the dependency libraries are
-# - alternatively, set $LD_LIBRARY_PATH before running your executables ($DYLD_LIBRARY_PATH on macOS)
-RPATH_DEPS := iguana hipo4
-rpath_arg = -Wl,-rpath,$(shell pkg-config --variable libdir $1)
-LDFLAGS := $(foreach dep,$(RPATH_DEPS),$(call rpath_arg,$(dep)))
-
 # installation directory
 BINDIR := bin
 
@@ -23,7 +16,7 @@ EXECUTABLES := $(addprefix $(BINDIR)/, $(basename $(wildcard *.cc)))
 $(EXECUTABLES): $(BINDIR)/%: %.cc
 	mkdir -p $(BINDIR)
 	$(CXX) -c $< -o $@.o $(CFLAGS) $(IGUANA_INCLUDES)
-	$(CXX) -o $@ $@.o $(LDFLAGS) $(IGUANA_LIBRARIES)
+	$(CXX) -o $@ $@.o $(IGUANA_LIBRARIES)
 	$(RM) $@.o
 
 # remove the executable

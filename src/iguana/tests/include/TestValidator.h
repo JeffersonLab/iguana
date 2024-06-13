@@ -1,5 +1,6 @@
 // test an iguana algorithm validator
 
+#include <filesystem>
 #include <hipo4/reader.h>
 #include <iguana/algorithms/Validator.h>
 
@@ -25,6 +26,10 @@ inline int TestValidator(
   // open the HIPO file
   hipo::reader reader(data_file.c_str());
   auto banks = reader.getBanks(bank_names);
+
+  // make the output directory
+  if(output_dir != "")
+    std::filesystem::create_directories(output_dir);
 
   // define the validator
   auto vdor = iguana::AlgorithmFactory::Create(vdor_name);
