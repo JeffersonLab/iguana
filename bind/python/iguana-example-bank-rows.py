@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+"""!
+@begin_doc_example
+@file iguana-example-bank-rows.py
+@brief Python version of `iguana-example-bank-rows.cc`
+@see `iguana-example-bank-rows.cc` for usage guidance
+@end_doc_example
+@doxygen_off
+"""
+
 import pyiguana
 import sys
 
@@ -61,3 +70,5 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
 
 algo_eventbuilder_filter.Stop()
 algo_momentum_correction.Stop()
+
+"""!@doxygen_on"""

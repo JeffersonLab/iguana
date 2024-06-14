@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""!
+@begin_doc_example
+@file iguana-example-hipopy.py
+@brief Python iguana example using HIPOPy: https://github.com/mfmceneaney/hipopy
+@end_doc_example
+@doxygen_off
+"""
+
 import pyiguana
 import sys
 import hipopy.hipopy as hp
@@ -65,3 +73,5 @@ for iBatch, batch in enumerate(hp.iterate([inFile],banks=banks,step=step)):
 
 algo_eventbuilder_filter.Stop()
 algo_momentum_correction.Stop()
+
+"""!@doxygen_on"""
