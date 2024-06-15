@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """!
-@begin_doc_example
+@begin_doc_example{python}
 @file iguana-example-bank-rows.py
 @brief Python version of `iguana-example-bank-rows.cc`
 @see `iguana-example-bank-rows.cc` for more information

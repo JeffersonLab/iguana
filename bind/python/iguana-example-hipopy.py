@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """!
-@begin_doc_example
+@begin_doc_example{python}
 @file iguana-example-hipopy.py
 @brief Python iguana example using HIPOPy: https://github.com/mfmceneaney/hipopy
 @end_doc_example

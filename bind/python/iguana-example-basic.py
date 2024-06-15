@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """!
-@begin_doc_example
+@begin_doc_example{python}
 @file iguana-example-basic.py
 @brief Python version of `iguana-example-basic.cc`
 @see `iguana-example-basic.cc` for more information

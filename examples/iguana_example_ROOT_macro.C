@@ -1,4 +1,4 @@
-/// @begin_doc_example
+/// @begin_doc_example{cpp}
 /// @file iguana_example_ROOT_macro.C
 /// @brief Very simple example showing how to load and use an Iguana algorithm in a ROOT macro; this example
 /// only runs the algorithm and does not require any input data.

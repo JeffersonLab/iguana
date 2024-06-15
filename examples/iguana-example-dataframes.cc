@@ -1,4 +1,4 @@
-/// @begin_doc_example
+/// @begin_doc_example{cpp}
 /// @file iguana-example-dataframes.cc
 /// @brief Example using HIPO data frames with Iguana. Requires ROOT.
 /// @par Usage
