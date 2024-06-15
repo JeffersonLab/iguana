@@ -4,7 +4,7 @@
 @begin_doc_example
 @file iguana-example-bank-rows.py
 @brief Python version of `iguana-example-bank-rows.cc`
-@see `iguana-example-bank-rows.cc` for usage guidance
+@see `iguana-example-bank-rows.cc` for more information
 @end_doc_example
 @doxygen_off
 """

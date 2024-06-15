@@ -4,7 +4,7 @@
 @begin_doc_example
 @file iguana-example-basic.py
 @brief Python version of `iguana-example-basic.cc`
-@see `iguana-example-basic.cc` for usage guidance
+@see `iguana-example-basic.cc` for more information
 @end_doc_example
 @doxygen_off
 """
