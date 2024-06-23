@@ -3,8 +3,7 @@
 """!
 @begin_doc_example{python}
 @file iguana_ex_python_01_action_functions.py
-@brief Python version of `iguana_ex_cpp_01_action_functions.cc`
-@see `iguana_ex_cpp_01_action_functions.cc` for more information
+@brief Python version of `iguana_ex_cpp_01_action_functions.cc` (for more details, see this `.cc` file)
 @end_doc_example
 @doxygen_off
 """

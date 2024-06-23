@@ -1,7 +1,7 @@
 /// @begin_doc_example{cpp}
 /// @file iguana_ex_cpp_00_run_functions.cc
-/// @brief Example using full HIPO banks with Iguana This example requires the
-/// user to have the C++ `hipo::bank` objects; see other examples if you do not have these banks in this format.
+/// @brief Example using **full HIPO banks** with Iguana algorithms' `Run` functions. This example requires the
+/// user to have the C++ `hipo::bank` objects; see other examples if you do not have banks in this format.
 /// @par Usage
 /// ```bash
 /// iguana_ex_cpp_00_run_functions [HIPO_FILE] [NUM_EVENTS]
