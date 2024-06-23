@@ -13,9 +13,9 @@ For more documentation, see
 
 ## Example Analysis Code
 
-To see Iguana algorithms used in the context of analysis code, see:
+To see Iguana algorithms used in the context of analysis code, with **various languages** and **use cases**, see:
 
-- \ref examples "Examples of Analysis Code"
+- \ref examples_frontpage "Examples of Analysis Code"
 
 ## Algorithms
 
@@ -55,7 +55,6 @@ These functions are unique to each algorithm, so view the algorithm
 documentation for details, or browse the full list:
 
 - \ref action "List of all Action Functions"
-- \ref binding_namespaces "Fortran Action Functions (C-bindings)"
 
 The action functions have types that correspond to the algorithm types.
 Furthermore, some action functions can only be useful if all of the rows of a
