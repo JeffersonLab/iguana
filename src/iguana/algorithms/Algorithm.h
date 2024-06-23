@@ -1,17 +1,12 @@
 #pragma once
 
-#include <functional>
 #include <optional>
 #include <set>
-#include <unordered_map>
-#include <variant>
-#include <vector>
 
 #include <hipo4/bank.h>
 
 
 #include "iguana/algorithms/AlgorithmBoilerplate.h"
-#include "iguana/services/Object.h"
 #include "iguana/services/YAMLReader.h"
 
 namespace iguana {

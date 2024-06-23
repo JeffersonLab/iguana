@@ -1,7 +1,7 @@
 #include <cassert>
 #include <iguana/algorithms/clas12/ZVertexFilter/Algorithm.h>
 
-/// @begin_doc_example
+/// @begin_doc_example{cpp}
 /// @file iguana-example-config-files.cc
 /// @brief Example showing how to control algorithm configuration.
 ///

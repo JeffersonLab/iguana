@@ -1,4 +1,4 @@
-/// @begin_doc_example
+/// @begin_doc_example{cpp}
 /// @file iguana-example-bank-rows.cc
 /// @brief Example using Iguana action functions on data from bank rows. This is useful for
 /// users who do not have the `hipo::bank` objects, instead only having the numerical data from them.

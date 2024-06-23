@@ -1,4 +1,4 @@
-      !> @begin_doc_example
+      !> @begin_doc_example{fortran}
       !> @file iguana-example-fortran.f
       !> @brief Fortran example demonstrating how to read a HIPO file and use
       !> its data with Iguana algorithms.
