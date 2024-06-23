@@ -1,0 +1,41 @@
+/*!
+@defgroup examples Examples
+Iguana usage examples, organized by language and use cases:
+- @ref examples_cpp "C++ examples"
+- @ref examples_python "Python examples"
+- @ref examples_fortran "Fortran examples"
+*/
+
+//////////////////////////////////////////////////////////////////////////////////
+
+/*!
+@defgroup examples_cpp Examples in C++
+Iguana usage examples in C++
+
+See below for the list of examples.
+
+@see If you use build automation tools, here is guidance on how to include and link to Iguana in your C++ project;
+they each show how build `iguana-example-basic.cc`, which "consumes" Iguana and HIPO as dependencies:
+- [**Meson consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_meson)
+- [**CMake consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_cmake)
+- [**Makefile consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_make)
+*/
+
+//////////////////////////////////////////////////////////////////////////////////
+
+/*!
+@defgroup examples_python Examples in Python
+Iguana usage examples in Python
+
+The examples here are analogous to the C++ examples
+
+@see @ref examples_cpp "C++ examples"
+*/
+
+//////////////////////////////////////////////////////////////////////////////////
+
+/*!
+@defgroup examples_fortran Examples in Fortran
+Iguana usage examples in Fortran
+@see @ref binding_namespaces for more details of how to use Iguana with Fortran
+*/
