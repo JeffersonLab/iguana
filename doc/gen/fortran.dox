@@ -1,16 +1,27 @@
 /*!
-@defgroup binding_namespaces Fortran Bindings
+@defgroup binding_namespaces Fortran Usage Guide
 
-@brief C bindings, for Fortran usage
+@brief Fortran usage of the Iguana C functions
 
-The functions in these namespaces are designed to provide bindings for Fortran (and for C).
-The function names are all lowercase, and end in an underscore, to permit automatic binding
-to Fortran 77. Visit each namespace page to view the available functions.
+@par C functions
+Iguana provides a set of C functions which are callable from Fortran:
+- The **Namespaces** section below links to **lists of C functions**
+  - They are organized into categories (C++ namespaces)
+- the function names are all lowercase, and end in an underscore, to permit automatic binding
+  to Fortran 77
+  - To use a C function in Fortran, call it as a subroutine, but without the final underscore
+  - use `iso_c_binding` data types for the arguments, otherwise you may have subtle runtime problems
+- The C functions do not have return values; instead, variables are passed by
+  reference, and may be one of three kinds:
+  - `[in]`: input parameter, will not be mutated
+  - `[out`]: output parameter, will be mutated
+  - `[in,out]`: both an input and an output parameter, will be mutated
 
-To use a function in Fortran, call it as a subroutine, but without the final
-underscore; use `iso_c_binding` data types for the arguments, otherwise you
-may have subtle runtime problems.
+@par
+The available C functions and their documentation, organized by C++ namespace, are listed below
+in the **Namespaces** section.
 
+@par Usage
 For example, consider the following C function:
 ```cpp
 void iguana_example_function_(int* a, float* b);
@@ -25,7 +36,6 @@ c     function arguments must be ISO_C_BINDING kinds:
 c     example function call:
       call iguana_example_function(a, b)
 ```
-
 If the C function has a string parameter (`char const*`), make sure that the string that you pass
 has the correct termination (`c_null_char`), even if it's a string literal; for example, the C function
 ```cpp
@@ -41,16 +51,16 @@ c     string variables need to be BOTH trimmed AND terminated:
 c     string literals just need to be terminated:
       call iguana_example_function('sample_string'//c_null_char)
 ```
+For complete examples, see @ref examples_fortran "Fortran examples"
 
-To use these bindings with your Fortran code, link against the installed `iguana` libraries;
+@par Building: linking to Iguana libraries
+To use Iguana with your Fortran code, link against the installed `iguana` libraries;
 for example, if you use a `Makefile`, you may set the linking arguments to `$(IGUANA_LIBS)`,
 ```make
 IGUANA_LIBS = $(shell pkg-config iguana --libs --maximum-traverse-depth 2)
 ```
 then use `$(IGUANA_LIBS)` in your compilation options. If you need to link Iguana _dependency_ libraries
 too, remove the `--maximum-traverse-depth 2` argument.
-
-@see @ref examples_fortran "Fortran examples"
 */
 
 /// @{

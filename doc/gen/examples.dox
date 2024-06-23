@@ -1,5 +1,5 @@
 /*!
-@defgroup examples Examples
+@defgroup examples_frontpage Examples
 Iguana usage examples, organized by language and use cases:
 - @ref examples_cpp "C++ examples"
 - @ref examples_python "Python examples"
@@ -37,5 +37,5 @@ The examples here are analogous to the C++ examples
 /*!
 @defgroup examples_fortran Examples in Fortran
 Iguana usage examples in Fortran
-@see @ref binding_namespaces for more details of how to use Iguana with Fortran
+@note Before reading the examples, see @ref binding_namespaces
 */

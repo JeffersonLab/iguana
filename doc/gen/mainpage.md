@@ -15,7 +15,7 @@ For more documentation, see
 
 To see Iguana algorithms used in the context of analysis code, see:
 
-- \ref examples "Examples of Analysis Code"
+- \ref examples_frontpage "Examples of Analysis Code"
 
 ## Algorithms
 
