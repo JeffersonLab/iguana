@@ -21,7 +21,7 @@ Iguana is not a framework for _reading_ data, rather it is a set of algorithms t
 
 #### Language Bindings
 1. [Python](/bind/python/README.md)
-1. [Fortran](https://jeffersonlab.github.io/iguana/doxygen/group__fortran__usage__guide.html)
+1. [All others: see the Iguana User's guide](https://jeffersonlab.github.io/iguana/doxygen)
 
 ### For Developers
 1. [Design Notes](doc/design.md)
