@@ -1,10 +1,12 @@
 /*!
-@defgroup binding_namespaces Fortran Usage Guide
+@defgroup fortran_usage_guide Fortran Usage Guide
 
 @brief Fortran usage of the Iguana C functions
 
 @par C functions
 Iguana provides a set of C functions which are callable from Fortran:
+- Each action function should have a corresponding C function
+- Additional general C functions are used for starting, configuring, and stopping algorithms
 - The **Namespaces** section below links to **lists of C functions**
   - They are organized into categories (C++ namespaces)
 - the function names are all lowercase, and end in an underscore, to permit automatic binding
@@ -20,6 +22,11 @@ Iguana provides a set of C functions which are callable from Fortran:
 @par
 The available C functions and their documentation, organized by C++ namespace, are listed below
 in the **Namespaces** section.
+
+@par
+For information about each algorithm and their action functions, see:
+- @ref algo_namespaces "Algorithms organized by Namespace"
+- @ref algo "Full List of Algorithms"
 
 @par Usage
 For example, consider the following C function:

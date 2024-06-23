@@ -37,5 +37,5 @@ The examples here are analogous to the C++ examples
 /*!
 @defgroup examples_fortran Examples in Fortran
 Iguana usage examples in Fortran
-@note Before reading the examples, see @ref binding_namespaces
+@note Before reading the examples, see @ref fortran_usage_guide
 */

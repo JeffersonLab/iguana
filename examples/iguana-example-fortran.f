@@ -3,7 +3,7 @@
       !> @brief Fortran example demonstrating how to read a HIPO file and use
       !> its data with Iguana algorithms.
       !> Run with no arguments to see the usage guide.
-      !> @see @ref binding_namespaces for the Fortran API guide
+      !> @see @ref fortran_usage_guide for more guidance
       !> @end_doc_example
       !>
       !> Fortran example program
