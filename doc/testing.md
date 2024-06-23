@@ -1,9 +1,9 @@
 # Testing and Validating Algorithms
 
 There are 2 ways to run tests:
-- `iguana-test`: an installed executable used for running single tests; this offers more control at the expense of
+- `iguana_test`: an installed executable used for running single tests; this offers more control at the expense of
   being less user friendly
-- `meson test`: user-friendly automation of `iguana-test`
+- `meson test`: user-friendly automation of `iguana_test`
 
 > [!IMPORTANT]
 > Both of these assume you are currently in your **build directory**.
@@ -14,21 +14,21 @@ There are 2 ways to run tests:
 > (CI), so if you are developing and you submit a pull requests, you may rely
 > on the CI logs to check if the tests were successful
 
-## `iguana-test`
+## `iguana_test`
 
-`iguana-test` is found both in the installation's `bin/` directory and in your build directory,
+`iguana_test` is found both in the installation's `bin/` directory and in your build directory,
 ```bash
-src/iguana/tests/iguana-test   # assuming your build directory layout is 'mirror' (the default)
+src/iguana/tests/iguana_test   # assuming your build directory layout is 'mirror' (the default)
 ```
-Run `iguana-test` for a usage guide:
+Run `iguana_test` for a usage guide:
 ```bash
-src/iguana/tests/iguana-test            # usage guide
-src/iguana/tests/iguana-test validator  # usage of the 'validator' command
-src/iguana/tests/iguana-test algorithm  # usage of the 'algorithm' command
+src/iguana/tests/iguana_test            # usage guide
+src/iguana/tests/iguana_test validator  # usage of the 'validator' command
+src/iguana/tests/iguana_test algorithm  # usage of the 'algorithm' command
 ```
 For example,
 ```bash
-src/iguana/tests/iguana-test validator -f ../data.hipo -n 0 -a clas12::MomentumCorrectionValidator -o ../validator_output
+src/iguana/tests/iguana_test validator -f ../data.hipo -n 0 -a clas12::MomentumCorrectionValidator -o ../validator_output
 ```
 will run the validator `MomentumCorrectionValidator` using data from
 `../data.hipo` and write its output to `../validator_output/`.
@@ -59,19 +59,19 @@ meson test validator-clas12-MyAlgorithm --verbose # run and show output (stdout 
 ```
 If you have not supplied the required arguments, in particular the input data
 file, the test will fail. For the `validator` and `algorithm` test suites,
-`iguana-test validator` and `iguana-test algorithm` are the respective
+`iguana_test validator` and `iguana_test algorithm` are the respective
 underlying test executable commands; you may pass arguments to them using the
 `--test-args` option; for example:
 ```bash
 meson test validator-clas12-MyAlgorithm --verbose --test-args '\-f ../my_hipo_file.hipo \-n 300 \-o ../validator_output'
 ```
-See above for `iguana-test` usage guidance.
+See above for `iguana_test` usage guidance.
 
 > [!NOTE]
 > Note the usage of an escaped hyphen, `\-` instead of `-`; depending on your system, you may or may not need to use escaped hyphens in
 > `--test-args` arguments, otherwise you will see errors such as `argument --test-args: expected one argument`.
 
-Alternatively to using `--test-args`, you may set _default_ `iguana-test`
+Alternatively to using `--test-args`, you may set _default_ `iguana_test`
 arguments using Iguana **build options**:
 - The options that are relevant for tests are prefixed by `test_`
 - Set options using `meson configure` and re-running `meson install`

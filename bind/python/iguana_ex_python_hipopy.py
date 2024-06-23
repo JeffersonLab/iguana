@@ -2,7 +2,7 @@
 
 """!
 @begin_doc_example{python}
-@file iguana-example-hipopy.py
+@file iguana_ex_python_hipopy.py
 @brief Python iguana example using HIPOPy: https://github.com/mfmceneaney/hipopy
 @end_doc_example
 @doxygen_off

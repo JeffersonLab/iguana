@@ -2,9 +2,9 @@
 
 """!
 @begin_doc_example{python}
-@file iguana-example-bank-rows.py
-@brief Python version of `iguana-example-bank-rows.cc`
-@see `iguana-example-bank-rows.cc` for more information
+@file iguana_ex_python_01_action_functions.py
+@brief Python version of `iguana_ex_cpp_01_action_functions.cc`
+@see `iguana_ex_cpp_01_action_functions.cc` for more information
 @end_doc_example
 @doxygen_off
 """

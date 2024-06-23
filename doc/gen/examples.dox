@@ -15,7 +15,7 @@ Iguana usage examples in C++
 See below for the list of examples.
 
 @see If you use build automation tools, here is guidance on how to include and link to Iguana in your C++ project;
-they each show how build `iguana-example-basic.cc`, which "consumes" Iguana and HIPO as dependencies:
+they each show how build `iguana_ex_cpp_00_run_functions.cc`, which "consumes" Iguana and HIPO as dependencies:
 - [**Meson consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_meson)
 - [**CMake consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_cmake)
 - [**Makefile consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_make)

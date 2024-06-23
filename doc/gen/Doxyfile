@@ -1006,8 +1006,8 @@ INPUT_FILE_ENCODING    =
 
 FILE_PATTERNS          = *.dox \
                          *.h \
-                         iguana-example-*.cc \
-                         iguana-example-*.py \
+                         iguana_ex_*.cc \
+                         iguana_ex_*.py \
                          Bindings.cc \
                          *.f \
                          *.C
