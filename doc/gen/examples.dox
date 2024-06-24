@@ -13,9 +13,13 @@ Iguana usage examples, organized by language and use cases:
 Iguana usage examples in C++
 
 See below for the list of examples.
+- If this is your first time using Iguana, start with the numbered examples
+  first, proceeding in order; since the list below is alphabetized, you may
+  start from the top.
+- Examples without a number are specific to this language, showing certain use cases
 
 @see If you use build automation tools, here is guidance on how to include and link to Iguana in your C++ project;
-they each show how build `iguana-example-basic.cc`, which "consumes" Iguana and HIPO as dependencies:
+they each show how build `iguana_ex_cpp_00_run_functions.cc`, which "consumes" Iguana and HIPO as dependencies:
 - [**Meson consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_meson)
 - [**CMake consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_cmake)
 - [**Makefile consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_make)
@@ -28,6 +32,10 @@ they each show how build `iguana-example-basic.cc`, which "consumes" Iguana and 
 Iguana usage examples in Python
 
 The examples here are analogous to the C++ examples
+- If this is your first time using Iguana, start with the numbered examples
+  first, proceeding in order; since the list below is alphabetized, you may
+  start from the top.
+- Examples without a number are specific to this language, showing certain use cases
 
 @see @ref examples_cpp "C++ examples"
 */

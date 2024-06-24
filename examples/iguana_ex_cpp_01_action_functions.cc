@@ -1,10 +1,10 @@
 /// @begin_doc_example{cpp}
-/// @file iguana-example-bank-rows.cc
+/// @file iguana_ex_cpp_01_action_functions.cc
 /// @brief Example using Iguana action functions on data from bank rows. This is useful for
 /// users who do not have the `hipo::bank` objects, instead only having the numerical data from them.
 /// @par Usage
 /// ```bash
-/// iguana-example-bank-rows [HIPO_FILE] [NUM_EVENTS]
+/// iguana_ex_cpp_01_action_functions [HIPO_FILE] [NUM_EVENTS]
 ///
 ///   HIPO_FILE   the HIPO file to analyze
 ///

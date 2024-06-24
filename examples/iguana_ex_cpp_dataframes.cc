@@ -1,9 +1,9 @@
 /// @begin_doc_example{cpp}
-/// @file iguana-example-dataframes.cc
+/// @file iguana_ex_cpp_dataframes.cc
 /// @brief Example using HIPO data frames with Iguana. Requires ROOT.
 /// @par Usage
 /// ```bash
-/// iguana-example-dataframes [HIPO_FILE] [NUM_EVENTS] [INTERACTIVE_MODE]
+/// iguana_ex_cpp_dataframes [HIPO_FILE] [NUM_EVENTS] [INTERACTIVE_MODE]
 ///
 ///   HIPO_FILE         the HIPO file to analyze
 ///

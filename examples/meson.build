@@ -4,22 +4,22 @@ install_subdir('config', install_dir: example_config_files_prefix, strip_directo
 
 # example source information
 example_sources = {
-  'iguana-example-basic': {
-    'sources': [ 'iguana-example-basic.cc' ],
+  'iguana_ex_cpp_00_run_functions': {
+    'sources': [ 'iguana_ex_cpp_00_run_functions.cc' ],
   },
-  'iguana-example-bank-rows': {
-    'sources': [ 'iguana-example-bank-rows.cc' ],
+  'iguana_ex_cpp_01_action_functions': {
+    'sources': [ 'iguana_ex_cpp_01_action_functions.cc' ],
   },
-  'iguana-example-dataframes': {
-    'sources': [ 'iguana-example-dataframes.cc' ],
+  'iguana_ex_cpp_dataframes': {
+    'sources': [ 'iguana_ex_cpp_dataframes.cc' ],
     'build_this': ROOT_dep.found() and hipo_dep_dataframes_found,
   },
-  'iguana-example-config-files': {
-    'sources':   [ 'iguana-example-config-files.cc' ],
+  'iguana_ex_cpp_config_files': {
+    'sources':   [ 'iguana_ex_cpp_config_files.cc' ],
     'test_args': [ get_option('prefix') / example_config_files_prefix ],
   },
-  'iguana-example-fortran': {
-    'sources':     [ 'iguana-example-fortran.f' ],
+  'iguana_ex_fortran_01_action_functions': {
+    'sources':     [ 'iguana_ex_fortran_01_action_functions.f' ],
     'build_this':  get_option('bind_fortran') and ROOT_dep.found(), # depends on physics::InclusiveKinematics, which depends on ROOT
   },
 }

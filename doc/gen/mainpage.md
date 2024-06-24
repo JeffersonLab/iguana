@@ -11,11 +11,12 @@ This documentation shows how to use the Iguana algorithms.
 For more documentation, see
 - [**Documentation Front Page**](https://github.com/JeffersonLab/iguana/blob/main/README.md)
 
-## Example Analysis Code
+## Example Code in C++, Python, and Fortran
 
 To see Iguana algorithms used in the context of analysis code, with **various languages** and **use cases**, see:
-
 - \ref examples_frontpage "Examples of Analysis Code"
+
+**NOTE:** If you're not familiar with Iguana, please read the sections below first.
 
 ## Algorithms
 
@@ -35,7 +36,7 @@ The algorithm types are defined based on what they do to HIPO bank data:
 Most algorithms are configurable:
 - [**Algorithm Configuration Guide**](https://github.com/JeffersonLab/iguana/blob/main/doc/configuration.md)
 
-## Common Functions: for HIPO C++ Users
+### Algorithm Common Functions: for HIPO C++ Users
 
 All algorithms have the following functions, which may be used in analysis code
 that uses [**the HIPO C++ API**](https://github.com/gavalian/hipo); for
@@ -47,7 +48,7 @@ analysis code that does not, skip to the **Action Functions** section.
 <tr><td> `iguana::Algorithm::Stop` </td><td> Run after event processing </td></tr>
 </table>
 
-## Action Functions: for All Users
+### Algorithm Action Functions: for All Users
 
 The action functions do the _real_ work of the algorithm, and are meant to be
 easily callable from _any_ analysis, even if HIPO banks are not directly used.
@@ -76,3 +77,4 @@ Inputs and outputs are scalar or vector quantities.
 To maximize compatibility with user analysis code, these functions are
 overloaded, _e.g._, for every scalar function there is a corresponding vector
 function that calls it on each element of its input vectors.
+

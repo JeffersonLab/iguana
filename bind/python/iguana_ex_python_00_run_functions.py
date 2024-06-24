@@ -2,9 +2,8 @@
 
 """!
 @begin_doc_example{python}
-@file iguana-example-basic.py
-@brief Python version of `iguana-example-basic.cc`
-@see `iguana-example-basic.cc` for more information
+@file iguana_ex_python_00_run_functions.py
+@brief Python version of `iguana_ex_cpp_00_run_functions.cc` (for more details, see this `.cc` file)
 @end_doc_example
 @doxygen_off
 """
