@@ -77,8 +77,8 @@ namespace iguana::clas12 {
 
       /// Example integer configuration option
       int o_pid;
-      /// Example double configuration option
-      //double o_exampleDouble;
+      std::string o_weightfile;
+      double o_cut;
   };
 
 }
