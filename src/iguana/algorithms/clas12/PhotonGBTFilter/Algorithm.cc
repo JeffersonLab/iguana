@@ -386,7 +386,7 @@ namespace iguana::clas12 {
 
     // Default to RGA inbending pass1 if no match found
     m_log->Warn("Run Number {} with pass {} has no matching PhotonGBT model...Defaulting to RGA inbending pass1...", runnum, o_pass);
-    return [this](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); };
+    return [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); };
   }
 
   void PhotonGBTFilter::Stop()
