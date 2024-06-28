@@ -1,4 +1,4 @@
-test_exe_name = 'iguana-test'
+test_exe_name = 'iguana_test'
 test_exe_inc = include_directories('include')
 test_exe_links = [ project_libs, vdor_lib ]
 
@@ -82,10 +82,10 @@ foreach algo : algo_dict
   endif
 endforeach
 
-# test usage guide for each iguana-test command
+# test usage guide for each iguana_test command
 foreach command : ['', 'unknown', 'algorithm', 'validator', 'unit', 'config']
   test(
-    'iguana-test-usage-guide' + (command=='' ? '' : '-' + command),
+    'iguana_test-usage-guide' + (command=='' ? '' : '-' + command),
     test_exe,
     args: command=='' ? [] : [command],
     env: project_test_env,

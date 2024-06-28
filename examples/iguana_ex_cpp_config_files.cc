@@ -1,8 +1,8 @@
 #include <cassert>
 #include <iguana/algorithms/clas12/ZVertexFilter/Algorithm.h>
 
-/// @begin_doc_example
-/// @file iguana-example-config-files.cc
+/// @begin_doc_example{cpp}
+/// @file iguana_ex_cpp_config_files.cc
 /// @brief Example showing how to control algorithm configuration.
 ///
 /// Examples include:
@@ -12,7 +12,7 @@
 ///
 /// @par Usage
 /// ```bash
-/// iguana-example-config-files [CONFIG_FILE_DIRECTORY]
+/// iguana_ex_cpp_config_files [CONFIG_FILE_DIRECTORY]
 ///
 ///   CONFIG_FILE_DIRECTORY    a custom directory with config files
 ///                            (default = an example directory)

@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""!
+@begin_doc_example{python}
+@file iguana_ex_python_01_action_functions.py
+@brief Python version of `iguana_ex_cpp_01_action_functions.cc` (for more details, see this `.cc` file)
+@end_doc_example
+@doxygen_off
+"""
+
 import pyiguana
 import sys
 
@@ -61,3 +69,5 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
 
 algo_eventbuilder_filter.Stop()
 algo_momentum_correction.Stop()
+
+"""!@doxygen_on"""

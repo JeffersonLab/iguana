@@ -7,9 +7,9 @@ install_subdir(
 
 if(get_option('install_examples'))
   python_examples = [
-    'iguana-example-basic.py',
-    'iguana-example-bank-rows.py',
-    'iguana-example-hipopy.py',
+    'iguana_ex_python_00_run_functions.py',
+    'iguana_ex_python_01_action_functions.py',
+    'iguana_ex_python_hipopy.py',
   ]
   foreach example : python_examples
     install_data(

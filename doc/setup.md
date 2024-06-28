@@ -9,7 +9,7 @@
 <a name="dependencies"></a>
 ## 🟠 Dependencies
 
-The following sections (🔶) list the dependencies and how to obtain them.
+The following sections (🟩) list the dependencies and how to obtain them.
 
 > [!TIP]
 > It's generally better to use your a package manager to install most dependencies, _e.g._:
@@ -24,7 +24,7 @@ The following sections (🔶) list the dependencies and how to obtain them.
 > git checkout 1.0.0                                               # checkout the tag '1.0.0'
 > ```
 
-### 🔶 `meson`: Build system used by Iguana
+### 🟩 `meson`: Build system used by Iguana
 <https://mesonbuild.com/>
 - Likely available in your package manager, but the latest version is preferred and may be installed with `pip`:
 ```bash
@@ -32,17 +32,17 @@ python -m pip install meson ninja
 ```
 This includes [`ninja`](https://ninja-build.org/), which `meson` will benefit from using. 
 
-### 🔶 `fmt`: C++ output formatting library
+### 🟩 `fmt`: C++ output formatting library
 <https://github.com/fmtlib/fmt>
 - Likely available in your package manager, likely as `fmt` or `libfmt`
   - If you need Python bindings on macOS, please install `fmt` with `brew install fmt`
   - If you compile it yourself on Linux, include the `cmake` option `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` to build the static library
 
-### 🔶 `yaml-cpp`: YAML parser and emitter
+### 🟩 `yaml-cpp`: YAML parser and emitter
 <https://github.com/jbeder/yaml-cpp>
 - Likely available in your package manager, likely as `yaml-cpp`
 
-### 🔶 `hipo`: C++ HIPO API
+### 🟩 `hipo`: C++ HIPO API
 <https://github.com/gavalian/hipo>
 - Use the `hipo` module on `ifarm`, or obtain and build it yourself
 - Example `cmake` commands:
@@ -52,7 +52,7 @@ cmake --build build-hipo
 cmake --install build-hipo
 ```
 
-### 🔶 Optional: `ROOT`: Data analysis framework
+### 🟩 Optional: `ROOT`: Data analysis framework
 <https://root.cern.ch/>
 - ROOT is an **optional** dependency: some algorithms and test code depends on ROOT, but if you do not
   have ROOT on your system, `iguana` will build everything _except_ ROOT-dependent code

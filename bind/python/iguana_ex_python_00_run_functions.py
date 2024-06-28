@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""!
+@begin_doc_example{python}
+@file iguana_ex_python_00_run_functions.py
+@brief Python version of `iguana_ex_cpp_00_run_functions.cc` (for more details, see this `.cc` file)
+@end_doc_example
+@doxygen_off
+"""
+
 import pyiguana
 import sys
 
@@ -44,3 +52,5 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     prettyPrint("AFTER", banks[1])
 
 seq.Stop()
+
+"""!@doxygen_on"""

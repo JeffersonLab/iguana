@@ -4,7 +4,7 @@ All of the examples (`*.cc`) in [this `examples/` directory](/examples) may be b
 option `install_examples` is set to `True`. They will be installed in the `bin/`
 subdirectory of your Iguana installation. Read the example code to understand how to use Iguana, or
 
-- [View the Examples Documentation](https://jeffersonlab.github.io/iguana/doxygen/group__examples.html)
+- [View the Iguana User's Guide](https://jeffersonlab.github.io/iguana/doxygen)
 
 If you would like to integrate Iguana into an existing analysis, you'll need
 to add Iguana as a dependency. The following subdirectories are
