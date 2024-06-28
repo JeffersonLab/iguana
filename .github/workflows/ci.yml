@@ -284,6 +284,7 @@ jobs:
             --prefix=$(pwd)/iguana                      \
             --cmake-prefix-path=$(pwd)/root             \
             --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
+            -Dwerror=true                               \
             -Dinstall_examples=true                     \
             -Dtest_data_file=$(pwd)/test_data.hipo      \
             -Dtest_num_events=${{ env.num_events }}     \
