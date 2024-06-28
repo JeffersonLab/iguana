@@ -124,6 +124,7 @@ if ROOT_dep.found()
     '-lGenVector',
     '-lROOTDataFrame',
     '-lROOTVecOps',
+    '-lTMVA',
     '-lTreePlayer',
   ]
   ROOT_dep_link_args_for_validators = [

@@ -1,13 +1,14 @@
 #include "Algorithm.h"
 
 #include <cmath>
+#include <Math/Vector4D.h>
+#include <TMVA/Reader.h>
 
 namespace iguana::clas12 {
 
-  //REGISTER_IGUANA_ALGORITHM(LeptonID); //not using it
-  REGISTER_IGUANA_ALGORITHM(LeptonID , "clas12::leptonID"); // this algorithm creates 1 new banks
+  REGISTER_IGUANA_ALGORITHM(LeptonIDFilter , "clas12::LeptonIDFilter");
 
-  void LeptonID::Start(hipo::banklist& banks)
+  void LeptonIDFilter::Start(hipo::banklist& banks)
   {
     //Get configuration
     ParseYAMLConfig();
@@ -25,7 +26,7 @@ namespace iguana::clas12 {
   }
 
 
-  void LeptonID::Run(hipo::banklist& banks) const
+  void LeptonIDFilter::Run(hipo::banklist& banks) const
   {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& calorimeterBank = GetBank(banks, b_calorimeter, "REC::Calorimeter");
@@ -33,7 +34,7 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     //
-    particleBank.getMutableRowList().filter([this](auto bank, auto row) {
+    particleBank.getMutableRowList().filter([this,&particleBank,&calorimeterBank](auto bank, auto row) {
         auto lepton_pindex = FindLepton(particleBank);
         auto lepton_vars=GetLeptonIDVariables(lepton_pindex,particleBank,calorimeterBank);
         lepton_vars.score=CalculateScore(lepton_vars);
@@ -47,7 +48,7 @@ namespace iguana::clas12 {
   }
 
 
-  int FindLepton(hipo::bank const& particle_bank) const{  
+  int LeptonIDFilter::FindLepton(hipo::bank const& particle_bank) const{  
     int lepton_pindex= -1;
     for(int row = 0; row < particle_bank.getRows(); row++) {
         auto status = particle_bank.getShort("status", row);
@@ -63,13 +64,13 @@ namespace iguana::clas12 {
       return lepton_pindex;
   }
 
-  LeptonIDVars GetLeptonIDVariables(int const plepton, hipo::bank const& particle_bank, hipo::bank const& calorimeter_bank) const{
+  LeptonIDVars LeptonIDFilter::GetLeptonIDVariables(int const plepton, hipo::bank const& particle_bank, hipo::bank const& calorimeter_bank) const{
 
       double px = particle_bank.getFloat("px", plepton);
       double py = particle_bank.getFloat("py", plepton);
       double pz = particle_bank.getFloat("pz", plepton);
       double E = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(0.000511, 2));
-      ROOT::Math::PxPyPzMVector vec_lepton=(px, py, pz, E);
+      ROOT::Math::PxPyPzMVector vec_lepton(px, py, pz, E);
 
       LeptonIDVars lepton;
 
@@ -115,7 +116,7 @@ namespace iguana::clas12 {
 
   }
 
-  double CalculateScore(LeptonIDVars lepton_vars) const{
+  double LeptonIDFilter::CalculateScore(LeptonIDVars lepton_vars) const{
 
       //Get TMVA reader
       TMVA::Reader *readerTMVA = new TMVA::Reader( "!Color:!Silent" );
@@ -153,7 +154,7 @@ namespace iguana::clas12 {
       return score;
   }
 
-  bool Filter(double score) const{
+  bool LeptonIDFilter::Filter(double score) const{
     if(score>=o_cut)
       return true;
     else
@@ -162,7 +163,7 @@ namespace iguana::clas12 {
 
 
 
-  void LeptonID::Stop()
+  void LeptonIDFilter::Stop()
   {
   }
 
