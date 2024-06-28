@@ -142,7 +142,7 @@ namespace iguana::bindings {
 
   void iguana_getconfiginstallationprefix_(char* out)
   {
-    sprintf(out, "%s", ConfigFileReader::GetConfigInstallationPrefix().c_str());
+    strcpy(out, ConfigFileReader::GetConfigInstallationPrefix().c_str());
   }
   }
 }
