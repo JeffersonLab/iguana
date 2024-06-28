@@ -150,6 +150,7 @@ if ROOT_dep.found()
     '-lGenVector',
     '-lROOTDataFrame',
     '-lROOTVecOps',
+    '-lTMVA',
     '-lTreePlayer',
   ]
   # additional ROOT libraries for validators (namely, graphics libraries)

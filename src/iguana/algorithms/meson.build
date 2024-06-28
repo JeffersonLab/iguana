@@ -98,6 +98,13 @@ algo_dict = [
     'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle', 'REC::Calorimeter', 'RUN::config' ]},
   },
+  {
+    'name': 'clas12::LeptonIDFilter',
+    'has_c_bindings': false,
+    'algorithm_needs_ROOT': true,
+    'has_validator': false,
+    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter'] },
+  },
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT

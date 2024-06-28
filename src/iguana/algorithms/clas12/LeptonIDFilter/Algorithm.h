@@ -1,7 +1,6 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
-#include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
 
@@ -33,10 +32,10 @@ namespace iguana::clas12 {
   /// @config_param{exampleInt | int | an example `integer` configuration parameter}
   /// @config_param{exampleDouble | double | an example `double` configuration parameter}
   /// @end_doc
-  class LeptonID : public Algorithm
+  class LeptonIDFilter : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(LeptonID, clas12::LeptonID)
+      DEFINE_IGUANA_ALGORITHM(LeptonIDFilter, clas12::LeptonIDFilter)
 
     public:
 
@@ -66,7 +65,7 @@ namespace iguana::clas12 {
       /// **Filter function**: Returns true if the particle passed the cut 
       /// @param score the score obtained from the CalculateScore function
       /// @returns bool, true if score>=cut, false otherwise
-      bool Filter(double score) const
+      bool Filter(double score) const;
 
     
     private:
