@@ -5,35 +5,37 @@
 
 namespace iguana {
 
-  ConfigFileReader::ConfigFileReader(std::string_view name)
+  ConfigFileReader::ConfigFileReader(std::string_view name, bool set_default_dirs)
       : Object(name)
   {
-    // the algorithms need to know where the config files are;
-    // first, add config files from installation prefix; since this
-    // is added first, it's the lowest priority in the configuration
-    // search path
-    AddDirectory(GetConfigInstallationPrefix());
-    // next, add `IGUANA_CONFIG_PATH` paths, which provides:
-    // - user override of the configuration path(s)
-    // - a fallback, if `GetConfigInstallationPrefix` is wrong, which happens
-    //   if the Iguana installation is relocated
-    auto user_paths_env_var = std::getenv("IGUANA_CONFIG_PATH");
-    if(user_paths_env_var != nullptr) {
-      std::istringstream user_paths_stream(user_paths_env_var);
-      std::string user_path_token;
-      decltype(m_directories) user_paths;
-      while(getline(user_paths_stream, user_path_token, ':')) // tokenize `IGUANA_CONFIG_PATH`
-        user_paths.push_front(user_path_token);
-      for(auto const& user_path : user_paths) // add the paths in the correct order
-        AddDirectory(user_path);
-      // after these default paths have been added, the user
-      // may still override by calling `AddDirectory` etc. themselves
+    if(set_default_dirs) {
+      // the algorithms need to know where the config files are;
+      // first, add config files from installation prefix; since this
+      // is added first, it's the lowest priority in the configuration
+      // search path
+      AddDirectory(GetConfigInstallationPrefix());
+      // next, add `IGUANA_CONFIG_PATH` paths, which provides:
+      // - user override of the configuration path(s)
+      // - a fallback, if `GetConfigInstallationPrefix` is wrong, which happens
+      //   if the Iguana installation is relocated
+      auto user_paths_env_var = std::getenv("IGUANA_CONFIG_PATH");
+      if(user_paths_env_var != nullptr) {
+        std::istringstream user_paths_stream(user_paths_env_var);
+        std::string user_path_token;
+        decltype(m_directories) user_paths;
+        while(getline(user_paths_stream, user_path_token, ':')) // tokenize `IGUANA_CONFIG_PATH`
+          user_paths.push_front(user_path_token);
+        for(auto const& user_path : user_paths) // add the paths in the correct order
+          AddDirectory(user_path);
+        // after these default paths have been added, the user
+        // may still override by calling `AddDirectory` etc. themselves
+      }
     }
   }
 
   std::string ConfigFileReader::GetConfigInstallationPrefix()
   {
-    return IGUANA_ETCDIR;
+    return std::string(IGUANA_PREFIX) + "/" + std::string(IGUANA_ETCDIR);
   }
 
   void ConfigFileReader::AddDirectory(std::string const& dir)
@@ -88,13 +90,18 @@ namespace iguana {
     throw std::runtime_error("configuration file not found");
   }
 
-  std::string ConfigFileReader::ConvertAlgoNameToConfigName(std::string_view algo_name, std::string_view ext)
+  std::string ConfigFileReader::ConvertAlgoNameToConfigDir(std::string_view algo_name)
   {
     std::string result        = std::string(algo_name);
     std::string::size_type it = 0;
     while((it = result.find("::", it)) != std::string::npos)
       result.replace(it, 2, "/");
-    return "algorithms/" + result + "/Config." + std::string(ext);
+    return "algorithms/" + result;
+  }
+
+  std::string ConfigFileReader::ConvertAlgoNameToConfigName(std::string_view algo_name, std::string_view ext)
+  {
+    return ConvertAlgoNameToConfigDir(algo_name) + "/Config." + std::string(ext);
   }
 
 }

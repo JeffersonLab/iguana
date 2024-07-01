@@ -16,7 +16,9 @@ namespace iguana::clas12 {
     o_weightfile = GetOptionScalar<std::string>("weightfile");//Obtain weightfile from config file
     o_cut        = GetOptionScalar<double>("cut");
 
-
+    // load the weights file
+    o_weightfile_fullpath = GetDataFile(o_weightfile);
+    m_log->Debug("Loaded weight file {}", o_weightfile_fullpath);
 
     //Get Banks that we are going to use
     b_particle = GetBankIndex(banks, "REC::Particle");
@@ -145,7 +147,7 @@ namespace iguana::clas12 {
 
       m_log->Debug("Add variables to readerTMVA");
 
-	    readerTMVA->BookMVA( "BDT", o_weightfile );
+	    readerTMVA->BookMVA( "BDT", o_weightfile_fullpath );
 
       m_log->Debug("TMVA method booked");
 
