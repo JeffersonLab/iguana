@@ -121,7 +121,8 @@ namespace iguana::clas12 {
   double LeptonIDFilter::CalculateScore(LeptonIDVars lepton_vars) const{
 
       //Get TMVA reader
-      TMVA::Reader *readerTMVA = new TMVA::Reader( "!Color:!Silent" );
+      TString silent_opt = m_log->GetLevel() <= Logger::Level::trace ? "!Silent" : "Silent";
+      TMVA::Reader *readerTMVA = new TMVA::Reader( "!Color" + silent_opt );
         // Create a set of variables and declare them to the reader
       Float_t P, Theta, Phi, PCAL,ECIN,ECOUT,m2PCAL,m2ECIN,m2ECOUT;
 
