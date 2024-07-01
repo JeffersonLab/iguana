@@ -22,6 +22,14 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 # initialize binding languanges
 add_languages('fortran', native: false, required: get_option('bind_fortran'))
 
+# check built-in build options
+if get_option('libdir') != 'lib'
+  warning('build option "libdir" = "' + get_option('libdir') + '", which is not "lib"; if you experience any issues, please report them')
+endif
+if get_option('datadir') != 'share'
+  error('build option "datadir" must be "share", but it is set to "' + get_option('datadir') + '"')
+endif
+
 # meson modules
 pkg = import('pkgconfig')
 fs  = import('fs')
@@ -142,6 +150,7 @@ project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ] ) # do NOT include ROOT here
 project_etc       = get_option('sysconfdir') / meson.project_name()
+project_data      = get_option('datadir') / meson.project_name()
 project_test_env  = environment()
 project_pkg_vars  = [
   'bindir='            + '${prefix}' / get_option('bindir'),
@@ -172,7 +181,9 @@ project_test_env.set(
 
 # set preprocessor macros
 add_project_arguments(
-  '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etc + '"',
+  '-DIGUANA_PREFIX="' + get_option('prefix') + '"',
+  '-DIGUANA_ETCDIR="' + project_etc + '"',
+  '-DIGUANA_DATADIR="' + project_data + '"',
   language: ['cpp'],
 )
 
