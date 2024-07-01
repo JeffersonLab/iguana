@@ -4,7 +4,7 @@
 
 namespace iguana::clas12 {
 
-  /// Set of inclusive kinematics variables
+  /// Set of lepton ID variables
   struct LeptonIDVars {
       double P;
       double Theta;
@@ -23,7 +23,7 @@ namespace iguana::clas12 {
   ///
   /// Provide a more detailed description of your algorithm here.
   ///
-  /// @begin_doc_algo{Filter}
+  /// @begin_doc_algo{clas12::LeptonIDFilter | Filter}
   /// @input_banks{REC::Particle}
   /// @output_banks{REC::Particle}
   /// @end_doc
