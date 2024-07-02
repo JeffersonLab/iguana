@@ -19,18 +19,19 @@ namespace iguana::clas12 {
   };
 
   ///
-  /// @brief_algo This is a template algorithm, used as an example showing how to write an algorithm.
+  /// @brief_algo Filter the leptons from the pion contamination using TMVA models
   ///
-  /// Provide a more detailed description of your algorithm here.
+  /// For each lepton, either positron or electron, it takes some variables from `REC::Particle` (P, Theta and Phi) and `REC::Particle` (Sampling fraction and second moments).
+  /// Using those variables, it call the TMVA method using the weight file, and it computes a score. By a pplying a cut to the score we can separate leptons from pions.
   ///
   /// @begin_doc_algo{clas12::LeptonIDFilter | Filter}
-  /// @input_banks{REC::Particle}
-  /// @output_banks{REC::Particle}
+  /// @input_banks{REC::Particle,REC::Calorimeter}
   /// @end_doc
   ///
   /// @begin_doc_config
-  /// @config_param{exampleInt | int | an example `integer` configuration parameter}
-  /// @config_param{exampleDouble | double | an example `double` configuration parameter}
+  /// @config_param{o_pid | int | PID of the particle; -11 for positrons and 11 for electrons}
+  /// @config_param{o_weightfile | std::string | Location of the weight file of the classifier}
+  /// @config_param{o_cut | double | Value of the score to apply the cut. The algorith will keep all particles that have a score grater than ths value}
   /// @end_doc
   class LeptonIDFilter : public Algorithm
   {
