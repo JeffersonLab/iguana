@@ -43,6 +43,7 @@ foreach algo : algo_dict
         suite: ['algorithm'],
         args: test_args + [ '-n', get_option('test_num_events') ],
         env: project_test_env,
+        timeout: 120,
       )
       benchmark(
         'benchmark-algorithm-' + test_name_algo,
