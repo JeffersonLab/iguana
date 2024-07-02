@@ -1,6 +1,31 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include <TMVA/Reader.h>
+
+///Struct to store variables 
+    struct LeptonIDVars {
+        /// @brief momentum
+        double P;
+        /// @brief Theta angle
+        double Theta;
+        /// @brief Phi angle
+        double Phi;
+        /// @brief Sampling fraction on the PCAL
+        double SFpcal;
+        /// @brief Sampling fraction on the ECIN
+        double SFecin;
+        /// @brief Sampling fraction on the ECOUT
+        double SFecout;
+        /// @brief Second-momenta of PCAL
+        double m2pcal;
+        /// @brief Second-momenta of ECIN
+        double m2ecin;
+        /// @brief Second-momenta of ECOUT
+        double m2ecout;
+        /// @brief Score
+        double score;
+    };
 
 namespace iguana::clas12 {
   ///
@@ -55,29 +80,7 @@ namespace iguana::clas12 {
 
     
     private:
-    ///Struct to store variables 
-    struct LeptonIDVars {
-        /// @brief momentum
-        double P;
-        /// @brief Theta angle
-        double Theta;
-        /// @brief Phi angle
-        double Phi;
-        /// @brief Sampling fraction on the PCAL
-        double SFpcal;
-        /// @brief Sampling fraction on the ECIN
-        double SFecin;
-        /// @brief Sampling fraction on the ECOUT
-        double SFecout;
-        /// @brief Second-momenta of PCAL
-        double m2pcal;
-        /// @brief Second-momenta of ECIN
-        double m2ecin;
-        /// @brief Second-momenta of ECOUT
-        double m2ecout;
-        /// @brief Score
-        double score;
-    };
+    
 
       /// `hipo::banklist` 
       hipo::banklist::size_type b_particle;
