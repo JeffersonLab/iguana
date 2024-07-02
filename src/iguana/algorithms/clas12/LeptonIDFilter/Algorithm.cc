@@ -125,7 +125,7 @@ namespace iguana::clas12 {
       TMVA::Reader *readerTMVA = new TMVA::Reader( "!Color" + silent_opt );
         // Create a set of variables and declare them to the reader
       Float_t P, Theta, Phi, PCAL,ECIN,ECOUT,m2PCAL,m2ECIN,m2ECOUT;
-
+      @doxygen_off
       P=lepton_vars.P;
       Theta=lepton_vars.Theta;
       Phi=lepton_vars.Phi;
@@ -135,6 +135,7 @@ namespace iguana::clas12 {
       m2PCAL=lepton_vars.m2pcal;
       m2ECIN=lepton_vars.m2ecin;
       m2ECOUT=lepton_vars.m2ecout;
+      @doxygen_on
 
       readerTMVA->AddVariable( "P",&P );
       readerTMVA->AddVariable( "Theta",&Theta);
