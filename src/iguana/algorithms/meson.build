@@ -27,6 +27,7 @@ algo_dict = [
 #     'validator_needs_ROOT': bool       # whether this validator needs ROOT or not (default=true)
 #     'add_algorithm_sources': list[str] # list of additional algorithm source files (default=[])
 #     'add_algorithm_headers': list[str] # list of additional algorithm header files (default=[])
+#     'add_algorithm_data':    list[str] # list of additional files to install (default=[])
 #     'add_validator_sources': list[str] # list of additional validator source files (default=[])
 #     'add_validator_headers': list[str] # list of additional validator header files (default=[])
 #     'test_args': {    dict[str],       # if excluded, tests won't run for this algorithm
@@ -97,12 +98,23 @@ algo_dict += [
     'algorithm_needs_ROOT': true,
     'has_validator': true,
     'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'RUN::config'] },
-  }
+  },
+  {
+    'name': 'clas12::LeptonIDFilter',
+    'has_c_bindings': false,
+    'algorithm_needs_ROOT': true,
+    'has_validator': false,
+    'add_algorithm_data': [
+      'weights/9_BDT_positrons_S19.weights.xml',
+    ],
+    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter'] },
+  },
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
 algo_sources = []
 algo_headers = []
+algo_data    = []
 algo_configs = []
 vdor_sources = []
 vdor_headers = []
@@ -120,7 +132,7 @@ foreach algo : algo_dict
   # algorithms:
   if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
 
-    # sources and headers
+    # sources, headers, and data
     algo_sources += algo_dir / 'Algorithm.cc'
     algo_headers += algo_dir / 'Algorithm.h'
     foreach src_file : algo.get('add_algorithm_sources', [])
@@ -128,6 +140,9 @@ foreach algo : algo_dict
     endforeach
     foreach src_file : algo.get('add_algorithm_headers', [])
       algo_headers += algo_dir / src_file
+    endforeach
+    foreach src_file : algo.get('add_algorithm_data', [])
+      algo_data += algo_dir / src_file
     endforeach
 
     # C/Fortran bindings
@@ -182,6 +197,13 @@ install_headers(
   subdir:        meson.project_name() / 'algorithms',
   preserve_path: true,
 )
+foreach algo_datum : algo_data
+  install_data(
+    algo_data,
+    install_dir:   project_data / 'algorithms',
+    preserve_path: true,
+  )
+endforeach
 project_libs += algo_lib
 
 # build and install validators

@@ -3,6 +3,7 @@ services_sources = [
   'Object.cc',
   'ConfigFileReader.cc',
   'YAMLReader.cc',
+  'DataFileReader.cc',
 ]
 
 services_public_headers = [
@@ -10,6 +11,7 @@ services_public_headers = [
   'Object.h',
   'ConfigFileReader.h',
   'YAMLReader.h',
+  'DataFileReader.h',
 ]
 
 services_lib = shared_library(
