@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <Math/Vector4D.h>
-#include <TMVA/Reader.h>
 
 namespace iguana::clas12 {
 
