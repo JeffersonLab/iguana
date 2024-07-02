@@ -78,14 +78,6 @@ namespace iguana::clas12 {
       /// @returns bool, true if score>=cut, false otherwise
       bool Filter(double score) const;
 
-    
-    private:
-    
-
-      /// `hipo::banklist` 
-      hipo::banklist::size_type b_particle;
-      hipo::banklist::size_type b_calorimeter;
-
       //Create TMVA reader
       TMVA::Reader *readerTMVA = new TMVA::Reader();
 
@@ -121,6 +113,16 @@ namespace iguana::clas12 {
       readerTMVA->AddVariable( "m2ECOUT",&m2ECOUT);
 
       readerTMVA->BookMVA( "BDT", o_weightfile_fullpath );
+
+    
+    private:
+    
+
+      /// `hipo::banklist` 
+      hipo::banklist::size_type b_particle;
+      hipo::banklist::size_type b_calorimeter;
+
+      
 
 
       /// pid of the lepton
