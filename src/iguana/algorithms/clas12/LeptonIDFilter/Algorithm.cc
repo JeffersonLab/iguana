@@ -120,12 +120,7 @@ namespace iguana::clas12 {
 
   double LeptonIDFilter::CalculateScore(LeptonIDVars lepton_vars) const{
 
-      //Get TMVA reader
-      TString silent_opt = m_log->GetLevel() <= Logger::Level::trace ? "!Silent" : "Silent";
-      TMVA::Reader *readerTMVA = new TMVA::Reader( "!Color" + silent_opt );
-        // Create a set of variables and declare them to the reader
-      Float_t P, Theta, Phi, PCAL,ECIN,ECOUT,m2PCAL,m2ECIN,m2ECOUT;
-      @doxygen_off
+      ///Assing variables from lepton_vars for TMVA method
       P=lepton_vars.P;
       Theta=lepton_vars.Theta;
       Phi=lepton_vars.Phi;
@@ -135,24 +130,8 @@ namespace iguana::clas12 {
       m2PCAL=lepton_vars.m2pcal;
       m2ECIN=lepton_vars.m2ecin;
       m2ECOUT=lepton_vars.m2ecout;
-      @doxygen_on
-
-      readerTMVA->AddVariable( "P",&P );
-      readerTMVA->AddVariable( "Theta",&Theta);
-      readerTMVA->AddVariable( "Phi",&Phi);
-      readerTMVA->AddVariable( "SFPCAL",&PCAL);
-      readerTMVA->AddVariable( "SFECIN",&ECIN);
-      readerTMVA->AddVariable( "SFECOUT",&ECOUT );
-      readerTMVA->AddVariable( "m2PCAL",&m2PCAL);
-      readerTMVA->AddVariable( "m2ECIN",&m2ECIN);
-      readerTMVA->AddVariable( "m2ECOUT",&m2ECOUT);
 
       m_log->Debug("Add variables to readerTMVA");
-
-	    readerTMVA->BookMVA( "BDT", o_weightfile_fullpath );
-
-      m_log->Debug("TMVA method booked");
-
       auto score=readerTMVA->EvaluateMVA("BDT");  
 
       return score;

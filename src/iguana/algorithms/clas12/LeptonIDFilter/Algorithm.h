@@ -3,21 +3,6 @@
 #include "iguana/algorithms/Algorithm.h"
 
 namespace iguana::clas12 {
-
-  /// Set of lepton ID variables
-  struct LeptonIDVars {
-      double P;
-      double Theta;
-      double Phi;
-      double SFpcal;
-      double SFecin;
-      double SFecout;
-      double m2pcal;
-      double m2ecin;
-      double m2ecout;
-      double score;
-  };
-
   ///
   /// @brief_algo Filter the leptons from the pion contamination using TMVA models
   ///
@@ -70,15 +55,77 @@ namespace iguana::clas12 {
 
     
     private:
+    ///Struct to store variables 
+    struct LeptonIDVars {
+        /// @brief momentum
+        double P;
+        /// @brief Theta angle
+        double Theta;
+        /// @brief Phi angle
+        double Phi;
+        /// @brief Sampling fraction on the PCAL
+        double SFpcal;
+        /// @brief Sampling fraction on the ECIN
+        double SFecin;
+        /// @brief Sampling fraction on the ECOUT
+        double SFecout;
+        /// @brief Second-momenta of PCAL
+        double m2pcal;
+        /// @brief Second-momenta of ECIN
+        double m2ecin;
+        /// @brief Second-momenta of ECOUT
+        double m2ecout;
+        /// @brief Score
+        double score;
+    };
 
-      /// `hipo::banklist` index for the particle bank (as an example)
+      /// `hipo::banklist` 
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_calorimeter;
 
-      /// Example integer configuration option
+      //Create TMVA reader
+      TMVA::Reader *readerTMVA = new TMVA::Reader();
+
+      ///Set of variables for the reader
+      ///Momentum
+      Float_t P;
+      ///Theta angle
+      Float_t Theta;
+      ///Phi angle
+      Float_t Phi;
+      ///Sampling fraction on the PCAL
+      Float_t PCAL;
+      ///Sampling fraction on the ECIN
+      Float_t ECIN;
+      ///Sampling fraction on the ECOUT
+      Float_t ECOUT;
+      ///Second-momenta of PCAL
+      Float_t m2PCAL;
+      ///Second-momenta of ECIN
+      Float_t m2ECIN;
+      ///Second-momenta of ECOUT
+      Float_t m2ECOUT;
+
+      /// @brief Add variables to the readerTMVA
+      readerTMVA->AddVariable( "P",&P );
+      readerTMVA->AddVariable( "Theta",&Theta);
+      readerTMVA->AddVariable( "Phi",&Phi);
+      readerTMVA->AddVariable( "SFPCAL",&PCAL);
+      readerTMVA->AddVariable( "SFECIN",&ECIN);
+      readerTMVA->AddVariable( "SFECOUT",&ECOUT );
+      readerTMVA->AddVariable( "m2PCAL",&m2PCAL);
+      readerTMVA->AddVariable( "m2ECIN",&m2ECIN);
+      readerTMVA->AddVariable( "m2ECOUT",&m2ECOUT);
+
+      readerTMVA->BookMVA( "BDT", o_weightfile_fullpath );
+
+
+      /// pid of the lepton
       int o_pid;
+      /// Location of the weight file
       std::string o_weightfile;
       std::string o_weightfile_fullpath;
+      /// Value of the cut
       double o_cut;
   };
 
