@@ -45,7 +45,7 @@ benchmark_hash.each do |name,times|
   ave    = times.sum / n
   stddev = Math.sqrt( 1.0 / n * times.map{ |t| (t-ave)**2 }.sum )
   err    = stddev / Math.sqrt(n)
-  prec   = 2
-  row ["`#{name}`", "$#{ave.round prec} \\pm #{err.round prec}$"]
+  prec   = 3
+  row ["`#{name}`", "$#{ave.round prec}~~~\\pm~~~#{err.round prec}$"]
 end
 puts ''
