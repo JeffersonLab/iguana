@@ -48,46 +48,47 @@ namespace iguana::clas12 {
     i_sector = result_schema.getEntryOrder("sector");
   }
 
-
-  void SectorFinder::setSector(hipo::banklist& banks,hipo::bank& resultBank,int row, bool userSpecifiedBank, hipo::banklist::size_type b_user) const
-  {
-    // filter the input bank for requested PDG code(s)
-    if(userSpecifiedBank) { // if user specified a specific bank
-      auto const& userBank = GetBank(banks, b_user);
-      int sect=GetSector(userBank, row);
-      //NB: Sector added only if found
-      //Otherwise output bank already has 0 at that row
-      if (sect!=-1)
-        resultBank.putInt(i_sector, row, sect);
-    }
-    else { // use the standard method
-      auto const& calBank   = GetBank(banks, b_calorimeter);
-      auto const& scintBank = GetBank(banks, b_scint);
-      auto const& trackBank = GetBank(banks, b_track);
-      
-      int trackSector = GetSector(trackBank, row);
-      int scintSector = GetSector(scintBank, row);
-      int calSector = GetSector(calBank, row);
-
-      //NB: Sector added only if found
-      //Otherwise output bank already has 0 at that row
-      if(trackSector != -1) {
-        resultBank.putInt(i_sector, row, trackSector);
-      }
-      else if(scintSector != -1) {
-        resultBank.putInt(i_sector, row, scintSector);
-      }
-      else if(calSector != -1){
-        resultBank.putInt(i_sector, row, calSector);
-      }
-    }
-  }
-
   void SectorFinder::Run(hipo::banklist& banks) const
   {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& resultBank   = GetBank(banks, b_result, "REC::Particle::Sector");
 
+    std::vector<int> sectors_uncharged;
+    std::vector<int> pindices_uncharged;
+    if(userSpecifiedBank_uncharged){
+      auto const& userBank = GetBank(banks, b_user_uncharged);
+      GetListsSectorPindex(userBank,sectors_uncharged,pindices_uncharged);
+    }
+
+    std::vector<int> sectors_charged;
+    std::vector<int> pindices_charged;
+    if(userSpecifiedBank_charged){
+      auto const& userBank = GetBank(banks, b_user_charged);
+      GetListsSectorPindex(userBank,sectors_charged,pindices_charged);
+    }
+
+    std::vector<int> sectors_track;
+    std::vector<int> pindices_track;
+    if(!userSpecifiedBank_charged || !userSpecifiedBank_uncharged){
+      auto const& trackBank = GetBank(banks, b_track);
+      GetListsSectorPindex(trackBank,sectors_track,pindices_track);
+    }
+
+    std::vector<int> sectors_cal;
+    std::vector<int> pindices_cal;
+    if(!userSpecifiedBank_charged || !userSpecifiedBank_uncharged){
+      auto const& calBank = GetBank(banks, b_calorimeter);
+      GetListsSectorPindex(calBank,sectors_cal,pindices_cal);
+    }
+
+    std::vector<int> sectors_scint;
+    std::vector<int> pindices_scint;
+    if(!userSpecifiedBank_charged || !userSpecifiedBank_uncharged){
+      auto const& scintBank = GetBank(banks, b_scint);
+      GetListsSectorPindex(scintBank,sectors_scint,pindices_scint);
+    }
+    
+    
     // sync new bank with particle bank, and fill it with zeroes
     resultBank.setRows(particleBank.getRows());
     resultBank.getMutableRowList().setList(particleBank.getRowList());
@@ -97,25 +98,59 @@ namespace iguana::clas12 {
 
     for(int row = 0; row < particleBank.getRows(); row++) {
       int charge=particleBank.getInt("charge",row);
+      bool userSp=false;
+      //can't have reference to nothing
+      std::vector<int>& sct_us=sectors_uncharged;
+      std::vector<int>& pin_us=pindices_uncharged;
       if(charge==0){
-        setSector(banks,resultBank,row,userSpecifiedBank_uncharged,b_user_uncharged);
+        userSp=userSpecifiedBank_uncharged;
+        sct_us=sectors_uncharged;
+        pin_us=pindices_uncharged;
       } else {
-        setSector(banks,resultBank,row,userSpecifiedBank_charged,b_user_charged);
+        userSp=userSpecifiedBank_charged;
+        sct_us=sectors_charged;
+        pin_us=pindices_charged;
+      }
+      
+      if(userSp){
+        int sect=GetSector(sct_us, pin_us,row);
+        if (sect!=-1)
+          resultBank.putInt(i_sector, row, sect);
+      } else {
+        int trackSector=GetSector(sectors_track, pindices_track,row);
+        int calSector=GetSector(sectors_cal, pindices_cal,row);
+        int scintSector=GetSector(sectors_scint, pindices_scint,row);
+        if(trackSector != -1) {
+          resultBank.putInt(i_sector, row, trackSector);
+        }
+        else if(scintSector != -1) {
+          resultBank.putInt(i_sector, row, scintSector);
+        }
+        else if(calSector != -1){
+          resultBank.putInt(i_sector, row, calSector);
+        }
       }
     }
 
     ShowBank(resultBank, Logger::Header("CREATED BANK"));
   }
 
-  int SectorFinder::GetSector(hipo::bank const& bank, int const pindex) const
+  void SectorFinder::GetListsSectorPindex(hipo::bank const& bank, std::vector<int>& sectors, std::vector<int>& pindices) const
   {
-    int sector = -1;
     for(auto const& row : bank.getRowList()) {
-      if(bank.getInt("pindex", row) == pindex) {
-        return bank.getInt("sector", row);
+      sectors.push_back(bank.getInt("sector", row));
+      pindices.push_back(bank.getInt("pindex", row));
+    }
+  }
+  
+  int SectorFinder::GetSector(std::vector<int> const& sectors, std::vector<int> const& pindices, int const pindex) const
+  {
+    for(long unsigned int i=0;i<sectors.size();i++){
+      if (pindices.at(i)==pindex){
+        return sectors.at(i);
       }
     }
-    return sector;
+    return -1;
   }
 
   void SectorFinder::Stop()

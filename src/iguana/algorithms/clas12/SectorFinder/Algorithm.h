@@ -25,20 +25,19 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// get sector from bank for a given pindex
-      /// @param bank bank to get sector from
-      /// @param pindex index in bank for which to get sector
-      /// @returns sector for pindex in bank
-      int GetSector(hipo::bank const& bank, int const pindex) const;
+      /// action function, get sector from list of sectors and pindices from same bank, ordered in same way
+      /// nb: this is done instead of finding the pindex in the bank directly to have an action function
+      /// @param sectors list of sectors in a bank
+      /// @param pindices list of pindices in a bank
+      /// @param pindex index in rec::particle bank for which to get sector
+      /// @returns sector for pindex in list, -1 if pindex not in inputted list
+      int GetSector(std::vector<int> const& sectors, std::vector<int> const& pindices, int const pindex) const;
 
-      /// set sector to output bank for a row in particle bank
-      /// useful to avoid duplicating code for charged/uncharged particles
-      /// @param banks list of banks used by the algorithm
-      /// @param resultBank bank in which we add the sector
-      /// @param row row in REC::Particle::Sector to fill
-      /// @param userSpecifiedBank whether or not to get sector from user specified bank
-      /// @param b_user link to user specified bank
-      void setSector(hipo::banklist& banks,hipo::bank& resultBank, int row, bool userSpecifiedBank, hipo::banklist::size_type b_user) const;
+      /// fill lists of sectors and pindices present in the input bank
+      /// @param bank bank from which to get lists of sectors and pindices
+      /// @param sectors list to fill with sectors in the bank
+      /// @param pindices list to fill with pindices in the bank
+      void GetListsSectorPindex(hipo::bank const& bank, std::vector<int>& sectors, std::vector<int>& pindices) const;
 
     private:
 
