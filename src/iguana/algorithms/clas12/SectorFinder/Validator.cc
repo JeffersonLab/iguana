@@ -39,7 +39,7 @@ namespace iguana::clas12 {
         TString sector_title = Form("sector %d", sec);
         YvsX.push_back(new TH2D(
             "YvsX_" + particle_name + "_" + sector_name,
-            particle_title + " Calorimeter Hit Position, " + sector_title + ";X;Y",
+            particle_title + " Calorimeter Hit Position, " + sector_title + ";X [cm];Y [cm]",
             50, -500, 500,
             50, -500, 500));
       }
