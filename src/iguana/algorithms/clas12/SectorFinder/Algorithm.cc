@@ -44,8 +44,9 @@ namespace iguana::clas12 {
 
     // create the output bank
     // FIXME: generalize the groupid and itemid
-    auto result_schema = CreateBank(banks, b_result, "REC::Particle::Sector", {"sector/I"}, 0xF000, 2);
+    auto result_schema = CreateBank(banks, b_result, "REC::Particle::Sector", {"sector/I","pindex/I"}, 0xF000, 4);
     i_sector = result_schema.getEntryOrder("sector");
+    i_pindex = result_schema.getEntryOrder("pindex");
   }
 
   void SectorFinder::Run(hipo::banklist& banks) const
@@ -92,8 +93,10 @@ namespace iguana::clas12 {
     // sync new bank with particle bank, and fill it with zeroes
     resultBank.setRows(particleBank.getRows());
     resultBank.getMutableRowList().setList(particleBank.getRowList());
-    for(int row = 0; row < resultBank.getRows(); row++)
+    for(int row = 0; row < resultBank.getRows(); row++){
       resultBank.putInt(i_sector, row, 0);
+      resultBank.putInt(i_pindex, row, row);
+    }
 
 
     for(int row = 0; row < particleBank.getRows(); row++) {
@@ -114,20 +117,28 @@ namespace iguana::clas12 {
       
       if(userSp){
         int sect=GetSector(sct_us, pin_us,row);
-        if (sect!=-1)
+        if (sect!=-1){
           resultBank.putInt(i_sector, row, sect);
+          resultBank.putInt(i_pindex, row, row);
+        }
       } else {
         int trackSector=GetSector(sectors_track, pindices_track,row);
         int calSector=GetSector(sectors_cal, pindices_cal,row);
         int scintSector=GetSector(sectors_scint, pindices_scint,row);
         if(trackSector != -1) {
+          //std::cout<<"track pindex "<<row<<" sect "<<trackSector<<std::endl;
           resultBank.putInt(i_sector, row, trackSector);
+          resultBank.putInt(i_pindex, row, row);
         }
         else if(scintSector != -1) {
+          //std::cout<<"scint pindex "<<row<<" sect "<<scintSector<<std::endl;
           resultBank.putInt(i_sector, row, scintSector);
+          resultBank.putInt(i_pindex, row, row);
         }
         else if(calSector != -1){
+          //std::cout<<"cal pindex "<<row<<" sect "<<calSector<<std::endl;
           resultBank.putInt(i_sector, row, calSector);
+          resultBank.putInt(i_pindex, row, row);
         }
       }
     }
@@ -138,8 +149,14 @@ namespace iguana::clas12 {
   void SectorFinder::GetListsSectorPindex(hipo::bank const& bank, std::vector<int>& sectors, std::vector<int>& pindices) const
   {
     for(auto const& row : bank.getRowList()) {
-      sectors.push_back(bank.getInt("sector", row));
-      pindices.push_back(bank.getInt("pindex", row));
+      //check that we'e only using FD detectors
+      //ie have "sectors" in CND
+      int det=bank.getInt("detector",row);
+      std::set<int>::iterator it = listFDDets.find(det);
+      if (it != listFDDets.end()) {
+        sectors.push_back(bank.getInt("sector", row));
+        pindices.push_back(bank.getInt("pindex", row));
+      }
     }
   }
   

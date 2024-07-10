@@ -54,10 +54,14 @@ namespace iguana::clas12 {
 
       // `b_result` bank item indices
       int i_sector;
+      int i_pindex;
 
       /// Configuration options
       std::string o_bankname_charged;
       std::string o_bankname_uncharged;
+
+      //only want sectors from FD detectors
+      std::set<int> const listFDDets{6,7,12,15,16,18};
   };
 
 }
