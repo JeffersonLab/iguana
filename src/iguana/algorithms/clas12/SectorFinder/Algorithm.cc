@@ -9,19 +9,37 @@ namespace iguana::clas12 {
 
     // define options, their default values, and cache them
     ParseYAMLConfig();
-    o_bankname = GetOptionScalar<std::string>("bank");
+    o_bankname_charged = GetOptionScalar<std::string>("bank_charged");
+    o_bankname_uncharged = GetOptionScalar<std::string>("bank_uncharged");
 
+    bool setDefaultBanks=false;
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
-    if(o_bankname != "default") {
-      b_user            = GetBankIndex(banks, o_bankname);
-      userSpecifiedBank = true;
+    if(o_bankname_charged != "default") {
+      b_user_charged            = GetBankIndex(banks, o_bankname_charged);
+      userSpecifiedBank_charged = true;
     }
     else {
       b_calorimeter     = GetBankIndex(banks, "REC::Calorimeter");
       b_track           = GetBankIndex(banks, "REC::Track");
       b_scint           = GetBankIndex(banks, "REC::Scintillator");
-      userSpecifiedBank = false;
+      setDefaultBanks   = true;
+      userSpecifiedBank_charged = false;
+    }
+
+    if(o_bankname_uncharged != "default") {
+      b_user_uncharged            = GetBankIndex(banks, o_bankname_uncharged);
+      userSpecifiedBank_uncharged = true;
+    }
+    else {
+      //avoid setting default banks twice
+      if(!setDefaultBanks){
+        b_calorimeter     = GetBankIndex(banks, "REC::Calorimeter");
+        b_track           = GetBankIndex(banks, "REC::Track");
+        b_scint           = GetBankIndex(banks, "REC::Scintillator");
+        setDefaultBanks = true;
+      }
+      userSpecifiedBank_uncharged = false;
     }
 
     // create the output bank
@@ -30,6 +48,40 @@ namespace iguana::clas12 {
     i_sector = result_schema.getEntryOrder("sector");
   }
 
+
+  void SectorFinder::setSector(hipo::banklist& banks,hipo::bank& resultBank,int row, bool userSpecifiedBank, hipo::banklist::size_type b_user) const
+  {
+    // filter the input bank for requested PDG code(s)
+    if(userSpecifiedBank) { // if user specified a specific bank
+      auto const& userBank = GetBank(banks, b_user);
+      int sect=GetSector(userBank, row);
+      //NB: Sector added only if found
+      //Otherwise output bank already has 0 at that row
+      if (sect!=-1)
+        resultBank.putInt(i_sector, row, sect);
+    }
+    else { // use the standard method
+      auto const& calBank   = GetBank(banks, b_calorimeter);
+      auto const& scintBank = GetBank(banks, b_scint);
+      auto const& trackBank = GetBank(banks, b_track);
+      
+      int trackSector = GetSector(trackBank, row);
+      int scintSector = GetSector(scintBank, row);
+      int calSector = GetSector(calBank, row);
+
+      //NB: Sector added only if found
+      //Otherwise output bank already has 0 at that row
+      if(trackSector != -1) {
+        resultBank.putInt(i_sector, row, trackSector);
+      }
+      else if(scintSector != -1) {
+        resultBank.putInt(i_sector, row, scintSector);
+      }
+      else if(calSector != -1){
+        resultBank.putInt(i_sector, row, calSector);
+      }
+    }
+  }
 
   void SectorFinder::Run(hipo::banklist& banks) const
   {
@@ -42,48 +94,13 @@ namespace iguana::clas12 {
     for(int row = 0; row < resultBank.getRows(); row++)
       resultBank.putInt(i_sector, row, 0);
 
-    // filter the input bank for requested PDG code(s)
-    if(userSpecifiedBank) { // if user specified a specific bank
-      auto const& userBank = GetBank(banks, b_user);
-      for(auto const& row : particleBank.getRowList()) {
-        if(userBank.getRowList().size() > 0) {
-          resultBank.putInt(i_sector, row, GetSector(userBank, row));
-        }
-      }
-    }
-    else { // use the standard method
-      auto const& calBank   = GetBank(banks, b_calorimeter);
-      auto const& scintBank = GetBank(banks, b_scint);
-      auto const& trackBank = GetBank(banks, b_track);
-      for(auto const& row : particleBank.getRowList()) {
-        int trackSector = 0;
-        if(trackBank.getRowList().size() > 0) {
-          trackSector = GetSector(trackBank, row);
-        }
 
-        int scintSector = 0;
-        if(scintBank.getRowList().size() > 0) {
-          scintSector = GetSector(scintBank, row);
-        }
-
-        int calSector = 0;
-        if(calBank.getRowList().size() > 0) {
-          calSector = GetSector(calBank, row);
-        }
-
-        if(trackSector != 0) {
-          resultBank.putInt(i_sector, row, trackSector);
-        }
-        else if(scintSector != 0) {
-          resultBank.putInt(i_sector, row, scintSector);
-        }
-        else {
-          // FIXME: add even if calSector is 0
-          // need an entry per pindex
-          // can happen that particle not in FD
-          // ie sector is 0
-          resultBank.putInt(i_sector, row, calSector);
-        }
+    for(int row = 0; row < particleBank.getRows(); row++) {
+      int charge=particleBank.getInt("charge",row);
+      if(charge==0){
+        setSector(banks,resultBank,row,userSpecifiedBank_uncharged,b_user_uncharged);
+      } else {
+        setSector(banks,resultBank,row,userSpecifiedBank_charged,b_user_charged);
       }
     }
 
@@ -92,7 +109,7 @@ namespace iguana::clas12 {
 
   int SectorFinder::GetSector(hipo::bank const& bank, int const pindex) const
   {
-    int sector = 0;
+    int sector = -1;
     for(auto const& row : bank.getRowList()) {
       if(bank.getInt("pindex", row) == pindex) {
         return bank.getInt("sector", row);

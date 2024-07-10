@@ -31,6 +31,15 @@ namespace iguana::clas12 {
       /// @returns sector for pindex in bank
       int GetSector(hipo::bank const& bank, int const pindex) const;
 
+      /// set sector to output bank for a row in particle bank
+      /// useful to avoid duplicating code for charged/uncharged particles
+      /// @param banks list of banks used by the algorithm
+      /// @param resultBank bank in which we add the sector
+      /// @param row row in REC::Particle::Sector to fill
+      /// @param userSpecifiedBank whether or not to get sector from user specified bank
+      /// @param b_user link to user specified bank
+      void setSector(hipo::banklist& banks,hipo::bank& resultBank, int row, bool userSpecifiedBank, hipo::banklist::size_type b_user) const;
+
     private:
 
       /// `hipo::banklist` index for the particle bank
@@ -38,15 +47,18 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_calorimeter;
       hipo::banklist::size_type b_track;
       hipo::banklist::size_type b_scint;
-      hipo::banklist::size_type b_user;
+      hipo::banklist::size_type b_user_charged;
+      hipo::banklist::size_type b_user_uncharged;
       hipo::banklist::size_type b_result;
-      bool userSpecifiedBank{false};
+      bool userSpecifiedBank_charged{false};
+      bool userSpecifiedBank_uncharged{true};
 
       // `b_result` bank item indices
       int i_sector;
 
       /// Configuration options
-      std::string o_bankname;
+      std::string o_bankname_charged;
+      std::string o_bankname_uncharged;
   };
 
 }
