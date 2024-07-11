@@ -14,6 +14,8 @@ namespace iguana::clas12 {
     m_algo_seq->Add("clas12::EventBuilderFilter");
     m_algo_seq->Add("clas12::SectorFinder");
     m_algo_seq->SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", u_pdg_list);
+    m_algo_seq->SetOption<std::string>("clas12::SectorFinder", "bank_charged", "REC::Track");
+    m_algo_seq->SetOption<std::string>("clas12::SectorFinder", "bank_uncharged", "default");
     m_algo_seq->Start(banks);
 
 
@@ -96,7 +98,6 @@ namespace iguana::clas12 {
           auto pad = canv->GetPad(++pad_num);
           pad->cd();
           pad->SetGrid(1, 1);
-          pad->SetLogz();
           pad->SetLeftMargin(0.12);
           pad->SetRightMargin(0.12);
           pad->SetBottomMargin(0.12);
