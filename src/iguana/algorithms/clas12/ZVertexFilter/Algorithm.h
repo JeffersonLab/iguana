@@ -49,7 +49,7 @@ namespace iguana::clas12 {
       std::vector<double> o_zcuts;
 
       /// pids to apply ZVertexFilter to
-      std::vector<int> o_pids;
+      std::set<int> o_pids;
   };
 
 }

@@ -4,7 +4,7 @@ clas12::ZVertexFilter:
   # default cuts
   - default:
     pids: [ 11 ]
-    cuts: [ -20, 20 ]
+    cuts: [ -20.0, 20.0 ]
 
   # RG-A fall2018 inbending
   - runs: [ 4760, 5419 ]

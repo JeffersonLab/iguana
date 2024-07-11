@@ -11,7 +11,7 @@ namespace iguana::clas12 {
     ParseYAMLConfig();
     o_runnum = GetCachedOption<int>("runnum").value_or(0); // FIXME: should be set form RUN::config
     o_zcuts  = GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
-    o_pids  = GetOptionVector<int>("pids", {GetConfig()->InRange("runs", o_runnum), "pids"});
+    o_pids  =  GetOptionSet<int>("pids", {GetConfig()->InRange("runs", o_runnum), "pids"});
     if(o_zcuts.size() != 2) {
       m_log->Error("configuration option 'cuts' must be an array of size 2, but it is {}", PrintOptionValue("cuts"));
       throw std::runtime_error("bad configuration");
@@ -50,7 +50,7 @@ namespace iguana::clas12 {
   bool ZVertexFilter::Filter(double const zvertex, int pid) const
   {
     //only apply filter if particle pid is in list of pids
-    if(std::find(o_pids.begin(), o_pids.end(), pid) != o_pids.end()) {
+    if(o_pids.find(pid) != o_pids.end()) {
       return zvertex > GetZcutLower() && zvertex < GetZcutUpper();
     } else {
       return true;
