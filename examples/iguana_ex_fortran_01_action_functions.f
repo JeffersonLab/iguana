@@ -193,7 +193,7 @@ c       - the AND with the z-vertex filter is the final filter, `accept`
           call iguana_clas12_eventbuilderfilter_filter(
      &      algo_eb_filter, pid(i), accept(i))
           call iguana_clas12_zvertexfilter_filter(
-     &      algo_vz_filter, vz(i), accept(i))
+     &      algo_vz_filter, vz(i), pid(i), accept(i))
           print *, '  i = ', i, '  pid = ', pid(i), ' vz = ', vz(i),
      &      '  =>  accept = ', accept(i)
         enddo

@@ -11,8 +11,13 @@ namespace iguana::clas12 {
     ParseYAMLConfig();
     o_runnum = GetCachedOption<int>("runnum").value_or(0); // FIXME: should be set form RUN::config
     o_zcuts  = GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
+    o_pids  =  GetOptionSet<int>("pids", {GetConfig()->InRange("runs", o_runnum), "pids"});
     if(o_zcuts.size() != 2) {
       m_log->Error("configuration option 'cuts' must be an array of size 2, but it is {}", PrintOptionValue("cuts"));
+      throw std::runtime_error("bad configuration");
+    }
+    if(o_pids.size() < 1) {
+      m_log->Error("configuration option 'pids' must have at least one value");
       throw std::runtime_error("bad configuration");
     }
 
@@ -32,8 +37,9 @@ namespace iguana::clas12 {
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this](auto bank, auto row) {
         auto zvertex = bank.getFloat("vz", row);
-        auto accept  = Filter(zvertex);
-        m_log->Debug("input vz {} -- accept = {}", zvertex, accept);
+        auto pid = bank.getInt("pid", row);
+        auto accept  = Filter(zvertex,pid);
+        m_log->Debug("input vz {} pid {} -- accept = {}", zvertex, pid, accept);
         return accept ? 1 : 0;
         });
 
@@ -41,9 +47,14 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
-  bool ZVertexFilter::Filter(double const zvertex) const
+  bool ZVertexFilter::Filter(double const zvertex, int pid) const
   {
-    return zvertex > GetZcutLower() && zvertex < GetZcutUpper();
+    //only apply filter if particle pid is in list of pids
+    if(o_pids.find(pid) != o_pids.end()) {
+      return zvertex > GetZcutLower() && zvertex < GetZcutUpper();
+    } else {
+      return true;
+    }
   }
 
   int ZVertexFilter::GetRunNum() const
