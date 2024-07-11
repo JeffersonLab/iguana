@@ -149,8 +149,8 @@ namespace iguana::clas12 {
   void SectorFinder::GetListsSectorPindex(hipo::bank const& bank, std::vector<int>& sectors, std::vector<int>& pindices) const
   {
     for(auto const& row : bank.getRowList()) {
-      //check that we'e only using FD detectors
-      //ie have "sectors" in CND
+      //check that we're only using FD detectors
+      //eg have "sectors" in CND which we don't want to add here
       int det=bank.getInt("detector",row);
       std::set<int>::iterator it = listFDDets.find(det);
       if (it != listFDDets.end()) {
