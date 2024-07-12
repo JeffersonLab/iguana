@@ -38,7 +38,7 @@ namespace iguana::clas12 {
     particleBank.getMutableRowList().filter([this](auto bank, auto row) {
         auto zvertex = bank.getFloat("vz", row);
         auto pid = bank.getInt("pid", row);
-        auto status = bank.getInt("status", row);
+        auto status = bank.getShort("status", row);
         auto accept  = Filter(zvertex,pid,status);
         m_log->Debug("input vz {} pid {} status {} -- accept = {}", zvertex, pid, status, accept);
         return accept ? 1 : 0;

@@ -25,8 +25,8 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds if pid is one for which the filter should be applied to
-      /// cuts applied to particles in FD or CD (ie not in FT)
+      /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds if pid is one for which the filter should be applied to.;
+      /// Cuts applied to particles in FD or CD (ie not in FT).
       /// @param zvertex the particle Z Vertex to check
       /// @param pid the particle pid
       /// @param status particle status used to check particle is not in FT
