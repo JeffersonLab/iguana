@@ -39,4 +39,8 @@ then `meson` will create a `ninja` build target called `clang-format`, which you
 ```bash
 ninja -C <builddir> clang-format
 ```
-For semi-automation, the script `.github/auto-format.sh` will create a new `git` branch, run `clang-format`, then commit and push it to the remote `origin`; the user may then open a pull request to apply the changes. This chore is useful to do before creating a new release.
+We also use `meson.format` to format the `meson` build files.
+
+For semi-automation, the script `.github/auto-format.sh` will create a new
+`git` branch, and then run the auto-formatters; run `git diff` to see the
+proposed changes.
