@@ -66,31 +66,29 @@ dep_lib_dirs       = []
 dep_include_dirs   = []
 dep_pkgconfig_dirs = []
 foreach dep : dep_list
-  ### skip ROOT (handled differently, and most ROOT users already have it in their environment)
+
+  # get library and include dirs
   if dep.name() == 'ROOT'
-    continue
+    continue # skip ROOT (handled differently, and most ROOT users already have it in their environment)
   endif
-  ### handle pkg-config deps
   if dep.type_name() == 'pkgconfig'
     libdirs = [ dep.get_variable(pkgconfig: 'libdir') ]
     incdirs = [ dep.get_variable(pkgconfig: 'includedir') ]
-  ### handle cmake deps
   elif dep.type_name() == 'cmake'
     libdirs = []
     foreach lib : dep.get_variable(cmake: 'PACKAGE_LIBRARIES').split(';')
       libdirs += run_command('dirname', lib, check: true).stdout().strip()
     endforeach
     incdirs = ROOT_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
-  ### error, if unknown
   else
     error('Cannot determine how dependency "' + dep.name() + '" was found')
   endif
-  ### append to `dep_lib_dirs`
+
+  # append to `dep_*_dirs` arrays, uniquely
   foreach libdir : libdirs
     if not dep_lib_dirs.contains(libdir)
       dep_lib_dirs += libdir
     endif
-    ### append to `dep_pkgconfig_dirs`
     if dep.type_name() == 'pkgconfig'
       pkgconfigdir = libdir / 'pkgconfig'
       if not dep_pkgconfig_dirs.contains(pkgconfigdir)
@@ -98,7 +96,6 @@ foreach dep : dep_list
       endif
     endif
   endforeach
-  ### append to `dep_include_dirs`
   foreach incdir : incdirs
     if not dep_include_dirs.contains(incdir)
       dep_include_dirs += incdir
@@ -117,8 +114,8 @@ ROOT_dep_rpath = ''
 if ROOT_dep.found()
   ROOT_dep_inc_dirs += include_directories(run_command('root-config', '--incdir', check: true).stdout().strip())
   ROOT_libdir = run_command('root-config', '--libdir', check: true).stdout().strip()
+  # ROOT libraries that we need (safer than `root-config --libs`)
   ROOT_dep_link_args += [
-    # ROOT libraries that we need (safer than `root-config --libs`)
     '-L' + ROOT_libdir,
     '-lCore',
     '-lGenVector',
@@ -126,8 +123,8 @@ if ROOT_dep.found()
     '-lROOTVecOps',
     '-lTreePlayer',
   ]
+  # additional ROOT libraries for validators (namely, graphics libraries)
   ROOT_dep_link_args_for_validators = [
-    # additional ROOT libraries for validators (namely, graphics libraries)
     '-L' + ROOT_libdir,
     '-lRIO',
     '-lHist',
