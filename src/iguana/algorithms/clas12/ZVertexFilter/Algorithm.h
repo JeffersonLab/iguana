@@ -25,10 +25,13 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds
+      /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds if pid is one for which the filter should be applied to.;
+      /// Cuts applied to particles in FD or CD (ie not in FT).
       /// @param zvertex the particle Z Vertex to check
+      /// @param pid the particle pid
+      /// @param status particle status used to check particle is not in FT
       /// @returns `true` if `zvertex` is within specified bounds
-      bool Filter(double const zvertex) const;
+      bool Filter(double const zvertex, int pid, int status) const;
 
       /// @returns the current run number
       int GetRunNum() const;
@@ -46,6 +49,9 @@ namespace iguana::clas12 {
 
       /// Z-vertex cut
       std::vector<double> o_zcuts;
+
+      /// pids to apply ZVertexFilter to
+      std::set<int> o_pids;
   };
 
 }

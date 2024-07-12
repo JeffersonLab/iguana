@@ -49,7 +49,7 @@ algo_dict += [
   },
   {
     'name': 'clas12::ZVertexFilter',
-    'has_validator': false,
+    'has_validator': true,
     'test_args': { 'banks': ['REC::Particle'] },
   },
   {
