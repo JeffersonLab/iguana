@@ -1,21 +1,21 @@
 project(
   'iguana',
   'cpp',
-  license: ['LGPLv3'],
-  license_files: ['LICENSE'],
+  license: [ 'LGPLv3' ],
+  license_files: [ 'LICENSE' ],
   meson_version: '>=1.2',
   default_options: {
-    'cpp_std':               'c++17',
-    'buildtype':             'release',
-    'libdir':                'lib',
-    'licensedir':            'share/licenses/iguana',
+    'cpp_std': 'c++17',
+    'buildtype': 'release',
+    'libdir': 'lib',
+    'licensedir': 'share/licenses/iguana',
     'pkgconfig.relocatable': 'true',
   },
   version: run_command(
     meson.project_source_root() / 'meson' / 'detect-version.sh',
     meson.project_source_root(),
-    check: true
-  ).stdout().strip()
+    check: true,
+  ).stdout().strip(),
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
 
@@ -24,30 +24,26 @@ add_languages('fortran', native: false, required: get_option('bind_fortran'))
 
 # meson modules
 pkg = import('pkgconfig')
-fs  = import('fs')
+fs = import('fs')
 
 # resolve dependencies
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
 fmt_dep = dependency(
   'fmt',
-  method:  'pkg-config',
-  version: run_command('meson' / 'minimum-version.sh', 'fmt', check: true).stdout().strip()
+  method: 'pkg-config',
+  version: run_command('meson' / 'minimum-version.sh', 'fmt', check: true).stdout().strip(),
 )
 yamlcpp_dep = dependency(
   'yaml-cpp',
-  method:  'pkg-config',
-  version: run_command('meson' / 'minimum-version.sh', 'yaml-cpp', check: true).stdout().strip()
+  method: 'pkg-config',
+  version: run_command('meson' / 'minimum-version.sh', 'yaml-cpp', check: true).stdout().strip(),
 )
-hipo_dep = dependency(
-  'hipo4',
-  method:  'pkg-config',
-  version: '>=4.1.0',
-)
+hipo_dep = dependency('hipo4', method: 'pkg-config', version: '>=4.1.0')
 ROOT_dep = dependency(
   'ROOT',
   required: get_option('z_require_root'),
-  method:   'cmake',
-  version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip()
+  method: 'cmake',
+  version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip(),
 )
 
 # list of dependencies
@@ -62,8 +58,8 @@ foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, ROOT_dep ]
 endforeach
 
 # pkgconfig configuration: make a list of dependency library and include directories
-dep_lib_dirs       = []
-dep_include_dirs   = []
+dep_lib_dirs = []
+dep_include_dirs = []
 dep_pkgconfig_dirs = []
 foreach dep : dep_list
 
@@ -104,15 +100,20 @@ foreach dep : dep_list
 endforeach
 
 # handle HIPO dataframes
-hipo_dep_dataframes_found = hipo_dep.get_variable(pkgconfig: 'with_dataframes', default_value: 'false').to_lower() == 'true'
+hipo_dep_dataframes_found = hipo_dep.get_variable(
+  pkgconfig: 'with_dataframes',
+  default_value: 'false',
+).to_lower() == 'true'
 
 # handle ROOT
-ROOT_dep_inc_dirs  = []
+ROOT_dep_inc_dirs = []
 ROOT_dep_link_args = []
 ROOT_dep_link_args_for_validators = []
 ROOT_dep_rpath = ''
 if ROOT_dep.found()
-  ROOT_dep_inc_dirs += include_directories(run_command('root-config', '--incdir', check: true).stdout().strip())
+  ROOT_dep_inc_dirs += include_directories(
+    run_command('root-config', '--incdir', check: true).stdout().strip(),
+  )
   ROOT_libdir = run_command('root-config', '--libdir', check: true).stdout().strip()
   # ROOT libraries that we need (safer than `root-config --libs`)
   ROOT_dep_link_args += [
@@ -134,12 +135,12 @@ if ROOT_dep.found()
 endif
 
 # general project vars
-project_inc       = include_directories('src')
-project_libs      = []
-project_deps      = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ] ) # do NOT include ROOT here
-project_etc       = get_option('sysconfdir') / meson.project_name()
-project_test_env  = environment()
-project_pkg_vars  = [
+project_inc = include_directories('src')
+project_libs = []
+project_deps = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ]) # do NOT include ROOT here
+project_etc = get_option('sysconfdir') / meson.project_name()
+project_test_env = environment()
+project_pkg_vars = [
   'bindir='            + '${prefix}' / get_option('bindir'),
   'dep_pkgconfigdirs=' + ':'.join(dep_pkgconfig_dirs),
   'dep_libdirs='       + ':'.join(dep_lib_dirs),
@@ -155,12 +156,7 @@ project_test_env.set(
   'print_stacktrace=1',
   'suppressions=' + meson.project_source_root() / 'meson' / 'ubsan.supp',
 )
-project_test_env.set(
-  'ASAN_OPTIONS',
-  'halt_on_error=1',
-  'abort_on_error=1',
-  'print_summary=1',
-)
+project_test_env.set('ASAN_OPTIONS', 'halt_on_error=1', 'abort_on_error=1', 'print_summary=1')
 project_test_env.set(
   'LSAN_OPTIONS',
   'suppressions=' + meson.project_source_root() / 'meson' / 'lsan.supp',
@@ -169,7 +165,7 @@ project_test_env.set(
 # set preprocessor macros
 add_project_arguments(
   '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etc + '"',
-  language: ['cpp'],
+  language: [ 'cpp' ],
 )
 
 # build and install shared libraries
@@ -191,11 +187,11 @@ foreach var : project_pkg_vars
   endif
 endforeach
 pkg.generate(
-  name:        meson.project_name(),
+  name: meson.project_name(),
   description: project_description,
-  libraries:   project_libs,
-  requires:    [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
-  variables:   project_pkg_vars_nonempty,
+  libraries: project_libs,
+  requires: [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
+  variables: project_pkg_vars_nonempty,
 )
 
 # build examples
@@ -206,24 +202,24 @@ endif
 # install environment setup files
 if get_option('z_install_envfile')
   configure_file(
-    input:         'meson' / 'this_iguana.sh.in',
-    output:        'this_iguana.sh',
-    install:       true,
-    install_dir:   get_option('bindir'),
+    input: 'meson' / 'this_iguana.sh.in',
+    output: 'this_iguana.sh',
+    install: true,
+    install_dir: get_option('bindir'),
     configuration: {
       'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
-      'python':  get_option('bind_python') ? 'true' : 'false',
-      'libdir':  get_option('libdir'),
-      'root':    ROOT_dep.found() ? 'true' : 'false',
-      'etcdir':  project_etc,
+      'python': get_option('bind_python') ? 'true' : 'false',
+      'libdir': get_option('libdir'),
+      'root': ROOT_dep.found() ? 'true' : 'false',
+      'etcdir': project_etc,
     },
   )
-  foreach shell : ['csh', 'tcsh']
+  foreach shell : [ 'csh', 'tcsh' ]
     configure_file(
-      input:         'meson' / 'this_iguana.csh.in',
-      output:        'this_iguana.' + shell,
-      install:       true,
-      install_dir:   get_option('bindir'),
+      input: 'meson' / 'this_iguana.csh.in',
+      output: 'this_iguana.' + shell,
+      install: true,
+      install_dir: get_option('bindir'),
       configuration: {'shell': shell},
     )
   endforeach
