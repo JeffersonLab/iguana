@@ -32,8 +32,6 @@ We maintain a [`CODEOWNERS` file](/CODEOWNERS) to track who wrote and maintains 
 
 ## Auto-Formatting
 
-### C++
-
 We provide a [`.clang-format`](/.clang-format) file for auto-formatting C++ code. If your system has `clang-format`,
 then `meson` will create a `ninja` build target called `clang-format`, which you may run as
 ```bash
