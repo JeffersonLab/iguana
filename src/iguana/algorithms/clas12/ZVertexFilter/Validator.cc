@@ -60,9 +60,10 @@ namespace iguana::clas12 {
     for(auto const& row : particle_bank.getRowList()) {
       double vz = particle_bank.getFloat("vz", row);
       int pdg = particle_bank.getInt("pid", row);
+      int status = particle_bank.getShort("status", row);
       auto it = u_zvertexplots.find(pdg);
       //check if pdg is amongs those that we want to plot
-      if (it != u_zvertexplots.end()) {
+      if (it != u_zvertexplots.end() && abs(status)>=2000) {
         u_zvertexplots.at(pdg).at(0)->Fill(vz);
       }
     }
@@ -74,9 +75,10 @@ namespace iguana::clas12 {
     for(auto const& row : particle_bank.getRowList()) {
       double vz = particle_bank.getFloat("vz", row);
       int pdg = particle_bank.getInt("pid", row);
+      int status = particle_bank.getShort("status", row);
       auto it = u_zvertexplots.find(pdg);
       //check if pdg is amongs those that we want to plot
-      if (it != u_zvertexplots.end()) {
+      if (it != u_zvertexplots.end() && abs(status)>=2000) {
         u_zvertexplots.at(pdg).at(1)->Fill(vz);
       }
     }
