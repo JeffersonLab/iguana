@@ -194,8 +194,8 @@ c       - the AND with the z-vertex filter is the final filter, `accept`
      &      algo_eb_filter, pid(i), accept(i))
           call iguana_clas12_zvertexfilter_filter(
      &      algo_vz_filter, vz(i), pid(i), stat(i), accept(i))
-          print *, '  i = ', i, '  pid = ', pid(i), '  status = ', stat(i), ' vz = ', vz(i),
-     &      '  =>  accept = ', accept(i)
+          print *, '  i = ', i, '  pid = ', pid(i), ' vz = ', vz(i),
+     &      '  status = ', stat(i), '  =>  accept = ', accept(i)
         enddo
 
 c       get sector number
