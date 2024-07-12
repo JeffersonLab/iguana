@@ -38,8 +38,9 @@ namespace iguana::clas12 {
     particleBank.getMutableRowList().filter([this](auto bank, auto row) {
         auto zvertex = bank.getFloat("vz", row);
         auto pid = bank.getInt("pid", row);
-        auto accept  = Filter(zvertex,pid);
-        m_log->Debug("input vz {} pid {} -- accept = {}", zvertex, pid, accept);
+        auto status = bank.getInt("status", row);
+        auto accept  = Filter(zvertex,pid,status);
+        m_log->Debug("input vz {} pid {} status {} -- accept = {}", zvertex, pid, status, accept);
         return accept ? 1 : 0;
         });
 
@@ -47,10 +48,11 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
-  bool ZVertexFilter::Filter(double const zvertex, int pid) const
+  bool ZVertexFilter::Filter(double const zvertex, int pid, int status) const
   {
     //only apply filter if particle pid is in list of pids
-    if(o_pids.find(pid) != o_pids.end()) {
+    //and particles not in FT (ie FD or CD)
+    if(o_pids.find(pid) != o_pids.end() && abs(status)>=2000) {
       return zvertex > GetZcutLower() && zvertex < GetZcutUpper();
     } else {
       return true;
