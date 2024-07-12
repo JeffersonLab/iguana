@@ -128,7 +128,7 @@ case $runner in
     ### install the latest version of all packages
     for pkg in ${GENERAL_PACKAGE_LIST_MACOS[@]} ${IGUANA_PACKAGE_LIST_MACOS[@]}; do
       echo "[+] INSTALLING PACKAGE $pkg"
-      brew install $pkg
+      brew install --quiet $pkg
       echo "[+] dump version number to summary"
       info_homebrew $pkg
     done
