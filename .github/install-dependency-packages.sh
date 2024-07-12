@@ -91,7 +91,9 @@ info_pacman() {
 }
 
 info_homebrew() {
-  echo "| \`$1\` | $(brew info $1 | head -n1) |" >> $summary_file
+  brew info $1 > info.tmp
+  echo "| \`$1\` | $(head -n1 info.tmp) |" >> $summary_file
+  rm info.tmp
 }
 
 #############################################
@@ -127,6 +129,7 @@ case $runner in
     for pkg in ${GENERAL_PACKAGE_LIST_MACOS[@]} ${IGUANA_PACKAGE_LIST_MACOS[@]}; do
       echo "[+] INSTALLING PACKAGE $pkg"
       brew install $pkg
+      echo "[+] dump version number to summary"
       info_homebrew $pkg
     done
     ### link homebrew's gcc, for gfortran
