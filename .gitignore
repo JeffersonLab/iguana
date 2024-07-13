@@ -10,6 +10,9 @@
 /share
 /.cache
 
+# chameleon artifacts
+.chameleon
+
 # documentation artifacts
 /doc/api
 
