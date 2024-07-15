@@ -10,5 +10,4 @@ builddir=$1
 ref=auto-format-$(date +%s)
 git checkout -b $ref
 ninja -C $builddir clang-format
-git commit -a -m 'chore: auto format'
-git push -u origin $ref
+meson format --inplace --recursive
