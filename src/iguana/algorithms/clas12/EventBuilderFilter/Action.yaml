@@ -5,5 +5,5 @@ actions:
   - name: Filter
     type: filter
     inputs:
-      - name: pids
+      - name: pid
         type: int
