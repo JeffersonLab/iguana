@@ -1,0 +1,48 @@
+class Chameleon
+
+  def initialize(out_name='', algo_name='', out_desc='')
+    @out_name    = out_name
+    @algo_name   = algo_name
+    unless out_name.empty?
+      verbose "generating #{out_desc} '#{@out_name}'"
+      @out = File.open @out_name, 'w'
+    end
+  end
+
+  # accessors/modifiers
+  attr_accessor :out_name
+
+  # print an error and exit
+  def error(msg, quit=true)
+    $stderr.puts "[ERROR]: #{msg}"
+    exit 1 if quit
+  end
+
+  # print a log message
+  def verbose(msg)
+    puts msg if VERBOSE
+  end
+
+  # get a specification (a yaml node value)
+  def get_spec(node, *path)
+    def get_node(node, path, full_path)
+      return node if path.empty?
+      key = path.shift
+      unless node.has_key? key
+        error "failed to find node '#{full_path.join ' : '}' in #{ACTION_YAML}", false unless node.has_key? key
+        error "this happened when searching the following sub-tree:", false
+        $stderr.puts "#{node.to_yaml}"
+        $stderr.puts '---'
+        error "please check this YAML file to see if something is missing or if you have a typo."
+      end
+      get_node node[key], path, full_path
+    end
+    get_node(node, path.clone, path.clone)
+  end
+
+  # check if the function type is known
+  def check_function_type(name, type)
+    error("action function '#{name}' has unknown type type '#{type}'") unless ['filter', 'transformer', 'creator'].include? type
+  end
+
+end
