@@ -5,7 +5,7 @@ require 'optparse'
 require 'ostruct'
 require 'fileutils'
 
-require './src/Bindings_c.rb'
+require_relative 'src/Bindings_c.rb'
 
 # default options
 @args = OpenStruct.new

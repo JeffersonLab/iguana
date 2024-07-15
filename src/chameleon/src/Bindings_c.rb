@@ -1,4 +1,4 @@
-require './src/Chameleon.rb'
+require_relative 'Chameleon'
 
 class Bindings_c < Chameleon
 
