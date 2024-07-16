@@ -27,6 +27,38 @@ namespace iguana::clas12 {
 
       /// @action_function{vector creator} get sector from list of `sectors` and `pindices` from same bank, ordered in same way;
       /// _nb_: this is done instead of finding the `pindex` in the bank directly, to have an action function
+      /// 
+      /// **Example:**
+      /// ```cpp
+      ///
+      /// //... Initialise algorithms & banks ... 
+      ///
+      /// //For each event, do:
+      ///
+      /// std::vector<int> sectors;
+      /// std::vector<int> pindices
+      ///
+      /// //bank is a hipo::bank object from which we want to get the sectors
+      /// //for example the bank object related to REC::Calorimeter
+      /// for(auto const& row : bank.getRowList()) {
+      ///
+      ///     int det=bank.getInt("detector",row);
+      ///
+      ///     //NB: you should check you read from an FD detector
+      ///     // eg det 7 is the ECAL
+      ///     if(det==7){
+      ///       sectors.push_back(bank.getInt("sector", row));
+      ///       pindices.push_back(bank.getInt("pindex", row));
+      ///     }
+      /// }
+      ///
+      /// //partbank is a Hipo::Bank object related to REC::Particle
+      /// //algo_sector_finder is the iguana::clas12::SectorFinder object
+      /// for(auto const& row : partbank.getRowList()) {
+      ///     int sector = algo_sector_finder.GetSector(sectors, pindices, row);
+      /// }
+      /// ```
+      ///
       /// @param sectors list of sectors in a bank
       /// @param pindices list of pindices in a bank
       /// @param pindex index in `REC::Particle` bank for which to get sector
