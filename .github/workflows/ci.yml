@@ -260,9 +260,15 @@ jobs:
       - name: untar ROOT build
         if: ${{ matrix.id != 'noROOT' }}
         run: tar xf root.tar.zst
+      - name: relocate ROOT for testing
+        if: ${{ matrix.id != 'noROOT' }}
+        run: |
+          mkdir -p reloc
+          mv root reloc/testroot
       - name: set ROOT environment
         if: ${{ matrix.id != 'noROOT' }}
-        run: iguana_src/.github/source-ROOT.sh root
+        run: iguana_src/.github/source-ROOT.sh reloc/testroot
+      - run: which root
       ###### summarize dependencies
       - name: summarize dependencies
         if: ${{ matrix.id == 'cpp' }}
@@ -282,7 +288,6 @@ jobs:
           fi
           meson setup iguana_build iguana_src           \
             --prefix=$(pwd)/iguana                      \
-            --cmake-prefix-path=$(pwd)/root             \
             --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
             -Dwerror=true                               \
             -Dinstall_examples=true                     \
