@@ -269,6 +269,7 @@ jobs:
         if: ${{ matrix.id != 'noROOT' }}
         run: iguana_src/.github/source-ROOT.sh reloc/testroot
       - run: which root
+        if: ${{ matrix.id != 'noROOT' }}
       ###### summarize dependencies
       - name: summarize dependencies
         if: ${{ matrix.id == 'cpp' }}
