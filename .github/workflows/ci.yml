@@ -282,7 +282,6 @@ jobs:
           fi
           meson setup iguana_build iguana_src           \
             --prefix=$(pwd)/iguana                      \
-            --cmake-prefix-path=$(pwd)/root             \
             --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
             -Dwerror=true                               \
             -Dinstall_examples=true                     \
