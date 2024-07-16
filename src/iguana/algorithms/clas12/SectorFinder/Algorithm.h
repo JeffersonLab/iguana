@@ -25,12 +25,12 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// action function, get sector from list of sectors and pindices from same bank, ordered in same way
-      /// nb: this is done instead of finding the pindex in the bank directly to have an action function
+      /// @action_function{vector creator} get sector from list of `sectors` and `pindices` from same bank, ordered in same way;
+      /// _nb_: this is done instead of finding the `pindex` in the bank directly, to have an action function
       /// @param sectors list of sectors in a bank
       /// @param pindices list of pindices in a bank
-      /// @param pindex index in rec::particle bank for which to get sector
-      /// @returns sector for pindex in list, -1 if pindex not in inputted list
+      /// @param pindex index in `REC::Particle` bank for which to get sector
+      /// @returns sector for `pindex` in list, -1 if `pindex` not in inputted list
       int GetSector(std::vector<int> const& sectors, std::vector<int> const& pindices, int const pindex) const;
 
       /// fill lists of sectors and pindices present in the input bank
