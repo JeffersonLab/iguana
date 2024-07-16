@@ -155,7 +155,7 @@ jobs:
         run: ls *.tar.zst | xargs -I{} tar xvf {}
       - name: key
         id: key
-        run: echo key=hipo---${{ inputs.id }}---${{ env.hipo_ref }}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
+        run: echo key=hipo---${{ inputs.id }}---${{ env.hipo_ref }}---$(date +%Y-week%U)---rebuildNewROOT >> $GITHUB_OUTPUT
       - uses: actions/cache/restore@v4
         id: cache
         with:

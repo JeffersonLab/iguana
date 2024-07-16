@@ -34,7 +34,7 @@ case $dep in
   root|ROOT)
     result_meson='>=6.28'
     [ "$cmd" = "ALA" ] && echo "ERROR: command '$cmd' is not used for '$dep'" >&2 && exit 1
-    result_src='https://root.cern/download/root_v6.28.12.source.tar.gz'
+    result_src='https://root.cern/download/root_v6.32.02.source.tar.gz'
     ;;
   *)
     echo "ERROR: dependency '$dep' is unknown" >&2
