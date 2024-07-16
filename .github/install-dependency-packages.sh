@@ -33,6 +33,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   libxext
   openssl
   gsl
+  davix
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
