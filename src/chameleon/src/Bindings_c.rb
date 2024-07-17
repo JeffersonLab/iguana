@@ -11,7 +11,7 @@ class Bindings_c < Chameleon
 
       #{deterrence_banner 'c'}
 
-      #include "../Algorithm.h"
+      #include "#{@algo_header}"
       #include "iguana/algorithms/Bindings.h"
 
       // clang-format off
@@ -25,17 +25,24 @@ class Bindings_c < Chameleon
   def bind(spec)
     ftn_name = get_spec spec, 'name'
     ftn_type = get_spec spec, 'type'
+    ftn_name_fortran = "iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{ftn_name.downcase}"
+    ftn_name_c = "#{ftn_name_fortran}_"
     verbose " - bind #{ftn_type} function #{@algo_name}::#{ftn_name}"
     check_function_type "#{@algo_name}::#{ftn_name}", ftn_type
 
     ### docstring
     @out.puts <<~END_CODE.gsub(/^/,'  ')
 
-      /// @see `iguana::#{@algo_name}::#{ftn_name}`
+      /// This function is for Fortan usage, called as
+      /// ```fortran
+      ///       call #{ftn_name_fortran}(algo_idx, ...params...)
+      /// ```
+      /// It binds to the following C++ action function, wherein you can find its documentation:
+      /// - `iguana::#{@algo_name}::#{ftn_name}`
       /// @param [in] algo_idx the algorithm index
     END_CODE
     get_spec(spec, 'inputs').each do |input|
-      @out.puts "  /// @param [in] #{input}"
+      @out.puts "  /// @param [in] #{get_spec input, 'name'}"
     end
     case ftn_type
     when 'filter'
@@ -47,7 +54,7 @@ class Bindings_c < Chameleon
 
     ### function parameters
     @out.puts <<~END_CODE.gsub(/^/,'  ')
-      void iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{ftn_name.downcase}_(
+      void #{ftn_name_c}(
         algo_idx_t* algo_idx,
     END_CODE
     get_spec(spec, 'inputs').each do |input|

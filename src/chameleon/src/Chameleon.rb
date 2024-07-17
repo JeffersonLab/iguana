@@ -2,7 +2,11 @@ class Chameleon
 
   def initialize(out_name='', algo_name='', out_desc='')
     @out_name    = out_name
+    @out_dir     = File.dirname @out_name
     @algo_name   = algo_name
+    @algo_header = @out_dir
+      .sub(/^.*src\/iguana\//, 'iguana/')
+      .sub(/\/\.chameleon/, '/Algorithm.h')
     unless out_name.empty?
       verbose "generating #{out_desc} '#{@out_name}'"
       @out = File.open @out_name, 'w'
