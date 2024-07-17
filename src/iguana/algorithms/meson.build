@@ -117,7 +117,7 @@ algo_headers = []
 algo_configs = []
 vdor_sources = []
 vdor_headers = []
-chameleon_targets = []
+algo_bind_c_sources = []
 
 foreach algo : algo_dict
 
@@ -160,7 +160,7 @@ foreach algo : algo_dict
     # chameleon targets
     if algo_has_action_yaml
       target_name = '_'.join([ 'chameleon', algo_name.split('::') ])
-      chameleon_targets += custom_target(
+      tgt = custom_target(
         target_name,
         input: [ algo_dir / 'Action.yaml', chameleon_sources ],
         output: [ target_name + '_bind.cc' ],
@@ -172,6 +172,7 @@ foreach algo : algo_dict
           '--quiet'
         ],
       )
+      algo_bind_c_sources += tgt[0]
     endif
 
   else
@@ -224,9 +225,9 @@ vdor_lib = shared_library(
 install_headers(vdor_headers, subdir: meson.project_name() / 'algorithms', preserve_path: true)
 
 # build C bindings
-bind_c_lib = shared_library(
+algo_bind_c_lib = shared_library(
   'IguanaBindingsC',
-  chameleon_targets,
+  algo_bind_c_sources,
   include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
   dependencies: project_deps,
   link_with: [ services_lib, algo_lib ],
