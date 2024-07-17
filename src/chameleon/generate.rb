@@ -10,6 +10,7 @@ require_relative 'src/Bindings_c.rb'
 # default options
 @args = OpenStruct.new
 @args.action_yaml = ''
+@args.out_dir     = ''
 @args.verbose     = false
 @args.quiet       = false
 
@@ -19,6 +20,8 @@ OptionParser.new do |o|
   o.separator ''
   o.separator 'OPTIONS:'
   o.on('-i', '--input [ACTION_YAML]', 'action function specification YAML') {|a| @args.action_yaml = a}
+  o.separator ''
+  o.on('-o', '--output [OUTPUT_DIR]', 'output directory', 'default: `dirname [ACTION_YAML]`/.chameleon') {|a| @args.out_dir = a}
   o.separator ''
   o.on('-v', '--verbose', 'print more output') {|a| @args.verbose = true}
   o.on('-q', '--quiet', 'print no output (unless --verbose)') {|a| @args.quiet = true}
@@ -47,7 +50,7 @@ algo_name = @main.get_spec main_spec, 'algorithm', 'name'
 # make output files
 algo_dir = File.dirname ACTION_YAML
 @main.error "directory '#{algo_dir}' does not exist" unless Dir.exists? algo_dir
-out_dir = File.join algo_dir, '.chameleon'
+out_dir = @args.out_dir.empty? ? File.join(algo_dir, '.chameleon') : @args.out_dir
 FileUtils.mkdir_p out_dir, verbose: @args.verbose
 out_files = {
   :c_bindings => Bindings_c.new(File.join(out_dir, 'bind.cc'), algo_name),
