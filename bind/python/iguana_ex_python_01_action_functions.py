@@ -62,7 +62,10 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
                     pid,
                     configBank.getFloat("torus", 0)
                     )
-            px, py, pz = pCorr
+            # px, py, pz = pCorr  # FIXME: unpacking `std::tuple` might now be broken in ROOT 6.32
+            px = get[0](pCorr)    # instead use `std::get`; we may eventually replace `cppyy` bindings
+            py = get[1](pCorr)
+            pz = get[2](pCorr)
 
             print(f'Accepted PID {pid}:')
             print(f'  p_old = ({particleBank.getFloat("px", row)}, {particleBank.getFloat("py", row)}, {particleBank.getFloat("pz", row)})')
