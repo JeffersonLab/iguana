@@ -46,12 +46,14 @@ algo_dict += [
   {
     'name': 'clas12::EventBuilderFilter',
     'has_validator': false,
+    'has_c_bindings': false,
     'has_action_yaml': true,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
     'name': 'clas12::ZVertexFilter',
     'has_validator': true,
+    'has_c_bindings': false,
     'has_action_yaml': true,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
@@ -148,7 +150,9 @@ foreach algo : algo_dict
       if algo_has_c_bindings
         algo_sources += algo_dir / 'Bindings.cc'
       else
-        warning('Algorithm "' + algo_name + '" has no Fortran bindings')
+        if not algo_has_action_yaml
+          warning('Algorithm "' + algo_name + '" has no Fortran bindings')
+        endif
       endif
     endif
 
@@ -225,16 +229,19 @@ vdor_lib = shared_library(
 install_headers(vdor_headers, subdir: meson.project_name() / 'algorithms', preserve_path: true)
 
 # build C bindings
-algo_bind_c_lib = shared_library(
-  'IguanaBindingsC',
-  algo_bind_c_sources,
-  include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
-  dependencies: project_deps,
-  link_with: [ services_lib, algo_lib ],
-  link_args: ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
-  install: true,
-  build_rpath: ROOT_dep_rpath,
-)
+if get_option('bind_fortran')
+  algo_bind_c_lib = shared_library(
+    'IguanaBindingsC',
+    algo_bind_c_sources,
+    include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
+    dependencies: project_deps,
+    link_with: [ services_lib, algo_lib ],
+    link_args: ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
+    install: true,
+    build_rpath: ROOT_dep_rpath,
+  )
+  project_libs += algo_bind_c_lib
+endif
 
 # install config files
 foreach algo_config : algo_configs
