@@ -169,6 +169,7 @@ add_project_arguments(
 )
 
 # build and install shared libraries
+subdir('src/chameleon')
 subdir('src/iguana/services')
 subdir('src/iguana/algorithms')
 subdir('src/iguana/tests')

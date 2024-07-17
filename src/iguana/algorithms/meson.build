@@ -23,6 +23,7 @@ algo_dict = [
 #     'has_config':          bool        # assumes Config.yaml exists (default=true)
 #     'has_c_bindings':      bool        # assumes Bindings.cc exists (default=true)
 #     'has_validator':       bool        # assumes Validator{cc,h} exist (default=true)
+#     'has_action_yaml':     bool        # assumes Action.yaml exists (default=false)
 #     'algorithm_needs_ROOT': bool       # whether this algorithm needs ROOT or not (default=false)
 #     'validator_needs_ROOT': bool       # whether this validator needs ROOT or not (default=true)
 #     'add_algorithm_sources': list[str] # list of additional algorithm source files (default=[])
@@ -45,11 +46,13 @@ algo_dict += [
   {
     'name': 'clas12::EventBuilderFilter',
     'has_validator': false,
+    'has_action_yaml': true,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
     'name': 'clas12::ZVertexFilter',
     'has_validator': true,
+    'has_action_yaml': true,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
@@ -114,6 +117,7 @@ algo_headers = []
 algo_configs = []
 vdor_sources = []
 vdor_headers = []
+chameleon_targets = []
 
 foreach algo : algo_dict
 
@@ -122,6 +126,7 @@ foreach algo : algo_dict
   algo_has_config = algo.get('has_config', true)
   algo_has_c_bindings = algo.get('has_c_bindings', true)
   algo_has_validator = algo.get('has_validator', true)
+  algo_has_action_yaml = algo.get('has_action_yaml', false)
   algo_needs_ROOT = algo.get('algorithm_needs_ROOT', false)
   vdor_needs_ROOT = algo.get('validator_needs_ROOT', true)
 
@@ -150,6 +155,23 @@ foreach algo : algo_dict
     # config files
     if algo_has_config
       algo_configs += algo_dir / 'Config.yaml'
+    endif
+
+    # chameleon targets
+    if algo_has_action_yaml
+      target_name = '_'.join([ 'chameleon', algo_name.split('::') ])
+      chameleon_targets += custom_target(
+        target_name,
+        input: [ algo_dir / 'Action.yaml', chameleon_sources ],
+        output: [ target_name + '_bind.cc' ],
+        command: [
+          chameleon_gen,
+          '--input', '@INPUT0@',
+          '--output', '@OUTDIR@',
+          '--prefix', target_name,
+          '--quiet'
+        ],
+      )
     endif
 
   else
@@ -200,6 +222,18 @@ vdor_lib = shared_library(
   build_rpath: ROOT_dep_rpath,
 )
 install_headers(vdor_headers, subdir: meson.project_name() / 'algorithms', preserve_path: true)
+
+# build C bindings
+bind_c_lib = shared_library(
+  'IguanaBindingsC',
+  chameleon_targets,
+  include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
+  dependencies: project_deps,
+  link_with: [ services_lib, algo_lib ],
+  link_args: ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
+  install: true,
+  build_rpath: ROOT_dep_rpath,
+)
 
 # install config files
 foreach algo_config : algo_configs

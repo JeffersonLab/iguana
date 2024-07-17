@@ -12,7 +12,7 @@ class Bindings_c < Chameleon
       #{deterrence_banner 'c'}
 
       #include "#{@algo_header}"
-      #include "iguana/algorithms/Bindings.h"
+      #include "Bindings.h"
 
       // clang-format off
       namespace iguana::bindings::#{@algo_name} {

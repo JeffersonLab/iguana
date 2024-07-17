@@ -11,7 +11,7 @@
 /.cache
 
 # chameleon artifacts
-.chameleon
+chameleon-tree
 
 # documentation artifacts
 /doc/api
