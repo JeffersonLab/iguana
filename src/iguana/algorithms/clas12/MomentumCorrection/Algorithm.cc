@@ -58,7 +58,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::CorrectionInbending(vector_element_t const Px, vector_element_t const Py, vector_element_t const Pz, int const sec, int const pid) const
+  double MomentumCorrection::CorrectionInbending(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const sec, int const pid) const
   {
 
     // skip the correction if it's not defined
@@ -66,13 +66,13 @@ namespace iguana::clas12 {
       return 1.0;
 
     // Momentum Magnitude
-    double pp = sqrt(Px * Px + Py * Py + Pz * Pz);
+    double pp = sqrt(px * px + py * py + pz * pz);
 
     // Initializing the correction factor
     double dp = 0;
 
     // Defining Phi Angle
-    double Phi = (180 / M_PI) * atan2(Py, Px);
+    double Phi = (180 / M_PI) * atan2(py, px);
 
     // (Initial) Shift of the Phi Angle (done to realign sectors whose data is separated when plotted from ±180˚)
     if(((sec == 4 || sec == 3) && Phi < 0) || (sec > 4 && Phi < 90)) {
@@ -236,7 +236,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::CorrectionOutbending(vector_element_t const Px, vector_element_t const Py, vector_element_t const Pz, int const sec, int const pid) const
+  double MomentumCorrection::CorrectionOutbending(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const sec, int const pid) const
   {
 
     // skip the correction if it's not defined
@@ -244,13 +244,13 @@ namespace iguana::clas12 {
       return 1.0;
 
     // Momentum Magnitude
-    double pp = sqrt(Px * Px + Py * Py + Pz * Pz);
+    double pp = sqrt(px * px + py * py + pz * pz);
 
     // Initializing the correction factor
     double dp = 0;
 
     // Defining Phi Angle
-    double Phi = (180 / M_PI) * atan2(Py, Px);
+    double Phi = (180 / M_PI) * atan2(py, px);
 
     // (Initial) Shift of the Phi Angle (done to realign sectors whose data is separated when plotted from ±180˚)
     if(((sec == 4 || sec == 3) && Phi < 0) || (sec > 4 && Phi < 90)) {
@@ -351,7 +351,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::EnergyLossInbending(vector_element_t const Px, vector_element_t const Py, vector_element_t const Pz, int const pid) const
+  double MomentumCorrection::EnergyLossInbending(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const pid) const
   {
 
     // The following code is for the Energy Loss Corrections for the proton
@@ -359,8 +359,8 @@ namespace iguana::clas12 {
       return 1.0;
 
     double dE_loss = 0;
-    auto pro       = sqrt(Px * Px + Py * Py + Pz * Pz);
-    auto proth     = atan2(sqrt(Px * Px + Py * Py), Pz) * (180 / M_PI);
+    auto pro       = sqrt(px * px + py * py + pz * pz);
+    auto proth     = atan2(sqrt(px * px + py * py), pz) * (180 / M_PI);
 
     // Inbending Energy Loss Correction //
     if(proth < 27) {
@@ -373,7 +373,7 @@ namespace iguana::clas12 {
   }
 
 
-  double MomentumCorrection::EnergyLossOutbending(vector_element_t const Px, vector_element_t const Py, vector_element_t const Pz, int const pid) const
+  double MomentumCorrection::EnergyLossOutbending(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const pid) const
   {
 
     // The following code is for the Energy Loss Corrections for the proton
@@ -381,8 +381,8 @@ namespace iguana::clas12 {
       return 1.0;
 
     double dE_loss = 0;
-    auto pro       = sqrt(Px * Px + Py * Py + Pz * Pz);
-    auto proth     = atan2(sqrt(Px * Px + Py * Py), Pz) * (180 / M_PI);
+    auto pro       = sqrt(px * px + py * py + pz * pz);
+    auto proth     = atan2(sqrt(px * px + py * py), pz) * (180 / M_PI);
 
     // Outbending Energy Loss Correction //
     if(proth > 27) {
