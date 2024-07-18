@@ -1,6 +1,6 @@
-require_relative 'Chameleon'
+require_relative 'chameleon'
 
-class Bindings_c < Chameleon
+class Bind_c < Chameleon
 
   ##################################################################################
 

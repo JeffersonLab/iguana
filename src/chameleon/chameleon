@@ -5,7 +5,7 @@ require 'optparse'
 require 'ostruct'
 require 'fileutils'
 
-require_relative 'src/Bindings_c.rb'
+require_relative 'src/bind_c.rb'
 
 # default options
 @args = OpenStruct.new
@@ -58,7 +58,7 @@ algo_dir = File.dirname ACTION_YAML
 out_dir = @args.out_dir.empty? ? File.join('chameleon-tree', algo_dir) : @args.out_dir
 FileUtils.mkdir_p out_dir, verbose: @args.verbose
 out_files = {
-  :c_bindings => Bindings_c.new(File.join(out_dir, out_name('bind.cc')), algo_name),
+  :c_bindings => Bind_c.new(File.join(out_dir, out_name('bind.cc')), algo_name),
 }
 
 # parse action functions

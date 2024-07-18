@@ -1,6 +1,6 @@
 chameleon_sources = files(
-  'generate.rb',
-  'src' / 'Chameleon.rb',
-  'src' / 'Bindings_c.rb',
+  'chameleon',
+  'src' / 'chameleon.rb',
+  'src' / 'bind_c.rb',
 )
-chameleon_gen = chameleon_sources[0]
+chameleon_gen = find_program(chameleon_sources[0])
