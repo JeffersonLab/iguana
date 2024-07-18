@@ -41,13 +41,13 @@ namespace iguana::clas12 {
       /// @param beta_z @f$\beta_z@f$
       /// @returns the transformed momentum
       vector4_t Boost(
-          vector_element_t p_x,
-          vector_element_t p_y,
-          vector_element_t p_z,
-          vector_element_t E,
-          vector_element_t beta_x,
-          vector_element_t beta_y,
-          vector_element_t beta_z) const;
+          vector_element_t const p_x,
+          vector_element_t const p_y,
+          vector_element_t const p_z,
+          vector_element_t const E,
+          vector_element_t const beta_x,
+          vector_element_t const beta_y,
+          vector_element_t const beta_z) const;
 
     private:
 

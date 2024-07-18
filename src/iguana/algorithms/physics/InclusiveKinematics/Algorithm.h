@@ -59,9 +59,9 @@ namespace iguana::physics {
       /// @param lepton_pz scattered lepton momentum component @f$p_z@f$ (GeV)
       /// @returns the reconstructed inclusive kinematics in a `iguana::physics::InclusiveKinematicsVars` instance
       InclusiveKinematicsVars ComputeFromLepton(
-          vector_element_t lepton_px,
-          vector_element_t lepton_py,
-          vector_element_t lepton_pz) const;
+          vector_element_t const lepton_px,
+          vector_element_t const lepton_py,
+          vector_element_t const lepton_pz) const;
 
     private:
 
