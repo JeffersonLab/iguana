@@ -7,8 +7,14 @@ namespace iguana::physics {
 
   /// Set of inclusive kinematics variables
   struct InclusiveKinematicsVars {
-      /// @f$q=(q_x,q_y,q_z,q_E)@f$
-      vector4_t q;
+      /// @f$x@f$-component of virtual photon momentum @f$q@f$
+      vector_element_t qx;
+      /// @f$y@f$-component of virtual photon momentum @f$q@f$
+      vector_element_t qy;
+      /// @f$z@f$-component of virtual photon momentum @f$q@f$
+      vector_element_t qz;
+      /// @f$E@f$-component of virtual photon momentum @f$q@f$
+      vector_element_t qE;
       /// @f$Q2@f$ (GeV@f$^2@f$)
       double Q2;
       /// @f$x_B@f$

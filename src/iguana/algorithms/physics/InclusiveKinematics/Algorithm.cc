@@ -135,10 +135,10 @@ namespace iguana::physics {
     result_bank.putDouble(i_y, 0, result_vars.y);
     result_bank.putDouble(i_W, 0, result_vars.W);
     result_bank.putDouble(i_nu, 0, result_vars.nu);
-    result_bank.putDouble(i_qx, 0, std::get<0>(result_vars.q));
-    result_bank.putDouble(i_qy, 0, std::get<1>(result_vars.q));
-    result_bank.putDouble(i_qz, 0, std::get<2>(result_vars.q));
-    result_bank.putDouble(i_qE, 0, std::get<3>(result_vars.q));
+    result_bank.putDouble(i_qx, 0, result_vars.qx);
+    result_bank.putDouble(i_qy, 0, result_vars.qy);
+    result_bank.putDouble(i_qz, 0, result_vars.qz);
+    result_bank.putDouble(i_qE, 0, result_vars.qE);
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
   }
@@ -197,7 +197,10 @@ namespace iguana::physics {
     ROOT::Math::PxPyPzMVector vec_lepton(lepton_px, lepton_py, lepton_pz, m_beam.mass);
 
     auto vec_q = vec_beam - vec_lepton;
-    result.q   = {vec_q.Px(), vec_q.Py(), vec_q.Pz(), vec_q.E()};
+    result.qx  = vec_q.Px();
+    result.qy  = vec_q.Py();
+    result.qz  = vec_q.Pz();
+    result.qE  = vec_q.E();
     result.Q2  = -1 * vec_q.M2();
     result.x   = result.Q2 / (2 * vec_q.Dot(vec_target));
     result.y   = vec_target.Dot(vec_q) / vec_target.Dot(vec_beam);

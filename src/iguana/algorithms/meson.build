@@ -102,6 +102,8 @@ algo_dict += [
   {
     'name': 'physics::InclusiveKinematics',
     'algorithm_needs_ROOT': true,
+    'has_c_bindings': false,
+    'has_action_yaml': true,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
