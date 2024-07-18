@@ -32,7 +32,7 @@ namespace iguana::clas12 {
       /// @param pid the particle PDG
       /// @param torus torus setting
       /// @returns the transformed momentum
-      vector3_t Transform(vector_element_t px, vector_element_t py, vector_element_t pz, int sec, int pid, float torus) const;
+      vector3_t Transform(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const sec, int const pid, float const torus) const;
 
       /// @action_function{scalar creator} Calculate the correction factor for inbending data
       /// @param Px @f$p_x@f$

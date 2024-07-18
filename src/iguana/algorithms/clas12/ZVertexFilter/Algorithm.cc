@@ -48,7 +48,7 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
-  bool ZVertexFilter::Filter(double const zvertex, int pid, int status) const
+  bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status) const
   {
     //only apply filter if particle pid is in list of pids
     //and particles not in FT (ie FD or CD)
