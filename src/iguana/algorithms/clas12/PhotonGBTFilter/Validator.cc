@@ -1,4 +1,5 @@
 #include "Validator.h"
+#include "Algorithm.h"
 namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(PhotonGBTFilterValidator);
@@ -39,7 +40,8 @@ namespace iguana::clas12 {
         float pz = particle_bank.getFloat("pz",row);
         float E  = std::hypot(px,py,pz);
         ROOT::Math::PxPyPzEVector phot(px,py,pz,E);
-        photons.push_back(phot);
+        if(m_algo_seq->Get<PhotonGBTFilter>("clas12::PhotonGBTFilter")->ForwardDetectorFilter(phot.Theta()))
+          photons.push_back(phot);
     }
 
     // run the photon filter
