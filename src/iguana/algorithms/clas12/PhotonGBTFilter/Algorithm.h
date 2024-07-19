@@ -37,7 +37,12 @@ namespace iguana::clas12 {
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;   
-      
+
+      /// **Method**: Applies forward detector cut using REC::Particle Theta
+      /// @param theta lab angle of the particle with respect to the beam direction (radians)
+      /// @returns `true` if the particle's theta is within the forward detector coverage, `false` otherwise
+      bool ForwardDetectorFilter(float const theta) const;
+
     private:
       
       struct calo_row_data {
@@ -67,13 +72,7 @@ namespace iguana::clas12 {
       /// @param theta lab angle of the photon with respect to the beam direction (radians)
       /// @returns `true` if the photon passes the pid purity cuts, `false` otherwise
       bool PidPurityPhotonFilter(float const E, float const Epcal, float const theta) const;
-      
-      
-      /// **Method**: Applies forward detector cut using REC::Particle Theta
-      /// @param theta lab angle of the particle with respect to the beam direction (radians)
-      /// @returns `true` if the particle's theta is within the forward detector coverage, `false` otherwise
-      bool ForwardDetectorFilter(float const theta) const;
-      
+
       /// **Action function**: Classifies the photon for a given event as signal or background
       /// @param particleBank the REC::Particle hipo bank
       /// @param caloBank the REC::Calorimeter hipo bank
