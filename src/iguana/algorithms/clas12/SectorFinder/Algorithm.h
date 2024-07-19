@@ -52,7 +52,7 @@ namespace iguana::clas12 {
       ///     }
       /// }
       ///
-      /// //partbank is a Hipo::Bank object related to REC::Particle
+      /// //partbank is a hipo::bank object related to REC::Particle
       /// //algo_sector_finder is the iguana::clas12::SectorFinder object
       /// for(auto const& row : partbank.getRowList()) {
       ///     int sector = algo_sector_finder.GetSector(sectors, pindices, row);
