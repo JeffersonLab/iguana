@@ -25,7 +25,7 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// @action_function{vector creator} get sector from list of `sectors` and `pindices` from same bank, ordered in same way;
+      /// @action_function{vector creator} for a given particle with index `pindex`, get its sector from a detector bank's list of `sectors` and `pindices` (both must be ordered in the same way);
       /// _nb_: this is done instead of finding the `pindex` in the bank directly, to have an action function
       /// 
       /// **Example:**
