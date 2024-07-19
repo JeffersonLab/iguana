@@ -184,9 +184,9 @@ namespace iguana::physics {
   ///////////////////////////////////////////////////////////////////////////////
 
   InclusiveKinematicsVars InclusiveKinematics::ComputeFromLepton(
-      vector_element_t lepton_px,
-      vector_element_t lepton_py,
-      vector_element_t lepton_pz) const
+      vector_element_t const lepton_px,
+      vector_element_t const lepton_py,
+      vector_element_t const lepton_pz) const
   {
     InclusiveKinematicsVars result;
 

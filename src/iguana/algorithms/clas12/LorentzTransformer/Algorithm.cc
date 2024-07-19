@@ -65,13 +65,13 @@ namespace iguana::clas12 {
 
 
   vector4_t LorentzTransformer::Boost(
-      vector_element_t p_x,
-      vector_element_t p_y,
-      vector_element_t p_z,
-      vector_element_t E,
-      vector_element_t beta_x,
-      vector_element_t beta_y,
-      vector_element_t beta_z) const
+      vector_element_t const p_x,
+      vector_element_t const p_y,
+      vector_element_t const p_z,
+      vector_element_t const E,
+      vector_element_t const beta_x,
+      vector_element_t const beta_y,
+      vector_element_t const beta_z) const
   {
     m_log->Debug(fmt::format("{::<30}", "Boost "));
     m_log->Debug(fmt::format("{:>8} = ({:10f}, {:10f}, {:10f}, {:10f})", "p_in", p_x, p_y, p_z, E));

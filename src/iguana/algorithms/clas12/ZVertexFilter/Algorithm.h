@@ -31,7 +31,7 @@ namespace iguana::clas12 {
       /// @param pid the particle pid
       /// @param status particle status used to check particle is not in FT
       /// @returns `true` if `zvertex` is within specified bounds
-      bool Filter(double const zvertex, int pid, int status) const;
+      bool Filter(double const zvertex, int const pid, int const status) const;
 
       /// @returns the current run number
       int GetRunNum() const;
