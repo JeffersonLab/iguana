@@ -48,7 +48,8 @@ actions:
         type: int
       - name: pid
         type: int
-    output: double
+    outputs:
+      - type: double
 
   - name: CorrectionOutbending
     type: creator
@@ -66,7 +67,8 @@ actions:
         type: int
       - name: pid
         type: int
-    output: double
+    outputs:
+      - type: double
 
   - name: EnergyLossInbending
     type: creator
@@ -82,7 +84,8 @@ actions:
         cast: float
       - name: pid
         type: int
-    output: double
+    outputs:
+      - type: double
 
   - name: EnergyLossOutbending
     type: creator
@@ -98,4 +101,5 @@ actions:
         cast: float
       - name: pid
         type: int
-    output: double
+    outputs:
+      - type: double

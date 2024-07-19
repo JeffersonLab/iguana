@@ -26,20 +26,21 @@ class Chameleon
   end
 
   # get a specification (a yaml node value)
-  def get_spec(node, *path)
-    def get_node(node, path, full_path)
+  def get_spec(node, *path, required=true)
+    def get_node(node, path, full_path, required)
       return node if path.empty?
       key = path.shift
       unless node.has_key? key
+        return nil unless required
         error "failed to find node '#{full_path.join ' : '}' in #{ACTION_YAML}", false unless node.has_key? key
         error "this happened when searching the following sub-tree:", false
         $stderr.puts "#{node.to_yaml}"
         $stderr.puts '---'
         error "please check this YAML file to see if something is missing or if you have a typo."
       end
-      get_node node[key], path, full_path
+      get_node node[key], path, full_path, required
     end
-    get_node(node, path.clone, path.clone)
+    get_node node, path.clone, path.clone, required
   end
 
   # check if the function type is known

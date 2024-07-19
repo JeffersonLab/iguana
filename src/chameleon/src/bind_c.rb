@@ -37,34 +37,72 @@ class Bind_c < Chameleon
     call_arg_list        = []
     assignment_list      = []
 
+    @result_var = 'result' # the name of the result of an action function call
+
     # functions to generate lists of parts
     def gen_parts(key)
-      get_spec(@action_spec, key).map do |var|
-        yield get_spec(var, 'name'), get_spec(var, 'type'), var['cast']
+      parts_spec = get_spec @action_spec, key
+      parts_spec.map do |var|
+        name = ''
+        if key == 'outputs' and parts_spec.size == 1 # true if it's a single, anonymous output
+          name = @result_var
+        else
+          name = get_spec var, 'name'
+          error "don't name your variable '#{name}', since this name is reserved" if name == @result_var
+        end
+        type = get_spec var, 'type'
+        cast = get_spec var, 'cast', false
+        yield name, type, cast
+      end
+        .compact
+    end
+
+    # function to generate parameter docstring
+    def gen_docstring_param(key, type_docstring)
+      gen_parts(key) do |name, type|
+        if name == @result_var
+          "[#{type_docstring}] #{name} the resulting value"
+        else
+          "[#{type_docstring}] #{name}"
+        end
       end
     end
-    def gen_docstring_param(key, type_docstring)
-      gen_parts(key) { |name, type| "[#{type_docstring}] #{name}" }
-    end
+
+    # function to generate C function parameters
     def gen_ftn_params(key)
-      gen_parts(key) { |name, type, cast| "#{cast.nil? ? type : cast}* #{name}" }
+      gen_parts(key) do |name, type, cast|
+        "#{cast.nil? ? type : cast}* #{name}"
+      end
     end
+
+    # function to generate C++ function arguments
     def gen_call_args(key)
-      gen_parts(key) { |name, type, cast| cast.nil? ? "*#{name}" : "#{type}(*#{name})" }
+      gen_parts(key) do |name, type, cast|
+        return nil if name == @result_var
+        cast.nil? ? "*#{name}" : "#{type}(*#{name})"
+      end
     end
+
+    # function to generate result assignments
     def gen_assignments(key)
-      gen_parts(key) { |name, type| "*#{name} = out.#{name};" }
+      gen_parts(key) do |name, type|
+        if name == @result_var
+          "*#{name} = out;"
+        else
+          "*#{name} = out.#{name};"
+        end
+      end
     end
 
     # generate parts lists
     case ftn_type
     when 'filter'
       docstring_param_list += gen_docstring_param 'inputs', 'in'
-      docstring_param_list << '[in,out] result the filter return value; if this value is already set, the result will be the `AND` of the initial value and this filter'
+      docstring_param_list << "[in,out] #{@result_var} the filter return value; if this value is already set, the result will be the `AND` of the initial value and this filter"
       par_list += gen_ftn_params 'inputs'
-      par_list << 'bool* result'
+      par_list << "bool* #{@result_var}"
       call_arg_list += gen_call_args 'inputs'
-      assignment_list << '*result = *result && out;'
+      assignment_list << "*#{@result_var} = *#{@result_var} && out;"
     when 'creator'
       docstring_param_list += gen_docstring_param 'inputs', 'in'
       docstring_param_list += gen_docstring_param 'outputs', 'out'
