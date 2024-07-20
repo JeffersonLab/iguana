@@ -1,4 +1,4 @@
-class Chameleon
+class Generator
 
   def initialize(out_name='', algo_name='', out_desc='')
     @out_name    = out_name

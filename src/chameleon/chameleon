@@ -35,8 +35,8 @@ end.parse! ARGV
 VERBOSE = @args.verbose
 ACTION_YAML = @args.action_yaml
 
-# start main Chameleon instance
-@main = Chameleon.new
+# start main generator
+@main = Generator.new
 @main.verbose "OPTIONS: #{@args}"
 
 # open action function specification
