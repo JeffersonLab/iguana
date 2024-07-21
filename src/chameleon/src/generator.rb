@@ -1,12 +1,13 @@
 class Generator
 
-  def initialize(out_name='', algo_name='', out_desc='')
+  def initialize(out_name='', algo_name='', description: '', generator_name: '')
     @out_name    = out_name
     @out_dir     = File.dirname @out_name
     @algo_name   = algo_name
     @algo_header = File.join *@algo_name.split('::'), 'Algorithm.h'
+    @log_tag     = generator_name.empty? ? "[chameleon]" : "[chameleon::#{File.basename generator_name, '.rb'}]"
     unless out_name.empty?
-      verbose "generating #{out_desc} '#{@out_name}'"
+      verbose "generating #{description} '#{@out_name}'"
       @out = File.open @out_name, 'w'
     end
   end
@@ -16,17 +17,17 @@ class Generator
 
   # print an error and exit
   def error(msg, quit=true)
-    $stderr.puts "[ERROR]: #{msg}"
+    $stderr.puts "#{@log_tag} [ERROR]: #{msg}"
     exit 1 if quit
   end
 
   # print a log message
   def verbose(msg)
-    puts msg if VERBOSE
+    puts "#{@log_tag} #{msg}" if VERBOSE
   end
 
   # get a specification (a yaml node value)
-  def get_spec(node, *path, required=true)
+  def get_spec(node, *path, required: true)
     def get_node(node, path, full_path, required)
       return node if path.empty?
       key = path.shift

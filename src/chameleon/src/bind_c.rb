@@ -1,11 +1,11 @@
-require_relative 'chameleon'
+require_relative 'generator'
 
-class Bind_c < Chameleon
+class Bind_c < Generator
 
   ##################################################################################
 
   def initialize(out_name='', algo_name='')
-    super(out_name, algo_name, 'C bindings')
+    super(out_name, algo_name, description: 'C bindings', generator_name: __FILE__)
     @out.puts <<~END_CODE
       // C functions to provide action function bindings for Fortran
 
@@ -51,7 +51,7 @@ class Bind_c < Chameleon
           error "don't name your variable '#{name}', since this name is reserved" if name == @result_var
         end
         type = get_spec var, 'type'
-        cast = get_spec var, 'cast', false
+        cast = get_spec var, 'cast', required: false
         yield name, type, cast
       end
         .compact

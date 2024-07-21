@@ -68,9 +68,9 @@ end
 
 # print list of generated files
 unless @args.quiet
-  puts "Generated files:"
+  puts "[chameleon] Generated files:"
   out_files.each do |key,file|
-    puts "  #{key} => #{file.out_name}"
+    puts "[chameleon]   #{key} => #{file.out_name}"
   end
 end
 
