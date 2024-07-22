@@ -13,8 +13,8 @@ doxyfile = configure_file(
   },
 )
 
-html_target = custom_target(
-  'iguana-docs',
+doc_tgt = custom_target(
+  'documentation',
   input: doxyfile,
   output: 'html',
   build_always_stale: true,
