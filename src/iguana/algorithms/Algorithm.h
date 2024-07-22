@@ -26,7 +26,7 @@ namespace iguana {
       std::vector<double>,
       std::vector<std::string>>;
 
-  /// @brief Base class for all algorithms to inherit from
+  /// @breef Base class for all algorithms to inherit from
   ///
   /// This is the base class for all algorithms. It provides common members, such as
   /// a logger instance and options data structure. Algorithm implementations must:
