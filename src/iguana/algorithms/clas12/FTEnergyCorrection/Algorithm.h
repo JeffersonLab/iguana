@@ -31,16 +31,16 @@ namespace iguana::clas12 {
       /// @returns an electron 4-vector with the corrected energy for the Forward Tagger.
       /// @see `FTEnergyCorrection::CorrectEnergy`
       vector4_t Transform(
-          vector_element_t px,
-          vector_element_t py,
-          vector_element_t pz,
-          vector_element_t E) const;
+          vector_element_t const px,
+          vector_element_t const py,
+          vector_element_t const pz,
+          vector_element_t const E) const;
 
       /// @action_function{scalar transformer}
       /// @param E electron energy
       /// @returns the corrected FT electron energy
       /// @see `FTEnergyCorrection::Transform`
-      vector_element_t CorrectEnergy(vector_element_t E) const;
+      vector_element_t CorrectEnergy(vector_element_t const E) const;
 
     private:
 
