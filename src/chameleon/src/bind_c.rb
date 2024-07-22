@@ -7,15 +7,15 @@ class Bind_c < Generator
   def initialize(out_name='', algo_name='')
     super(out_name, algo_name, description: 'C bindings', generator_name: __FILE__)
     @out.puts <<~END_CODE
-      // C functions to provide action function bindings for Fortran
+      /// @file #{File.basename out_name}
+      /// @brief C functions to provide `iguana::#{@algo_name}` action function bindings for Fortran
 
       #{deterrence_banner 'c'}
 
       #include "#{@algo_header}"
       #include "Bindings.h"
 
-      // clang-format off
-      namespace iguana::bindings::#{@algo_name} {
+      namespace iguana::bindings::#{@algo_name.split('::').first} {
         extern "C" {
     END_CODE
   end
@@ -119,7 +119,6 @@ class Bind_c < Generator
     @out.puts <<~END_CODE
         }
       }
-      // clang-format on
     END_CODE
     @out.close
   end
