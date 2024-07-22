@@ -172,6 +172,7 @@ add_project_arguments(
 subdir('src/chameleon')
 subdir('src/iguana/services')
 subdir('src/iguana/algorithms')
+subdir('src/iguana/bindings')
 subdir('src/iguana/tests')
 
 # build bindings

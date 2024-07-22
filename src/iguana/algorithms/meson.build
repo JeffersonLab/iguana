@@ -91,8 +91,8 @@ algo_dict = [
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
-algo_sources = [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc', 'Bindings.cc' ]
-algo_headers = [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h', 'Bindings.h' ]
+algo_sources = [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ]
+algo_headers = [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ]
 vdor_sources = [ 'Validator.cc' ]
 vdor_headers = [ 'Validator.h' ]
 algo_configs = []
@@ -126,8 +126,8 @@ foreach algo : algo_dict
       algo_configs += algo_dir / 'Config.yaml'
     endif
 
-    # chameleon targets
-    if algo_has_action_yaml
+    # run chameleon
+    if use_chameleon and algo_has_action_yaml
       target_name = '_'.join([ 'chameleon', algo_name.split('::') ])
       tgt = custom_target(
         target_name,
@@ -194,21 +194,6 @@ vdor_lib = shared_library(
   build_rpath: ROOT_dep_rpath,
 )
 install_headers(vdor_headers, subdir: meson.project_name() / 'algorithms', preserve_path: true)
-
-# build C bindings
-if get_option('bind_fortran')
-  algo_bind_c_lib = shared_library(
-    'IguanaBindingsC',
-    algo_bind_c_sources,
-    include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
-    dependencies: project_deps,
-    link_with: [ services_lib, algo_lib ],
-    link_args: ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
-    install: true,
-    build_rpath: ROOT_dep_rpath,
-  )
-  project_libs += algo_bind_c_lib
-endif
 
 # install config files
 foreach algo_config : algo_configs

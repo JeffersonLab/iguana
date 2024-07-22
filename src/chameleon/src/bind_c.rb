@@ -12,8 +12,8 @@ class Bind_c < Generator
 
       #{deterrence_banner 'c'}
 
-      #include "#{@algo_header}"
-      #include "Bindings.h"
+      #include "iguana/algorithms/#{@algo_header}"
+      #include "iguana/bindings/Bindings.h"
 
       namespace iguana::bindings::#{@algo_name.split('::').first} {
         extern "C" {

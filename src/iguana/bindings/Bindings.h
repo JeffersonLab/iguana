@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Algorithm.h"
+#include "iguana/algorithms/Algorithm.h"
 
 namespace iguana::bindings {
   extern "C" {
