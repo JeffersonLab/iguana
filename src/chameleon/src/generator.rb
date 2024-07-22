@@ -1,11 +1,14 @@
 class Generator
 
+  RESULT_VAR = 'result' # the name of the result of an action function call
+
   def initialize(out_name='', algo_name='', description: '', generator_name: '')
     @out_name    = out_name
     @out_dir     = File.dirname @out_name
     @algo_name   = algo_name
     @algo_header = File.join *@algo_name.split('::'), 'Algorithm.h'
     @log_tag     = generator_name.empty? ? "[chameleon]" : "[chameleon::#{File.basename generator_name, '.rb'}]"
+    @ftn_type    = nil
     unless out_name.empty?
       verbose "generating #{description} '#{@out_name}'"
       @out = File.open @out_name, 'w'
@@ -27,21 +30,42 @@ class Generator
   end
 
   # get a specification (a yaml node value)
-  def get_spec(node, *path, required: true)
-    def get_node(node, path, full_path, required)
+  def get_spec(node, *path, default: nil)
+    def get_node(node, path, full_path, default)
       return node if path.empty?
       key = path.shift
       unless node.has_key? key
-        return nil unless required
+        return default unless default.nil?
         error "failed to find node '#{full_path.join ' : '}' in #{ACTION_YAML}", false unless node.has_key? key
         error "this happened when searching the following sub-tree:", false
         $stderr.puts "#{node.to_yaml}"
         $stderr.puts '---'
         error "please check this YAML file to see if something is missing or if you have a typo."
       end
-      get_node node[key], path, full_path, required
+      get_node node[key], path, full_path, default
     end
-    get_node node, path.clone, path.clone, required
+    get_node node, path.clone, path.clone, default
+  end
+
+  # let `spec_params` be a specification tree of action function parameters,
+  # found at `node[key]`. This method "maps" its elements (i.e.,
+  # "spec_params.map") by yielding a block with parameters |name, type, cast|
+  def map_spec_params(node, key)
+    spec_params = get_spec node, key
+    spec_params.map do |var|
+      name = ''
+      if key == 'outputs' and spec_params.size == 1 and !var.has_key?('name') # single, anonymous output
+        name = RESULT_VAR
+      else
+        name = get_spec var, 'name'
+        error "don't name your variable '#{name}', since this name is reserved" if name == RESULT_VAR
+        name = "#{RESULT_VAR}_#{name}" if @ftn_type == 'transformer' and key == 'outputs'
+      end
+      type = get_spec var, 'type'
+      cast = get_spec var, 'cast', default: ''
+      yield name, type, cast
+    end
+      .compact
   end
 
   # check if the function type is known

@@ -23,89 +23,69 @@ class Bind_c < Generator
   ##################################################################################
 
   def bind(spec)
+
+    # get function name and type
     @action_spec = spec
+    @ftn_type = get_spec @action_spec, 'type'
     ftn_name = get_spec @action_spec, 'name'
-    ftn_type = get_spec @action_spec, 'type'
     ftn_name_fortran = "iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{ftn_name.downcase}"
     ftn_name_c = "#{ftn_name_fortran}_"
-    verbose " - bind #{ftn_type} function #{@algo_name}::#{ftn_name}"
-    check_function_type "#{@algo_name}::#{ftn_name}", ftn_type
+    verbose " - bind #{@ftn_type} function #{@algo_name}::#{ftn_name}"
+    check_function_type "#{@algo_name}::#{ftn_name}", @ftn_type
 
-    # lists of "parts" we need for the binding function
-    docstring_param_list = ['[in] algo_idx the algorithm index']
-    par_list             = ['algo_idx_t* algo_idx']
-    call_arg_list        = []
-    assignment_list      = []
-
-    @result_var = 'result' # the name of the result of an action function call
-
-    # functions to generate lists of parts
-    def gen_parts(key)
-      parts_spec = get_spec @action_spec, key
-      parts_spec.map do |var|
-        name = ''
-        if key == 'outputs' and parts_spec.size == 1 # true if it's a single, anonymous output
-          name = @result_var
+    # function to generate parameter docstrings
+    def gen_docstring_params(key, in_or_out)
+      map_spec_params(@action_spec, key) do |name, type, cast|
+        if name == RESULT_VAR
+          "[#{in_or_out}] #{name} the resulting value"
         else
-          name = get_spec var, 'name'
-          error "don't name your variable '#{name}', since this name is reserved" if name == @result_var
-        end
-        type = get_spec var, 'type'
-        cast = get_spec var, 'cast', required: false
-        yield name, type, cast
-      end
-        .compact
-    end
-
-    # function to generate parameter docstring
-    def gen_docstring_param(key, type_docstring)
-      gen_parts(key) do |name, type|
-        if name == @result_var
-          "[#{type_docstring}] #{name} the resulting value"
-        else
-          "[#{type_docstring}] #{name}"
+          "[#{in_or_out}] #{name}"
         end
       end
     end
 
     # function to generate C function parameters
     def gen_ftn_params(key)
-      gen_parts(key) do |name, type, cast|
-        "#{cast.nil? ? type : cast}* #{name}"
+      map_spec_params(@action_spec, key) do |name, type, cast|
+        "#{cast.empty? ? type : cast}* #{name}"
       end
     end
 
     # function to generate C++ function arguments
     def gen_call_args(key)
-      gen_parts(key) do |name, type, cast|
-        return nil if name == @result_var
-        cast.nil? ? "*#{name}" : "#{type}(*#{name})"
+      map_spec_params(@action_spec, key) do |name, type, cast|
+        return nil if name == RESULT_VAR
+        cast.empty? ? "*#{name}" : "#{type}(*#{name})"
       end
     end
 
     # function to generate result assignments
     def gen_assignments(key)
-      gen_parts(key) do |name, type|
-        if name == @result_var
-          "*#{name} = out;"
-        else
-          "*#{name} = out.#{name};"
-        end
+      map_spec_params(@action_spec, key) do |name, type, cast|
+        out_var = name == RESULT_VAR ?
+          'out' :
+          "out.#{name.sub /^#{RESULT_VAR}_/, ''}"
+        out_var = "#{cast}(#{out_var})" unless cast.empty?
+        "*#{name} = #{out_var};"
       end
     end
 
     # generate parts lists
-    case ftn_type
+    docstring_param_list = ['[in] algo_idx the algorithm index']
+    par_list             = ['algo_idx_t* algo_idx']
+    call_arg_list        = []
+    assignment_list      = []
+    case @ftn_type
     when 'filter'
-      docstring_param_list += gen_docstring_param 'inputs', 'in'
-      docstring_param_list << "[in,out] #{@result_var} the filter return value; if this value is already set, the result will be the `AND` of the initial value and this filter"
+      docstring_param_list += gen_docstring_params 'inputs', 'in'
+      docstring_param_list << "[in,out] #{RESULT_VAR} the filter return value; if this value is already set, the result will be the `AND` of the initial value and this filter"
       par_list += gen_ftn_params 'inputs'
-      par_list << "bool* #{@result_var}"
+      par_list << "bool* #{RESULT_VAR}"
       call_arg_list += gen_call_args 'inputs'
-      assignment_list << "*#{@result_var} = *#{@result_var} && out;"
-    when 'creator'
-      docstring_param_list += gen_docstring_param 'inputs', 'in'
-      docstring_param_list += gen_docstring_param 'outputs', 'out'
+      assignment_list << "*#{RESULT_VAR} = *#{RESULT_VAR} && out;"
+    when 'creator', 'transformer'
+      docstring_param_list += gen_docstring_params 'inputs', 'in'
+      docstring_param_list += gen_docstring_params 'outputs', 'out'
       par_list += gen_ftn_params 'inputs'
       par_list += gen_ftn_params 'outputs'
       call_arg_list += gen_call_args 'inputs'
