@@ -64,17 +64,17 @@ namespace iguana::clas12 {
   }
 
 
-  vector4_t LorentzTransformer::Boost(
-      vector_element_t const p_x,
-      vector_element_t const p_y,
-      vector_element_t const p_z,
+  LorentzTransformerVars LorentzTransformer::Boost(
+      vector_element_t const px,
+      vector_element_t const py,
+      vector_element_t const pz,
       vector_element_t const E,
       vector_element_t const beta_x,
       vector_element_t const beta_y,
       vector_element_t const beta_z) const
   {
     m_log->Debug(fmt::format("{::<30}", "Boost "));
-    m_log->Debug(fmt::format("{:>8} = ({:10f}, {:10f}, {:10f}, {:10f})", "p_in", p_x, p_y, p_z, E));
+    m_log->Debug(fmt::format("{:>8} = ({:10f}, {:10f}, {:10f}, {:10f})", "p_in", px, py, pz, E));
 
     // check if |beta| <= 1
     auto beta_mag = std::hypot(beta_x, beta_y, beta_z);
@@ -82,11 +82,11 @@ namespace iguana::clas12 {
       m_log->Error("attempt to boost with beta > 1 (faster than the speed of light); will NOT boost this momentum");
       m_log->Debug("{:>8} = {}", "|beta|", beta_mag);
       m_log->Debug("{:>8} = ({:10f}, {:10f}, {:10f})", "beta", beta_x, beta_y, beta_z);
-      return {p_x, p_y, p_z, E};
+      return {px, py, pz, E};
     }
 
     // boost
-    ROOT::Math::PxPyPzEVector p_in(p_x, p_y, p_z, E);
+    ROOT::Math::PxPyPzEVector p_in(px, py, pz, E);
     ROOT::Math::Boost beta(beta_x, beta_y, beta_z);
     auto p_out = beta(p_in);
 

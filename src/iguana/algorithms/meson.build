@@ -53,7 +53,6 @@ algo_dict = [
     'name': 'clas12::LorentzTransformer',
     'algorithm_needs_ROOT': true,
     'has_validator': false,
-    'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
@@ -163,7 +162,7 @@ foreach algo : algo_dict
       endforeach
     endif
   else
-    warning('Algorithm "' + algo_name + '" has no Validator; use at your own risk!')
+    warning('Algorithm "' + algo_name + '" has no validator')
   endif
 
 endforeach
