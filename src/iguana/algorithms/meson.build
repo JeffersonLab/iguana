@@ -59,7 +59,6 @@ algo_dict = [
     'name': 'clas12::FTEnergyCorrection',
     'has_config': false,
     'has_validator': false,
-    'has_action_yaml': false,
     'test_args': {'banks': [ 'RECFT::Particle' ]},
   },
   {

@@ -1,9 +1,9 @@
 algorithm:
-  name: 'clas12::LorentzTransformer'
+  name: 'clas12::FTEnergyCorrection'
 
 actions:
 
-  - name: Boost
+  - name: Transform
     type: transformer
     inputs:
       - name: px
@@ -18,12 +18,6 @@ actions:
       - name: E
         type: double
         cast: float
-      - name: beta_x
-        type: double
-      - name: beta_y
-        type: double
-      - name: beta_z
-        type: double
     outputs:
       - name: px
         type: double
@@ -36,4 +30,14 @@ actions:
         cast: float
       - name: E
         type: double
+        cast: float
+
+  - name: CorrectEnergy
+    type: transformer
+    inputs:
+      - name: E
+        type: double
+        cast: float
+    outputs:
+      - type: double
         cast: float
