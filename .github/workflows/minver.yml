@@ -27,7 +27,7 @@ jobs:
             "fortran"
           ],
           "include": [
-            { "id": "cpp",     "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true"  },
+            { "id": "cpp",     "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true   -Dtest_validator_all_stats=true"  },
             { "id": "noROOT",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=false" },
             { "id": "python",  "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true   -Dbind_python=true"  },
             { "id": "fortran", "CC": "gcc", "CXX": "g++", "opts": "-Dbuildtype=release -Dz_require_root=true   -Dbind_fortran=true" }

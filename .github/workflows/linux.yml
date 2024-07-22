@@ -24,6 +24,7 @@ jobs:
           "id": [
             "cpp",
             "coverage",
+            "documentation",
             "address-sanitizer",
             "thread-sanitizer",
             "undefined-sanitizer",
@@ -33,8 +34,9 @@ jobs:
             "fortran"
           ],
           "include": [
-            { "id": "cpp",                 "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Dz_require_root=true"  },
+            { "id": "cpp",                 "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Dz_require_root=true   -Dtest_validator_all_stats=true"  },
             { "id": "coverage",            "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Dz_require_root=true   -Db_coverage=true"     },
+            { "id": "documentation",       "CC": "gcc",   "CXX": "g++",     "opts": "-Dbuildtype=release -Dz_require_root=true   -Dinstall_documentation=true" },
             { "id": "address-sanitizer",   "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=address   -Db_lundef=false -Db_pie=true" },
             { "id": "thread-sanitizer",    "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=thread    -Db_lundef=false -Db_pie=true" },
             { "id": "undefined-sanitizer", "CC": "clang", "CXX": "clang++", "opts": "-Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=undefined -Db_lundef=false -Db_pie=true" },
