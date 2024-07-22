@@ -40,7 +40,7 @@ namespace iguana::clas12 {
   }
 
 
-  vector3_t MomentumCorrection::Transform(vector_element_t px, vector_element_t py, vector_element_t pz, int sec, int pid, float torus) const
+  MomentumCorrectionVars MomentumCorrection::Transform(vector_element_t px, vector_element_t py, vector_element_t pz, int sec, int pid, float torus) const
   {
     // energy loss correction
     auto e_cor = torus < 0

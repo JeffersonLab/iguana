@@ -219,7 +219,8 @@ c       momentum corrections
               call iguana_clas12_momentumcorrection_transform(
      &          algo_mom_cor,
      &          px(i), py(i), pz(i),
-     &          sector(i), pid(i), torus(1))
+     &          sector(i), pid(i), torus(1),
+     &          px(i), py(i), pz(i))
               print *, '   after: p = (', px(i), py(i), pz(i), ')'
             endif
           enddo

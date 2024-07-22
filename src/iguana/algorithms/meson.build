@@ -88,6 +88,8 @@ algo_dict += [
   {
     'name': 'clas12::MomentumCorrection',
     'has_config': false,
+    'has_c_bindings': false,
+    'has_action_yaml': true,
     'test_args': {
       'banks': [
         'RUN::config',

@@ -5,6 +5,16 @@
 
 namespace iguana::clas12 {
 
+  /// Corrected momentum
+  struct MomentumCorrectionVars {
+      /// @f$x@f$-component of corrected momentum
+      vector_element_t px;
+      /// @f$y@f$-component of corrected momentum
+      vector_element_t py;
+      /// @f$z@f$-component of corrected momentum
+      vector_element_t pz;
+  };
+
   /// @brief_algo Momentum Corrections
   ///
   /// Adapted from <https://clasweb.jlab.org/wiki/index.php/CLAS12_Momentum_Corrections#tab=Correction_Code>
@@ -32,7 +42,7 @@ namespace iguana::clas12 {
       /// @param pid the particle PDG
       /// @param torus torus setting
       /// @returns the transformed momentum
-      vector3_t Transform(vector_element_t px, vector_element_t py, vector_element_t pz, int sec, int pid, float torus) const;
+      MomentumCorrectionVars Transform(vector_element_t px, vector_element_t py, vector_element_t pz, int sec, int pid, float torus) const;
 
       /// @action_function{scalar creator} Calculate the correction factor for inbending data
       /// @param px @f$p_x@f$
