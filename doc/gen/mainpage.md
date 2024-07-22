@@ -12,6 +12,11 @@ To see Iguana algorithms used in the context of analysis code, with **various la
 
 **NOTE:** If you're not familiar with Iguana, please read the sections below first.
 
+## Language Bindings
+
+Iguana algorithms are in C++; to use Iguana with other languages, see:
+- \ref fortran_usage_guide
+
 ## Algorithms
 
 An Iguana algorithm is a function that maps input HIPO bank data to output data. The available algorithms are:

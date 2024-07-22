@@ -20,8 +20,8 @@ Iguana provides a set of C functions which are callable from Fortran:
   - `[in,out]`: both an input and an output parameter, will be mutated
 
 @par
-The available C functions and their documentation, organized by C++ namespace, are listed below
-in the **Namespaces** section.
+The available C functions and their documentation, organized by C++ namespace, are listed
+at **the bottom of this page** in the **Namespaces** section.
 
 @par
 For information about each algorithm and their action functions, see:
