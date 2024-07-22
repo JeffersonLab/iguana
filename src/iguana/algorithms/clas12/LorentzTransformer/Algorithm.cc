@@ -41,7 +41,7 @@ namespace iguana::clas12 {
     // boosts
     if(m_transformation_type == e_boost) {
       // set the boost vector
-      vector3_t boost_vec;
+      std::tuple<vector_element_t, vector_element_t, vector_element_t> boost_vec;
       if(o_frame == "beam_rest_frame") {
         boost_vec = {0, 0, o_beam_energy / std::hypot(o_beam_energy, 0.000511)};
       }
@@ -64,7 +64,7 @@ namespace iguana::clas12 {
   }
 
 
-  LorentzTransformerVars LorentzTransformer::Boost(
+  Momentum4 LorentzTransformer::Boost(
       vector_element_t const px,
       vector_element_t const py,
       vector_element_t const pz,

@@ -5,18 +5,6 @@
 
 namespace iguana::clas12 {
 
-  /// Transformed momentum
-  struct LorentzTransformerVars {
-      /// @f$x@f$-component
-      vector_element_t px;
-      /// @f$y@f$-component
-      vector_element_t py;
-      /// @f$z@f$-component
-      vector_element_t pz;
-      /// @f$E@f$-component
-      vector_element_t E;
-  };
-
   /// @brief_algo Lorentz transform momenta in `REC::Particle` (or similar banks)
   ///
   /// @begin_doc_algo{clas12::LorentzTransformer | Transformer}
@@ -52,7 +40,7 @@ namespace iguana::clas12 {
       /// @param beta_y @f$\beta_y@f$
       /// @param beta_z @f$\beta_z@f$
       /// @returns the transformed momentum
-      LorentzTransformerVars Boost(
+      Momentum4 Boost(
           vector_element_t const px,
           vector_element_t const py,
           vector_element_t const pz,

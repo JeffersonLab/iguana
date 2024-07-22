@@ -30,7 +30,7 @@ namespace iguana::clas12 {
       /// @param E @f$E@f$
       /// @returns an electron 4-vector with the corrected energy for the Forward Tagger.
       /// @see `FTEnergyCorrection::CorrectEnergy`
-      vector4_t Transform(
+      Momentum4 Transform(
           vector_element_t const px,
           vector_element_t const py,
           vector_element_t const pz,
