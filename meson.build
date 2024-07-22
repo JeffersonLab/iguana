@@ -200,6 +200,11 @@ if get_option('install_examples')
   subdir('examples')
 endif
 
+# generate documentation
+if get_option('install_documentation')
+  subdir('doc/gen')
+endif
+
 # install environment setup files
 if get_option('z_install_envfile')
   configure_file(

@@ -13,9 +13,6 @@
 # chameleon artifacts
 chameleon-tree
 
-# documentation artifacts
-/doc/api
-
 # data files
 *.hipo
 *.root
