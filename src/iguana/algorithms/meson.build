@@ -1,18 +1,3 @@
-# start the algorithm dictionary list with the infrastructure sources
-algo_dict = [
-  {
-    'name': 'main',
-    'directory': '.',
-    'has_config': false,
-    'has_c_bindings': true,
-    'has_validator': true,
-    'algorithm_needs_ROOT': false,
-    'validator_needs_ROOT': false,
-    'add_algorithm_sources': [ 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ],
-    'add_algorithm_headers': [ 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ],
-  },
-]
-
 # list of dictionaries for info about each algorithm
 #
 #  example:
@@ -21,9 +6,8 @@ algo_dict = [
 #     'name':                str         # algorithm name (REQUIRED)
 #     'directory':           str         # algorithm source code directory (default is based on 'name', replacing '::' with '/')
 #     'has_config':          bool        # assumes Config.yaml exists (default=true)
-#     'has_c_bindings':      bool        # assumes Bindings.cc exists (default=true)
 #     'has_validator':       bool        # assumes Validator{cc,h} exist (default=true)
-#     'has_action_yaml':     bool        # assumes Action.yaml exists (default=false)
+#     'has_action_yaml':     bool        # assumes Action.yaml exists (default=true)
 #     'algorithm_needs_ROOT': bool       # whether this algorithm needs ROOT or not (default=false)
 #     'validator_needs_ROOT': bool       # whether this validator needs ROOT or not (default=true)
 #     'add_algorithm_sources': list[str] # list of additional algorithm source files (default=[])
@@ -36,37 +20,31 @@ algo_dict = [
 #     },
 #   }
 #
-algo_dict += [
+algo_dict = [
   {
     'name': 'example::ExampleAlgorithm',
-    'has_c_bindings': false,
     'has_validator': false,
+    'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
     'name': 'clas12::EventBuilderFilter',
     'has_validator': false,
-    'has_c_bindings': false,
-    'has_action_yaml': true,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
     'name': 'clas12::ZVertexFilter',
-    'has_validator': true,
-    'has_c_bindings': false,
-    'has_action_yaml': true,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
     'name': 'clas12::FiducialFilter',
-    'has_validator': true,
-    'has_c_bindings': false,
+    'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle', 'REC::Traj', 'RUN::config' ]},
   },
   {
     'name': 'clas12::SectorFinder',
-    'has_c_bindings': false,
     'has_validator': false,
+    'has_action_yaml': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator' ],
     },
@@ -74,22 +52,20 @@ algo_dict += [
   {
     'name': 'clas12::LorentzTransformer',
     'algorithm_needs_ROOT': true,
-    'has_c_bindings': false,
     'has_validator': false,
+    'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
     'name': 'clas12::FTEnergyCorrection',
     'has_config': false,
-    'has_c_bindings': false,
     'has_validator': false,
+    'has_action_yaml': false,
     'test_args': {'banks': [ 'RECFT::Particle' ]},
   },
   {
     'name': 'clas12::MomentumCorrection',
     'has_config': false,
-    'has_c_bindings': false,
-    'has_action_yaml': true,
     'test_args': {
       'banks': [
         'RUN::config',
@@ -104,25 +80,22 @@ algo_dict += [
   {
     'name': 'physics::InclusiveKinematics',
     'algorithm_needs_ROOT': true,
-    'has_c_bindings': false,
-    'has_action_yaml': true,
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
     'name': 'clas12::PhotonGBTFilter',
-    'has_c_bindings': false,
     'algorithm_needs_ROOT': true,
-    'has_validator': true,
+    'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle', 'REC::Calorimeter', 'RUN::config' ]},
   },
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
-algo_sources = []
-algo_headers = []
+algo_sources = [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc', 'Bindings.cc' ]
+algo_headers = [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h', 'Bindings.h' ]
+vdor_sources = [ 'Validator.cc' ]
+vdor_headers = [ 'Validator.h' ]
 algo_configs = []
-vdor_sources = []
-vdor_headers = []
 algo_bind_c_sources = []
 
 foreach algo : algo_dict
@@ -130,9 +103,8 @@ foreach algo : algo_dict
   algo_name = algo.get('name')
   algo_dir = algo.get('directory', '/'.join(algo_name.split('::')))
   algo_has_config = algo.get('has_config', true)
-  algo_has_c_bindings = algo.get('has_c_bindings', true)
   algo_has_validator = algo.get('has_validator', true)
-  algo_has_action_yaml = algo.get('has_action_yaml', false)
+  algo_has_action_yaml = algo.get('has_action_yaml', true)
   algo_needs_ROOT = algo.get('algorithm_needs_ROOT', false)
   vdor_needs_ROOT = algo.get('validator_needs_ROOT', true)
 
@@ -148,17 +120,6 @@ foreach algo : algo_dict
     foreach src_file : algo.get('add_algorithm_headers', [])
       algo_headers += algo_dir / src_file
     endforeach
-
-    # C/Fortran bindings
-    if get_option('bind_fortran')
-      if algo_has_c_bindings
-        algo_sources += algo_dir / 'Bindings.cc'
-      else
-        if not algo_has_action_yaml
-          warning('Algorithm "' + algo_name + '" has no Fortran bindings')
-        endif
-      endif
-    endif
 
     # config files
     if algo_has_config
@@ -181,6 +142,8 @@ foreach algo : algo_dict
         ],
       )
       algo_bind_c_sources += tgt[0]
+    else
+      warning('Algorithm "' + algo_name + '" has no bindings')
     endif
 
   else
