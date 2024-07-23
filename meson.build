@@ -26,6 +26,9 @@ add_languages('fortran', native: false, required: get_option('bind_fortran'))
 pkg = import('pkgconfig')
 fs = import('fs')
 
+# build subprojects
+rcdb_subproj = subproject('rcdb')
+
 # resolve dependencies
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
 fmt_dep = dependency(
@@ -45,6 +48,7 @@ ROOT_dep = dependency(
   method: 'cmake',
   version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip(),
 )
+rcdb_dep = dependency('rcdb', fallback: ['rcdb', 'rcdb_dep'], required: false)
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list

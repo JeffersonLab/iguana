@@ -111,15 +111,19 @@ All build options, their current values, and their descriptions may be found by 
 meson configure              # outputs in a pager (`less`); you may scroll, or press 'q' to quit
 meson configure --no-pager   # do not use a pager
 ```
-**but that's a _lot_ of text!** The _most important_ build options are near the bottom, under **"Project options"**.
+**but that's a _lot_ of text!** The _most important_ build options are under the **"Project options"**
+sections: the first such section is for `iguana`, and the rest are for subprojects (_e.g._, `rcdb`).
 
-Alternatively, see [`meson.options`](/meson.options) for the list of project options, and some more details.
+Alternatively, see [`meson.options`](/meson.options) for the list of `iguana` project options, and some more details.
 
 To set any build option, _e.g._ `install_examples` to `true`, run:
 ```bash
 meson configure -Dinstall_examples=true
 ```
 You can add as many `-D<option>=<value>` arguments as you need.
+
+> [!NOTE]
+> To set a subproject's option, you must prefix the subproject name. For example, for `rcdb`, use `-Drcdb:<option>=<value>`.
 
 ### 🟩 Step 4: Compile and Install
 Now compile and install Iguana:
