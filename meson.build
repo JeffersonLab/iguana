@@ -27,6 +27,9 @@ use_chameleon = get_option('bind_fortran')
 pkg = import('pkgconfig')
 fs = import('fs')
 
+# build subprojects
+rcdb_subproj = subproject('rcdb')
+
 # resolve dependencies
 prog_minver = find_program('meson' / 'minimum-version.sh')
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
@@ -56,6 +59,7 @@ prog_ruby = find_program(
   version: '>=' + run_command(prog_minver, 'ruby', check: true).stdout().strip(),
   required: use_chameleon,
 )
+rcdb_dep = dependency('rcdb', fallback: ['rcdb', 'rcdb_dep'], required: false)
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
