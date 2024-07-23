@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/services/RCDBReader.h"
 
 // ROOT
 #include <Math/Vector4D.h>
