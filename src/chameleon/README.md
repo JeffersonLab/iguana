@@ -6,13 +6,13 @@ generates:
 
 | Language | Bindings                 | Tests                    |
 | ---      | ---                      | ---                      |
-| Fortran  | :heavy_check_mark:       | :heavy_multiplication_x: |
-| Java     | :heavy_multiplication_x: | :heavy_multiplication_x: |
-| Python   | :heavy_multiplication_x: | :heavy_multiplication_x: |
+| Fortran  | :white_check_mark:       | :x:                      |
+| Java     | :x:                      | :x:                      |
+| Python   | :x:                      | :x:                      |
 
 where
-- :heavy_check_mark: means fully supported (as long as the algorithm has an `Action.yaml` file)
-- :heavy_multiplication_x: means this is not _yet_ supported
+- :white_check_mark: means fully supported (as long as the algorithm has an `Action.yaml` file)
+- :x: means this is not _yet_ supported
 
 The main script is [`chameleon`](chameleon). For usage, run
 ```bash
