@@ -20,7 +20,7 @@ chameleon --help
 ```
 There is no need to run `chameleon` yourself unless you are developing or debugging it.
 `chameleon` is run automatically by `meson` at build time and all generated
-code is produced in the build tree at
+code is produced _within_ the _build directory_ as:
 ```
 src/iguana/algorithms/chameleon_*
 ```
