@@ -19,7 +19,7 @@ doc_tgt = custom_target(
   output: 'html',
   build_always_stale: true,
   build_by_default: true,
-  command: [prog_doxygen, doxyfile],
+  command: [ prog_doxygen, doxyfile ],
   install: true,
   install_dir: join_paths(get_option('datadir'), 'doc', meson.project_name()),
 )

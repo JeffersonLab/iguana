@@ -17,6 +17,10 @@ if use_chameleon
     )
     project_libs += algo_bind_c_lib
   endif
-  install_headers(algo_bind_c_headers, subdir: meson.project_name() / 'bindings', preserve_path: true)
+  install_headers(
+    algo_bind_c_headers,
+    subdir: meson.project_name() / 'bindings',
+    preserve_path: true,
+  )
 
 endif
