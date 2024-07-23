@@ -1,3 +1,4 @@
+pythondir = 'python'
 project_pkg_vars += 'pythonpath=' + '${prefix}' / pythondir
 
 install_subdir('pyiguana', install_dir: pythondir)

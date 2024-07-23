@@ -1,5 +1,3 @@
-use_chameleon = get_option('bind_fortran')
-
 chameleon_sources = files(
   'chameleon',
   'src' / 'generator.rb',
