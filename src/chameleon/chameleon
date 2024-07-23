@@ -40,7 +40,7 @@ ACTION_YAML = @args.action_yaml
 @main.verbose "OPTIONS: #{@args}"
 
 # open action function specification
-@main.error "option '--input' needs a value" if ACTION_YAML.empty?
+@main.error "option '--input' needs a value; use '--help' for guidance" if ACTION_YAML.empty?
 @main.verbose "parsing #{ACTION_YAML}"
 @main.error "input file '#{ACTION_YAML}' does not exist" unless File.exists? ACTION_YAML
 main_spec = YAML.load_file ACTION_YAML
