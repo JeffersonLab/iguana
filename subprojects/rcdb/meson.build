@@ -17,5 +17,8 @@ foreach dir : [
 endforeach
 
 rcdb_dep = rcdb_home == '' ? dependency('', required: false) : declare_dependency(
-  include_directories: include_directories(rcdb_home),
+  include_directories: include_directories(
+    join_paths(rcdb_home, 'cpp', 'include'),
+    is_system: true, # suppress consumer warnings
+  ),
 )
