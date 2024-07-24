@@ -23,6 +23,7 @@ The following sections (🟩) list the dependencies and how to obtain them.
 > git log --tags --decorate --simplify-by-decoration --oneline     # list all the tags (latest first)
 > git checkout 1.0.0                                               # checkout the tag '1.0.0'
 > ```
+<!--`-->
 
 ### 🟩 `meson`: Build system used by Iguana
 <https://mesonbuild.com/>
@@ -63,6 +64,16 @@ cmake --install build-hipo
 - After installation, depending on ROOT's installation prefix you may also need to set your environment so
   ROOT may be found; this is typically done by `source /path/to/root/bin/thisroot.sh`
 
+### 🟩 Optional: `RCDB`: Run Condition Database
+<https://github.com/JeffersonLab/rcdb>
+- RCDB is optional, but needed for algorithms that use, _e.g._, the beam energy
+- You do not need to compile RCDB, just clone the repository
+
+> [!NOTE]
+> As of July 2024, the most recent tagged version of RCDB is quite far behind
+> the current main branch, so you may just use the latest main branch version
+> (`master`).
+
 <a name="building"></a>
 ## 🟠 Building and Installing
 
@@ -80,10 +91,9 @@ Use [`meson/resolve-dependencies.py`](../meson/resolve-dependencies.py) to help 
 /path/to/iguana-source/meson/resolve-dependencies.py --help    # prints the usage guide
 ```
 Tell it where your dependencies are installed and it will tell you the build options
-that you need for Step 2; you can also choose to write those build options to an INI (native) file.
+that you need for Step 2.
 
-Alternatively, you may use environment variables; see the [note on dependency
-resolution](dependency_resolution.md) for more general guidance.
+See the [note on dependency resolution](dependency_resolution.md) for more general guidance.
 
 
 ### 🟩 Step 2: Generate a build directory
@@ -142,6 +152,7 @@ meson install   # installs Iguana to your prefix (build option 'prefix')
 > meson setup --wipe /path/to/iguana-source
 > ```
 > This will preserve your build options; then try to rebuild.
+<!--`-->
 
 
 <a name="env"></a>

@@ -22,21 +22,20 @@ parser_deps.add_argument('--hipo', default=SYSTEM_ASSUMPTION, type=str, help='pa
 parser_deps.add_argument('--fmt', default=SYSTEM_ASSUMPTION, type=str, help='path to `fmt` installation')
 parser_deps.add_argument('--yaml', default=SYSTEM_ASSUMPTION, type=str, help='path to `yaml-cpp` installation')
 parser_deps.add_argument('--root', default=SYSTEM_ASSUMPTION, type=str, help='path to `ROOT` installation')
+parser_deps.add_argument('--rcdb', default='$RCDB_HOME', type=str, help='path to `RCDB` installation')
 parser_output = parser.add_argument_group('output control')
-parser_output.add_argument('--cli', default=False, action=argparse.BooleanOptionalAction, help='only print the `meson` CLI options, and nothing else')
-parser_output.add_argument('--env', default=False, action=argparse.BooleanOptionalAction, help='generate environment variable `export` commands instead')
-parser_output.add_argument('--ini', default=NOT_USED, type=str, help='if set, generate an INI file (meson native file) with this name; you may then use it with `meson setup --native-file=_____`')
+parser_output.add_argument('--verbose', default=False, action=argparse.BooleanOptionalAction, help='verbose output')
 args = parser.parse_args()
 
 # verbosity
-verbose = not args.cli
 def print_verbose(message):
-    if(verbose):
+    if(args.verbose):
         print(message)
 
 # functions to set dependency paths
 pkg_config_path   = set()
 cmake_prefix_path = set()
+extra_args        = []
 def use_system(dep):
     print_verbose(f'{dep}: {SYSTEM_ASSUMPTION}')
 def use_pkg_config(dep, pc_file, arg):
@@ -63,71 +62,49 @@ def use_cmake(dep, arg):
         cmake_prefix_path.add(path)
     else:
         use_system(dep)
+def use_env_var(dep, build_var_name, user_val, env_var_name):
+    if(user_val == f'${env_var_name}'):
+        if env_var_name in os.environ:
+            print_verbose(f'{dep}: using environment variable "{env_var_name}" for build variable "{build_var_name}"')
+            extra_args.append([build_var_name, os.environ[env_var_name]])
+        else:
+            print(f'{dep}: you did not specify where {dep} is found, and the fallback environment variable "${env_var_name}" is not set; {dep} will be ignored', file=sys.stderr)
+    else:
+        print_verbose(f'{dep}: using user value "{user_val}" for build variable "{build_var_name}"')
+        extra_args.append([build_var_name, user_val])
 
 # resolve dependencies #########################
 use_pkg_config('hipo', 'hipo4.pc',    args.hipo)
 use_pkg_config('fmt',  'fmt.pc',      args.fmt)
 use_pkg_config('yaml', 'yaml-cpp.pc', args.yaml)
 use_cmake('ROOT', args.root)
+use_env_var('rcdb', 'rcdb:home', args.rcdb, 'RCDB_HOME')
 ################################################
 
 
-# generate a native file
-if(args.ini!=NOT_USED):
-    def ini_string_arr(arr):
-        contents = ','.join(map(lambda s: f'\'{s}\'', arr))
-        return f'[{contents}]'
-    ini_config = ConfigParser(allow_no_value=True)
-    ini_config.add_section('built-in options')
-    if(len(cmake_prefix_path) > 0):
-        ini_config.set('built-in options', 'cmake_prefix_path', ini_string_arr(cmake_prefix_path))
-    if(len(pkg_config_path) > 0):
-        ini_config.set('built-in options', 'pkg_config_path', ini_string_arr(pkg_config_path))
-    with open(args.ini, 'w') as fp:
-        ini_config.write(fp)
-
 # generate CLI options
-if(verbose or args.cli):
-    if(len(pkg_config_path)==0 and len(cmake_prefix_path)==0):
-        print_verbose(textwrap.dedent(f'''
-        ==========================================================================================
-        All of your dependencies are assumed to be in the system default locations.
-        - If they are not, please run:
-            {sys.argv[0]} --help
-        - Otherwise, you do not need to set or modify any build options for dependency resolution.
-        ==========================================================================================
-        '''))
-        exit(0)
-    else:
-        if(args.env):
-            print_verbose(textwrap.dedent('''
-            ==================================================
-            |  Here are the environment variables you need:  |
-            ==================================================
-            '''))
-        else:
-            print_verbose(textwrap.dedent('''
-            ===============================================
-            |  Here are the build options that you need:  |
-            ===============================================
-            '''))
-        cli_opts = []
-        if(len(pkg_config_path) > 0):
-            if(args.env):
-                cli_opts.append(f'export PKG_CONFIG_PATH={":".join(pkg_config_path)}' + '${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}')
-            else:
-                cli_opts.append(f'--pkg-config-path={",".join(pkg_config_path)}')
-        if(len(cmake_prefix_path) > 0):
-            if(args.env):
-                cli_opts.append(f'export CMAKE_PREFIX_PATH={":".join(cmake_prefix_path)}' + '${CMAKE_PREFIX_PATH:+:${CMAKE_PREFIX_PATH}}')
-            else:
-                cli_opts.append(f'--cmake-prefix-path={",".join(cmake_prefix_path)}')
-        if(args.ini==NOT_USED):
-            if(args.env):
-                for cli_opt in cli_opts:
-                    print(cli_opt)
-            else:
-                print(f'{" ".join(cli_opts)}')
-        else:
-            print(f'--native-file={args.ini}')
-        print_verbose('\n')
+if(len(pkg_config_path)==0 and len(cmake_prefix_path)==0 and len(extra_args)==0):
+    print_verbose(textwrap.dedent(f'''
+    ==========================================================================================
+    All of your dependencies are assumed to be in the system default locations.
+    - If they are not, please run:
+        {sys.argv[0]} --help
+    - Otherwise, you do not need to set or modify any build options for dependency resolution.
+    ==========================================================================================
+    '''))
+else:
+    print_verbose(textwrap.dedent('''
+    ===============================================
+    |  Here are the build options that you need:  |
+    ===============================================
+    '''))
+    cli_opts = []
+    if(len(pkg_config_path) > 0):
+        cli_opts.append(f'--pkg-config-path={",".join(pkg_config_path)}')
+    if(len(cmake_prefix_path) > 0):
+        cli_opts.append(f'--cmake-prefix-path={",".join(cmake_prefix_path)}')
+    if(len(extra_args) > 0):
+        for extra_arg in extra_args:
+            cli_opts.append(f'-D{extra_arg[0]}={extra_arg[1]}')
+    print(f'{" ".join(cli_opts)}')
+    print_verbose('\n')
