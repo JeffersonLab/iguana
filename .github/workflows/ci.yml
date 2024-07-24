@@ -287,6 +287,8 @@ jobs:
         run: |
           tar xf ruby.tar.zst
           eval "$(.rbenv/bin/rbenv init - bash)"
+          ruby --version
+          echo $PATH
           echo PATH=$PATH >> $GITHUB_ENV
       ###### python bindings
       - name: install python bindings dependencies
