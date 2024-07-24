@@ -190,6 +190,51 @@ jobs:
           key: ${{ steps.key.outputs.key }}---${{ matrix.root_dep }}
           path: hipo.tar.zst
 
+  build_ruby:
+    name: Build Minver Ruby
+    runs-on: ${{ inputs.runner }}
+    container:
+      image: ${{ inputs.container }}
+    outputs:
+      key: ${{ steps.key.outputs.key }}
+    steps:
+      - name: checkout iguana
+        if: ${{ inputs.verset == 'minver' }}
+        uses: actions/checkout@v4
+        with:
+          path: iguana_src
+      - name: key
+        if: ${{ inputs.verset == 'minver' }}
+        id: key
+        run: |
+          ver=$(iguana_src/meson/minimum-version.sh ruby)
+          echo ver=$ver >> $GITHUB_OUTPUT
+          echo key=ruby---${{ inputs.id }}---${ver}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
+      - uses: actions/cache/restore@v4
+        if: ${{ inputs.verset == 'minver' }}
+        id: cache
+        with:
+          key: ${{ steps.key.outputs.key }}
+          path: ruby.tar.zst
+          lookup-only: true
+      - name: build ruby
+        if: ${{ steps.cache.outputs.cache-hit != 'true' && inputs.verset == 'minver' }}
+        run: |
+          iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
+          export RBENV_ROOT=$(pwd)/.rbenv
+          git clone https://github.com/rbenv/rbenv.git $RBENV_ROOT
+          eval "$($RBENV_ROOT/bin/rbenv init - bash)"
+          git clone https://github.com/rbenv/ruby-build.git $(rbenv root)/plugins/ruby-build
+          rbenv install ${{ steps.key.outputs.ver }}
+          rbenv global ${{ steps.key.outputs.ver }}
+          tar cavf ruby.tar.zst .rbenv
+      - uses: actions/cache/save@v4
+        if: ${{ steps.cache.outputs.cache-hit != 'true' && inputs.verset == 'minver' }}
+        id: cache_save
+        with:
+          key: ${{ steps.key.outputs.key }}
+          path: ruby.tar.zst
+
   # build and test Iguana
   #########################################################
 
@@ -199,6 +244,7 @@ jobs:
       - download_test_data
       - build_hipo
       - build_root
+      - build_ruby
     runs-on: ${{ inputs.runner }}
     container:
       image: ${{ inputs.container }}
@@ -227,14 +273,21 @@ jobs:
       - name: install dependency packages
         run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       ###### ruby
-      - name: install ruby
-        if: ${{ inputs.id != 'macOS' }}
+      - name: install ruby from linux package manager
+        if: ${{ inputs.id != 'macOS' && inputs.verset != 'minver' }}
+        run: pacman -S --noconfirm ruby
+      - name: install ruby from cached minver build
+        if: ${{ inputs.id != 'macOS' && inputs.verset == 'minver' }}
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ needs.build_ruby.outputs.key }}
+          path: ruby.tar.zst
+      - name: source ruby from cached minver build
+        if: ${{ inputs.id != 'macOS' && inputs.verset == 'minver' }}
         run: |
-          if [ "${{ inputs.verset }}" = "minver" ]; then
-            iguana_src/.github/install-ruby.sh $(iguana_src/meson/minimum-version.sh ruby)
-          else
-            pacman -S --noconfirm ruby
-          fi
+          tar xf ruby.tar.zst
+          eval "$(.rbenv/bin/rbenv init - bash)"
+          echo PATH=$PATH >> $GITHUB_ENV
       ###### python bindings
       - name: install python bindings dependencies
         if: ${{ matrix.id == 'python' }}
