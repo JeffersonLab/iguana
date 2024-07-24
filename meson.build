@@ -95,7 +95,13 @@ foreach dep : dep_list
     endforeach
     incdirs = ROOT_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
   else
-    continue # skip declared dependencies
+    name = dep.get_variable(internal: 'name', default_value: dep.name())
+    if name == 'rcdb'
+      incdirs = [ dep.get_variable(internal: 'includedir') ]
+    else
+      warning(f'Unknown dependency "@name@"')
+      continue
+    endif
   endif
 
   # append to `dep_*_dirs` arrays, uniquely
