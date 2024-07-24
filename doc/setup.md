@@ -52,6 +52,12 @@ cmake --build build-hipo
 cmake --install build-hipo
 ```
 
+### 🟩 Optional: `ruby`: programming language
+<https://www.ruby-lang.org/en/>
+- Likely available in your package manager, likely as `ruby`
+- This is needed by [`chameleon`](/src/chameleon) for generating language bindings, which you need
+  if you intend to use Iguana with languages other than C++
+
 ### 🟩 Optional: `ROOT`: Data analysis framework
 <https://root.cern.ch/>
 - ROOT is an **optional** dependency: some algorithms and test code depends on ROOT, but if you do not
