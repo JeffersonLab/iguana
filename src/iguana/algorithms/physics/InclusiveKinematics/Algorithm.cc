@@ -1,5 +1,4 @@
 #include "Algorithm.h"
-#include "iguana/services/RCDBReader.h"
 
 // ROOT
 #include <Math/Vector4D.h>
@@ -32,6 +31,9 @@ namespace iguana::physics {
     i_qy     = result_schema.getEntryOrder("qy");
     i_qz     = result_schema.getEntryOrder("qz");
     i_qE     = result_schema.getEntryOrder("qE");
+
+    // instantiate RCDB reader
+    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName());
 
     // parse config file
     ParseYAMLConfig();
@@ -177,8 +179,12 @@ namespace iguana::physics {
     m_log->Trace("-> calling Reload({}, {})", runnum, key);
     o_runnum->Save(runnum, key);
 
+    // get the beam energy //////////////////////////////////////////////////////////
+    auto beam_energy = m_rcdb->GetBeamEnergy(runnum);
+    m_log->Error("Beam energy = {}", beam_energy);
+    /////////////////////////////////////////////////////////////////////////////////
+
     // parse config params
-    auto beam_energy     = GetOptionScalar<double>("beam_energy", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_energy"});
     auto beam_direction  = GetOptionVector<double>("beam_direction", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_direction"});
     auto target_particle = GetOptionScalar<std::string>("target_particle", {"initial_state", GetConfig()->InRange("runs", runnum), "target_particle"});
 
