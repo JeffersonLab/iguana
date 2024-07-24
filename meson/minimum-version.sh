@@ -36,6 +36,11 @@ case $dep in
     [ "$cmd" = "ALA" ] && echo "ERROR: command '$cmd' is not used for '$dep'" >&2 && exit 1
     result_src='https://root.cern/download/root_v6.28.12.source.tar.gz'
     ;;
+  ruby)
+    result_meson='>=2.7.2'
+    result_ala='https://archive.archlinux.org/packages/r/ruby/ruby-2.7.2-1-x86_64.pkg.tar.zst'
+    [ "$cmd" = "src" ] && echo "ERROR: command '$cmd' is not used for '$dep'" >&2 && exit 1
+    ;;
   *)
     echo "ERROR: dependency '$dep' is unknown" >&2
     exit 1
