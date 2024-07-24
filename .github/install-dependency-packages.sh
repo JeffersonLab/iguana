@@ -36,7 +36,6 @@ GENERAL_PACKAGE_LIST_LINUX=(
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
   yaml-cpp
-  ruby # here, rather than in GENERAL_PACKAGE_LIST_LINUX, so that we can test minver
 )
 
 ##############################

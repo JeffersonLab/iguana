@@ -31,19 +31,19 @@ fs = import('fs')
 fmt_dep = dependency(
   'fmt',
   method: 'pkg-config',
-  version: run_command('meson' / 'minimum-version.sh', 'fmt', check: true).stdout().strip(),
+  version: '>=' + run_command('meson' / 'minimum-version.sh', 'fmt', check: true).stdout().strip(),
 )
 yamlcpp_dep = dependency(
   'yaml-cpp',
   method: 'pkg-config',
-  version: run_command('meson' / 'minimum-version.sh', 'yaml-cpp', check: true).stdout().strip(),
+  version: '>=' + run_command('meson' / 'minimum-version.sh', 'yaml-cpp', check: true).stdout().strip(),
 )
 hipo_dep = dependency('hipo4', method: 'pkg-config', version: '>=4.1.0')
 ROOT_dep = dependency(
   'ROOT',
   required: get_option('z_require_root'),
   method: 'cmake',
-  version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip(),
+  version: '>=' + run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip(),
 )
 
 # list of dependencies
