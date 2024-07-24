@@ -226,15 +226,15 @@ jobs:
       ###### system
       - name: install dependency packages
         run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      ###### ruby (for linux only; using ALA for older versions is not the right approach, so use setup-ruby action instead)
-      - name: set ruby version
+      ###### ruby
+      - name: install ruby
         if: ${{ inputs.id != 'macOS' }}
         run: |
-          [ "${{ inputs.verset }}" == "minver" ] && ruby_ver=$(iguana_src/meson/minimum-version.sh ruby) || ruby_ver='head'
-          echo $ruby_ver > .ruby-version
-          echo "| \`ruby\` | $ruby_ver |" >> pkg_summary.md
-      - uses: ruby/setup-ruby@v1
-        if: ${{ inputs.id != 'macOS' }}
+          if [ "${{ inputs.verset }}" = "minver" ]; then
+            iguana_src/.github/install-ruby.sh $(iguana_src/meson/minimum-version.sh ruby)
+          else
+            pacman -S --noconfirm ruby
+          fi
       ###### python bindings
       - name: install python bindings dependencies
         if: ${{ matrix.id == 'python' }}
@@ -288,6 +288,7 @@ jobs:
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_ref }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`ruby\` | $(ruby --version) |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       ### build
       - name: meson setup
