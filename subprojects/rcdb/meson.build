@@ -4,21 +4,25 @@ project(
   meson_version: '>=1.2',
 )
 
-rcdb_home = ''
-foreach dir : [
-  get_option('home'),
-  run_command('getenv_rcdb_home.sh', check: false).stdout().strip(),
-]
-  if dir != ''
-    rcdb_home = dir
-    message('RCDB found at ' + rcdb_home)
-    break
-  endif
-endforeach
+use_rcdb = false
+rcdb_home = get_option('home')
+rcdb_headers = get_option('home') / 'cpp' / 'include'
 
-rcdb_dep = rcdb_home == '' ? dependency('', required: false) : declare_dependency(
+if get_option('home') != ''
+  fs = import('fs')
+  if fs.is_dir(rcdb_headers)
+    use_rcdb = true
+  else
+    warning(f'RCDB include directory "@rcdb_headers@" does not exist; RCDB will not be used')
+  endif
+else
+  warning('RCDB not found; either use build option "rcdb:home" or set environment variable "$RCDB_HOME"')
+endif
+
+rcdb_dep = not use_rcdb ? dependency('', required: false) : declare_dependency(
+  version: get_option('home'), # could use `module info-loaded rcdb` on ifarm, but `get_option('home')` is platform independent
   include_directories: include_directories(
-    join_paths(rcdb_home, 'cpp', 'include'),
+    rcdb_headers,
     is_system: true, # suppress consumer warnings
   ),
 )
