@@ -28,7 +28,12 @@ pkg = import('pkgconfig')
 fs = import('fs')
 
 # build subprojects
-rcdb_subproj = subproject('rcdb')
+rcdb_subproj = subproject(
+  'rcdb',
+  default_options: {
+    'home': run_command('meson' / 'get-env.py', 'RCDB_HOME', check: false).stdout().strip(),
+  }
+)
 
 # resolve dependencies
 prog_minver = find_program('meson' / 'minimum-version.sh')
