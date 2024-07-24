@@ -2,6 +2,7 @@
 
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
+#include "iguana/services/RCDBReader.h"
 
 namespace iguana::physics {
 
@@ -89,7 +90,6 @@ namespace iguana::physics {
 
       // config options
       int o_runnum;
-      double o_beam_energy;
       std::vector<double> o_beam_direction;
       std::string o_beam_particle;
       std::string o_target_particle;
@@ -108,6 +108,8 @@ namespace iguana::physics {
       };
       particle_t m_beam;
       particle_t m_target;
+      double m_beam_energy;
+      std::unique_ptr<RCDBReader> m_rcdb;
   };
 
 }

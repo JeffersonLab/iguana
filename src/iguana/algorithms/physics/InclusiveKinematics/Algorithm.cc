@@ -1,5 +1,4 @@
 #include "Algorithm.h"
-#include "iguana/services/RCDBReader.h"
 
 // ROOT
 #include <Math/Vector4D.h>
@@ -34,10 +33,13 @@ namespace iguana::physics {
 
     // parse config file
     ParseYAMLConfig();
-    o_runnum = GetCachedOption<int>("runnum").value_or(0); // FIXME: should be set from RUN::conig
+    o_runnum = GetCachedOption<int>("runnum").value_or(6666); // FIXME: should be set from RUN::conig
+    // get the beam energy
+    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName());
+    m_beam_energy = m_rcdb->GetBeamEnergy(o_runnum);
+    m_log->Error("Beam energy = {}", m_beam_energy);
 
     // get initial state configuration
-    o_beam_energy     = GetOptionScalar<double>("beam_energy", {"initial_state", GetConfig()->InRange("runs", o_runnum), "beam_energy"});
     o_beam_direction  = GetOptionVector<double>("beam_direction", {"initial_state", GetConfig()->InRange("runs", o_runnum), "beam_direction"});
     o_beam_particle   = GetOptionScalar<std::string>("beam_particle", {"initial_state", GetConfig()->InRange("runs", o_runnum), "beam_particle"});
     o_target_particle = GetOptionScalar<std::string>("target_particle", {"initial_state", GetConfig()->InRange("runs", o_runnum), "target_particle"});
@@ -87,7 +89,7 @@ namespace iguana::physics {
       o_beam_direction = {0.0, 0.0, 1.0};
     }
     auto dir_mag = std::hypot(o_beam_direction[0], o_beam_direction[1], o_beam_direction[2]);
-    auto beam_p  = std::sqrt(std::pow(o_beam_energy, 2) - std::pow(m_beam.mass, 2));
+    auto beam_p  = std::sqrt(std::pow(m_beam_energy, 2) - std::pow(m_beam.mass, 2));
     if(dir_mag > 0) {
       m_beam.px = o_beam_direction[0] * beam_p / dir_mag;
       m_beam.py = o_beam_direction[1] * beam_p / dir_mag;
@@ -103,7 +105,7 @@ namespace iguana::physics {
 
     // print the configuration
     m_log->Debug(Logger::Header("CONFIGURATION"));
-    m_log->Debug("{:>30}: {}", "beam energy", o_beam_energy);
+    m_log->Debug("{:>30}: {}", "beam energy", m_beam_energy);
     m_log->Debug("{:>30}: {}, mass = {}, p = ({}, {}, {})", "beam particle", o_beam_particle, m_beam.mass, m_beam.px, m_beam.py, m_beam.pz);
     m_log->Debug("{:>30}: {}, mass = {}, p = ({}, {}, {})", "target particle", o_target_particle, m_target.mass, m_target.px, m_target.py, m_target.pz);
     m_log->Debug("{:>30}: {}", "reconstruction method", method_reconstruction_str);
