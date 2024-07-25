@@ -6,7 +6,7 @@ test_exe = executable(
   test_exe_name,
   test_exe_name + '.cc',
   include_directories: [ test_exe_inc, project_inc ],
-  dependencies: project_deps,
+  dependencies: [ project_deps, threadpool_dep ],
   link_with: test_exe_links,
   link_args: ROOT_dep_link_args,
   install: true,
@@ -41,8 +41,9 @@ foreach algo : algo_dict
         'algorithm-' + test_name_algo,
         test_exe,
         suite: [ 'algorithm' ],
-        args: test_args + [ '-n', get_option('test_num_events') ],
+        args: test_args + [ '-n', '0' ],#get_option('test_num_events') ],
         env: project_test_env,
+        timeout: 0,
       )
       benchmark(
         'benchmark-algorithm-' + test_name_algo,
