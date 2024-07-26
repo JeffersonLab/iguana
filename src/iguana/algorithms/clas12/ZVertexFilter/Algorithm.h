@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include <oneapi/tbb/concurrent_hash_map.h>
 
 namespace iguana::clas12 {
 

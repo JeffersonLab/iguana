@@ -29,6 +29,7 @@ fs = import('fs')
 
 # subprojects
 threadpool_proj = subproject('bshoshany-thread-pool')
+onetbb_proj = subproject('onetbb')
 
 # resolve dependencies
 prog_minver = find_program('meson' / 'minimum-version.sh')
@@ -60,6 +61,7 @@ prog_ruby = find_program(
   required: use_chameleon,
 )
 threadpool_dep = dependency('bshoshany-thread-pool') # `BS::thread_pool` https://github.com/bshoshany/thread-pool
+onetbb_dep = dependency('onetbb')#, fallback: ['onetbb', 'onetbb_dep'])
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
@@ -152,7 +154,7 @@ endif
 # general project vars
 project_inc = include_directories('src')
 project_libs = []
-project_deps = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ]) # do NOT include ROOT here
+project_deps = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep, onetbb_dep ]) # do NOT include ROOT here
 project_etc = get_option('sysconfdir') / meson.project_name()
 project_test_env = environment()
 project_pkg_vars = [
