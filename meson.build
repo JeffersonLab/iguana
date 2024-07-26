@@ -59,7 +59,7 @@ prog_ruby = find_program(
   version: '>=' + run_command(prog_minver, 'ruby', check: true).stdout().strip(),
   required: use_chameleon,
 )
-threadpool_dep = dependency('bshoshany-thread-pool')
+threadpool_dep = dependency('bshoshany-thread-pool') # `BS::thread_pool` https://github.com/bshoshany/thread-pool
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
