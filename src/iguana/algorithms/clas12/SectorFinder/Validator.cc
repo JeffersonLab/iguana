@@ -47,16 +47,21 @@ namespace iguana::clas12 {
       }
       u_YvsX.insert({pdg, YvsX});
     }
+    u_IsInFD = new TH1D(
+            "IsInFD",
+            "e^{-} with #theta>6.5^{o} Sector; e^{-} Sector",
+            7, -0.5, 6.5);
+
   }
 
   void SectorFinderValidator::Run(hipo::banklist& banks) const
   {
-    // get the momenta before
+    
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& sector_bank   = GetBank(banks, b_sector, "REC::Particle::Sector");
     auto& cal_bank = GetBank(banks, b_cal, "REC::Calorimeter");
 
-    // run the momentum corrections
+    
     m_algo_seq->Run(banks);
 
     // lock the mutex, so we can mutate plots
@@ -75,12 +80,29 @@ namespace iguana::clas12 {
         }
       }
 
+      if(pdg==11){
+        double Px=particle_bank.getFloat("px", row);
+        double Py=particle_bank.getFloat("py", row);
+        double Pz=particle_bank.getFloat("pz", row);
+        double P=sqrt(Px*Px+Py*Py+Pz*Pz);
+        double Theta=acos(Pz/P) * 180./M_PI ;
+        //electrons are in FT or FD
+        //sector should always be 1 if theta is larger than 5.5 degrees
+        if (Theta>6.5){
+          u_IsInFD->Fill(sector);
+          if(sector==0){  
+             m_log->Trace("e' with theta={} and sector==0, this should not happen", Theta);
+          }
+        }
+      }
+
       // skip central particle, or unknown sector
       if(sector == 0)
         continue;
-      //std::cout<<pdg<<" "<<sector-1<<" "<<row<<std::endl;
+      m_log->Trace("Filling SectorFinder Validator, {} pdg {} sector {} pindex {}", pdg, sector, row);
       u_YvsX.at(pdg).at(sector - 1)->Fill(x, y);
     }
+
   }
 
 
@@ -104,7 +126,13 @@ namespace iguana::clas12 {
           plot->Draw("colz");
         }
         canv->SaveAs(m_output_file_basename + "_" + std::to_string(pdg) + ".png");
+        
       }
+
+      auto canv1D         = new TCanvas("1D canvas","1D canvas",800, 600);
+      u_IsInFD->Draw();
+      canv1D->SaveAs(m_output_file_basename+"_elIsInFD.png");
+
       m_output_file->Write();
       m_log->Info("Wrote output file {}", m_output_file->GetName());
       m_output_file->Close();

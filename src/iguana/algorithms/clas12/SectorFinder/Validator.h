@@ -6,6 +6,7 @@
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TH2.h>
+#include <TH1.h>
 
 namespace iguana::clas12 {
 
@@ -34,6 +35,7 @@ namespace iguana::clas12 {
       TString m_output_file_basename;
       TFile* m_output_file;
       mutable std::unordered_map<int, std::vector<TH2D*>> u_YvsX;
+      TH1D* u_IsInFD;
   };
 
 }

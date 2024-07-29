@@ -101,19 +101,12 @@ namespace iguana::clas12 {
 
     for(int row = 0; row < particleBank.getRows(); row++) {
       int charge=particleBank.getInt("charge",row);
-      bool userSp=false;
-      //can't have reference to nothing
-      std::vector<int>& sct_us=sectors_uncharged;
-      std::vector<int>& pin_us=pindices_uncharged;
-      if(charge==0){
-        userSp=userSpecifiedBank_uncharged;
-        sct_us=sectors_uncharged;
-        pin_us=pindices_uncharged;
-      } else {
-        userSp=userSpecifiedBank_charged;
-        sct_us=sectors_charged;
-        pin_us=pindices_charged;
-      }
+
+      bool userSp = charge==0 ? userSpecifiedBank_uncharged : userSpecifiedBank_charged;
+      std::vector<int>& sct_us = charge==0 ? sectors_uncharged : sectors_charged;
+      std::vector<int>& pin_us = charge==0 ? pindices_uncharged : pindices_charged;
+
+      
       
       if(userSp){
         int sect=GetSector(sct_us, pin_us,row);
@@ -122,23 +115,30 @@ namespace iguana::clas12 {
           resultBank.putInt(i_pindex, row, row);
         }
       } else {
-        int trackSector=GetSector(sectors_track, pindices_track,row);
-        int calSector=GetSector(sectors_cal, pindices_cal,row);
-        int scintSector=GetSector(sectors_scint, pindices_scint,row);
-        if(trackSector != -1) {
-          //std::cout<<"track pindex "<<row<<" sect "<<trackSector<<std::endl;
-          resultBank.putInt(i_sector, row, trackSector);
-          resultBank.putInt(i_pindex, row, row);
-        }
-        else if(scintSector != -1) {
-          //std::cout<<"scint pindex "<<row<<" sect "<<scintSector<<std::endl;
-          resultBank.putInt(i_sector, row, scintSector);
-          resultBank.putInt(i_pindex, row, row);
-        }
-        else if(calSector != -1){
-          //std::cout<<"cal pindex "<<row<<" sect "<<calSector<<std::endl;
-          resultBank.putInt(i_sector, row, calSector);
-          resultBank.putInt(i_pindex, row, row);
+        enum det_enum {kTrack, kScint, kCal, nDet}; // try to get sector from these detectors, in this order
+        for(int d = 0; d < nDet; d++) {
+          int sect = -1;
+          std::string det_name;
+          switch(d) {
+            case kTrack:
+              sect=GetSector(sectors_track, pindices_track,row);
+              det_name="track";
+              break;
+            case kScint:
+              sect=GetSector(sectors_scint, pindices_scint,row);
+              det_name="scint";
+              break;
+            case kCal:
+              sect=GetSector(sectors_cal, pindices_cal,row);
+              det_name="cal";
+              break;
+          }
+          if(sect != -1) {
+            m_log->Trace("{} pindex {} sect {}", det_name, row, sect);
+            resultBank.putInt(i_sector, row, sect);
+            resultBank.putInt(i_pindex, row, row);
+            break;
+          }
         }
       }
     }
@@ -152,8 +152,7 @@ namespace iguana::clas12 {
       //check that we're only using FD detectors
       //eg have "sectors" in CND which we don't want to add here
       int det=bank.getInt("detector",row);
-      std::set<int>::iterator it = listFDDets.find(det);
-      if (it != listFDDets.end()) {
+      if (listFDDets.find(det) != listFDDets.end()) {
         sectors.push_back(bank.getInt("sector", row));
         pindices.push_back(bank.getInt("pindex", row));
       }
@@ -162,7 +161,7 @@ namespace iguana::clas12 {
   
   int SectorFinder::GetSector(std::vector<int> const& sectors, std::vector<int> const& pindices, int const pindex) const
   {
-    for(long unsigned int i=0;i<sectors.size();i++){
+    for(std::size_t i=0;i<sectors.size();i++){
       if (pindices.at(i)==pindex){
         return sectors.at(i);
       }
