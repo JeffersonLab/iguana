@@ -32,18 +32,18 @@ namespace iguana::clas12 {
       void Stop() override;
 
       /// @action_function{scalar transformer} boost the 4-momentum @f$p=(p_x,p_y,p_z,E)@f$ along @f$\beta=(\beta_x, \beta_y, \beta_z)@f$
-      /// @param p_x @f$p_x@f$
-      /// @param p_y @f$p_y@f$
-      /// @param p_z @f$p_z@f$
+      /// @param px @f$p_x@f$
+      /// @param py @f$p_y@f$
+      /// @param pz @f$p_z@f$
       /// @param E @f$E@f$
       /// @param beta_x @f$\beta_x@f$
       /// @param beta_y @f$\beta_y@f$
       /// @param beta_z @f$\beta_z@f$
       /// @returns the transformed momentum
-      vector4_t Boost(
-          vector_element_t const p_x,
-          vector_element_t const p_y,
-          vector_element_t const p_z,
+      Momentum4 Boost(
+          vector_element_t const px,
+          vector_element_t const py,
+          vector_element_t const pz,
           vector_element_t const E,
           vector_element_t const beta_x,
           vector_element_t const beta_y,

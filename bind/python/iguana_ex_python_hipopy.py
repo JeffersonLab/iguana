@@ -55,7 +55,7 @@ for iBatch, batch in enumerate(hp.iterate([inFile],banks=banks,step=step)):
                         # it requires reading full `hipo::bank` objects, whereas this example is meant to demonstrate
                         # `iguana` usage operating _only_ on bank row elements
 
-                px, py, pz, = algo_momentum_correction.Transform(
+                p_corrected = algo_momentum_correction.Transform(
                     batch['REC::Particle_px'][iEvent][row],
                     batch['REC::Particle_py'][iEvent][row],
                     batch['REC::Particle_pz'][iEvent][row],
@@ -66,7 +66,7 @@ for iBatch, batch in enumerate(hp.iterate([inFile],banks=banks,step=step)):
 
                 print(f'Accepted PID {pid}:')
                 print(f'  p_old = ({batch["REC::Particle_px"][iEvent][row]}, {batch["REC::Particle_py"][iEvent][row]}, {batch["REC::Particle_pz"][iEvent][row]})')
-                print(f'  p_new = ({px}, {py}, {pz})')
+                print(f'  p_new = ({p_corrected.px}, {p_corrected.py}, {p_corrected.pz})')
 
     # End iteration if maximum number of batches reached
     if (iBatch>=nbatches): break

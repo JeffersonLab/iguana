@@ -54,7 +54,7 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
                        # it requires reading full `hipo::bank` objects, whereas this example is meant to demonstrate
                        # `iguana` usage operating _only_ on bank row elements
 
-            px, py, pz, = algo_momentum_correction.Transform(
+            p_corrected = algo_momentum_correction.Transform(
                     particleBank.getFloat("px", row),
                     particleBank.getFloat("py", row),
                     particleBank.getFloat("pz", row),
@@ -65,7 +65,7 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
 
             print(f'Accepted PID {pid}:')
             print(f'  p_old = ({particleBank.getFloat("px", row)}, {particleBank.getFloat("py", row)}, {particleBank.getFloat("pz", row)})')
-            print(f'  p_new = ({px}, {py}, {pz})')
+            print(f'  p_new = ({p_corrected.px}, {p_corrected.py}, {p_corrected.pz})')
 
 algo_eventbuilder_filter.Stop()
 algo_momentum_correction.Stop()

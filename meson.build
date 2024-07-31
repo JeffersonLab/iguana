@@ -168,15 +168,33 @@ add_project_arguments(
   language: [ 'cpp' ],
 )
 
+# start chameleon
+use_chameleon = get_option('bind_fortran')
+if use_chameleon
+  subdir('src/chameleon')
+endif
+
 # build and install shared libraries
 subdir('src/iguana/services')
 subdir('src/iguana/algorithms')
 subdir('src/iguana/tests')
 
-# build bindings
-pythondir = 'python'
+# build and install bindings
+if use_chameleon
+  subdir('src/iguana/bindings')
+endif
 if get_option('bind_python')
   subdir('bind/python')
+endif
+
+# build examples
+if get_option('install_examples')
+  subdir('examples')
+endif
+
+# generate documentation
+if get_option('install_documentation')
+  subdir('doc/gen')
 endif
 
 # generate pkg-config file
@@ -193,11 +211,6 @@ pkg.generate(
   requires: [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
   variables: project_pkg_vars_nonempty,
 )
-
-# build examples
-if get_option('install_examples')
-  subdir('examples')
-endif
 
 # install environment setup files
 if get_option('z_install_envfile')

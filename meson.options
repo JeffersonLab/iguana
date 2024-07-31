@@ -3,7 +3,8 @@ option('bind_fortran', type: 'boolean', value: false, description: 'Install Fort
 option('bind_python',  type: 'boolean', value: false, description: 'Install Python bindings')
 
 # optional installations: install additional objects, such as example executables
-option('install_examples', type: 'boolean', value: false, description: 'Install examples')
+option('install_examples',      type: 'boolean', value: false, description: 'Install examples')
+option('install_documentation', type: 'boolean', value: false, description: 'Install documentation; requires `doxygen`')
 
 # test options: control how tests are run
 option('test_data_file',           type: 'string',  value: '',    description: 'Sample HIPO file for testing. Must be an absolute path.')

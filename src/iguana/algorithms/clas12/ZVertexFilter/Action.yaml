@@ -1,0 +1,13 @@
+algorithm:
+  name: 'clas12::ZVertexFilter'
+
+actions:
+  - name: Filter
+    type: filter
+    inputs:
+      - name: zvertex
+        type: double
+      - name: pid
+        type: int
+      - name: status
+        type: int

@@ -1,0 +1,35 @@
+algorithm:
+  name: 'physics::InclusiveKinematics'
+
+actions:
+  - name: ComputeFromLepton
+    type: creator
+    inputs:
+      - name: lepton_px
+        type: double
+        cast: float
+      - name: lepton_py
+        type: double
+        cast: float
+      - name: lepton_pz
+        type: double
+        cast: float
+    outputs:
+      - name: qx
+        type: double
+      - name: qy
+        type: double
+      - name: qz
+        type: double
+      - name: qE
+        type: double
+      - name: Q2
+        type: double
+      - name: x
+        type: double
+      - name: y
+        type: double
+      - name: W
+        type: double
+      - name: nu
+        type: double

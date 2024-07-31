@@ -32,41 +32,41 @@ namespace iguana::clas12 {
       /// @param pid the particle PDG
       /// @param torus torus setting
       /// @returns the transformed momentum
-      vector3_t Transform(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const sec, int const pid, float const torus) const;
+      Momentum3 Transform(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const sec, int const pid, float const torus) const;
 
       /// @action_function{scalar creator} Calculate the correction factor for inbending data
-      /// @param Px @f$p_x@f$
-      /// @param Py @f$p_y@f$
-      /// @param Pz @f$p_z@f$
+      /// @param px @f$p_x@f$
+      /// @param py @f$p_y@f$
+      /// @param pz @f$p_z@f$
       /// @param sec the sector
       /// @param pid the particle PDG
       /// @returns the correction factor
-      double CorrectionInbending(vector_element_t const Px, vector_element_t const Py, vector_element_t const Pz, int const sec, int const pid) const;
+      double CorrectionInbending(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const sec, int const pid) const;
 
       /// @action_function{scalar creator} Calculate the correction factor for outbending data
-      /// @param Px @f$p_x@f$
-      /// @param Py @f$p_y@f$
-      /// @param Pz @f$p_z@f$
+      /// @param px @f$p_x@f$
+      /// @param py @f$p_y@f$
+      /// @param pz @f$p_z@f$
       /// @param sec the sector
       /// @param pid the particle PDG
       /// @returns the correction factor
-      double CorrectionOutbending(vector_element_t const Px, vector_element_t const Py, vector_element_t const Pz, int const sec, int const pid) const;
+      double CorrectionOutbending(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const sec, int const pid) const;
 
       /// @action_function{scalar creator} Energy loss correction for inbending data
-      /// @param Px @f$p_x@f$
-      /// @param Py @f$p_y@f$
-      /// @param Pz @f$p_z@f$
+      /// @param px @f$p_x@f$
+      /// @param py @f$p_y@f$
+      /// @param pz @f$p_z@f$
       /// @param pid the particle PDG
       /// @returns the correction factor
-      double EnergyLossInbending(vector_element_t const Px, vector_element_t const Py, vector_element_t const Pz, int const pid) const;
+      double EnergyLossInbending(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const pid) const;
 
       /// @action_function{scalar creator} Energy loss correction for outbending data
-      /// @param Px @f$p_x@f$
-      /// @param Py @f$p_y@f$
-      /// @param Pz @f$p_z@f$
+      /// @param px @f$p_x@f$
+      /// @param py @f$p_y@f$
+      /// @param pz @f$p_z@f$
       /// @param pid the particle PDG
       /// @returns the correction factor
-      double EnergyLossOutbending(vector_element_t const Px, vector_element_t const Py, vector_element_t const Pz, int const pid) const;
+      double EnergyLossOutbending(vector_element_t const px, vector_element_t const py, vector_element_t const pz, int const pid) const;
 
     private:
 

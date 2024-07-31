@@ -234,6 +234,14 @@ jobs:
           source .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
           python -m pip install -r iguana_src/bind/python/requirements.txt
+      ###### install doxygen
+      - name: install doxygen
+        if: ${{ matrix.id == 'documentation' }}
+        run: |
+          pacman -S --noconfirm doxygen graphviz
+          echo "INSTALLED VERSIONS:"
+          echo "doxygen: $(doxygen --version)"
+          echo "$(dot --version)"
       ###### hipo
       - name: get `hipo-withROOT` build
         if: ${{ matrix.id != 'noROOT' }}
@@ -275,11 +283,6 @@ jobs:
       ### build
       - name: meson setup
         run: |
-          if [ "${{ matrix.id }}" = "cpp" ]; then
-            validate_all="true" # 'cpp' job will upload validator artifacts, so use all statistics
-          else
-            validate_all="false"
-          fi
           meson setup iguana_build iguana_src           \
             --prefix=$(pwd)/iguana                      \
             --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
@@ -288,7 +291,6 @@ jobs:
             -Dtest_data_file=$(pwd)/test_data.hipo      \
             -Dtest_num_events=${{ env.num_events }}     \
             -Dtest_output_dir=$(pwd)/validation_results \
-            -Dtest_validator_all_stats=${validate_all}  \
             ${{ matrix.opts }}
       - name: dump build options
         run: meson configure iguana_build --no-pager
@@ -398,47 +400,34 @@ jobs:
           echo "========================================= TEST RUN ========================================="
           install_consumer_cmake/bin/iguana_ex_cpp_00_run_functions test_data.hipo 10
       ### upload artifacts
-      - uses: actions/upload-artifact@v4
+      - name: upload build log artifacts
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: logs_iguana_build_${{ matrix.id }}
           retention-days: 5
           path: iguana_build/meson-logs
-      - uses: actions/upload-artifact@v4
+      - name: upload coverage artifacts
+        uses: actions/upload-artifact@v4
         if: ${{ matrix.id == 'coverage' }}
         with:
           name: coverage-report
           retention-days: 5
           path: coverage-report
-      - uses: actions/upload-artifact@v4
+      - name: upload validator artifacts
+        uses: actions/upload-artifact@v4
         if: ${{ matrix.id == 'cpp' }}
         with:
           name: _validation_results
           retention-days: 5
           path: validation_results
-
-  # documentation
-  #########################################################
-
-  doc_generate:
-    if: ${{ inputs.id == 'linux-latest' }}
-    name: Generate documentation
-    runs-on: ${{ inputs.runner }}
-    container:
-      image: ${{ inputs.container }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: install dependencies
-        run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm doxygen graphviz
-      - name: doxygen
-        run: doxygen doc/gen/Doxyfile
-      - uses: actions/upload-artifact@v4
+      - name: upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.id == 'documentation' }}
         with:
           name: doc_doxygen
           retention-days: 5
-          path: doc/api/
+          path: iguana/share/doc/iguana/html/
 
   # deployment
   #########################################################
@@ -447,7 +436,6 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && inputs.id == 'linux-latest' }}
     name: Collect webpages
     needs:
-      - doc_generate
       - iguana
     runs-on: ${{ inputs.runner }}
     steps:

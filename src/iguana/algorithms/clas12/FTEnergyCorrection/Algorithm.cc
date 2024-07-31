@@ -26,7 +26,7 @@ namespace iguana::clas12 {
     ShowBank(ftParticleBank, Logger::Header("OUTPUT FT PARTICLES"));
   }
 
-  vector4_t  FTEnergyCorrection::Transform(
+  Momentum4 FTEnergyCorrection::Transform(
       vector_element_t const px,
       vector_element_t const py,
       vector_element_t const pz,

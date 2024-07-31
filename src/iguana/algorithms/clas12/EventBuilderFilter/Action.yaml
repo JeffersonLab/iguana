@@ -1,0 +1,9 @@
+algorithm:
+  name: 'clas12::EventBuilderFilter'
+
+actions:
+  - name: Filter
+    type: filter
+    inputs:
+      - name: pid
+        type: int

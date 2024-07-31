@@ -48,7 +48,7 @@ PROJECT_NAME           = "Iguana"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         =
+PROJECT_NUMBER         = @version@
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -68,7 +68,7 @@ PROJECT_LOGO           =
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       =
+OUTPUT_DIRECTORY       = @top_builddir@/doc/gen
 
 # If the CREATE_SUBDIRS tag is set to YES then doxygen will create up to 4096
 # sub-directories (in 2 levels) under the output directory of each output format
@@ -832,7 +832,7 @@ FILE_VERSION_FILTER    =
 # DoxygenLayout.xml, doxygen will parse it automatically even if the LAYOUT_FILE
 # tag is left empty.
 
-LAYOUT_FILE            = doc/gen/DoxygenLayout.xml
+LAYOUT_FILE            = @top_srcdir@/doc/gen/DoxygenLayout.xml
 
 # The CITE_BIB_FILES tag can be used to specify one or more bib files containing
 # the reference definitions. This must be a list of .bib files. The .bib
@@ -853,7 +853,7 @@ CITE_BIB_FILES         =
 # messages are off.
 # The default value is: NO.
 
-QUIET                  = NO
+QUIET                  = YES
 
 # The WARNINGS tag can be used to turn on/off the warning messages that are
 # generated to standard error (stderr) by doxygen. If WARNINGS is set to YES
@@ -960,11 +960,12 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = src/ \
-                         bind/ \
-                         doc/gen/ \
-                         doc/gen/mainpage.md \
-                         examples/
+INPUT                  = @top_srcdir@/src/ \
+                         @top_builddir@/src/iguana/algorithms \
+                         @top_srcdir@/bind/ \
+                         @top_srcdir@/doc/gen/ \
+                         @top_srcdir@/doc/gen/mainpage.md \
+                         @top_srcdir@/examples/
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1006,9 +1007,9 @@ INPUT_FILE_ENCODING    =
 
 FILE_PATTERNS          = *.dox \
                          *.h \
+                         chameleon_*_bind.cc \
                          iguana_ex_*.cc \
                          iguana_ex_*.py \
-                         Bindings.cc \
                          *.f \
                          *.C
 
@@ -1025,8 +1026,7 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = src/iguana/algorithms/Bindings.cc \
-                         src/iguana/algorithms/clas12/FiducialFilter/Pass1CutData.h
+EXCLUDE                = @top_srcdir@/src/iguana/algorithms/clas12/FiducialFilter/Pass1CutData.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -1137,7 +1137,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = doc/gen/mainpage.md
+USE_MDFILE_AS_MAINPAGE = @top_srcdir@/doc/gen/mainpage.md
 
 # The Fortran standard specifies that for fixed formatted Fortran code all
 # characters from position 72 are to be considered as comment. A common
@@ -1269,7 +1269,7 @@ GENERATE_HTML          = YES
 # The default directory is: html.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_OUTPUT            = doc/api
+HTML_OUTPUT            = html
 
 # The HTML_FILE_EXTENSION tag can be used to specify the file extension for each
 # generated HTML page (for example: .htm, .php, .asp).
@@ -2453,7 +2453,7 @@ HIDE_UNDOC_RELATIONS   = YES
 # set to NO
 # The default value is: NO.
 
-HAVE_DOT               = YES
+HAVE_DOT               = @have_dot@
 
 # The DOT_NUM_THREADS specifies the number of dot invocations doxygen is allowed
 # to run in parallel. When set to 0 doxygen will base this on the number of

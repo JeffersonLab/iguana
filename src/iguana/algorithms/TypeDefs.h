@@ -3,20 +3,34 @@
 #pragma once
 
 #include <string>
-#include <tuple>
 #include <unordered_map>
 
 namespace iguana {
 
   /// Vector element type
   using vector_element_t = double;
-  /// 2-vector container type
-  using vector2_t = std::tuple<vector_element_t, vector_element_t>;
-  /// 3-vector container type
-  using vector3_t = std::tuple<vector_element_t, vector_element_t, vector_element_t>;
-  /// 4-vector container type
-  using vector4_t = std::tuple<vector_element_t, vector_element_t, vector_element_t, vector_element_t>;   
 
+  /// 3-momentum type
+  struct Momentum3 {
+    /// @f$x@f$-component
+    vector_element_t px;
+    /// @f$y@f$-component
+    vector_element_t py;
+    /// @f$z@f$-component
+    vector_element_t pz;
+  };
+
+  /// 4-momentum type
+  struct Momentum4 {
+    /// @f$x@f$-component
+    vector_element_t px;
+    /// @f$y@f$-component
+    vector_element_t py;
+    /// @f$z@f$-component
+    vector_element_t pz;
+    /// @f$E@f$-component
+    vector_element_t E;
+  };
 
   /// Light-weight namespace for particle constants
   namespace particle {

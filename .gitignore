@@ -10,8 +10,8 @@
 /share
 /.cache
 
-# documentation artifacts
-/doc/api
+# chameleon artifacts
+chameleon-tree
 
 # data files
 *.hipo
