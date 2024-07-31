@@ -43,7 +43,7 @@ algo_dict = [
   },
   {
     'name': 'clas12::SectorFinder',
-    'has_validator': false,
+    'has_validator': true,
     'has_action_yaml': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator' ],
