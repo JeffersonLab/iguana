@@ -31,10 +31,10 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// @action_function{scalar transformer} boost the 4-momentum @f$p=(px,py,pz,E)@f$ along @f$\beta=(\beta_x, \beta_y, \beta_z)@f$
-      /// @param px @f$px@f$
-      /// @param py @f$py@f$
-      /// @param pz @f$pz@f$
+      /// @action_function{scalar transformer} boost the 4-momentum @f$p=(p_x,p_y,p_z,E)@f$ along @f$\beta=(\beta_x, \beta_y, \beta_z)@f$
+      /// @param px @f$p_x@f$
+      /// @param py @f$p_y@f$
+      /// @param pz @f$p_z@f$
       /// @param E @f$E@f$
       /// @param beta_x @f$\beta_x@f$
       /// @param beta_y @f$\beta_y@f$
