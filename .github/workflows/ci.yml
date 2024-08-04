@@ -87,9 +87,6 @@ jobs:
     outputs:
       key: ${{ steps.key.outputs.key }}
     steps:
-      - name: fail macOS
-        if: ${{ inputs.id == 'macOS' }}
-        run: exit 1 # kill this job since ROOT build fails
       - name: checkout iguana
         uses: actions/checkout@v4
         with:
