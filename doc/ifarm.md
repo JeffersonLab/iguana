@@ -5,7 +5,7 @@
 ```bash
 meson/resolve-dependencies.py --help  # prints the usage guide
 ```
-Use the `--env` option and set the resulting environment variables.
+Use the resulting arguments when setting up or configuring your build directory.
 
 ## Build and Install
 

@@ -26,6 +26,14 @@ add_languages('fortran', native: false, required: get_option('bind_fortran'))
 pkg = import('pkgconfig')
 fs = import('fs')
 
+# build subprojects
+rcdb_subproj = subproject(
+  'rcdb',
+  default_options: {
+    'home': run_command('meson' / 'get-env.py', 'RCDB_HOME', check: false).stdout().strip(),
+  }
+)
+
 # resolve dependencies
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
 fmt_dep = dependency(
@@ -45,13 +53,15 @@ ROOT_dep = dependency(
   method: 'cmake',
   version: run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip(),
 )
+rcdb_dep = dependency('rcdb', fallback: ['rcdb', 'rcdb_dep'], required: false)
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
 # ordered such that the ones users are *least likely* to try to build
 # themselves are listed last (see FIXME in meson/this_iguana.sh.in)
+# NOTE: omit ROOT (handled differently, and most ROOT users already have it in their environment)
 dep_list = []
-foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, ROOT_dep ]
+foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, rcdb_dep ]
   if dep.found()
     dep_list += dep
   endif
@@ -64,9 +74,6 @@ dep_pkgconfig_dirs = []
 foreach dep : dep_list
 
   # get library and include dirs
-  if dep.name() == 'ROOT'
-    continue # skip ROOT (handled differently, and most ROOT users already have it in their environment)
-  endif
   if dep.type_name() == 'pkgconfig'
     libdirs = [ dep.get_variable(pkgconfig: 'libdir') ]
     incdirs = [ dep.get_variable(pkgconfig: 'includedir') ]
@@ -77,7 +84,13 @@ foreach dep : dep_list
     endforeach
     incdirs = ROOT_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
   else
-    error('Cannot determine how dependency "' + dep.name() + '" was found')
+    name = dep.get_variable(internal: 'name', default_value: dep.name())
+    if name == 'rcdb'
+      incdirs = [ dep.get_variable(internal: 'includedir') ]
+    else
+      warning(f'Unknown dependency "@name@"')
+      continue
+    endif
   endif
 
   # append to `dep_*_dirs` arrays, uniquely
@@ -137,7 +150,7 @@ endif
 # general project vars
 project_inc = include_directories('src')
 project_libs = []
-project_deps = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ]) # do NOT include ROOT here
+project_deps = declare_dependency(dependencies: dep_list) # do NOT include ROOT here
 project_etc = get_option('sysconfdir') / meson.project_name()
 project_test_env = environment()
 project_pkg_vars = [
