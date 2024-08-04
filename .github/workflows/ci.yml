@@ -289,12 +289,11 @@ jobs:
         if: ${{ inputs.id != 'macOS' && inputs.verset == 'minver' }}
         run: |
           tar xf ruby.tar.zst
-          ls -at
           export RBENV_ROOT=$(pwd)/.rbenv
           echo RBENV_ROOT=$RBENV_ROOT >> $GITHUB_ENV
           eval "$($RBENV_ROOT/bin/rbenv init - bash)"
+          echo "ruby --version:"
           ruby --version
-          echo $PATH
           echo PATH=$PATH >> $GITHUB_ENV
       ###### python bindings
       - name: install python bindings dependencies
