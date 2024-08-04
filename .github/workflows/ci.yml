@@ -193,7 +193,7 @@ jobs:
           key: ${{ steps.key.outputs.key }}---${{ matrix.root_dep }}
           path: hipo.tar.zst
 
-  build_ruby:
+  build_ruby_minver:
     name: Build Minver Ruby
     runs-on: ${{ inputs.runner }}
     container:
@@ -247,7 +247,7 @@ jobs:
       - download_test_data
       - build_hipo
       - build_root
-      - build_ruby
+      - build_ruby_minver
     runs-on: ${{ inputs.runner }}
     container:
       image: ${{ inputs.container }}
@@ -283,7 +283,7 @@ jobs:
         if: ${{ inputs.id != 'macOS' && inputs.verset == 'minver' }}
         uses: actions/cache/restore@v4
         with:
-          key: ${{ needs.build_ruby.outputs.key }}
+          key: ${{ needs.build_ruby_minver.outputs.key }}
           path: ruby.tar.zst
       - name: source ruby from cached minver build
         if: ${{ inputs.id != 'macOS' && inputs.verset == 'minver' }}
