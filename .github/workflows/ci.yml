@@ -369,8 +369,10 @@ jobs:
             -Dtest_num_events=${{ env.num_events }}     \
             -Dtest_output_dir=$(pwd)/validation_results \
             ${{ matrix.opts }}
-      - name: dump build options
+      - name: dump all build options
         run: meson configure iguana_build --no-pager
+      - name: dump project build options
+        run: iguana_src/meson/dump-build-options.sh
       - run: meson compile
         working-directory: iguana_build
       - run: meson install
