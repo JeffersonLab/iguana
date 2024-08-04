@@ -21,29 +21,40 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 
 # initialize binding languanges
 add_languages('fortran', native: false, required: get_option('bind_fortran'))
+use_chameleon = get_option('bind_fortran')
 
 # meson modules
 pkg = import('pkgconfig')
 fs = import('fs')
 
 # resolve dependencies
+prog_minver = find_program('meson' / 'minimum-version.sh')
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
 fmt_dep = dependency(
   'fmt',
   method: 'pkg-config',
-  version: '>=' + run_command('meson' / 'minimum-version.sh', 'fmt', check: true).stdout().strip(),
+  version: '>=' + run_command(prog_minver, 'fmt', check: true).stdout().strip(),
 )
 yamlcpp_dep = dependency(
   'yaml-cpp',
   method: 'pkg-config',
-  version: '>=' + run_command('meson' / 'minimum-version.sh', 'yaml-cpp', check: true).stdout().strip(),
+  version: '>=' + run_command(prog_minver, 'yaml-cpp', check: true).stdout().strip(),
 )
-hipo_dep = dependency('hipo4', method: 'pkg-config', version: '>=4.1.0')
+hipo_dep = dependency(
+  'hipo4',
+  method: 'pkg-config',
+  version: '>=4.1.0'
+)
 ROOT_dep = dependency(
   'ROOT',
   required: get_option('z_require_root'),
   method: 'cmake',
-  version: '>=' + run_command('meson' / 'minimum-version.sh', 'ROOT', check: true).stdout().strip(),
+  version: '>=' + run_command(prog_minver, 'ROOT', check: true).stdout().strip(),
+)
+prog_ruby = find_program(
+  'ruby',
+  version: '>=' + run_command(prog_minver, 'ruby', check: true).stdout().strip(),
+  required: use_chameleon,
 )
 
 # list of dependencies
@@ -169,7 +180,6 @@ add_project_arguments(
 )
 
 # start chameleon
-use_chameleon = get_option('bind_fortran')
 if use_chameleon
   subdir('src/chameleon')
 endif
