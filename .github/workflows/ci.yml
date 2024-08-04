@@ -288,7 +288,12 @@ jobs:
       - name: source ruby from cached minver build
         if: ${{ inputs.id != 'macOS' && inputs.verset == 'minver' }}
         run: |
-          tar xf ruby.tar.zst
+          tar xvf ruby.tar.zst
+          echo '--'
+          ls -at
+          echo '--'
+          .rbenv/bin/rbenv init - bash
+          echo '--'
           eval "$(.rbenv/bin/rbenv init - bash)"
           ruby --version
           echo $PATH
