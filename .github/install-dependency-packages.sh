@@ -17,6 +17,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   wget
   git
   which
+  jq
   pkgconf
   ninja
   meson
