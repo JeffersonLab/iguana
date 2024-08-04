@@ -288,6 +288,7 @@ jobs:
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_ref }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`root\` | $(root --version |& head -n1) |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       ### build
       - name: meson setup
