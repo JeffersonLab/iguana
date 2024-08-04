@@ -94,8 +94,12 @@ jobs:
       - name: key
         id: key
         run: |
-          root_version=$(iguana_src/meson/minimum-version.sh root src | sed 's;.*/;;' | sed 's;\.tar\.gz;;')
-          echo key=root---${{ inputs.id }}---${root_version}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
+          ver=latest
+          if [ "${{ inputs.verset }}" = "minver" ]; then
+            ver=$(iguana_src/meson/minimum-version.sh root tag)
+          fi
+          echo ver=$ver >> $GITHUB_OUTPUT
+          echo key=root---${{ inputs.id }}---${ver}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
       - uses: actions/cache/restore@v4
         id: cache
         with:
@@ -108,11 +112,7 @@ jobs:
       - name: download ROOT source code
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          ver=latest
-          if [ "${{ inputs.verset }}" = "minver" ]; then
-            ver=$(iguana_src/meson/minimum-version.sh root tag)
-          fi
-          iguana_src/.github/download-ROOT-source.rb $ver
+          iguana_src/.github/download-ROOT-source.rb ${{ steps.key.outputs.ver }}
           tar xf $(ls -t *.gz | head -n1)
           ls -t
           mv -v $(ls -td root-* | head -n1) root_src
