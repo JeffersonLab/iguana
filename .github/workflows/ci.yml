@@ -108,9 +108,11 @@ jobs:
       - name: download ROOT source code
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          srcURL=$(iguana_src/meson/minimum-version.sh root src)
-          echo "[+] DOWNLOADING ROOT SOURCE CODE FROM: $srcURL"
-          wget -nv --no-check-certificate $srcURL
+          ver=latest
+          if [ "${{ inputs.verset }}" = "minver" ]; then
+            ver=$(iguana_src/meson/minimum-version.sh root tag)
+          fi
+          iguana_src/.github/download-ROOT-source.rb $ver
           tar xf $(ls -t *.gz | head -n1)
           ls -t
           mv -v $(ls -td root-* | head -n1) root_src
