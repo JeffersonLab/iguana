@@ -86,7 +86,9 @@ jobs:
       image: ${{ inputs.container }}
     outputs:
       key: ${{ steps.key.outputs.key }}
+      root_version: ${{ steps.key.outputs.root_version }}
     steps:
+      ### define key
       - name: checkout iguana
         uses: actions/checkout@v4
         with:
@@ -94,23 +96,24 @@ jobs:
       - name: key
         id: key
         run: |
-          root_version=$(iguana_src/meson/minimum-version.sh root src | sed 's;.*/;;' | sed 's;\.tar\.gz;;')
+          [ "${{ inputs.verset }}" = "minver" ] && root_version=$(iguana_src/meson/minimum-version.sh root tag) || root_version='latest'
+          echo root_version=$root_version >> $GITHUB_OUTPUT
           echo key=root---${{ inputs.id }}---${root_version}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
+      ### cache restore
       - uses: actions/cache/restore@v4
         id: cache
         with:
           key: ${{ steps.key.outputs.key }}
           path: root.tar.zst
           lookup-only: true
+      ### download and build
       - name: install dependencies
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: download ROOT source code
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          srcURL=$(iguana_src/meson/minimum-version.sh root src)
-          echo "[+] DOWNLOADING ROOT SOURCE CODE FROM: $srcURL"
-          wget -nv --no-check-certificate $srcURL
+          iguana_src/.github/download-ROOT-source.rb ${{ steps.key.outputs.root_version }}
           tar xf $(ls -t *.gz | head -n1)
           ls -t
           mv -v $(ls -td root-* | head -n1) root_src
@@ -121,6 +124,7 @@ jobs:
           cmake --build build
           cmake --install build
           tar caf root{.tar.zst,}
+      ### cache save
       - uses: actions/cache/save@v4
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         id: cache_save
@@ -144,6 +148,7 @@ jobs:
     outputs:
       key: ${{ steps.key.outputs.key }}
     steps:
+      ### get ROOT
       - name: get ROOT build
         if: ${{ matrix.root_dep == 'withROOT' }}
         uses: actions/cache/restore@v4
@@ -153,15 +158,18 @@ jobs:
       - name: untar ROOT build
         if: ${{ matrix.root_dep == 'withROOT' }}
         run: ls *.tar.zst | xargs -I{} tar xvf {}
+      ### define key
       - name: key
         id: key
         run: echo key=hipo---${{ inputs.id }}---${{ env.hipo_ref }}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
+      ### cache restore
       - uses: actions/cache/restore@v4
         id: cache
         with:
           key: ${{ steps.key.outputs.key }}---${{ matrix.root_dep }}
           path: hipo.tar.zst
           lookup-only: true
+      ### build
       - name: checkout iguana for dependency installation script
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/checkout@v4
@@ -183,6 +191,7 @@ jobs:
           cmake --build build
           cmake --install build
           tar cavf hipo{.tar.zst,}
+      ### cache save
       - uses: actions/cache/save@v4
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         id: cache_save
@@ -279,6 +288,7 @@ jobs:
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_ref }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`root\` | $(root --version 2>&1 | head -n1) |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       ### build
       - name: meson setup
