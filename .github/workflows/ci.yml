@@ -113,7 +113,7 @@ jobs:
       - name: download ROOT source code
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          iguana_src/.github/download-ROOT-source.rb ${{ steps.key.outputs.root_version }}
+          iguana_src/.github/download-ROOT-source.sh ${{ steps.key.outputs.root_version }}
           tar xf $(ls -t *.gz | head -n1)
           ls -t
           mv -v $(ls -td root-* | head -n1) root_src
