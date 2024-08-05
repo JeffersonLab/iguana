@@ -2,7 +2,7 @@ services_sources = [ 'Logger.cc', 'Object.cc', 'ConfigFileReader.cc', 'YAMLReade
 services_headers = [ 'Logger.h', 'Object.h', 'ConfigFileReader.h', 'YAMLReader.h', 'ConcurrentParam.h', 'GlobalParam.h', 'RCDBReader.h' ]
 
 if rcdb_dep.found()
-  add_project_arguments('-DUSE_RCDB', language: ['cpp'])
+  add_project_arguments('-DUSE_RCDB', '-DRCDB_SQLITE', language: ['cpp'])
 endif
 
 services_lib = shared_library(

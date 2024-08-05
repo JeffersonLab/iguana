@@ -20,6 +20,13 @@ else
   warning('RCDB not found; either use build option "rcdb:home" or set environment variable "$RCDB_HOME"')
 endif
 
+sqlite_dep = dependency('sqlite3', required: use_rcdb)
+#
+#
+### clas12root consumes rcdb using mysql, NOT sqlite
+#
+#
+
 rcdb_dep = not use_rcdb ? dependency('', required: false) : declare_dependency(
   # RCDB lacks a public version number, use its prefix instead to at least
   # inform the user which RCDB installation is used; alternatively, we could
@@ -34,4 +41,5 @@ rcdb_dep = not use_rcdb ? dependency('', required: false) : declare_dependency(
     includedir,
     is_system: true, # suppress consumer warnings
   ),
+  dependencies: [ sqlite_dep ],
 )
