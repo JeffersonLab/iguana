@@ -4,5 +4,4 @@ chameleon_sources = files(
   'src' / 'bind_c.rb',
 )
 
-ruby = find_program('ruby', version: '>=3.0.0', required: use_chameleon)
-chameleon_gen = find_program(chameleon_sources[0], required: use_chameleon)
+prog_chameleon = find_program(chameleon_sources[0], required: use_chameleon)

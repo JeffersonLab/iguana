@@ -132,7 +132,7 @@ foreach algo : algo_dict
         input: [ algo_dir / 'Action.yaml', chameleon_sources ],
         output: [ target_name + '_bind.cc' ],
         command: [
-          chameleon_gen,
+          prog_chameleon,
           '--input', '@INPUT0@',
           '--output', '@OUTDIR@',
           '--prefix', target_name,
