@@ -61,7 +61,7 @@ prog_ruby = find_program(
   required: use_chameleon,
 )
 threadpool_dep = dependency('bshoshany-thread-pool') # `BS::thread_pool` https://github.com/bshoshany/thread-pool
-onetbb_dep = dependency('onetbb')#, fallback: ['onetbb', 'onetbb_dep'])
+onetbb_dep = dependency('onetbb', fallback: 'onetbb')
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
