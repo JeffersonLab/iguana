@@ -24,4 +24,4 @@ esac
 echo "  $url"
 [ -z "$url" ] && echo "ERROR: GitHub API call returned empty string, perhaps tag '$tag' does not exist?" && exit 1
 echo "downloading ..."
-echo wget -nv --no-check-certificate --output-document root.tar.gz $url
+wget -nv --no-check-certificate --output-document root.tar.gz $url
