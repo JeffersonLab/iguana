@@ -16,6 +16,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   wget
   git
   which
+  jq
   pkgconf
   ninja
   meson
@@ -32,6 +33,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   libxext
   openssl
   gsl
+  davix
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
