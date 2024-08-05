@@ -36,8 +36,8 @@ case $dep in
     not_used 'tag'
     ;;
   root|ROOT)
-    result_ver='6.28.12'
-    result_tag='v6-28-12'
+    result_ver='6.28.10'
+    result_tag='v6-28-10'
     not_used 'ALA'
     ;;
   ruby)
