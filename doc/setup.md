@@ -118,8 +118,10 @@ meson configure              # outputs in a pager (`less`); you may scroll, or p
 meson configure --no-pager   # do not use a pager
 ```
 **but that's a _lot_ of text!** The _most important_ build options are near the bottom, under **"Project options"**.
-
-Alternatively, see [`meson.options`](/meson.options) for the list of project options, and some more details.
+To see _just_ the project options, run the following (which requires [`jq`](https://jqlang.github.io/jq/)):
+```
+/path/to/iguana-source/meson/dump-build-options.sh .
+```
 
 To set any build option, _e.g._ `install_examples` to `true`, run:
 ```bash
