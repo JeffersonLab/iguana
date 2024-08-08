@@ -53,7 +53,7 @@ namespace iguana::clas12 {
 
   void EventBuilderFilter::Stop()
   {
-    NEWLOG("test newlog {} {}", 7);
+    NEWLOG("test newlog {}", 7);
   }
 
 }

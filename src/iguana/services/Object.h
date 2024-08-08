@@ -65,5 +65,5 @@ namespace iguana {
 #define NEWLOG(fmt_str, ...) \
   PrintLog( \
       fmt::format("[{}]", fmt::styled(m_name, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::magenta))), \
-      fmt_str, \
+      FMT_STRING(fmt_str), \
       __VA_ARGS__);
