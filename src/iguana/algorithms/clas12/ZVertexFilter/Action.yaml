@@ -11,3 +11,6 @@ actions:
         type: int
       - name: status
         type: int
+      - name: key
+        type: concurrent_key_t
+        cast: int

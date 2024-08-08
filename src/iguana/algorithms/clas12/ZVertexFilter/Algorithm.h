@@ -1,7 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
-#include <oneapi/tbb/concurrent_hash_map.h>
+#include "iguana/services/ConcurrentParam.h"
 
 namespace iguana::clas12 {
 
@@ -26,13 +26,15 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
+      concurrent_key_t Reload(int const runnum, concurrent_key_t key=0) const;
+
       /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds if pid is one for which the filter should be applied to.;
       /// Cuts applied to particles in FD or CD (ie not in FT).
       /// @param zvertex the particle Z Vertex to check
       /// @param pid the particle pid
       /// @param status particle status used to check particle is not in FT
       /// @returns `true` if `zvertex` is within specified bounds
-      bool Filter(double const zvertex, int const pid, int const status) const;
+      bool Filter(double const zvertex, int const pid, int const status, concurrent_key_t const key) const;
 
       /// @returns the current run number
       int GetRunNum() const;
@@ -42,14 +44,13 @@ namespace iguana::clas12 {
       double GetZcutUpper() const;
 
     private:
-      /// `hipo::banklist` index for the particle bank
-      hipo::banklist::size_type b_particle;
+      hipo::banklist::size_type b_particle, b_config;
 
       /// Run number
-      int o_runnum;
+      mutable ConcurrentParam<int> o_runnum{"memoize"};
 
       /// Z-vertex cut
-      std::vector<double> o_zcuts;
+      mutable ConcurrentParam<std::vector<double>> o_zcuts{"memoize"};
 
       /// pids to apply ZVertexFilter to
       std::set<int> o_pids;
