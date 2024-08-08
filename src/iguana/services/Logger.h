@@ -121,10 +121,8 @@ namespace iguana {
                 fmt::runtime(fmt::format("{} {} {}\n", style(it->second), style(m_name), message)),
                 vals...);
           }
-          else {
-            Warn("Logger::Print called with unknown log level '{}'; printing as error instead", static_cast<int>(lev)); // FIXME: static_cast -> fmt::underlying, but needs new version of fmt
-            Error(message, vals...);
-          }
+          else
+            throw std::runtime_error("Logger::Print called with unknown log level");
         }
       }
 

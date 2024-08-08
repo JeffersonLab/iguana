@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include <fmt/format.h>
 #include "Logger.h"
 
 namespace iguana {
@@ -46,5 +47,23 @@ namespace iguana {
 
       /// `Logger` instance for this object
       std::unique_ptr<Logger> m_log;
+
+      void PrintLogV(std::string_view name, fmt::string_view fmt_str, fmt::format_args fmt_args)
+      {
+        fmt::print("<{}> {}\n", name, fmt::vformat(fmt_str, fmt_args));
+      }
+
+      template <typename... ARG_TYPES>
+      void PrintLog(std::string_view name, fmt::format_string<ARG_TYPES...> fmt_str, ARG_TYPES&&... fmt_args)
+      {
+        PrintLogV(name, fmt_str, fmt::make_format_args(fmt_args...));
+      }
+
   };
 }
+
+#define NEWLOG(fmt_str, ...) \
+  PrintLog( \
+      fmt::format("[{}]", fmt::styled(m_name, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::magenta))), \
+      fmt_str, \
+      __VA_ARGS__);
