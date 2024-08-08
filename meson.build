@@ -27,6 +27,9 @@ use_chameleon = get_option('bind_fortran')
 pkg = import('pkgconfig')
 fs = import('fs')
 
+# subprojects
+threadpool_proj = subproject('bshoshany-thread-pool')
+
 # resolve dependencies
 prog_minver = find_program('meson' / 'minimum-version.sh')
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
@@ -56,6 +59,8 @@ prog_ruby = find_program(
   version: '>=' + run_command(prog_minver, 'ruby', check: true).stdout().strip(),
   required: use_chameleon,
 )
+threadpool_dep = dependency('bshoshany-thread-pool') # `BS::thread_pool` https://github.com/bshoshany/thread-pool
+onetbb_dep = dependency('tbb', method: 'pkg-config', fallback: 'onetbb')
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
@@ -148,7 +153,7 @@ endif
 # general project vars
 project_inc = include_directories('src')
 project_libs = []
-project_deps = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ]) # do NOT include ROOT here
+project_deps = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep, onetbb_dep ]) # do NOT include ROOT here
 project_etc = get_option('sysconfdir') / meson.project_name()
 project_test_env = environment()
 project_pkg_vars = [

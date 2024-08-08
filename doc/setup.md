@@ -23,6 +23,7 @@ The following sections (🟩) list the dependencies and how to obtain them.
 > git log --tags --decorate --simplify-by-decoration --oneline     # list all the tags (latest first)
 > git checkout 1.0.0                                               # checkout the tag '1.0.0'
 > ```
+<!--`-->
 
 ### 🟩 `meson`: Build system used by Iguana
 <https://mesonbuild.com/>
@@ -51,6 +52,10 @@ cmake -S /path/to/hipo_source_code -B build-hipo -DCMAKE_INSTALL_PREFIX=/path/to
 cmake --build build-hipo
 cmake --install build-hipo
 ```
+
+### 🟩 `BS::thread_pool` C++ thread pool library
+<https://github.com/bshoshany/thread-pool> - By Barak Shoshany
+- You do not need to install this, it is automatically obtained and used when building Iguana
 
 ### 🟩 Optional: `ruby`: programming language
 <https://www.ruby-lang.org/en/>
@@ -146,6 +151,7 @@ meson install   # installs Iguana to your prefix (build option 'prefix')
 > meson setup --wipe /path/to/iguana-source
 > ```
 > This will preserve your build options; then try to rebuild.
+<!--`-->
 
 
 <a name="env"></a>
