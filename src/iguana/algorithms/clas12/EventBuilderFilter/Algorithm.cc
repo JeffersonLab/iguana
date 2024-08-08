@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/services/NewLogger.h"
 
 namespace iguana::clas12 {
 
@@ -6,6 +7,7 @@ namespace iguana::clas12 {
 
   void EventBuilderFilter::Start(hipo::banklist& banks)
   {
+    m_level = LogLevel::trace; // FIXME
 
     // define options, their default values, and cache them
     ParseYAMLConfig();
@@ -53,7 +55,7 @@ namespace iguana::clas12 {
 
   void EventBuilderFilter::Stop()
   {
-    NEWLOG("test newlog {}", 7);
+    WARN("test newlog {}", 7);
   }
 
 }
