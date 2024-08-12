@@ -42,7 +42,7 @@ ACTION_YAML = @args.action_yaml
 # open action function specification
 @main.error "option '--input' needs a value; use '--help' for guidance" if ACTION_YAML.empty?
 @main.verbose "parsing #{ACTION_YAML}"
-@main.error "input file '#{ACTION_YAML}' does not exist" unless File.exists? ACTION_YAML
+@main.error "input file '#{ACTION_YAML}' does not exist" unless File.exist? ACTION_YAML
 main_spec = YAML.load_file ACTION_YAML
 
 # parse algorithm info
@@ -54,7 +54,7 @@ def out_name(name)
   [ @args.out_prefix, name ].reject(&:empty?).join '_'
 end
 algo_dir = File.dirname ACTION_YAML
-@main.error "directory '#{algo_dir}' does not exist" unless Dir.exists? algo_dir
+@main.error "directory '#{algo_dir}' does not exist" unless Dir.exist? algo_dir
 out_dir = @args.out_dir.empty? ? File.join('chameleon-tree', algo_dir) : @args.out_dir
 FileUtils.mkdir_p out_dir, verbose: @args.verbose
 out_files = {
