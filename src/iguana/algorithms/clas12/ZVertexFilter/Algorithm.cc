@@ -55,15 +55,29 @@ namespace iguana::clas12 {
 
 
   concurrent_key_t ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {
-    // memoize implementation
-    std::hash<int> hash_ftn;
-    auto hash_val = hash_ftn(runnum);
-    if(!o_runnum.HasKey(hash_val)) {
-      o_runnum.Save(hash_val, runnum);
-      // o_zcuts.Save(hash_val, GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"})); // FIXME
-      o_zcuts.Save(hash_val, {-3.0, 3.0});
+    concurrent_key_t result_key = key;
+    switch(o_runnum.GetModel()) {
+    case ConcurrencyModel::memoize:
+      {
+        std::hash<int> hash_ftn;
+        result_key = hash_ftn(runnum);
+        if(!o_runnum.HasKey(result_key)) {
+          o_runnum.Save(runnum, result_key);
+          // o_zcuts.Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), result_key); // FIXME
+          o_zcuts.Save({-3.0, 3.0}, result_key);
+        }
+        break;
+      }
+    default:
+      {
+        if(o_runnum.Load(key) != runnum) {
+          // o_zcuts.Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), key); // FIXME
+          o_zcuts.Save({-3.0, 3.0}, key);
+        }
+        break;
+      }
     }
-    return hash_val;
+    return result_key;
   }
 
   bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status, concurrent_key_t key) const

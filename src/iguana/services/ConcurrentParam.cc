@@ -3,7 +3,7 @@
 namespace iguana {
 
   template <typename T>
-  ConcurrentParam<T>::ConcurrentParam(model_t model)
+  ConcurrentParam<T>::ConcurrentParam(ConcurrencyModel model)
     : m_model(model)
   {
   }
@@ -17,6 +17,12 @@ namespace iguana {
       }
     }
     throw std::runtime_error("concurrency model '" + model + "' is unrecognized");
+  }
+
+  template <typename T>
+  ConcurrencyModel ConcurrentParam<T>::GetModel() const
+  {
+    return m_model;
   }
 
   template <typename T>
@@ -38,7 +44,7 @@ namespace iguana {
   }
 
   template <typename T>
-  void ConcurrentParam<T>::Save(concurrent_key_t const key, T const& value) {
+  void ConcurrentParam<T>::Save(T const& value, concurrent_key_t const key) {
     switch(m_model) {
       case none:
         m_value = value;
