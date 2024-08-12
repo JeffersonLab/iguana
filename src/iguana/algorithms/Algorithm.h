@@ -15,7 +15,7 @@ namespace iguana {
   /* NOTE: if you modify this, you also must modify:
    * - [ ] `PrintOptionValue`
    * - [ ] Template specializations in this class
-   * - [ ] Template specializations in `YAMLReader` or `ConfigFileReader`
+   * - [ ] Template specializations in `YAMLReader` or `ConfigFileReader`, and `ConcurrentParam`
    * - [ ] Add new tests, if you added new types
    */
   using option_t = std::variant<

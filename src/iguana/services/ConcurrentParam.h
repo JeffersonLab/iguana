@@ -59,4 +59,13 @@ namespace iguana {
       bool HasKey(concurrent_key_t const key) const;
 
   };
+
+  // template specializations
+  template class ConcurrentParam<int>;
+  template class ConcurrentParam<double>;
+  template class ConcurrentParam<std::string>;
+  template class ConcurrentParam<std::vector<int>>;
+  template class ConcurrentParam<std::vector<double>>;
+  template class ConcurrentParam<std::vector<std::string>>;
+
 }
