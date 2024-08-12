@@ -9,7 +9,7 @@ namespace iguana {
   using concurrent_key_t = std::size_t;
 
   /// @brief wrapper for concurrently mutable configuration parameters
-  template <class T>
+  template <typename T>
   class ConcurrentParam {
 
     /// hash table container for memoization
@@ -37,77 +37,26 @@ namespace iguana {
     public:
 
       /// @param model the concurrent storage model
-      ConcurrentParam(model_t model) : m_model(model) {};
+      ConcurrentParam(model_t model);
 
       /// @param model the concurrent storage model
-      ConcurrentParam(std::string const& model) {
-        for(auto const& [model_i, model_name] : m_model_names) {
-          if(model == model_name) {
-            m_model = model_i;
-            return;
-          }
-        }
-        throw std::runtime_error("concurrency model '" + model + "' is unrecognized");
-      }
+      ConcurrentParam(std::string const& model);
 
       ~ConcurrentParam() {}
 
       /// @brief access a stored value
       /// @param key the access key
       /// @returns the stored value
-      T const Load(concurrent_key_t const key) const {
-        switch(m_model) {
-          case none:
-            return m_value;
-          case memoize:
-            {
-              typename memo_t::const_accessor acc;
-              if(m_memo.find(acc, key))
-                return acc->second;
-              break;
-            }
-          case threadpool:
-            throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
-        }
-        throw std::runtime_error("ConcurrentParam::HasKey failed");
-      }
+      T const Load(concurrent_key_t const key) const;
 
       /// @brief modify a value
       /// @param key the access key
       /// @param value the value
-      void Save(concurrent_key_t const key, T const& value) {
-        switch(m_model) {
-          case none:
-            m_value = value;
-          case memoize:
-            {
-              typename memo_t::accessor acc;
-              m_memo.insert(acc, key);
-              acc->second = value;
-              break;
-            }
-          case threadpool:
-            throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
-        }
-      }
+      void Save(concurrent_key_t const key, T const& value);
 
       /// @param key the key
       /// @returns if key `key` is used
-      bool HasKey(concurrent_key_t const key) const {
-        switch(m_model) {
-          case none:
-            throw std::runtime_error("do not call ConcurrentParam::HasKey when model is 'none'");
-          case memoize:
-            {
-              typename memo_t::const_accessor acc;
-              return m_memo.find(acc, key);
-              break;
-            }
-          case threadpool:
-            throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
-        }
-        throw std::runtime_error("ConcurrentParam::HasKey failed");
-      }
+      bool HasKey(concurrent_key_t const key) const;
 
   };
 }

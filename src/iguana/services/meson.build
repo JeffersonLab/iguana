@@ -1,4 +1,4 @@
-services_sources = [ 'Logger.cc', 'Object.cc', 'ConfigFileReader.cc', 'YAMLReader.cc' ]
+services_sources = [ 'Logger.cc', 'Object.cc', 'ConfigFileReader.cc', 'YAMLReader.cc', 'ConcurrentParam.cc' ]
 services_public_headers = [ 'Logger.h', 'Object.h', 'ConfigFileReader.h', 'YAMLReader.h', 'ConcurrentParam.h' ]
 
 services_lib = shared_library(
