@@ -5,12 +5,16 @@
 
 namespace iguana {
 
+  /// concurrent hash key type
   using concurrent_key_t = std::size_t;
 
+  /// @brief wrapper for concurrently mutable configuration parameters
   template <class T>
   class ConcurrentParam {
 
+    /// hash table container for memoization
     using memo_t = oneapi::tbb::concurrent_hash_map<concurrent_key_t, T>;
+    /// vector container for thread pools
     using vector_t = oneapi::tbb::concurrent_vector<T>;
 
     private:
@@ -32,7 +36,10 @@ namespace iguana {
 
     public:
 
+      /// @param model the concurrent storage model
       ConcurrentParam(model_t model) : m_model(model) {};
+
+      /// @param model the concurrent storage model
       ConcurrentParam(std::string const& model) {
         for(auto const& [model_i, model_name] : m_model_names) {
           if(model == model_name) {
@@ -42,8 +49,12 @@ namespace iguana {
         }
         throw std::runtime_error("concurrency model '" + model + "' is unrecognized");
       }
+
       ~ConcurrentParam() {}
 
+      /// @brief access a stored value
+      /// @param key the access key
+      /// @returns the stored value
       T const Load(concurrent_key_t const key) const {
         switch(m_model) {
           case none:
@@ -61,6 +72,9 @@ namespace iguana {
         throw std::runtime_error("ConcurrentParam::HasKey failed");
       }
 
+      /// @brief modify a value
+      /// @param key the access key
+      /// @param value the value
       void Save(concurrent_key_t const key, T const& value) {
         switch(m_model) {
           case none:
@@ -77,6 +91,8 @@ namespace iguana {
         }
       }
 
+      /// @param key the key
+      /// @returns if key `key` is used
       bool HasKey(concurrent_key_t const key) const {
         switch(m_model) {
           case none:
