@@ -1,20 +1,21 @@
 #include "YAMLReader.h"
+#include "iguana/services/LoggerMacros.h"
 
 namespace iguana {
 
   void YAMLReader::LoadFiles()
   {
-    m_log->Debug("YAMLReader::LoadFiles():");
+    DEBUG("YAMLReader::LoadFiles():");
     for(auto const& file : m_files) {
       try {
-        m_log->Debug(" - load: {}", file);
+        DEBUG(" - load: {}", file);
         m_configs.push_back({YAML::LoadFile(file), file}); // m_config must be the same ordering as m_files, so `push_back`
       }
       catch(const YAML::Exception& e) {
-        m_log->Error(" - YAML Exception: {}", e.what());
+        ERROR(" - YAML Exception: {}", e.what());
       }
       catch(std::exception const& e) {
-        m_log->Error(" - Exception: {}", e.what());
+        ERROR(" - Exception: {}", e.what());
       }
     }
   }
@@ -29,10 +30,10 @@ namespace iguana {
         return node.as<SCALAR>();
       }
       catch(const YAML::Exception& e) {
-        m_log->Error("YAML Parsing Exception: {}", e.what());
+        ERROR("YAML Parsing Exception: {}", e.what());
       }
       catch(std::exception const& e) {
-        m_log->Error("YAML Misc. Exception: {}", e.what());
+        ERROR("YAML Misc. Exception: {}", e.what());
       }
     }
     throw std::runtime_error("Failed `GetScalar`");
@@ -70,10 +71,10 @@ namespace iguana {
         return result;
       }
       catch(const YAML::Exception& e) {
-        m_log->Error("YAML Parsing Exception: {}", e.what());
+        ERROR("YAML Parsing Exception: {}", e.what());
       }
       catch(std::exception const& e) {
-        m_log->Error("YAML Misc. Exception: {}", e.what());
+        ERROR("YAML Misc. Exception: {}", e.what());
       }
     }
     throw std::runtime_error("Failed `GetVector`");
@@ -106,7 +107,7 @@ namespace iguana {
     return [this, key, val](YAML::Node node) -> YAML::Node
     {
       if(!node.IsSequence()) {
-        m_log->Error("YAML node path expected a sequence at current node");
+        ERROR("YAML node path expected a sequence at current node");
         throw std::runtime_error("Failed `InRange`");
       }
       // search each sub-node for one with `val` with in the range at `key`
@@ -124,7 +125,7 @@ namespace iguana {
           return sub_node;
       }
       // if no default found, return empty
-      m_log->Error("No default node for `InRange('{}',{})`", key, val);
+      ERROR("No default node for `InRange('{}',{})`", key, val);
       throw std::runtime_error("Failed `InRange`");
     };
   }
@@ -138,22 +139,22 @@ namespace iguana {
 
     // if `node_path` is empty, we are likely at the end of the node path; end recursion and return `node`
     if(node_path.empty()) {
-      m_log->Trace("... found");
+      TRACE("... found");
       return node;
     }
 
     // find the next node using the first `node_id_t` in `node_path`
-    auto node_id_visitor = [&node, &m_log = this->m_log](auto&& arg) -> YAML::Node
+    auto node_id_visitor = [&node, &m_log_settings = this->m_log_settings](auto&& arg) -> YAML::Node
     {
       using arg_t = std::decay_t<decltype(arg)>;
       // find a node by key name
       if constexpr(std::is_same_v<arg_t, std::string>) {
-        m_log->Trace("... by key '{}'", arg);
+        TRACE("... by key '{}'", arg);
         return node[arg];
       }
       // find a node using a `node_finder_t`
       else {
-        m_log->Trace("... by node finder function");
+        TRACE("... by node finder function");
         return arg(node);
       }
     };

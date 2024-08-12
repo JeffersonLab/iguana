@@ -1,22 +1,10 @@
-#pragma once
-
-#include <fmt/color.h>
 #include <fmt/format.h>
+#include <fmt/color.h>
 #include <fmt/ranges.h>
-#include <functional>
-#include <unordered_map>
 
 namespace iguana {
 
-  /// @brief Simple logger service
-  ///
-  /// - Each algorithm instance should own a `Logger` instance
-  /// - The user may control the log level of each `Logger`, thus the log level of each algorithm
-  /// - Errors and warnings print to `stderr`, whereas all other levels print to `stdout`
-  class Logger
-  {
-
-      friend class Object;
+  class Logger {
 
     public:
 
@@ -38,34 +26,21 @@ namespace iguana {
         silent
       };
 
-      /// The default log level
-      static Level const DEFAULT_LEVEL = info;
+      /// @brief convert a `Level` name to an integer representation
+      /// @param level the level name
+      /// @returns the `Level` integer
+      static Level NameToLevel(std::string_view level);
 
-      /// @param name the name of this logger instance, which will be include in all of its printouts
-      /// @param lev the log level
-      /// @param enable_style if true, certain printouts will be styled with color and emphasis
-      Logger(std::string_view name = "log", Level const lev = DEFAULT_LEVEL, bool const enable_style = true);
-      ~Logger() {}
-
-      /// Set the log level to this level. Log messages with a lower level will not be printed.
-      /// @see `Logger::Level` for available levels.
-      /// @param lev the log level name
-      void SetLevel(std::string_view lev);
-
-      /// Set the log level to this level. Log messages with a lower level will not be printed.
-      /// @see `Logger::Level` for available levels.
-      /// @param lev the log level
-      void SetLevel(Level const lev);
-
-      /// Get the current log level
-      /// @returns the log level
-      Level GetLevel();
-
-      /// Enable styled log printouts, with color and emphasis
-      void EnableStyle();
-
-      /// Disable styled log printout color and emphasis
-      void DisableStyle();
+      /// @brief Print a log message
+      /// @param out the output stream, _e.g._, `stdout` or `stderr`
+      /// @param prefix a prefix in front of the log message, _e.g._, the log level or relevant file name
+      /// @param fmt_str the `fmt` format string
+      /// @param fmt_args the arguments for `fmt_str`
+      template <typename... ARG_TYPES>
+      static void PrintLog(FILE* out, std::string_view prefix, fmt::format_string<ARG_TYPES...> fmt_str, ARG_TYPES&&... fmt_args)
+      {
+        PrintLogV(out, prefix, fmt_str, fmt::make_format_args(fmt_args...));
+      }
 
       /// Generate a header for a printout
       /// @param message the header message
@@ -73,71 +48,17 @@ namespace iguana {
       /// @returns the header string
       static std::string Header(std::string_view message, int const width = 50);
 
-      /// Printout a log message at the `trace` level @see `Logger::Print` for more details
-      template <typename... VALUES>
-      void Trace(std::string_view message, const VALUES... vals) const { Print(trace, message, vals...); }
-      /// Printout a log message at the `debug` level @see `Logger::Print` for more details
-      template <typename... VALUES>
-      void Debug(std::string_view message, const VALUES... vals) const { Print(debug, message, vals...); }
-      /// Printout a log message at the `info` level @see `Logger::Print` for more details
-      template <typename... VALUES>
-      void Info(std::string_view message, const VALUES... vals) const { Print(info, message, vals...); }
-      /// Printout a log message at the `warn` level @see `Logger::Print` for more details
-      template <typename... VALUES>
-      void Warn(std::string_view message, const VALUES... vals) const { Print(warn, message, vals...); }
-      /// Printout a log message at the `error` level @see `Logger::Print` for more details
-      template <typename... VALUES>
-      void Error(std::string_view message, const VALUES... vals) const { Print(error, message, vals...); }
-
-      /// Printout a log message at the specified level. The message will only print if `lev` is at least as high as the current level of
-      /// this `Logger` instance, as set by `Logger::SetLevel`.
-      /// @param lev the log level for this message
-      /// @param message the message to print; this may be a format string, as in `fmt::format`
-      /// @param vals values for the format string `message`
-      template <typename... VALUES>
-      void Print(Level const lev, std::string_view message, const VALUES... vals) const
-      {
-        if(lev >= m_level) {
-          if(auto it{m_level_names.find(lev)}; it != m_level_names.end()) {
-            std::function<std::string(std::string)> style = [](std::string s)
-            { return fmt::format("[{}]", s); };
-            if(m_enable_style) {
-              switch(lev) {
-              case warn:
-                style = [](std::string s)
-                { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::magenta))); };
-                break;
-              case error:
-                style = [](std::string s)
-                { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::red))); };
-                break;
-              default:
-                style = [](std::string s)
-                { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold)); };
-              }
-            }
-            fmt::print(
-                lev >= warn ? stderr : stdout,
-                fmt::runtime(fmt::format("{} {} {}\n", style(it->second), style(m_name), message)),
-                vals...);
-          }
-          else
-            throw std::runtime_error("Logger::Print called with unknown log level");
-        }
-      }
-
     private:
 
-      /// The name of this logger, which is included in all printouts
-      std::string m_name;
-
-      /// The current log level for this instance
-      Level m_level;
-
-      /// Association of the log level to its name
-      std::unordered_map<Level, std::string> m_level_names;
-
-      /// If true, style the printouts
-      bool m_enable_style;
+      static void PrintLogV(FILE* out, std::string_view prefix, fmt::string_view fmt_str, fmt::format_args fmt_args);
   };
+
+  /// `Logger` configuration settings
+  struct LoggerSettings {
+    /// The current `Logger` log level
+    Logger::Level level{Logger::Level::info};
+    /// Whether or not `Logger` printouts will be colored and formatted
+    bool styled{true};
+  };
+
 }

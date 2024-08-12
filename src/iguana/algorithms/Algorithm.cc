@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/services/LoggerMacros.h"
 
 #include <numeric>
 
@@ -22,12 +23,12 @@ namespace iguana {
       auto val = opt ? opt.value() : m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
       if(key != "") {
         m_option_cache[key] = val;
-        m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
+        DEBUG("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
       }
       return val;
     }
     catch(std::runtime_error const& ex) {
-      m_log->Error("Failed to `GetOptionScalar` for key '{}'", key);
+      ERROR("Failed to `GetOptionScalar` for key '{}'", key);
       throw std::runtime_error("config file parsing issue");
     }
   }
@@ -46,12 +47,12 @@ namespace iguana {
       auto val = opt ? opt.value() : m_yaml_config->GetVector<OPTION_TYPE>(node_path);
       if(key != "") {
         m_option_cache[key] = val;
-        m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
+        DEBUG("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
       }
       return val;
     }
     catch(std::runtime_error const& ex) {
-      m_log->Error("Failed to `GetOptionVector` for key '{}'", key);
+      ERROR("Failed to `GetOptionVector` for key '{}'", key);
       throw std::runtime_error("config file parsing issue");
     }
   }
@@ -117,15 +118,15 @@ namespace iguana {
     if(!m_yaml_config) {
       o_user_config_file = GetCachedOption<std::string>("config_file").value_or("");
       o_user_config_dir  = GetCachedOption<std::string>("config_dir").value_or("");
-      m_log->Debug("Instantiating `YAMLReader`");
+      DEBUG("Instantiating `YAMLReader`");
       m_yaml_config = std::make_unique<YAMLReader>("config|" + m_name);
-      m_yaml_config->SetLogLevel(m_log->GetLevel());
+      m_yaml_config->SetLogLevel(GetLogLevel());
       m_yaml_config->AddDirectory(o_user_config_dir);
       m_yaml_config->AddFile(m_default_config_file);
       m_yaml_config->AddFile(o_user_config_file);
     }
     else
-      m_log->Debug("`YAMLReader` already instantiated for this algorithm; using that");
+      DEBUG("`YAMLReader` already instantiated for this algorithm; using that");
     m_yaml_config->LoadFiles();
   }
 
@@ -141,14 +142,14 @@ namespace iguana {
         [&bank_name](auto& bank)
         { return bank.getSchema().getName() == bank_name; });
     if(it == banks.end()) {
-      m_log->Error("required input bank '{}' not found; cannot `Start` algorithm '{}'", bank_name, m_class_name);
+      ERROR("required input bank '{}' not found; cannot `Start` algorithm '{}'", bank_name, m_class_name);
       auto creators = AlgorithmFactory::QueryNewBank(bank_name);
       if(creators)
-        m_log->Error(" -> this bank is created by algorithm(s) [{}]; please `Start` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
+        ERROR(" -> this bank is created by algorithm(s) [{}]; please `Start` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
       throw std::runtime_error("cannot cache bank index");
     }
     auto idx = std::distance(banks.begin(), it);
-    m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
+    DEBUG("cached index of bank '{}' is {}", bank_name, idx);
     return idx;
   }
 
@@ -175,12 +176,12 @@ namespace iguana {
         return fmt::format("({}) [{}]", fmt::join(valQuoted, ", "), "vector<string>");
       }
       else {
-        m_log->Error("option '{}' type has no printer defined in Algorithm::PrintOptionValue", key);
+        ERROR("option '{}' type has no printer defined in Algorithm::PrintOptionValue", key);
         return "UNKNOWN";
       }
     }
     else
-      m_log->Error("option '{}' not found by Algorithm::PrintOptionValue", key);
+      ERROR("option '{}' not found by Algorithm::PrintOptionValue", key);
     return "UNKNOWN";
   }
 
@@ -189,21 +190,22 @@ namespace iguana {
   hipo::bank& Algorithm::GetBank(hipo::banklist& banks, hipo::banklist::size_type const idx, std::string const& expected_bank_name) const
   {
     if(m_rows_only) {
-      m_log->Error("algorithm is in 'rows only' mode; cannot call `Run` since banks are not cached; use action function(s) instead");
+      ERROR("algorithm is in 'rows only' mode; cannot call `Run` since banks are not cached; use action function(s) instead");
     }
     else {
       try {
         auto& result = banks.at(idx);
-        if(expected_bank_name != "" && result.getSchema().getName() != expected_bank_name)
-          m_log->Error("expected input bank '{}' at index={}; got bank named '{}'", expected_bank_name, idx, result.getSchema().getName());
+        if(expected_bank_name != "" && result.getSchema().getName() != expected_bank_name) {
+          ERROR("expected input bank '{}' at index={}; got bank named '{}'", expected_bank_name, idx, result.getSchema().getName());
+        }
         else
           return result;
       }
       catch(std::out_of_range const& o) {
-        m_log->Error("required input bank '{}' not found; cannot `Run` algorithm '{}'", expected_bank_name, m_class_name);
+        ERROR("required input bank '{}' not found; cannot `Run` algorithm '{}'", expected_bank_name, m_class_name);
         auto creators = AlgorithmFactory::QueryNewBank(expected_bank_name);
         if(creators)
-          m_log->Error(" -> this bank is created by algorithm(s) [{}]; please `Run` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
+          ERROR(" -> this bank is created by algorithm(s) [{}]; please `Run` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
       }
     }
     throw std::runtime_error("GetBank failed");
@@ -220,11 +222,11 @@ namespace iguana {
       int item_id) const
   {
     if(!AlgorithmFactory::QueryNewBank(bank_name)) {
-      m_log->Error("{:?} creates bank {:?}, which is not registered; new banks must be included in `REGISTER_IGUANA_ALGORITHM` arguments", m_class_name, bank_name);
+      ERROR("{:?} creates bank {:?}, which is not registered; new banks must be included in `REGISTER_IGUANA_ALGORITHM` arguments", m_class_name, bank_name);
       throw std::runtime_error("CreateBank failed");
     }
     if(schema_def.empty()) {
-      m_log->Error("empty schema_def in CreateBank");
+      ERROR("empty schema_def in CreateBank");
       throw std::runtime_error("CreateBank failed");
     }
     hipo::schema bank_schema(bank_name.c_str(), group_id, item_id);
@@ -241,23 +243,11 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Algorithm::ShowBanks(hipo::banklist& banks, std::string_view message, Logger::Level const level) const
-  {
-    if(m_log->GetLevel() <= level) {
-      if(message != "")
-        m_log->Print(level, message);
-      for(auto& bank : banks)
-        bank.show();
-    }
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-
   void Algorithm::ShowBank(hipo::bank& bank, std::string_view message, Logger::Level const level) const
   {
-    if(m_log->GetLevel() <= level) {
+    if(GetLogLevel() <= level) {
       if(message != "")
-        m_log->Print(level, message);
+        PRINT_LOG(level, message);
       bank.show();
     }
   }
@@ -274,7 +264,7 @@ namespace iguana {
         return std::get<OPTION_TYPE>(it->second);
       }
       catch(std::bad_variant_access const& ex) {
-        m_log->Warn("user called SetOption for option '{}' and set it to '{}', which is the wrong type; IGNORING", key, PrintOptionValue(key));
+        WARN("user called SetOption for option '{}' and set it to '{}', which is the wrong type; IGNORING", key, PrintOptionValue(key));
       }
     }
     return {};

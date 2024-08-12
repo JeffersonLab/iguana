@@ -1,5 +1,6 @@
 #include "Algorithm.h"
-#include "iguana/services/NewLogger.h"
+#include "iguana/services/LoggerMacros.h"
+#include "iguana/services/LoggerMacros.h"
 
 namespace iguana::clas12 {
 
@@ -7,7 +8,7 @@ namespace iguana::clas12 {
 
   void EventBuilderFilter::Start(hipo::banklist& banks)
   {
-    m_level = LogLevel::trace; // FIXME
+    SetLogLevel(Logger::Level::trace); // FIXME: remove this after testing
 
     // define options, their default values, and cache them
     ParseYAMLConfig();
@@ -31,7 +32,7 @@ namespace iguana::clas12 {
     particleBank.getMutableRowList().filter([this](auto bank, auto row) {
         auto pid    = bank.getInt("pid", row);
         auto accept = Filter(pid);
-        m_log->Debug("input PID {} -- accept = {}", pid, accept);
+        DEBUG("input PID {} -- accept = {}", pid, accept);
         return accept ? 1 : 0;
         });
 
@@ -55,7 +56,11 @@ namespace iguana::clas12 {
 
   void EventBuilderFilter::Stop()
   {
-    WARN("test newlog {}", 7);
+    TRACE("test TRACE {}", 7);
+    DEBUG("test DEBUG {}", 7);
+    INFO("test INFO {}", 7);
+    WARN("test WARN {}", 7);
+    ERROR("test ERROR {}", 7);
   }
 
 }

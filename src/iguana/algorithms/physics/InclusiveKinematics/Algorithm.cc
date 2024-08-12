@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/services/LoggerMacros.h"
 
 // ROOT
 #include <Math/Vector4D.h>
@@ -52,11 +53,11 @@ namespace iguana::physics {
         m_target.mass = particle::mass.at(pdg);
     }
     if(m_beam.pdg == 0) {
-      m_log->Error("Unknown beam particle {:?}", o_beam_particle);
+      ERROR("Unknown beam particle {:?}", o_beam_particle);
       throw std::runtime_error("Start failed");
     }
     if(m_target.mass < 0.0) {
-      m_log->Error("Unknown target particle {:?}", o_target_particle);
+      ERROR("Unknown target particle {:?}", o_target_particle);
       throw std::runtime_error("Start failed");
     }
 
@@ -66,7 +67,7 @@ namespace iguana::physics {
       o_method_reconstruction = method_reconstruction::scattered_lepton;
     }
     else {
-      m_log->Error("Unknown reconstruction method {:?}", method_reconstruction_str);
+      ERROR("Unknown reconstruction method {:?}", method_reconstruction_str);
       throw std::runtime_error("Start failed");
     }
 
@@ -76,13 +77,13 @@ namespace iguana::physics {
       o_method_lepton_finder = method_lepton_finder::highest_energy_FD_trigger;
     }
     else {
-      m_log->Error("Unknown lepton finder method {:?}", method_lepton_finder_str);
+      ERROR("Unknown lepton finder method {:?}", method_lepton_finder_str);
       throw std::runtime_error("Start failed");
     }
 
     // set the beam and target momenta
     if(o_beam_direction.size() != 3) {
-      m_log->Error("Beam direction is not a 3-vector; assuming it is (0, 0, 1) instead");
+      ERROR("Beam direction is not a 3-vector; assuming it is (0, 0, 1) instead");
       o_beam_direction = {0.0, 0.0, 1.0};
     }
     auto dir_mag = std::hypot(o_beam_direction[0], o_beam_direction[1], o_beam_direction[2]);
@@ -93,7 +94,7 @@ namespace iguana::physics {
       m_beam.pz = o_beam_direction[2] * beam_p / dir_mag;
     }
     else {
-      m_log->Error("Beam direction magnitude is not > 0");
+      ERROR("Beam direction magnitude is not > 0");
       throw ::std::runtime_error("Start failed");
     }
     m_target.px = 0.0;
@@ -101,12 +102,12 @@ namespace iguana::physics {
     m_target.pz = 0.0;
 
     // print the configuration
-    m_log->Debug(Logger::Header("CONFIGURATION"));
-    m_log->Debug("{:>30}: {}", "beam energy", o_beam_energy);
-    m_log->Debug("{:>30}: {}, mass = {}, p = ({}, {}, {})", "beam particle", o_beam_particle, m_beam.mass, m_beam.px, m_beam.py, m_beam.pz);
-    m_log->Debug("{:>30}: {}, mass = {}, p = ({}, {}, {})", "target particle", o_target_particle, m_target.mass, m_target.px, m_target.py, m_target.pz);
-    m_log->Debug("{:>30}: {}", "reconstruction method", method_reconstruction_str);
-    m_log->Debug("{:>30}: {}", "lepton finder method", method_lepton_finder_str);
+    DEBUG(Logger::Header("CONFIGURATION"));
+    DEBUG("{:>30}: {}", "beam energy", o_beam_energy);
+    DEBUG("{:>30}: {}, mass = {}, p = ({}, {}, {})", "beam particle", o_beam_particle, m_beam.mass, m_beam.px, m_beam.py, m_beam.pz);
+    DEBUG("{:>30}: {}, mass = {}, p = ({}, {}, {})", "target particle", o_target_particle, m_target.mass, m_target.px, m_target.py, m_target.pz);
+    DEBUG("{:>30}: {}", "reconstruction method", method_reconstruction_str);
+    DEBUG("{:>30}: {}", "lepton finder method", method_lepton_finder_str);
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -175,9 +176,9 @@ namespace iguana::physics {
     }
     }
     if(lepton_row >= 0)
-      m_log->Debug("Found scattered lepton: row={}, energy={}", lepton_row, lepton_energy);
+      DEBUG("Found scattered lepton: row={}, energy={}", lepton_row, lepton_energy)
     else
-      m_log->Debug("Scattered lepton not found");
+      DEBUG("Scattered lepton not found");
     return lepton_row;
   }
 
@@ -190,7 +191,7 @@ namespace iguana::physics {
   {
     InclusiveKinematicsVars result;
 
-    m_log->Trace("Reconstruct inclusive kinematics from lepton with p=({}, {}, {})", lepton_px, lepton_py, lepton_pz);
+    TRACE("Reconstruct inclusive kinematics from lepton with p=({}, {}, {})", lepton_px, lepton_py, lepton_pz);
 
     ROOT::Math::PxPyPzMVector vec_beam(m_beam.px, m_beam.py, m_beam.pz, m_beam.mass);
     ROOT::Math::PxPyPzMVector vec_target(m_target.px, m_target.py, m_target.pz, m_target.mass);

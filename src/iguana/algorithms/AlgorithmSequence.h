@@ -70,8 +70,7 @@ namespace iguana {
       {
         if(auto it{m_algo_names.find(instance_name)}; it != m_algo_names.end())
           return dynamic_cast<ALGORITHM*>(m_sequence[it->second].get());
-        m_log->Error("cannot find algorithm '{}' in sequence", instance_name);
-        throw std::runtime_error("cannot Get algorithm");
+        throw std::runtime_error(fmt::format("cannot find algorithm '{}' in sequence", instance_name));
       }
 
       /// Set an algorithm option

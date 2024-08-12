@@ -4,18 +4,11 @@ namespace iguana {
 
   Object::Object(std::string_view name)
       : m_name(name)
-      , m_log(std::make_unique<Logger>(m_name))
   {}
-
-  std::unique_ptr<Logger>& Object::Log()
-  {
-    return m_log;
-  }
 
   void Object::SetName(std::string_view name)
   {
-    m_name        = name;
-    m_log->m_name = name;
+    m_name = name;
   }
 
   std::string Object::GetName() const
@@ -23,14 +16,29 @@ namespace iguana {
     return m_name;
   }
 
-  void Object::SetLogLevel(std::string_view lev)
+  void Object::SetLogLevel(std::string_view level)
   {
-    m_log->SetLevel(lev);
+    m_log_settings.level = Logger::NameToLevel(level);
   }
 
-  void Object::SetLogLevel(Logger::Level const lev)
+  void Object::SetLogLevel(Logger::Level const level)
   {
-    m_log->SetLevel(lev);
+    m_log_settings.level = level;
+  }
+
+  Logger::Level Object::GetLogLevel() const
+  {
+    return m_log_settings.level;
+  }
+
+  void Object::EnableLoggerStyle()
+  {
+    m_log_settings.styled = true;
+  }
+
+  void Object::DisableLoggerStyle()
+  {
+    m_log_settings.styled = false;
   }
 
 }

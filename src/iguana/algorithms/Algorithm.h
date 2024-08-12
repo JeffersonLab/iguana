@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <set>
 
@@ -82,13 +83,12 @@ namespace iguana {
                            std::is_same<OPTION_TYPE, std::string>,
                            std::is_same<OPTION_TYPE, char const*>,
                            std::is_same<OPTION_TYPE, Logger::Level>>::value)
-            m_log->SetLevel(val);
+            SetLogLevel(val);
           else
-            m_log->Error("Option '{}' must be a string or a Logger::Level", key);
+            throw std::runtime_error(fmt::format("Option '{}' must be a string or a Logger::Level", key));
         }
         else {
           m_option_cache[key] = val;
-          m_log->Debug("  USER OPTION: {:>20} = {}", key, PrintOptionValue(key));
         }
         return val;
       }
@@ -174,12 +174,6 @@ namespace iguana {
           std::vector<std::string> schema_def,
           int group_id, // FIXME: generalize group_id and item_id setting
           int item_id) const noexcept(false);
-
-      /// Dump all banks in a `hipo::banklist`
-      /// @param banks the banks to show
-      /// @param message if specified, print a header message
-      /// @param level the log level
-      void ShowBanks(hipo::banklist& banks, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
       /// Dump a single bank
       /// @param bank the bank to show

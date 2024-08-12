@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/services/LoggerMacros.h"
 
 namespace iguana::clas12 {
 
@@ -13,11 +14,11 @@ namespace iguana::clas12 {
     o_zcuts  = GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
     o_pids  =  GetOptionSet<int>("pids", {GetConfig()->InRange("runs", o_runnum), "pids"});
     if(o_zcuts.size() != 2) {
-      m_log->Error("configuration option 'cuts' must be an array of size 2, but it is {}", PrintOptionValue("cuts"));
+      ERROR("configuration option 'cuts' must be an array of size 2, but it is {}", PrintOptionValue("cuts"));
       throw std::runtime_error("bad configuration");
     }
     if(o_pids.size() < 1) {
-      m_log->Error("configuration option 'pids' must have at least one value");
+      ERROR("configuration option 'pids' must have at least one value");
       throw std::runtime_error("bad configuration");
     }
 
@@ -40,7 +41,7 @@ namespace iguana::clas12 {
         auto pid = bank.getInt("pid", row);
         auto status = bank.getShort("status", row);
         auto accept  = Filter(zvertex,pid,status);
-        m_log->Debug("input vz {} pid {} status {} -- accept = {}", zvertex, pid, status, accept);
+        DEBUG("input vz {} pid {} status {} -- accept = {}", zvertex, pid, status, accept);
         return accept ? 1 : 0;
         });
 

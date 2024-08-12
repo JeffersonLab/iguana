@@ -2,6 +2,7 @@
 // # include the algorithm header
 // ############################################################################
 #include "Algorithm.h"
+#include "iguana/services/LoggerMacros.h"
 
 // ############################################################################
 // # namespace must match that in the header
@@ -90,7 +91,7 @@ namespace iguana::example {
       // # print a useful debugging method (see `Logger.h` for details, or other
       // # algorithms for examples of how to use the logger)
       // ############################################################################
-      m_log->Debug("input PID {} -- accept = {}", pid, accept);
+      DEBUG("input PID {} -- accept = {}", pid, accept);
       return accept ? 1 : 0;
       });
 

@@ -1,5 +1,6 @@
 #include "Validator.h"
 #include "Algorithm.h"
+#include "iguana/services/LoggerMacros.h"
 namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(PhotonGBTFilterValidator);
@@ -146,7 +147,7 @@ namespace iguana::clas12 {
           }
         canv->SaveAs(m_output_file_basename + "_plot.png");
         m_output_file->Write();
-        m_log->Info("Wrote output file {}", m_output_file->GetName());
+        INFO("Wrote output file {}", m_output_file->GetName());
         m_output_file->Close();
       }
   }

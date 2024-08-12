@@ -1,4 +1,5 @@
 #include "Validator.h"
+#include "iguana/services/LoggerMacros.h"
 
 #include <Math/Vector3D.h>
 #include <TStyle.h>
@@ -12,7 +13,7 @@ namespace iguana::physics {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("physics::InclusiveKinematics");
-    m_algo_seq->SetOption("physics::InclusiveKinematics", "log", m_log->GetLevel());
+    m_algo_seq->SetOption("physics::InclusiveKinematics", "log", GetLogLevel());
     m_algo_seq->Start(banks);
 
     // get bank indices
@@ -60,11 +61,11 @@ namespace iguana::physics {
     auto& result_bank   = GetBank(banks, b_result, "physics::InclusiveKinematics");
 
     if(result_bank.getRowList().size() == 0) {
-      m_log->Debug("skip this event, since it has no inclusive kinematics results");
+      DEBUG("skip this event, since it has no inclusive kinematics results");
       return;
     }
     if(result_bank.getRowList().size() > 1) {
-      m_log->Warn("found event with more than 1 inclusive kinematics bank rows; only the first row will be used");
+      WARN("found event with more than 1 inclusive kinematics bank rows; only the first row will be used");
     }
 
     auto pindex = result_bank.getShort("pindex", 0);
@@ -145,7 +146,7 @@ namespace iguana::physics {
       }
       canv->SaveAs(m_output_file_basename + ".png");
       m_output_file->Write();
-      m_log->Info("Wrote output file {}", m_output_file->GetName());
+      INFO("Wrote output file {}", m_output_file->GetName());
       m_output_file->Close();
     }
   }

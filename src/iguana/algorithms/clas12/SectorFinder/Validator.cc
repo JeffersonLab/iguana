@@ -1,4 +1,5 @@
 #include "Validator.h"
+#include "iguana/services/LoggerMacros.h"
 
 #include <TProfile.h>
 #include <TStyle.h>
@@ -91,7 +92,7 @@ namespace iguana::clas12 {
         if (Theta>6.5){
           u_IsInFD->Fill(sector);
           if(sector==0){  
-             m_log->Trace("e' with theta={} and sector==0, this should not happen", Theta);
+             TRACE("e' with theta={} and sector==0, this should not happen", Theta)
           }
         }
       }
@@ -99,7 +100,7 @@ namespace iguana::clas12 {
       // skip central particle, or unknown sector
       if(sector == 0)
         continue;
-      m_log->Trace("Filling SectorFinder Validator, pdg {} sector {} pindex {}", pdg, sector, row);
+      TRACE("Filling SectorFinder Validator, pdg {} sector {} pindex {}", pdg, sector, row);
       u_YvsX.at(pdg).at(sector - 1)->Fill(x, y);
     }
 
@@ -134,7 +135,7 @@ namespace iguana::clas12 {
       canv1D->SaveAs(m_output_file_basename+"_elIsInFD.png");
 
       m_output_file->Write();
-      m_log->Info("Wrote output file {}", m_output_file->GetName());
+      INFO("Wrote output file {}", m_output_file->GetName());
       m_output_file->Close();
     }
   }

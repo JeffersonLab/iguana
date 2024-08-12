@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/services/LoggerMacros.h"
 #include "Pass1CutData.h"
 
 namespace iguana::clas12 {
@@ -16,7 +17,7 @@ namespace iguana::clas12 {
       
     o_pass      = GetCachedOption<int>("pass").value_or(1);
     if(o_pass!=1){
-        m_log->Warn("FiducialFilter only contains fiducial cuts for pass1...we will default to using those...");
+        WARN("FiducialFilter only contains fiducial cuts for pass1...we will default to using those...")
     }
       
   }
@@ -55,7 +56,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
   {
 
     if(torus!=1&&torus!=-1){
-        m_log->Warn("torus={}...value must be either -1 or 1, otherwise fiducial cuts are not defined...filtering out all particles...",torus);
+        WARN("torus={}...value must be either -1 or 1, otherwise fiducial cuts are not defined...filtering out all particles...",torus);
         return false;
     }
     

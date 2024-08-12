@@ -1,4 +1,5 @@
 #include "Validator.h"
+#include "iguana/services/LoggerMacros.h"
 
 #include <TProfile.h>
 #include <TStyle.h>
@@ -114,7 +115,7 @@ namespace iguana::clas12 {
         canv->SaveAs(m_output_file_basename + "_" + std::to_string(pdg) + ".png");
       }
       m_output_file->Write();
-      m_log->Info("Wrote output file {}", m_output_file->GetName());
+      INFO("Wrote output file {}", m_output_file->GetName());
       m_output_file->Close();
     }
   }

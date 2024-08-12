@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/services/LoggerMacros.h"
 
 // ROOT
 #include <Math/Boost.h>
@@ -24,7 +25,7 @@ namespace iguana::clas12 {
       o_beam_energy         = GetCachedOption<double>("beam_energy").value_or(10.6); // FIXME
     }
     else {
-      m_log->Error("unknown frame '{}'", o_frame);
+      ERROR("unknown frame '{}'", o_frame);
       throw std::runtime_error("cannot Start LorentzTransformer algorithm");
     }
 
@@ -73,15 +74,15 @@ namespace iguana::clas12 {
       vector_element_t const beta_y,
       vector_element_t const beta_z) const
   {
-    m_log->Debug(fmt::format("{::<30}", "Boost "));
-    m_log->Debug(fmt::format("{:>8} = ({:10f}, {:10f}, {:10f}, {:10f})", "p_in", px, py, pz, E));
+    DEBUG(fmt::format("{::<30}", "Boost "));
+    DEBUG(fmt::format("{:>8} = ({:10f}, {:10f}, {:10f}, {:10f})", "p_in", px, py, pz, E));
 
     // check if |beta| <= 1
     auto beta_mag = std::hypot(beta_x, beta_y, beta_z);
     if(beta_mag > 1) {
-      m_log->Error("attempt to boost with beta > 1 (faster than the speed of light); will NOT boost this momentum");
-      m_log->Debug("{:>8} = {}", "|beta|", beta_mag);
-      m_log->Debug("{:>8} = ({:10f}, {:10f}, {:10f})", "beta", beta_x, beta_y, beta_z);
+      ERROR("attempt to boost with beta > 1 (faster than the speed of light); will NOT boost this momentum");
+      DEBUG("{:>8} = {}", "|beta|", beta_mag);
+      DEBUG("{:>8} = ({:10f}, {:10f}, {:10f})", "beta", beta_x, beta_y, beta_z);
       return {px, py, pz, E};
     }
 
@@ -90,9 +91,9 @@ namespace iguana::clas12 {
     ROOT::Math::Boost beta(beta_x, beta_y, beta_z);
     auto p_out = beta(p_in);
 
-    if(m_log->GetLevel() <= Logger::Level::debug) {
-      m_log->Debug(fmt::format("{:>8} = ({:10f}, {:10f}, {:10f})", "beta", beta.BetaVector().X(), beta.BetaVector().Y(), beta.BetaVector().Z()));
-      m_log->Debug(fmt::format("{:>8} = ({:10f}, {:10f}, {:10f}, {:10f})", "p_out", p_out.Px(), p_out.Py(), p_out.Pz(), p_out.E()));
+    if(GetLogLevel() <= Logger::Level::debug) {
+      DEBUG(fmt::format("{:>8} = ({:10f}, {:10f}, {:10f})", "beta", beta.BetaVector().X(), beta.BetaVector().Y(), beta.BetaVector().Z()));
+      DEBUG(fmt::format("{:>8} = ({:10f}, {:10f}, {:10f}, {:10f})", "p_out", p_out.Px(), p_out.Py(), p_out.Pz(), p_out.E()));
     }
     return {p_out.Px(), p_out.Py(), p_out.Pz(), p_out.E()};
   }

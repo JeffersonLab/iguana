@@ -1,4 +1,5 @@
 #include "AlgorithmSequence.h"
+#include "iguana/services/LoggerMacros.h"
 
 namespace iguana {
 
@@ -24,7 +25,7 @@ namespace iguana {
   {
     auto algo = AlgorithmFactory::Create(class_name);
     if(algo == nullptr) {
-      m_log->Error("algorithm '{}' does not exist", class_name);
+      ERROR("algorithm '{}' does not exist", class_name);
       throw std::runtime_error("AlgorithmFactory cannot create non-existent algorithm");
     }
     algo->SetName(instance_name == "" ? class_name : instance_name);
@@ -41,7 +42,7 @@ namespace iguana {
     m_sequence.push_back(std::move(algo));
     // check for duplicate algorithm name
     if(m_algo_names.size() < m_sequence.size()) {
-      m_log->Error("Duplicate algorithm name '{}' detected; please make sure all of your algorithms have unique names", algoName);
+      ERROR("Duplicate algorithm name '{}' detected; please make sure all of your algorithms have unique names", algoName);
       throw std::runtime_error("cannot Add algorithm");
     }
   }
@@ -62,9 +63,9 @@ namespace iguana {
 
   void AlgorithmSequence::PrintSequence(Logger::Level level) const
   {
-    m_log->Print(level, "algorithms in this sequence:");
+    PRINT_LOG(level, "algorithms in this sequence:");
     for(auto const& algo : m_sequence)
-      m_log->Print(level, " - {}", algo->GetName());
+      PRINT_LOG(level, " - {}", algo->GetName());
   }
 
 }

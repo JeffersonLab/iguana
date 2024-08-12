@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/services/LoggerMacros.h"
 
 namespace iguana::clas12 {
 
@@ -134,7 +135,7 @@ namespace iguana::clas12 {
               break;
           }
           if(sect != -1) {
-            m_log->Trace("{} pindex {} sect {}", det_name, row, sect);
+            TRACE("{} pindex {} sect {}", det_name, row, sect);
             resultBank.putInt(i_sector, row, sect);
             resultBank.putInt(i_pindex, row, row);
             break;
