@@ -53,10 +53,10 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_particle, b_config;
 
       /// Run number
-      mutable ConcurrentParam<int> o_runnum{"memoize"};
+      mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
 
       /// Z-vertex cut
-      mutable ConcurrentParam<std::vector<double>> o_zcuts{"memoize"};
+      // mutable ConcurrentParam<std::vector<double>> o_zcuts{"memoize"}; // TODO
 
       /// pids to apply ZVertexFilter to
       std::set<int> o_pids;

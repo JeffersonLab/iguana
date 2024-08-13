@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GlobalParam.h"
+
 #include <oneapi/tbb/concurrent_hash_map.h>
 #include <oneapi/tbb/concurrent_vector.h>
 
@@ -8,70 +10,128 @@ namespace iguana {
   /// concurrent hash key type
   using concurrent_key_t = std::size_t;
 
-  /// concurrency model types
-  enum ConcurrencyModel {
-    none,
-    memoize,
-    threadpool
-  };
+  // ==================================================================================
+  // ConcurrentParam
+  // ==================================================================================
 
-
-  /// @brief wrapper for concurrently mutable configuration parameters
+  /// @brief abstract base class for concurrently mutable configuration parameters
   template <typename T>
   class ConcurrentParam {
 
-    /// hash table container for memoization
-    using memo_t = oneapi::tbb::concurrent_hash_map<concurrent_key_t, T>;
-    /// vector container for thread pools
-    using vector_t = oneapi::tbb::concurrent_vector<T>;
-
     public:
 
-      /// @param model the concurrent storage model
-      ConcurrentParam(ConcurrencyModel model);
-
-      /// @param model the concurrent storage model
+      /// @param model the concurrency model this instance must be; throws a runtime exception if it is not
       ConcurrentParam(std::string const& model);
-
       ~ConcurrentParam() {}
-
-      /// @returns the concurrency model
-      ConcurrencyModel GetModel() const;
 
       /// @brief access a stored value
       /// @param key the access key
       /// @returns the stored value
-      T const Load(concurrent_key_t const key = 0) const;
+      virtual T const Load(concurrent_key_t const key = 0) const = 0;
 
       /// @brief modify a value
       /// @param key the access key
       /// @param value the value
-      void Save(T const& value, concurrent_key_t const key = 0);
+      virtual void Save(T const& value, concurrent_key_t const key = 0) = 0;
 
       /// @param key the key
       /// @returns if key `key` is used
-      bool HasKey(concurrent_key_t const key) const;
-
-    private:
-      std::unordered_map<ConcurrencyModel, std::string> const m_model_names = {
-        {none, "none"},
-        {memoize, "memoize"},
-        {threadpool, "threadpool"}};
-
-      ConcurrencyModel m_model;
-
-      T m_value;
-      memo_t m_memo;
-      vector_t m_vector;
+      virtual bool HasKey(concurrent_key_t const key) const = 0;
 
   };
 
-  // template specializations
-  template class ConcurrentParam<int>;
-  template class ConcurrentParam<double>;
-  template class ConcurrentParam<std::string>;
-  template class ConcurrentParam<std::vector<int>>;
-  template class ConcurrentParam<std::vector<double>>;
-  template class ConcurrentParam<std::vector<std::string>>;
+  // ==================================================================================
+  // UnsafeParam
+  // ==================================================================================
+
+  /// @brief a parameter that is _not_ thread safe
+  template <typename T>
+  class UnsafeParam : public ConcurrentParam<T> {
+
+    public:
+      UnsafeParam() : ConcurrentParam<T>("unsafe") {};
+      ~UnsafeParam() {}
+      T const Load(concurrent_key_t const key = 0) const override;
+      void Save(T const& value, concurrent_key_t const key = 0) override;
+      bool HasKey(concurrent_key_t const key) const override;
+
+    private:
+      T m_value;
+  };
+
+  // ==================================================================================
+  // MemoizedParam
+  // ==================================================================================
+
+  /// @brief a `ConcurrentParam` that uses memoization for thread safety
+  template <typename T>
+  class MemoizedParam : public ConcurrentParam<T> {
+
+    /// hash table container for memoization
+    using container_t = oneapi::tbb::concurrent_hash_map<concurrent_key_t, T>;
+
+    public:
+      MemoizedParam() : ConcurrentParam<T>("memoize") {};
+      ~MemoizedParam() {}
+      T const Load(concurrent_key_t const key = 0) const override;
+      void Save(T const& value, concurrent_key_t const key = 0) override;
+      bool HasKey(concurrent_key_t const key) const override;
+
+    private:
+      container_t m_container;
+
+  };
+
+  // ==================================================================================
+  // ThreadPoolParam
+  // ==================================================================================
+
+  /// @brief a `ConcurrentParam` that uses unique thread-pool indices for thread safety
+  template <typename T>
+  class ThreadPoolParam : public ConcurrentParam<T> {
+
+    /// hash table container for memoization
+    using container_t = oneapi::tbb::concurrent_vector<concurrent_key_t, T>;
+
+    public:
+      ThreadPoolParam() : ConcurrentParam<T>("threadpool") {};
+      ~ThreadPoolParam() {}
+      T const Load(concurrent_key_t const key = 0) const override;
+      void Save(T const& value, concurrent_key_t const key = 0) override;
+      bool HasKey(concurrent_key_t const key) const override;
+
+    private:
+      container_t m_container;
+
+  };
+
+  // ==================================================================================
+  // ConcurrentParamFactory
+  // ==================================================================================
+
+  class ConcurrentParamFactory {
+
+    public:
+      ConcurrentParamFactory() = delete;
+
+      template <typename T>
+      static std::unique_ptr<ConcurrentParam<T>> Create() {
+
+        if(GlobalConcurrencyModel() == "none") {
+          printf("WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING\n"); // FIXME: use `Logger`
+          GlobalConcurrencyModel = "unsafe";
+        }
+
+        if(GlobalConcurrencyModel() == "unsafe")
+          return std::make_unique<UnsafeParam<T>>();
+        else if(GlobalConcurrencyModel() == "memoize")
+          return std::make_unique<MemoizedParam<T>>();
+        else if(GlobalConcurrencyModel() == "threadpool")
+          return std::make_unique<ThreadPoolParam<T>>();
+
+        throw std::runtime_error("unknown GlobalConcurrencyModel '" + GlobalConcurrencyModel() + "'");
+      }
+
+  };
 
 }

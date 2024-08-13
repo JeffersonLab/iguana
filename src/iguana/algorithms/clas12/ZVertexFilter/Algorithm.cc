@@ -21,6 +21,8 @@ namespace iguana::clas12 {
     //   throw std::runtime_error("bad configuration");
     // }
 
+    o_runnum = ConcurrentParamFactory::Create<int>();
+
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config = GetBankIndex(banks, "RUN::config");
@@ -56,7 +58,7 @@ namespace iguana::clas12 {
 
   concurrent_key_t ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {
     concurrent_key_t result_key = key;
-    switch(o_runnum.GetModel()) {
+    switch(o_runnum.GetModel()) { // FIXME...
     case ConcurrencyModel::memoize:
       {
         std::hash<int> hash_ftn;
@@ -64,7 +66,7 @@ namespace iguana::clas12 {
         if(!o_runnum.HasKey(result_key)) {
           o_runnum.Save(runnum, result_key);
           // o_zcuts.Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), result_key); // FIXME
-          o_zcuts.Save({-3.0, 3.0}, result_key);
+          // o_zcuts.Save({-3.0, 3.0}, result_key);
         }
         break;
       }
@@ -72,7 +74,7 @@ namespace iguana::clas12 {
       {
         if(o_runnum.Load(key) != runnum) {
           // o_zcuts.Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), key); // FIXME
-          o_zcuts.Save({-3.0, 3.0}, key);
+          // o_zcuts.Save({-3.0, 3.0}, key);
         }
         break;
       }
@@ -82,8 +84,10 @@ namespace iguana::clas12 {
 
   bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status, concurrent_key_t key) const
   {
-    auto zcuts = o_zcuts.Load(key);
-    return zvertex > zcuts.at(0) && zvertex < zcuts.at(1);
+    return false; // TODO
+
+    // auto zcuts = o_zcuts.Load(key);
+    // return zvertex > zcuts.at(0) && zvertex < zcuts.at(1);
 
     // //only apply filter if particle pid is in list of pids
     // //and particles not in FT (ie FD or CD)
