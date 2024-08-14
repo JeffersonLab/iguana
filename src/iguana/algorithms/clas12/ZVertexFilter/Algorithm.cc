@@ -38,8 +38,8 @@ namespace iguana::clas12 {
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
-    // reload the config
-    auto key = Reload(configBank.getInt("run", 0));
+    // prepare the event, reloading configuration parameters, if necessary
+    auto key = PrepareEvent(configBank.getInt("run", 0));
 
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this, &key](auto bank, auto row) {
@@ -55,31 +55,22 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
-
-  concurrent_key_t ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {
-    concurrent_key_t result_key = key;
-    switch(o_runnum.GetModel()) { // FIXME...
-    case ConcurrencyModel::memoize:
-      {
-        std::hash<int> hash_ftn;
-        result_key = hash_ftn(runnum);
-        if(!o_runnum.HasKey(result_key)) {
-          o_runnum.Save(runnum, result_key);
-          // o_zcuts.Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), result_key); // FIXME
-          // o_zcuts.Save({-3.0, 3.0}, result_key);
-        }
-        break;
-      }
-    default:
-      {
-        if(o_runnum.Load(key) != runnum) {
-          // o_zcuts.Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), key); // FIXME
-          // o_zcuts.Save({-3.0, 3.0}, key);
-        }
-        break;
-      }
+  concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum, concurrent_key_t key) const {
+    if(o_runnum->NeedsHashing()) {
+      std::hash<int> hash_ftn;
+      auto hash_key = hash_ftn(runnum);
+      if(!o_runnum->HasKey(hash_key))
+        Reload(runnum, hash_key);
+      return hash_key;
     }
-    return result_key;
+    if(o_runnum->Load(key) != runnum)
+      Reload(runnum, key);
+    return key;
+  }
+
+  void ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {
+    o_runnum->Save(runnum, key);
+    // o_zcuts->Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), key); // FIXME
   }
 
   bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status, concurrent_key_t key) const

@@ -3,7 +3,7 @@
 namespace iguana {
 
   // ==================================================================================
-  // constructors
+  // Constructors
   // ==================================================================================
 
   template <typename T>
@@ -13,6 +13,24 @@ namespace iguana {
       throw std::runtime_error(
           "attempted to construct a ConcurrentParam with model '" +
           model + "', but GlobalConcurrencyModel is '" + GlobalConcurrencyModel() + "'");
+  }
+
+  template <typename T>
+  UnsafeParam<T>::UnsafeParam() : ConcurrentParam<T>("unsafe")
+  {
+    this->m_needs_hashing = false;
+  }
+
+  template <typename T>
+  MemoizedParam<T>::MemoizedParam() : ConcurrentParam<T>("memoize")
+  {
+    this->m_needs_hashing = true;
+  }
+
+  template <typename T>
+  ThreadPoolParam<T>::ThreadPoolParam() : ConcurrentParam<T>("threadpool")
+  {
+    this->m_needs_hashing = false;
   }
 
   // ==================================================================================
@@ -86,16 +104,5 @@ namespace iguana {
   {
     throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
   }
-
-  // ==================================================================================
-  // template specializations
-  // ==================================================================================
-
-  template class ConcurrentParam<int>;
-  template class ConcurrentParam<double>;
-  template class ConcurrentParam<std::string>;
-  template class ConcurrentParam<std::vector<int>>;
-  template class ConcurrentParam<std::vector<double>>;
-  template class ConcurrentParam<std::vector<std::string>>;
 
 }

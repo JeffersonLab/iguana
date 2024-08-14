@@ -38,6 +38,13 @@ namespace iguana {
       /// @returns if key `key` is used
       virtual bool HasKey(concurrent_key_t const key) const = 0;
 
+      /// @brief whether or not hashing is needed to use this parameter
+      /// @returns true if hashing is needed
+      bool NeedsHashing() const { return m_needs_hashing; }
+
+    protected:
+      bool m_needs_hashing;
+
   };
 
   // ==================================================================================
@@ -49,7 +56,7 @@ namespace iguana {
   class UnsafeParam : public ConcurrentParam<T> {
 
     public:
-      UnsafeParam() : ConcurrentParam<T>("unsafe") {};
+      UnsafeParam();
       ~UnsafeParam() {}
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
@@ -71,7 +78,7 @@ namespace iguana {
     using container_t = oneapi::tbb::concurrent_hash_map<concurrent_key_t, T>;
 
     public:
-      MemoizedParam() : ConcurrentParam<T>("memoize") {};
+      MemoizedParam();
       ~MemoizedParam() {}
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
@@ -91,10 +98,10 @@ namespace iguana {
   class ThreadPoolParam : public ConcurrentParam<T> {
 
     /// hash table container for memoization
-    using container_t = oneapi::tbb::concurrent_vector<concurrent_key_t, T>;
+    using container_t = oneapi::tbb::concurrent_vector<T>;
 
     public:
-      ThreadPoolParam() : ConcurrentParam<T>("threadpool") {};
+      ThreadPoolParam();
       ~ThreadPoolParam() {}
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
@@ -104,6 +111,38 @@ namespace iguana {
       container_t m_container;
 
   };
+
+  // ==================================================================================
+  // template specializations
+  // ==================================================================================
+
+  template class ConcurrentParam<int>;
+  template class ConcurrentParam<double>;
+  template class ConcurrentParam<std::string>;
+  template class ConcurrentParam<std::vector<int>>;
+  template class ConcurrentParam<std::vector<double>>;
+  template class ConcurrentParam<std::vector<std::string>>;
+
+  template class UnsafeParam<int>;
+  template class UnsafeParam<double>;
+  template class UnsafeParam<std::string>;
+  template class UnsafeParam<std::vector<int>>;
+  template class UnsafeParam<std::vector<double>>;
+  template class UnsafeParam<std::vector<std::string>>;
+
+  template class MemoizedParam<int>;
+  template class MemoizedParam<double>;
+  template class MemoizedParam<std::string>;
+  template class MemoizedParam<std::vector<int>>;
+  template class MemoizedParam<std::vector<double>>;
+  template class MemoizedParam<std::vector<std::string>>;
+
+  template class ThreadPoolParam<int>;
+  template class ThreadPoolParam<double>;
+  template class ThreadPoolParam<std::string>;
+  template class ThreadPoolParam<std::vector<int>>;
+  template class ThreadPoolParam<std::vector<double>>;
+  template class ThreadPoolParam<std::vector<std::string>>;
 
   // ==================================================================================
   // ConcurrentParamFactory

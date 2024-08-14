@@ -26,11 +26,10 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// @begin_reload_function
-      /// @when_to_call{for each event}
+      /// @action_function{reload} prepare the event
       /// @param runnum the run number
-      /// @end_reload_function
-      concurrent_key_t Reload(int const runnum, concurrent_key_t key = 0) const;
+      /// @returns the key to be used in `::Filter`
+      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t key = 0) const;
 
       /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds if pid is one for which the filter should be applied to.;
       /// Cuts applied to particles in FD or CD (ie not in FT).
@@ -38,7 +37,7 @@ namespace iguana::clas12 {
       /// @param zvertex the particle Z Vertex to check
       /// @param pid the particle pid
       /// @param status particle status used to check particle is not in FT
-      /// @param_reload_key
+      /// @param key the return value of `::PrepareEvent`
       /// @returns `true` if `zvertex` is within specified bounds
       bool Filter(double const zvertex, int const pid, int const status, concurrent_key_t const key) const;
 
@@ -52,11 +51,14 @@ namespace iguana::clas12 {
     private:
       hipo::banklist::size_type b_particle, b_config;
 
+      // Reload function
+      void Reload(int const runnum, concurrent_key_t key = 0) const;
+
       /// Run number
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
 
       /// Z-vertex cut
-      // mutable ConcurrentParam<std::vector<double>> o_zcuts{"memoize"}; // TODO
+      // mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_zcuts;
 
       /// pids to apply ZVertexFilter to
       std::set<int> o_pids;
