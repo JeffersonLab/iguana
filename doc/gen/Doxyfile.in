@@ -295,11 +295,8 @@ ALIASES += begin_doc_config="\par Configuration Options:^^<table><tr><th>Name</t
 ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
 # action functions
 ALIASES += action_function{1}="\xrefitem action \"Function Type\" \"List of all Action Functions\" \1 \brief **Action Function:** "
-ALIASES += when_to_call{1}="@note This function is called **\1**"
-# reload functions
-ALIASES += begin_reload_function="\xrefitem action \"Function Type\" \"List of all Action Functions\" reload \brief **Reload Function:** "
-ALIASES += end_reload_function="@param key the concurrent key (only needed if using a thread pool)^^@returns the concurrent key"
-ALIASES += param_reload_key="@param key the return value of method `::Reload`"
+ALIASES += when_to_call{1}="@note This function should be called **\1**"
+ALIASES += key_desc="the thread index, if using `GlobalConcurrencyModel == \"threadpool\"`; just use the default value if unused"
 # examples
 ALIASES += begin_doc_example{1}="@addtogroup examples_\1^^@{"
 ALIASES += end_doc_example="@}"

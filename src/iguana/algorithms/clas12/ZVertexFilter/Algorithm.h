@@ -27,7 +27,9 @@ namespace iguana::clas12 {
       void Stop() override;
 
       /// @action_function{reload} prepare the event
+      /// @when_to_call{for each event}
       /// @param runnum the run number
+      /// @param key @key_desc
       /// @returns the key to be used in `::Filter`
       concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t key = 0) const;
 

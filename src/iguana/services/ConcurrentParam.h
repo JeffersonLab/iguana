@@ -43,6 +43,8 @@ namespace iguana {
       bool NeedsHashing() const { return m_needs_hashing; }
 
     protected:
+
+      /// whether this `ConcurrentParam` needs hashing for calling `::Load` or `::Save`
       bool m_needs_hashing;
 
   };
@@ -148,11 +150,14 @@ namespace iguana {
   // ConcurrentParamFactory
   // ==================================================================================
 
+  /// @brief factory to create the appropriate `ConcurrentParam`-derived class instance for the current `GlobalConcurrencyModel`
   class ConcurrentParamFactory {
 
     public:
       ConcurrentParamFactory() = delete;
 
+      /// @brief create a new `ConcurrentParam`-derived class instance
+      /// @returns a pointer to the new instance
       template <typename T>
       static std::unique_ptr<ConcurrentParam<T>> Create() {
 
