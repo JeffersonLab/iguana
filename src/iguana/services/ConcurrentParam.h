@@ -20,7 +20,8 @@ namespace iguana {
 
     public:
 
-      /// @param model the concurrency model this instance must be; throws a runtime exception if it is not
+      /// @param model the concurrency model this instance must be
+      /// @see `ConcurrentParamFactory`, the preferred instantiation method
       ConcurrentParam(std::string const& model);
       ~ConcurrentParam() {}
 
@@ -65,7 +66,7 @@ namespace iguana {
       bool HasKey(concurrent_key_t const key) const override;
 
     private:
-      T m_value;
+      T m_value; // FIXME: consider std::atomic instead
   };
 
   // ==================================================================================
