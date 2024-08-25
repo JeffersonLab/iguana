@@ -107,8 +107,6 @@ jobs:
           path: root.tar.zst
           lookup-only: true
       ### download and build
-      - name: debug
-        run: ping -c5 archive.archlinux.org
       - name: install dependencies
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
