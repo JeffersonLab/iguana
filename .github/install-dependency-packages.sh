@@ -116,7 +116,10 @@ case $runner in
       echo "[+] INSTALLING PACKAGE $pkg"
       case $verset in
         latest) pacman -S --noconfirm $pkg ;;
-        minver) pacman -U --noconfirm $($this_dir/meson/minimum-version.sh $pkg ALA) ;;
+        minver)
+          pacman -U --noconfirm $($this_dir/meson/minimum-version.sh $pkg ALA) || \
+          pacman -U --noconfirm $($this_dir/meson/minimum-version.sh $pkg ALA https://america.archive.pkgbuild.com)
+          ;;
       esac
       info_pacman $pkg
     done
