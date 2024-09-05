@@ -11,6 +11,7 @@ namespace iguana::clas12 {
     ParseYAMLConfig();
     o_runnum = ConcurrentParamFactory::Create<int>();
     o_zcuts  = ConcurrentParamFactory::Create<std::vector<double>>();
+    PrepareEvent(0); // load default values (using runnum==0)
 
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
