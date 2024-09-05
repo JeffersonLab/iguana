@@ -38,6 +38,9 @@ namespace iguana {
       /// @param lev the log level
       void SetLogLevel(Logger::Level const lev);
 
+      /// Get a reference to the logger
+      std::unique_ptr<Logger>& GetLog();
+
 
     protected:
 

@@ -3,6 +3,8 @@
 #include <mutex>
 #include <string>
 
+#include "Object.h"
+
 namespace iguana {
 
   /// @brief a globally accessible parameter
@@ -12,12 +14,12 @@ namespace iguana {
   /// - may be changed _once_
   /// - may be read from anywhere
   template <typename T>
-  class GlobalParam {
+  class GlobalParam : public Object {
 
     public:
 
       /// @param val the initial value of this parameter
-      GlobalParam(T val) : m_val(val) {}
+      GlobalParam(T val) : Object("IGUANA"), m_val(val) {}
 
       /// @brief assign a new value to this parameter
       /// @warning this may _only_ used one time; a second attempt to set the parameter will fail
@@ -44,7 +46,7 @@ namespace iguana {
   };
 
   // ==================================================================================
-  // IGUANA GLOBAL PARAMETERS
+  // IGUANA GLOBAL PARAMETERS (see source file 'GlobalParam.cc' for their default values)
   // ==================================================================================
 
   /// the concurrency model, for running certain algorithms in a thread-safe way

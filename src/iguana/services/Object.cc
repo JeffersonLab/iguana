@@ -33,4 +33,8 @@ namespace iguana {
     m_log->SetLevel(lev);
   }
 
+  std::unique_ptr<Logger>& Object::GetLog()
+  {
+    return m_log;
+  }
 }

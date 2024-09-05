@@ -1,8 +1,0 @@
-[wrap-git]
-url = https://github.com/oneapi-src/oneTBB
-revision = v2021.13.0
-depth = 1
-method = cmake
-
-[provide]
-onetbb = tbb_dep

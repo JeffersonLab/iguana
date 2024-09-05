@@ -16,7 +16,7 @@ namespace iguana {
   }
 
   template <typename T>
-  UnsafeParam<T>::UnsafeParam() : ConcurrentParam<T>("unsafe")
+  SingleThreadParam<T>::SingleThreadParam() : ConcurrentParam<T>("single")
   {
     this->m_needs_hashing = false;
   }
@@ -38,7 +38,7 @@ namespace iguana {
   // ==================================================================================
 
   template <typename T>
-  T const UnsafeParam<T>::Load(concurrent_key_t const key) const
+  T const SingleThreadParam<T>::Load(concurrent_key_t const key) const
   {
     return m_value;
   }
@@ -46,9 +46,8 @@ namespace iguana {
   template <typename T>
   T const MemoizedParam<T>::Load(concurrent_key_t const key) const
   {
-    typename container_t::const_accessor acc;
-    if(m_container.find(acc, key))
-      return acc->second;
+    if(auto it{m_container.find(key)}; it != m_container.end())
+      return it->second;
     throw std::runtime_error("MemoizedParam::Load failed to find the parameter");
   }
 
@@ -63,7 +62,7 @@ namespace iguana {
   // ==================================================================================
 
   template <typename T>
-  void UnsafeParam<T>::Save(T const& value, concurrent_key_t const key)
+  void SingleThreadParam<T>::Save(T const& value, concurrent_key_t const key)
   {
     m_value = value;
   }
@@ -71,9 +70,8 @@ namespace iguana {
   template <typename T>
   void MemoizedParam<T>::Save(T const& value, concurrent_key_t const key)
   {
-    typename container_t::accessor acc;
-    m_container.insert(acc, key);
-    acc->second = value;
+    std::lock_guard<std::mutex> const lock(this->m_mutex);
+    m_container.insert({key, value});
   }
 
   template <typename T>
@@ -87,7 +85,7 @@ namespace iguana {
   // ==================================================================================
 
   template <typename T>
-  bool UnsafeParam<T>::HasKey(concurrent_key_t const key) const
+  bool SingleThreadParam<T>::HasKey(concurrent_key_t const key) const
   {
     throw std::runtime_error("do not call ConcurrentParam::HasKey when model is 'none'");
   }
@@ -95,8 +93,7 @@ namespace iguana {
   template <typename T>
   bool MemoizedParam<T>::HasKey(concurrent_key_t const key) const
   {
-    typename container_t::const_accessor acc;
-    return m_container.find(acc, key);
+    return m_container.find(key) != m_container.end();
   }
 
   template <typename T>

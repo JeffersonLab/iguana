@@ -2,9 +2,6 @@
 
 #include "GlobalParam.h"
 
-#include <oneapi/tbb/concurrent_hash_map.h>
-#include <oneapi/tbb/concurrent_vector.h>
-
 namespace iguana {
 
   /// concurrent hash key type
@@ -48,25 +45,28 @@ namespace iguana {
       /// whether this `ConcurrentParam` needs hashing for calling `::Load` or `::Save`
       bool m_needs_hashing;
 
+      /// mutex
+      std::mutex m_mutex;
+
   };
 
   // ==================================================================================
-  // UnsafeParam
+  // SingleThreadParam
   // ==================================================================================
 
   /// @brief a parameter that is _not_ thread safe
   template <typename T>
-  class UnsafeParam : public ConcurrentParam<T> {
+  class SingleThreadParam : public ConcurrentParam<T> {
 
     public:
-      UnsafeParam();
-      ~UnsafeParam() {}
+      SingleThreadParam();
+      ~SingleThreadParam() {}
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
       bool HasKey(concurrent_key_t const key) const override;
 
     private:
-      T m_value; // FIXME: consider std::atomic instead
+      T m_value;
   };
 
   // ==================================================================================
@@ -78,7 +78,7 @@ namespace iguana {
   class MemoizedParam : public ConcurrentParam<T> {
 
     /// hash table container for memoization
-    using container_t = oneapi::tbb::concurrent_hash_map<concurrent_key_t, T>;
+    using container_t = std::unordered_map<concurrent_key_t, T>;
 
     public:
       MemoizedParam();
@@ -101,7 +101,7 @@ namespace iguana {
   class ThreadPoolParam : public ConcurrentParam<T> {
 
     /// hash table container for memoization
-    using container_t = oneapi::tbb::concurrent_vector<T>;
+    using container_t = std::vector<T>;
 
     public:
       ThreadPoolParam();
@@ -126,12 +126,12 @@ namespace iguana {
   template class ConcurrentParam<std::vector<double>>;
   template class ConcurrentParam<std::vector<std::string>>;
 
-  template class UnsafeParam<int>;
-  template class UnsafeParam<double>;
-  template class UnsafeParam<std::string>;
-  template class UnsafeParam<std::vector<int>>;
-  template class UnsafeParam<std::vector<double>>;
-  template class UnsafeParam<std::vector<std::string>>;
+  template class SingleThreadParam<int>;
+  template class SingleThreadParam<double>;
+  template class SingleThreadParam<std::string>;
+  template class SingleThreadParam<std::vector<int>>;
+  template class SingleThreadParam<std::vector<double>>;
+  template class SingleThreadParam<std::vector<std::string>>;
 
   template class MemoizedParam<int>;
   template class MemoizedParam<double>;
@@ -163,12 +163,18 @@ namespace iguana {
       static std::unique_ptr<ConcurrentParam<T>> Create() {
 
         if(GlobalConcurrencyModel() == "none") {
-          printf("WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING\n"); // FIXME: use `Logger`
-          GlobalConcurrencyModel = "unsafe";
+          GlobalConcurrencyModel.GetLog()->Warn(R"(GlobalConcurrencyModel is not set; algorithms are NOT thread safe.
+          Choose one of the following to get rid of this warning:
+          - 'single'       single threaded; not thead safe,
+                           but optimal for single-threaded users
+          - 'memoize'      multi-threaded default
+          - 'threadpool'   multi-threaded thread pool
+          ** see the user guide for details)");
+          GlobalConcurrencyModel = "single";
         }
 
-        if(GlobalConcurrencyModel() == "unsafe")
-          return std::make_unique<UnsafeParam<T>>();
+        if(GlobalConcurrencyModel() == "single")
+          return std::make_unique<SingleThreadParam<T>>();
         else if(GlobalConcurrencyModel() == "memoize")
           return std::make_unique<MemoizedParam<T>>();
         else if(GlobalConcurrencyModel() == "threadpool")
