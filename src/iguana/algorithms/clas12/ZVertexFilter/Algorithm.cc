@@ -7,21 +7,10 @@ namespace iguana::clas12 {
   void ZVertexFilter::Start(hipo::banklist& banks)
   {
 
-    // Read YAML config file with cuts for a given run number.
+    // get configuration
     ParseYAMLConfig();
-    // o_runnum.Save(0, 0);
-    // o_zcuts  = GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
-    // o_pids  =  GetOptionSet<int>("pids", {GetConfig()->InRange("runs", o_runnum), "pids"});
-    // if(o_zcuts.size() != 2) {
-    //   m_log->Error("configuration option 'cuts' must be an array of size 2, but it is {}", PrintOptionValue("cuts"));
-    //   throw std::runtime_error("bad configuration");
-    // }
-    // if(o_pids.size() < 1) {
-    //   m_log->Error("configuration option 'pids' must have at least one value");
-    //   throw std::runtime_error("bad configuration");
-    // }
-
     o_runnum = ConcurrentParamFactory::Create<int>();
+    o_zcuts  = ConcurrentParamFactory::Create<std::vector<double>>();
 
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
@@ -71,17 +60,18 @@ namespace iguana::clas12 {
   void ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {
     std::lock_guard<std::mutex> const lock(m_mutex); // NOTE: be sure to lock successive `ConcurrentParam::Save` calls !!!
     o_runnum->Save(runnum, key);
-    o_zcuts->Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}));
+    o_zcuts->Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), key);
     // FIXME: handle PIDs
   }
 
   bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status, concurrent_key_t key) const
   {
-    return false; // TODO
+    auto zcuts = GetZcuts(key);
+    return zvertex > zcuts.at(0) && zvertex < zcuts.at(1);
 
-    // auto zcuts = o_zcuts.Load(key);
-    // return zvertex > zcuts.at(0) && zvertex < zcuts.at(1);
-
+    // FIXME
+    // FIXME
+    // FIXME
     // //only apply filter if particle pid is in list of pids
     // //and particles not in FT (ie FD or CD)
     // if(o_pids.find(pid) != o_pids.end() && abs(status)>=2000) {
@@ -91,19 +81,19 @@ namespace iguana::clas12 {
     // }
   }
 
-  int ZVertexFilter::GetRunNum() const
+  int ZVertexFilter::GetRunNum(concurrent_key_t const key) const
   {
-    return 0; // FIXME
+    return o_runnum->Load(key);
   }
 
-  double ZVertexFilter::GetZcutLower() const
+  std::vector<double> ZVertexFilter::GetZcuts(concurrent_key_t const key) const
   {
-    return 0.0; // FIXME
+    return o_zcuts->Load(key);
   }
 
-  double ZVertexFilter::GetZcutUpper() const
+  void ZVertexFilter::SetZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key)
   {
-    return 0.0; // FIXME
+    o_zcuts->Save({zcut_lower, zcut_upper}, key);
   }
 
   void ZVertexFilter::Stop()

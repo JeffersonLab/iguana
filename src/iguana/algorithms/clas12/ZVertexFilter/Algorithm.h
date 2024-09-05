@@ -43,12 +43,21 @@ namespace iguana::clas12 {
       /// @returns `true` if `zvertex` is within specified bounds
       bool Filter(double const zvertex, int const pid, int const status, concurrent_key_t const key) const;
 
+      /// @param key the return value of `::PrepareEvent`
       /// @returns the current run number
-      int GetRunNum() const;
-      /// @returns the current z-vertex lower cut
-      double GetZcutLower() const;
-      /// @returns the current z-vertex upper cut
-      double GetZcutUpper() const;
+      int GetRunNum(concurrent_key_t const key = 0) const;
+
+      /// @param key the return value of `::PrepareEvent`
+      /// @returns the current z-vertex cuts
+      std::vector<double> GetZcuts(concurrent_key_t const key = 0) const;
+
+      /// @brief sets the z-vertex cuts
+      /// @warning this method is not thread safe; instead, for thread safety,
+      /// use `::PrepareEvent` and a custom configuration file.
+      /// @param zcut_lower the lower bound of the cut
+      /// @param zcut_upper the upper bound of the cut
+      /// @param key the, for `::GetZcuts`
+      void SetZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key = 0);
 
     private:
       hipo::banklist::size_type b_particle, b_config;
