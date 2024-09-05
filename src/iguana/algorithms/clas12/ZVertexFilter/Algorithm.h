@@ -60,7 +60,7 @@ namespace iguana::clas12 {
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
 
       /// Z-vertex cut
-      // mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_zcuts;
+      mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_zcuts;
 
       /// pids to apply ZVertexFilter to
       std::set<int> o_pids;

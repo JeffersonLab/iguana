@@ -69,8 +69,10 @@ namespace iguana::clas12 {
   }
 
   void ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {
+    std::lock_guard<std::mutex> const lock(m_mutex); // NOTE: be sure to lock successive `ConcurrentParam::Save` calls !!!
     o_runnum->Save(runnum, key);
-    // o_zcuts->Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), key); // FIXME
+    o_zcuts->Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}));
+    // FIXME: handle PIDs
   }
 
   bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status, concurrent_key_t key) const
