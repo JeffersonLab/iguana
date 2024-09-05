@@ -162,16 +162,8 @@ namespace iguana {
       template <typename T>
       static std::unique_ptr<ConcurrentParam<T>> Create() {
 
-        if(GlobalConcurrencyModel() == "none") {
-          GlobalConcurrencyModel.GetLog()->Warn(R"(GlobalConcurrencyModel is not set; algorithms are NOT thread safe.
-          Choose one of the following to get rid of this warning:
-          - 'single'       single threaded; not thead safe,
-                           but optimal for single-threaded users
-          - 'memoize'      multi-threaded default
-          - 'threadpool'   multi-threaded thread pool
-          ** see the user guide for details)");
-          GlobalConcurrencyModel = "single";
-        }
+        if(GlobalConcurrencyModel() == "none")
+          GlobalConcurrencyModel = "memoize"; // the safest default, but not the fastest for single-threaded users
 
         if(GlobalConcurrencyModel() == "single")
           return std::make_unique<SingleThreadParam<T>>();
