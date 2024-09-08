@@ -113,8 +113,28 @@ jobs:
       - name: download ROOT source code
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          iguana_src/.github/download-ROOT-source.sh ${{ steps.key.outputs.root_version }}
-          tar xf $(ls -t *.gz | head -n1)
+          case ${{ steps.key.outputs.root_version }} in
+            latest)
+              curl --request GET \
+                --url https://api.github.com/repos/root-project/ROOT/releases/latestt \
+                --header "Accept: application/vnd.github+json" \
+                --header "X-GitHub-Api-Version: 2022-11-28" \
+                --fail-with-body |\
+                jq -r '.tarball_url' |\
+                tee url.txt
+                ;;
+            *)
+              curl --request GET \
+                --url https://api.github.com/repos/root-project/ROOT/tags \
+                --header "Accept: application/vnd.github+json" \
+                --header "X-GitHub-Api-Version: 2022-11-28" \
+                --fail-with-body |\
+                jq -r '.[] | select (.name=="'${{ steps.key.outputs.root_version }}'") | .tarball_url' |\
+                tee url.txt
+                ;;
+          esac
+          wget -nv --no-check-certificate --output-document root.tar.gz $(cat url.txt)
+          tar xf root.tar.gz
           ls -t
           mv -v $(ls -td root-* | head -n1) root_src
       - name: build ROOT
