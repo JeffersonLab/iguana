@@ -120,18 +120,18 @@ jobs:
                 --header "Accept: application/vnd.github+json" \
                 --header "X-GitHub-Api-Version: 2022-11-28" \
                 --fail-with-body |\
-                jq -r '.tarball_url' |\
-                tee url.txt
-                ;;
+                tee payload.json
+              cat payload.json | jq -r '.tarball_url' > url.txt
+              ;;
             *)
               curl --request GET \
                 --url https://api.github.com/repos/root-project/ROOT/tags \
                 --header "Accept: application/vnd.github+json" \
                 --header "X-GitHub-Api-Version: 2022-11-28" \
                 --fail-with-body |\
-                jq -r '.[] | select (.name=="'${{ steps.key.outputs.root_version }}'") | .tarball_url' |\
-                tee url.txt
-                ;;
+                tee payload.json
+              cat payload.json | jq -r '.[] | select (.name=="'${{ steps.key.outputs.root_version }}'") | .tarball_url' > url.txt
+              ;;
           esac
           wget -nv --no-check-certificate --output-document root.tar.gz $(cat url.txt)
           tar xf root.tar.gz
