@@ -11,6 +11,10 @@ fi
 tag=$1
 curl_cmd='curl --silent -L -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28"'
 
+echo DEBUG
+$curl_cmd https://api.github.com/repos/root-project/ROOT/releases/latest | jq
+exit 1
+
 echo "Download ROOT tag '$tag' from:"
 case $tag in
   latest)
