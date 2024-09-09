@@ -64,6 +64,7 @@ namespace iguana {
   template <typename T>
   void SingleThreadParam<T>::Save(T const& value, concurrent_key_t const key)
   {
+    this->m_empty = false;
     m_value = value;
   }
 
@@ -71,12 +72,14 @@ namespace iguana {
   void MemoizedParam<T>::Save(T const& value, concurrent_key_t const key)
   {
     std::lock_guard<std::mutex> const lock(this->m_mutex);
+    this->m_empty = false;
     m_container.insert({key, value});
   }
 
   template <typename T>
   void ThreadPoolParam<T>::Save(T const& value, concurrent_key_t const key)
   {
+    this->m_empty = false;
     throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
   }
 
@@ -102,4 +105,24 @@ namespace iguana {
     throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
   }
 
+  // ==================================================================================
+  // GetSize() methods
+  // ==================================================================================
+  template <typename T>
+  std::size_t SingleThreadParam<T>::GetSize() const
+  {
+    return 1;
+  }
+
+  template <typename T>
+  std::size_t MemoizedParam<T>::GetSize() const
+  {
+    return m_container.size();
+  }
+
+  template <typename T>
+  std::size_t ThreadPoolParam<T>::GetSize() const
+  {
+    throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
+  }
 }

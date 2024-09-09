@@ -40,6 +40,12 @@ namespace iguana {
       /// @returns true if hashing is needed
       bool NeedsHashing() const { return m_needs_hashing; }
 
+      /// @returns the size of the internal data storage container
+      virtual std::size_t GetSize() const = 0;
+
+      /// @returns true if no value has been saved
+      bool IsEmpty() const { return m_empty; }
+
     protected:
 
       /// whether this `ConcurrentParam` needs hashing for calling `::Load` or `::Save`
@@ -47,6 +53,9 @@ namespace iguana {
 
       /// mutex
       std::mutex m_mutex;
+
+      /// whether this `ConcurrentParam` has something saved
+      bool m_empty{true};
 
   };
 
@@ -64,6 +73,7 @@ namespace iguana {
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
       bool HasKey(concurrent_key_t const key) const override;
+      std::size_t GetSize() const override;
 
     private:
       T m_value;
@@ -86,6 +96,7 @@ namespace iguana {
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
       bool HasKey(concurrent_key_t const key) const override;
+      std::size_t GetSize() const override;
 
     private:
       container_t m_container;
@@ -109,6 +120,7 @@ namespace iguana {
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
       bool HasKey(concurrent_key_t const key) const override;
+      std::size_t GetSize() const override;
 
     private:
       container_t m_container;

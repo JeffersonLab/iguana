@@ -46,6 +46,7 @@ namespace iguana::clas12 {
   }
 
   concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum, concurrent_key_t key) const {
+    m_log->Trace("calling PrepareEvent({}, {})", runnum, key);
     if(o_runnum->NeedsHashing()) {
       std::hash<int> hash_ftn;
       auto hash_key = hash_ftn(runnum);
@@ -53,13 +54,14 @@ namespace iguana::clas12 {
         Reload(runnum, hash_key);
       return hash_key;
     }
-    if(o_runnum->Load(key) != runnum)
+    if(o_runnum->IsEmpty() || o_runnum->Load(key) != runnum)
       Reload(runnum, key);
     return key;
   }
 
   void ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {
     std::lock_guard<std::mutex> const lock(m_mutex); // NOTE: be sure to lock successive `ConcurrentParam::Save` calls !!!
+    m_log->Trace("-> calling Reload({}, {})", runnum, key);
     o_runnum->Save(runnum, key);
     o_zcuts->Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), key);
     // FIXME: handle PIDs
