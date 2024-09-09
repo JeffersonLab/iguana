@@ -45,11 +45,13 @@ c     REC::Particle columns
       integer(c_int) stat(N_MAX)
       integer(c_int) sector(N_MAX)
       real(c_float)  torus(N_MAX)
+      integer(c_int) runnum(N_MAX)
 
 c     iguana algorithm outputs
       logical(c_bool) accept(N_MAX)  ! filter
       real(c_double) qx, qy, qz, qE  ! q vector
       real(c_double) Q2, x, y, W, nu ! inclusive kinematics
+      integer(c_int) key_vz_filter   ! key for Z-vertex filter
 
 c     iguana algorithm indices
       integer(c_int) algo_eb_filter, algo_vz_filter,
@@ -180,6 +182,13 @@ c       read banks
         call hipo_read_float('REC::Particle', 'vz', nr, vz, N_MAX)
         call hipo_read_int('REC::Particle', 'status', nr, stat, N_MAX)
         call hipo_read_float('RUN::config', 'torus', nr, torus, N_MAX)
+        call hipo_read_int('RUN::config', 'run', nr, runnum, N_MAX)
+
+c       before using the Z-vertext filter, we must "prepare" the
+c       algorithm's configuration for this event; the resulting
+c       'key_vz_filter' must be passed to the action function
+        call iguana_clas12_zvertexfilter_prepareevent(
+     &      algo_vz_filter, runnum(1), key_vz_filter)
 
 c       call iguana filters
 c       - the `logical` variable `accept` must be initialized to
@@ -193,7 +202,8 @@ c       - the AND with the z-vertex filter is the final filter, `accept`
           call iguana_clas12_eventbuilderfilter_filter(
      &      algo_eb_filter, pid(i), accept(i))
           call iguana_clas12_zvertexfilter_filter(
-     &      algo_vz_filter, vz(i), pid(i), stat(i), accept(i))
+     &      algo_vz_filter, vz(i), pid(i), stat(i),
+     &      key_vz_filter, accept(i))
           print *, '  i = ', i, '  pid = ', pid(i), ' vz = ', vz(i),
      &      '  status = ', stat(i), '  =>  accept = ', accept(i)
         enddo

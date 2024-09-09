@@ -2,6 +2,14 @@ algorithm:
   name: 'clas12::ZVertexFilter'
 
 actions:
+  - name: PrepareEvent
+    type: creator
+    inputs:
+      - name: runnum
+        type: int
+    outputs:
+      - type: concurrent_key_t
+        cast: int
   - name: Filter
     type: filter
     inputs:
