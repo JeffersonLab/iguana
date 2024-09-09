@@ -86,7 +86,6 @@ jobs:
       image: ${{ inputs.container }}
     outputs:
       key: ${{ steps.key.outputs.key }}
-      root_version: ${{ steps.key.outputs.root_version }}
     steps:
       ### define key
       - name: checkout iguana
@@ -95,9 +94,15 @@ jobs:
           path: iguana_src
       - name: key
         id: key
+        # FIXME: this builds the source code URL; using the GitHub REST API
+        # (via `curl --request`) is preferred to get the source code URL, but
+        # needs a PAT to mitigate API rate limits; for now just assume the URL
+        # - see https://github.com/JeffersonLab/iguana/pull/276
         run: |
-          [ "${{ inputs.verset }}" = "minver" ] && root_version=$(iguana_src/meson/minimum-version.sh root tag) || root_version='latest'
-          echo root_version=$root_version >> $GITHUB_OUTPUT
+          [ "${{ inputs.verset }}" = "minver" ] && \
+            root_version=$(iguana_src/meson/minimum-version.sh root tag) || \
+            root_version=$(iguana_src/meson/minimum-version.sh root tag_latest)
+          echo root_url=https://api.github.com/repos/root-project/root/tarball/refs/tags/${root_version} >> $GITHUB_OUTPUT
           echo key=root---${{ inputs.id }}---${root_version}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
       ### cache restore
       - uses: actions/cache/restore@v4
@@ -113,8 +118,8 @@ jobs:
       - name: download ROOT source code
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          iguana_src/.github/download-ROOT-source.sh ${{ steps.key.outputs.root_version }}
-          tar xf $(ls -t *.gz | head -n1)
+          wget -nv --no-check-certificate --output-document root.tar.gz ${{ steps.key.outputs.root_url }}
+          tar xf root.tar.gz
           ls -t
           mv -v $(ls -td root-* | head -n1) root_src
       - name: build ROOT
