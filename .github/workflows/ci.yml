@@ -86,7 +86,6 @@ jobs:
       image: ${{ inputs.container }}
     outputs:
       key: ${{ steps.key.outputs.key }}
-      root_version: ${{ steps.key.outputs.root_version }}
     steps:
       ### define key
       - name: checkout iguana
@@ -99,7 +98,7 @@ jobs:
           [ "${{ inputs.verset }}" = "minver" ] && \
             root_version=$(iguana_src/meson/minimum-version.sh root tag) || \
             root_version=$(iguana_src/meson/minimum-version.sh root tag_latest)
-          echo root_version=$root_version >> $GITHUB_OUTPUT
+          echo root_url=https://api.github.com/repos/root-project/root/tarball/refs/tags/${root_version} >> $GITHUB_OUTPUT
           echo key=root---${{ inputs.id }}---${root_version}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
       ### cache restore
       - uses: actions/cache/restore@v4
@@ -114,17 +113,8 @@ jobs:
         run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
       - name: download ROOT source code
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: | # FIXME: use GitHub REST API (via `curl --request`) to get these URLs + a PAT to mitigate API rate limits
-          case ${{ steps.key.outputs.root_version }} in
-            latest)
-              wget -nv --no-check-certificate --output-document root.tar.gz \
-                https://api.github.com/repos/root-project/root/tarball/${{ steps.keys.outputs.root_version }}
-              ;;
-            *)
-              wget -nv --no-check-certificate --output-document root.tar.gz \
-                https://api.github.com/repos/root-project/root/tarball/refs/tags/${{ steps.keys.outputs.root_version }}
-              ;;
-          esac
+        run: | # FIXME: prefer GitHub REST API (via `curl --request`) to get the source code URL (needs a PAT to mitigate API rate limits)
+          wget -nv --no-check-certificate --output-document root.tar.gz ${{ steps.key.outputs.root_url }}
           tar xf root.tar.gz
           ls -t
           mv -v $(ls -td root-* | head -n1) root_src
