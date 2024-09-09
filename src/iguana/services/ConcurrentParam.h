@@ -69,7 +69,7 @@ namespace iguana {
 
     public:
       SingleThreadParam();
-      ~SingleThreadParam() {}
+      ~SingleThreadParam() override = default;
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
       bool HasKey(concurrent_key_t const key) const override;
@@ -92,7 +92,7 @@ namespace iguana {
 
     public:
       MemoizedParam();
-      ~MemoizedParam() {}
+      ~MemoizedParam() override = default;
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
       bool HasKey(concurrent_key_t const key) const override;
@@ -116,7 +116,7 @@ namespace iguana {
 
     public:
       ThreadPoolParam();
-      ~ThreadPoolParam() {}
+      ~ThreadPoolParam() override = default;
       T const Load(concurrent_key_t const key = 0) const override;
       void Save(T const& value, concurrent_key_t const key = 0) override;
       bool HasKey(concurrent_key_t const key) const override;
@@ -126,38 +126,6 @@ namespace iguana {
       container_t m_container;
 
   };
-
-  // ==================================================================================
-  // template specializations
-  // ==================================================================================
-
-  template class ConcurrentParam<int>;
-  template class ConcurrentParam<double>;
-  template class ConcurrentParam<std::string>;
-  template class ConcurrentParam<std::vector<int>>;
-  template class ConcurrentParam<std::vector<double>>;
-  template class ConcurrentParam<std::vector<std::string>>;
-
-  template class SingleThreadParam<int>;
-  template class SingleThreadParam<double>;
-  template class SingleThreadParam<std::string>;
-  template class SingleThreadParam<std::vector<int>>;
-  template class SingleThreadParam<std::vector<double>>;
-  template class SingleThreadParam<std::vector<std::string>>;
-
-  template class MemoizedParam<int>;
-  template class MemoizedParam<double>;
-  template class MemoizedParam<std::string>;
-  template class MemoizedParam<std::vector<int>>;
-  template class MemoizedParam<std::vector<double>>;
-  template class MemoizedParam<std::vector<std::string>>;
-
-  template class ThreadPoolParam<int>;
-  template class ThreadPoolParam<double>;
-  template class ThreadPoolParam<std::string>;
-  template class ThreadPoolParam<std::vector<int>>;
-  template class ThreadPoolParam<std::vector<double>>;
-  template class ThreadPoolParam<std::vector<std::string>>;
 
   // ==================================================================================
   // ConcurrentParamFactory

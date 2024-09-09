@@ -172,7 +172,7 @@ algo_lib = shared_library(
   algo_sources,
   include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
   dependencies: project_deps,
-  link_with: services_lib,
+  link_with: [ services_lib ],
   link_args: ROOT_dep_link_args,
   install: true,
   build_rpath: ROOT_dep_rpath,

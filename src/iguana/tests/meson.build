@@ -1,6 +1,6 @@
 test_exe_name = 'iguana_test'
 test_exe_inc = include_directories('include')
-test_exe_links = [ project_libs, vdor_lib ]
+test_exe_links = project_libs + [ vdor_lib ]
 
 test_exe = executable(
   test_exe_name,
