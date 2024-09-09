@@ -41,7 +41,11 @@ foreach algo : algo_dict
         'algorithm-' + test_name_algo,
         test_exe,
         suite: [ 'algorithm' ],
-        args: test_args + [ '-n', '0' ],#get_option('test_num_events') ],
+        args: test_args + [
+          '-n', get_option('test_num_events'),
+          '-j', get_option('test_multithreading').to_string(),
+        ],
+        is_parallel: get_option('test_multithreading') < 0, # don't parallelize these tests if `test_multithreading >= 0`
         env: project_test_env,
         timeout: 0,
       )

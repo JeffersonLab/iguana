@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 
   // parse option arguments
   int opt;
-  while((opt = getopt(argc, argv, "hf:n:a:b:p:t:o:v|")) != -1) {
+  while((opt = getopt(argc, argv, "hf:n:a:b:p:t:j:o:v|")) != -1) {
     switch(opt) {
     case 'h':
       return UsageOptions(2);
