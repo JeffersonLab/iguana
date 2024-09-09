@@ -20,7 +20,7 @@ namespace iguana {
       /// @param model the concurrency model this instance must be
       /// @see `ConcurrentParamFactory`, the preferred instantiation method
       ConcurrentParam(std::string const& model);
-      ~ConcurrentParam() {}
+      virtual ~ConcurrentParam() = default;
 
       /// @brief access a stored value
       /// @param key the access key
