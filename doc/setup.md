@@ -53,10 +53,6 @@ cmake --build build-hipo
 cmake --install build-hipo
 ```
 
-### 🟩 `BS::thread_pool` C++ thread pool library
-<https://github.com/bshoshany/thread-pool> - By Barak Shoshany
-- You do not need to install this, it is automatically obtained and used when building Iguana
-
 ### 🟩 Optional: `ruby`: programming language
 <https://www.ruby-lang.org/en/>
 - Likely available in your package manager, likely as `ruby`
