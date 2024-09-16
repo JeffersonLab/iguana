@@ -192,7 +192,7 @@ jobs:
         run: |
           iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
           [ "${{ matrix.root_dep }}" = "withROOT" ] && source root/bin/thisroot.sh
-          meson setup build hipo_src --prefix=$(pwd)/hipo -Db_pie=true # using PIE build, for sanitizer readibility
+          meson setup build hipo_src --prefix=$(pwd)/hipo -Dbuildtype=debug -Db_pie=true # using PIE build, for sanitizer readibility
           meson install -C build
           tar cavf hipo{.tar.zst,}
       ### cache save
