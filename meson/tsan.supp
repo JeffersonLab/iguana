@@ -1,0 +1,5 @@
+# heap-use-after-free from YAML::Stream::~Stream() ?
+called_from_lib:libyaml-cpp.so
+
+# FIXME: `std::call_once` may not be thread safe
+race:iguana::GlobalConcurrencyModel
