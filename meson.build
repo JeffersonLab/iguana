@@ -176,7 +176,7 @@ project_test_env.set(
 # set compiler options
 add_project_arguments(
   '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etc + '"',
-  '-Wno-stringop-overflow', # workaround https://github.com/fmtlib/fmt/issues/4133
+  meson.get_compiler('cpp').get_id() == 'gcc' ? '-Wno-stringop-overflow' : '-Wno-shift-overflow', # workaround https://github.com/fmtlib/fmt/issues/4133
   language: [ 'cpp' ],
 )
 
