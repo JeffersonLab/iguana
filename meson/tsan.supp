@@ -1,8 +1,2 @@
-# heap-use-after-free from YAML::Stream::~Stream() ?
-called_from_lib:libyaml-cpp.so
-
-# heap-use-after-free from hipo::structure::getByteAt(int)
-# called_from_lib:libhipo4.so
-
 # FIXME: `std::call_once` may not be thread safe
 race:iguana::GlobalConcurrencyModel

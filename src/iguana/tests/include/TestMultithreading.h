@@ -86,10 +86,9 @@ inline int TestMultithreading(
           nNonEmpty++;
           nProcessed++;
         }
-        event.read(banks.front());
-        if(banks.front().getRows() > 0) {
-          seq.Run(banks);
-        }
+        for(auto& bank : banks)
+          event.read(bank);
+        seq.Run(banks);
       }
       if(nNonEmpty == 0)
         break;
