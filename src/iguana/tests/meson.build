@@ -27,7 +27,7 @@ foreach algo : algo_dict
 
     # test and benchmark algorithm
     if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
-      test_args = [ 'algorithm', '-a', algo_name ]
+      test_args = [ '-a', algo_name, '-n', get_option('test_num_events') ]
       if fs.is_file(get_option('test_data_file'))
         test_args += [ '-f', get_option('test_data_file') ]
       endif
@@ -41,14 +41,21 @@ foreach algo : algo_dict
         'algorithm-' + test_name_algo,
         test_exe,
         suite: [ 'algorithm' ],
-        args: test_args + [
-          '-n', get_option('test_num_events'),
-          '-j', get_option('test_multithreading').to_string(),
-        ],
-        is_parallel: get_option('test_multithreading') < 0, # don't parallelize these tests if `test_multithreading >= 0`
+        args: [ 'algorithm' ] + test_args,
         env: project_test_env,
         timeout: 0,
       )
+      if get_option('test_multithreading') > 0
+        test(
+          'multithreading-' + test_name_algo,
+          test_exe,
+          suite: [ 'multithreading' ],
+          args: [ 'multithreading', '-j', get_option('test_multithreading').to_string() ] + test_args,
+          is_parallel: false,
+          env: project_test_env,
+          timeout: 0,
+        )
+      endif
       benchmark(
         'benchmark-algorithm-' + test_name_algo,
         test_exe,

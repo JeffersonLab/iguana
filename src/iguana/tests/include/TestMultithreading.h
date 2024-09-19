@@ -14,26 +14,49 @@ inline int TestMultithreading(
     bool verbose)
 {
 
+  iguana::Logger log("test", iguana::Logger::Level::debug);
+
   // check arguments
-  if(algo_name == "" || bank_names.empty()) {
-    fmt::print(stderr, "ERROR: need algorithm name and banks\n");
+  if(algo_name.empty() || bank_names.empty()) {
+    log.Error("need algorithm name and banks");
     return 1;
   }
-  if(command == "algorithm" && data_file == "") {
-    fmt::print(stderr, "ERROR: need a data file for command 'algorithm'\n");
+  if(data_file.empty()) {
+    log.Error("need a data file for command {:?}", command);
     return 1;
   }
+
+  // number of events per thread
+  int num_events_per_thread = (int) std::round((double) num_events / num_threads);
+  int num_events_per_frame  = std::min(num_events_per_thread, 50);
+  int num_frames_per_thread = (int) std::ceil((double) num_events_per_thread / num_events_per_frame);
+  int num_events_actual     = num_events_per_frame * num_frames_per_thread * num_threads;
+  log.Debug("num_events_per_thread = {}", num_events_per_thread);
+  log.Debug("num_events_per_frame  = {}", num_events_per_frame );
+  log.Debug("num_frames_per_thread = {}", num_frames_per_thread);
+  log.Debug("=> will actually process num_events = {}", num_events_actual);
+  if(num_events != num_events_actual)
+    log.Warn("argument's num_events ({}) differs from the actual num_events that will be processed ({})",
+        num_events, num_events_actual);
 
   // start the stream
   hipo::readerstream stream;
   stream.open(data_file.c_str());
 
   // define the worker function
-  auto ftn = [&stream, &algo_name, &prerequisite_algos, &bank_names, &verbose](int order) {
+  auto ftn = [
+    &stream,
+    algo_name,
+    prerequisite_algos,
+    bank_names,
+    verbose,
+    num_events_per_thread,
+    num_events_per_frame
+  ](int order) {
 
-    // frame with 128 events
+    // fill a frame
     std::vector<hipo::event> events;
-    for(int i = 0; i < 128; i++)
+    for(int i = 0; i < num_events_per_frame; i++)
       events.push_back(hipo::event());
 
     // bank list
@@ -55,7 +78,7 @@ inline int TestMultithreading(
 
     // event frame loop
     int nProcessed = 0;
-    while(true) {
+    while(nProcessed < num_events_per_thread) {
       stream.pull(events);
       int nNonEmpty = 0;
       for(auto& event : events) {
@@ -75,6 +98,7 @@ inline int TestMultithreading(
     // stop the algorithm
     seq.Stop();
 
+    seq.GetLog()->Info("nProcessed = {}", nProcessed);
     return nProcessed;
   };
 

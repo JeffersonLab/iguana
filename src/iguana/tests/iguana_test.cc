@@ -208,7 +208,7 @@ int main(int argc, char** argv)
   if(command == "algorithm" || command == "unit")
     return TestAlgorithm(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, verbose);
   if(command == "multithreading")
-    return TestMultithreading(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, num_events, verbose);
+    return TestMultithreading(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, num_threads, verbose);
   else if(command == "validator")
     return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, verbose);
   else if(command == "config")
