@@ -173,10 +173,9 @@ project_test_env.set(
   'suppressions=' + meson.project_source_root() / 'meson' / 'lsan.supp',
 )
 
-# set compiler options
+# set preprocessor macros
 add_project_arguments(
   '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etc + '"',
-  meson.get_compiler('cpp').get_id() == 'gcc' ? '-Wno-stringop-overflow' : '-Wno-shift-overflow', # workaround https://github.com/fmtlib/fmt/issues/4133
   language: [ 'cpp' ],
 )
 
