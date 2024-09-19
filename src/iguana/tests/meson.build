@@ -40,22 +40,20 @@ foreach algo : algo_dict
       test(
         'algorithm-' + test_name_algo,
         test_exe,
-        suite: [ 'algorithm' ],
+        suite: [ 'algorithm', 'single_threaded' ],
         args: [ 'algorithm' ] + test_args,
         env: project_test_env,
         timeout: 0,
       )
-      if get_option('test_multithreading') > 0
-        test(
-          'multithreading-' + test_name_algo,
-          test_exe,
-          suite: [ 'multithreading' ],
-          args: [ 'multithreading', '-j', get_option('test_multithreading').to_string() ] + test_args,
-          is_parallel: false,
-          env: project_test_env,
-          timeout: 0,
-        )
-      endif
+      test(
+        'multithreading-' + test_name_algo,
+        test_exe,
+        suite: [ 'multithreading' ],
+        args: [ 'multithreading', '-j', get_option('test_multithreading').to_string() ] + test_args,
+        is_parallel: false,
+        env: project_test_env,
+        timeout: 0,
+      )
       benchmark(
         'benchmark-algorithm-' + test_name_algo,
         test_exe,
@@ -85,7 +83,7 @@ foreach algo : algo_dict
         test(
           'validator-' + test_name_algo,
           test_exe,
-          suite: [ 'validator' ],
+          suite: [ 'validator', 'single_threaded' ],
           args: test_args,
           env: project_test_env,
           timeout: get_option('test_validator_all_stats') ? 0 : 120,
@@ -101,6 +99,7 @@ foreach command : [ '', 'unknown', 'algorithm', 'validator', 'unit', 'config' ]
   test(
     'iguana_test-usage-guide' + (command == '' ? '' : '-' + command),
     test_exe,
+    suite: [ 'misc', 'single_threaded' ],
     args: command == '' ? [] : [ command ],
     env: project_test_env,
     should_fail: true,
@@ -114,10 +113,17 @@ foreach test_num : [ '1', '2', '3' ]
   test(
     'config-test_' + test_num,
     test_exe,
+    suite: [ 'misc', 'single_threaded' ],
     args: [ 'config', '-t', test_num, '-v' ],
     env: project_test_env,
   )
 endforeach
 
 # test Logger
-test('logger', test_exe, args: [ 'logger' ], env: project_test_env)
+test(
+  'logger',
+  test_exe,
+  suite: [ 'misc', 'single_threaded' ],
+  args: [ 'logger' ],
+  env: project_test_env
+)

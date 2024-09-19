@@ -37,7 +37,7 @@ foreach example, info : example_sources
       test(
         example,
         example_exe,
-        suite: [ 'example' ],
+        suite: [ 'example', 'single_threaded' ],
         args: info.get(
           'test_args',
           [ get_option('test_data_file'), '100' ], # don't run too many events, or meson test log will be huge

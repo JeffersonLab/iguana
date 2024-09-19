@@ -397,11 +397,12 @@ jobs:
       - name: meson test
         working-directory: iguana_build
         run: |
+          [ "${{ matrix.id }}" = "thread-sanitizer" ] && test_suite='multithreading' || test_suite='single_threaded'
           if [ "${{ env.verbose_test }}" = "true" ]; then
             [ ${{ inputs.runner }} = "macos-latest" ] && stdbuf_cmd=gstdbuf || stdbuf_cmd=stdbuf
-            $stdbuf_cmd -o0 meson test --print-errorlogs --verbose --no-stdsplit
+            $stdbuf_cmd -o0 meson test --print-errorlogs --verbose --no-stdsplit --suite $test_suite
           else
-            meson test --print-errorlogs
+            meson test --print-errorlogs --suite $test_suite
           fi
       ### run benchmarks
       - name: benchmark algorithms
@@ -487,7 +488,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: logs_iguana_build_${{ matrix.id }}
+          name: meson_logs_${{ matrix.id }}
           retention-days: 5
           path: iguana_build/meson-logs
       - name: upload coverage artifacts

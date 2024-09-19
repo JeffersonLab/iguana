@@ -11,7 +11,7 @@ option('test_data_file',           type: 'string',  value: '',    description: '
 option('test_num_events',          type: 'string',  value: '10',  description: 'Number of events from `test_data_file` to test')
 option('test_output_dir',          type: 'string',  value: '',    description: 'Output directory for tests. Must be an absolute path. If unspecified, tests will still run, but will not produce output files.')
 option('test_validator_all_stats', type: 'boolean', value: false, description: 'If true, use all statistics for validators, rather than `test_num_events`')
-option('test_multithreading',      type: 'integer', value: -1,    description: 'if < 0, run single threaded, otherwise run tests with this many threads (use 0 for hardware max)')
+option('test_multithreading',      type: 'integer', value: 4, min: 0, description: 'run multithreading tests with this many threads (use 0 for hardware max)')
 
 # expert options: the defaults should be reasonable for a local installation; different values may be preferred for installation in common areas
 option('z_install_envfile',     type: 'boolean', value: true,  description: 'Install a sourceable environment variable file')
