@@ -26,6 +26,15 @@ inline int TestMultithreading(
     return 1;
   }
 
+  // find the 'RUN::config' bank, if any
+  std::optional<hipo::banklist::size_type> run_config_bank_idx{};
+  for(hipo::banklist::size_type idx = 0; idx < bank_names.size(); idx++) {
+    if(bank_names.at(idx) == "RUN::config") {
+      run_config_bank_idx = idx;
+      break;
+    }
+  }
+
   // number of events per thread
   int num_events_per_thread = (int) std::round((double) num_events / num_threads);
   int num_events_per_frame  = std::min(num_events_per_thread, 50);
@@ -51,7 +60,8 @@ inline int TestMultithreading(
     bank_names,
     verbose,
     num_events_per_thread,
-    num_events_per_frame
+    num_events_per_frame,
+    run_config_bank_idx
   ](int order) {
 
     // fill a frame
@@ -88,6 +98,18 @@ inline int TestMultithreading(
         }
         for(auto& bank : banks)
           event.read(bank);
+        //////////// TEST: occasionally change the run number //////////////////////////
+        //
+        // FIXME: make this thing optional
+        //
+        if(run_config_bank_idx.has_value()) {
+          if(std::rand() % 10 == 0) {
+            auto runnum = banks[run_config_bank_idx.value()].getInt("run", 0);
+            runnum += (std::rand() % 2 == 0) ? 1 : -1;
+            banks[run_config_bank_idx.value()].putInt("run", 0, runnum);
+          }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
         seq.Run(banks);
       }
       if(nNonEmpty == 0)
