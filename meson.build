@@ -172,6 +172,7 @@ project_test_env.set(
   'halt_on_error=1',
   'abort_on_error=1',
   'print_summary=1',
+  # 'suppressions=' + meson.project_source_root() / 'meson' / 'asan.supp',
 )
 project_test_env.set(
   'TSAN_OPTIONS',

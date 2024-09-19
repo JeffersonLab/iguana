@@ -151,7 +151,7 @@ namespace iguana::clas12 {
     for(auto const& row : bank.getRowList()) {
       //check that we're only using FD detectors
       //eg have "sectors" in CND which we don't want to add here
-      int det=bank.getInt("detector",row);
+      int det=bank.getByte("detector",row); // FIXME: heap-use-after-free
       if (listFDDets.find(det) != listFDDets.end()) {
         sectors.push_back(bank.getInt("sector", row));
         pindices.push_back(bank.getInt("pindex", row));
