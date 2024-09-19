@@ -1,2 +1,0 @@
-# FIXME: `std::call_once` may not be thread safe
-race:iguana::GlobalConcurrencyModel

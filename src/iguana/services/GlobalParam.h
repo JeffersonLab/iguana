@@ -27,14 +27,16 @@ namespace iguana {
       /// @returns `*this`
       GlobalParam<T>& operator=(T const& val)
       {
+        std::lock_guard<std::mutex> lock(m_mutex);
         std::call_once(m_once, [&]() { m_val = val; });
         return *this;
       }
 
       /// @brief get the value of the parameter
       /// @returns the value of the parameter
-      T const& operator()()
+      T const operator()()
       {
+        std::lock_guard<std::mutex> lock(m_mutex);
         return m_val;
       }
 
@@ -42,6 +44,7 @@ namespace iguana {
 
       T m_val;
       std::once_flag m_once;
+      std::mutex m_mutex;
 
   };
 
