@@ -59,7 +59,7 @@ foreach algo : algo_dict
       benchmark(
         'benchmark-algorithm-' + test_name_algo,
         test_exe,
-        args: test_args + [ '-n', '0' ], # test all the events
+        args: [ 'algorithm', '-n', '0' ] + test_args, # test all the events
         env: project_test_env,
         timeout: 0,
       )
