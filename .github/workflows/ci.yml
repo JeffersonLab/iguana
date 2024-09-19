@@ -407,7 +407,7 @@ jobs:
       - name: benchmark algorithms
         if: ${{ matrix.id == 'coverage' }} # use the coverage job's GITHUB_STEP_SUMMARY
         run: |
-          meson test --benchmark --repeat 5 -C iguana_build > benchmark.txt
+          meson test --benchmark --repeat 5 -C iguana_build |& tee benchmark.txt
           iguana_src/.github/make-benchmark-table.rb benchmark.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
       ### coverage
       - name: coverage
