@@ -1,8 +1,22 @@
 #pragma once
 
+// workaround https://github.com/fmtlib/fmt/issues/4133
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshift-overflow"
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
 #include <fmt/color.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
+#ifdef __clang__
+#pragma clang diagnostic pop
+#else
+#pragma GCC diagnostic pop
+#endif
+
 #include <functional>
 #include <unordered_map>
 
