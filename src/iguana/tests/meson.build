@@ -54,6 +54,17 @@ foreach algo : algo_dict
         env: project_test_env,
         timeout: 0,
       )
+      if(algo['test_args'].get('banks', []).contains('RUN::config')) ### FIXME: this doesn't mean the algorithm actually has run-number-dependent configuration params
+        test( # same as above 'multithreading' test, but randomly vary the run number
+          'multithreading-with-variation-' + test_name_algo,
+          test_exe,
+          suite: [ 'multithreading' ],
+          args: [ 'multithreading', '-V', '-j', get_option('test_multithreading').to_string() ] + test_args,
+          is_parallel: false,
+          env: project_test_env,
+          timeout: 0,
+        )
+      endif
       benchmark(
         'benchmark-algorithm-' + test_name_algo,
         test_exe,

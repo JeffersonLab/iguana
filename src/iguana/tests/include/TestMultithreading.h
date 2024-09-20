@@ -11,6 +11,7 @@ inline int TestMultithreading(
     std::string data_file,
     int num_events,
     int num_threads,
+    bool vary_run,
     bool verbose)
 {
 
@@ -28,10 +29,12 @@ inline int TestMultithreading(
 
   // find the 'RUN::config' bank, if any
   std::optional<hipo::banklist::size_type> run_config_bank_idx{};
-  for(hipo::banklist::size_type idx = 0; idx < bank_names.size(); idx++) {
-    if(bank_names.at(idx) == "RUN::config") {
-      run_config_bank_idx = idx;
-      break;
+  if(vary_run) {
+    for(hipo::banklist::size_type idx = 0; idx < bank_names.size(); idx++) {
+      if(bank_names.at(idx) == "RUN::config") {
+        run_config_bank_idx = idx;
+        break;
+      }
     }
   }
 
@@ -58,6 +61,7 @@ inline int TestMultithreading(
     algo_name,
     prerequisite_algos,
     bank_names,
+    vary_run,
     verbose,
     num_events_per_thread,
     num_events_per_frame,
@@ -86,31 +90,34 @@ inline int TestMultithreading(
     // start the algorithm
     seq.Start(banks);
 
-    // event frame loop
+    // loop over frames
     int nProcessed = 0;
     while(nProcessed < num_events_per_thread) {
       stream.pull(events);
+
+      // loop over events in this frame
       int nNonEmpty = 0;
       for(auto& event : events) {
         if(event.getSize() > 16) {
           nNonEmpty++;
           nProcessed++;
-        }
-        for(auto& bank : banks)
-          event.read(bank);
-        //////////// TEST: occasionally change the run number //////////////////////////
-        //
-        // FIXME: make this thing optional
-        //
-        if(run_config_bank_idx.has_value()) {
-          if(std::rand() % 10 == 0) {
-            auto runnum = banks[run_config_bank_idx.value()].getInt("run", 0);
-            runnum += (std::rand() % 2 == 0) ? 1 : -1;
-            banks[run_config_bank_idx.value()].putInt("run", 0, runnum);
+
+          // read the banks
+          for(auto& bank : banks)
+            event.read(bank);
+
+          // occasionally vary the run number (if the user wants to)
+          if(vary_run && run_config_bank_idx.has_value()) {
+            if(std::rand() % 10 == 0) {
+              auto runnum = banks[run_config_bank_idx.value()].getInt("run", 0);
+              runnum += (std::rand() % 2 == 0) ? 1 : -1;
+              banks[run_config_bank_idx.value()].putInt("run", 0, runnum);
+            }
           }
+
+          // run the iguana algorithm
+          seq.Run(banks);
         }
-        ////////////////////////////////////////////////////////////////////////////////
-        seq.Run(banks);
       }
       if(nNonEmpty == 0)
         break;

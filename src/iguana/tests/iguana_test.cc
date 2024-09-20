@@ -14,7 +14,8 @@ int main(int argc, char** argv)
   int num_events         = 10;
   std::string algo_name  = "";
   int test_num           = 0;
-  int num_threads        = -1;
+  int num_threads        = 0;
+  bool vary_run          = false;
   std::string output_dir = "";
   bool verbose           = false;
   std::vector<std::string> bank_names;
@@ -90,11 +91,14 @@ int main(int argc, char** argv)
         {"j", [&]()
          {
            fmt::print("    {:<20} {}\n", "-j NUM_THREADS", "number of threads to run");
-           fmt::print("    {:<20} multithreading is handled by a thread pool\n", "");
-           fmt::print("    {:<20} - if < 0: run single-threaded without using the thread pool\n", "");
            fmt::print("    {:<20} - if = 0: run with `std::thread::hardware_concurrency()` threads\n", "");
            fmt::print("    {:<20} - if > 0: run with NUM_THREADS threads\n", "");
            fmt::print("    {:<20} default: {}\n", "", num_threads);
+         }},
+        {"V", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-V", "randomly vary the run number");
+           fmt::print("    {:<20} this is for testing run-dependent configuration thread safety\n", "");
          }},
         {"o", [&]()
          {
@@ -110,7 +114,7 @@ int main(int argc, char** argv)
       available_options = {"f", "n", "a-algo", "b", "p"};
     }
     if(command == "multithreading") {
-      available_options = {"f", "n", "a-algo", "b", "p", "j"};
+      available_options = {"f", "n", "a-algo", "b", "p", "j", "V"};
     }
     else if(command == "validator") {
       available_options = {"f", "n", "a-vdor", "b", "o"};
@@ -142,7 +146,7 @@ int main(int argc, char** argv)
 
   // parse option arguments
   int opt;
-  while((opt = getopt(argc, argv, "hf:n:a:b:p:t:j:o:v|")) != -1) {
+  while((opt = getopt(argc, argv, "hf:n:a:b:p:t:j:Vo:v|")) != -1) {
     switch(opt) {
     case 'h':
       return UsageOptions(2);
@@ -168,6 +172,9 @@ int main(int argc, char** argv)
       num_threads = std::stoi(optarg);
       if(num_threads == 0)
         num_threads = std::thread::hardware_concurrency();
+      break;
+    case 'V':
+      vary_run = true;
       break;
     case 'o':
       output_dir = std::string(optarg);
@@ -201,6 +208,7 @@ int main(int argc, char** argv)
   fmt::print("  {:>20} = {}\n", "prerequisite_algos", fmt::join(prerequisite_algos, ", "));
   fmt::print("  {:>20} = {}\n", "test_num", test_num);
   fmt::print("  {:>20} = {}\n", "num_threads", num_threads);
+  fmt::print("  {:>20} = {}\n", "vary_run", vary_run);
   fmt::print("  {:>20} = {}\n", "output_dir", output_dir);
   fmt::print("\n");
 
@@ -208,7 +216,7 @@ int main(int argc, char** argv)
   if(command == "algorithm" || command == "unit")
     return TestAlgorithm(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, verbose);
   if(command == "multithreading")
-    return TestMultithreading(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, num_threads, verbose);
+    return TestMultithreading(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, num_threads, vary_run, verbose);
   else if(command == "validator")
     return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, verbose);
   else if(command == "config")
