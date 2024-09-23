@@ -78,7 +78,7 @@ algo_dict = [
   {
     'name': 'physics::InclusiveKinematics',
     'algorithm_needs_ROOT': true,
-    'test_args': {'banks': [ 'REC::Particle' ]},
+    'test_args': {'banks': [ 'REC::Particle', 'RUN::config' ]},
   },
   {
     'name': 'clas12::PhotonGBTFilter',

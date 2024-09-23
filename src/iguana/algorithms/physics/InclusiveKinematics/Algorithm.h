@@ -2,6 +2,7 @@
 
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
+#include "iguana/services/ConcurrentParam.h"
 
 namespace iguana::physics {
 
@@ -30,7 +31,7 @@ namespace iguana::physics {
   /// @brief_algo Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
   ///
   /// @begin_doc_algo{physics::InclusiveKinematics | Creator}
-  /// @input_banks{REC::Particle}
+  /// @input_banks{REC::Particle, RUN::config}
   /// @output_banks{%physics::InclusiveKinematics}
   /// @end_doc
   ///
@@ -50,29 +51,42 @@ namespace iguana::physics {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
+      /// @action_function{reload} prepare the event
+      /// @when_to_call{for each event}
+      /// @param runnum the run number
+      /// @param key @key_desc
+      /// @returns the key to be used in `::ComputeFromLepton`
+      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t key = 0) const;
+
+      /// @action_function{scalar creator} compute kinematics from the scattered lepton.
+      /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)
+      /// @param lepton_py scattered lepton momentum component @f$p_y@f$ (GeV)
+      /// @param lepton_pz scattered lepton momentum component @f$p_z@f$ (GeV)
+      /// @param key the return value of `::PrepareEvent`
+      /// @returns the reconstructed inclusive kinematics in a `iguana::physics::InclusiveKinematicsVars` instance
+      InclusiveKinematicsVars ComputeFromLepton(
+          vector_element_t const lepton_px,
+          vector_element_t const lepton_py,
+          vector_element_t const lepton_pz,
+          concurrent_key_t const key) const;
+
+    private:
+
       /// FIXME: this could be changed to a vector action function
       /// Find the scattered lepton. Since finding the scattered lepton requires
       /// reading all the particles of an event, there is no **Action function**;
       /// therefore, callers that do not have access to `hipo::bank` objects are
       /// responsible for finding the scattered lepton.
       /// @param particle_bank the particle bank to search
+      /// @param key the return value of `::PrepareEvent`
       /// @returns the bank row of the scattered lepton, or `-1` if not found
-      int FindScatteredLepton(hipo::bank const& particle_bank) const;
+      int FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const;
 
-      /// @action_function{scalar creator} compute kinematics from the scattered lepton.
-      /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)
-      /// @param lepton_py scattered lepton momentum component @f$p_y@f$ (GeV)
-      /// @param lepton_pz scattered lepton momentum component @f$p_z@f$ (GeV)
-      /// @returns the reconstructed inclusive kinematics in a `iguana::physics::InclusiveKinematicsVars` instance
-      InclusiveKinematicsVars ComputeFromLepton(
-          vector_element_t const lepton_px,
-          vector_element_t const lepton_py,
-          vector_element_t const lepton_pz) const;
-
-    private:
+      void Reload(int const runnum, concurrent_key_t key = 0) const;
 
       // banklist indices
       hipo::banklist::size_type b_particle;
+      hipo::banklist::size_type b_config;
       hipo::banklist::size_type b_result;
 
       // `b_result` bank item indices
@@ -88,11 +102,11 @@ namespace iguana::physics {
       int i_qE;
 
       // config options
-      int o_runnum;
-      double o_beam_energy;
-      std::vector<double> o_beam_direction;
-      std::string o_beam_particle;
-      std::string o_target_particle;
+      mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
+      mutable std::unique_ptr<ConcurrentParam<double>> o_beam_energy;
+      mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_beam_direction;
+      mutable std::unique_ptr<ConcurrentParam<std::string>> o_beam_particle;
+      mutable std::unique_ptr<ConcurrentParam<std::string>> o_target_particle;
       enum method_reconstruction { scattered_lepton };
       enum method_lepton_finder { highest_energy_FD_trigger };
       method_reconstruction o_method_reconstruction;
@@ -106,8 +120,7 @@ namespace iguana::physics {
           double py;
           double pz;
       };
-      particle_t m_beam;
-      particle_t m_target;
+      mutable std::unique_ptr<ConcurrentParam<particle_t>> m_beam, m_target;
   };
 
 }
