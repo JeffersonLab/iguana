@@ -2,6 +2,17 @@ algorithm:
   name: 'physics::InclusiveKinematics'
 
 actions:
+  - name: PrepareEvent
+    type: creator
+    inputs:
+      - name: runnum
+        type: int
+      - name: thread_id
+        type: concurrent_key_t
+        cast: int
+    outputs:
+      - type: concurrent_key_t
+        cast: int
   - name: ComputeFromLepton
     type: creator
     inputs:
@@ -14,6 +25,9 @@ actions:
       - name: lepton_pz
         type: double
         cast: float
+      - name: key
+        type: concurrent_key_t
+        cast: int
     outputs:
       - name: qx
         type: double

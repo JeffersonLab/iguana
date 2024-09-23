@@ -7,6 +7,9 @@ actions:
     inputs:
       - name: runnum
         type: int
+      - name: thread_id
+        type: concurrent_key_t
+        cast: int
     outputs:
       - type: concurrent_key_t
         cast: int
