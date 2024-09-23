@@ -25,12 +25,12 @@ namespace iguana {
       /// @brief access a stored value
       /// @param key the access key
       /// @returns the stored value
-      virtual T const Load(concurrent_key_t const key = 0) const = 0;
+      virtual T const Load(concurrent_key_t const key) const = 0;
 
       /// @brief modify a value
       /// @param key the access key
       /// @param value the value
-      virtual void Save(T const& value, concurrent_key_t const key = 0) = 0;
+      virtual void Save(T const& value, concurrent_key_t const key) = 0;
 
       /// @param key the key
       /// @returns if key `key` is used
@@ -70,8 +70,8 @@ namespace iguana {
     public:
       SingleThreadParam();
       ~SingleThreadParam() override = default;
-      T const Load(concurrent_key_t const key = 0) const override;
-      void Save(T const& value, concurrent_key_t const key = 0) override;
+      T const Load(concurrent_key_t const key) const override;
+      void Save(T const& value, concurrent_key_t const key) override;
       bool HasKey(concurrent_key_t const key) const override;
       std::size_t GetSize() const override;
 
@@ -93,8 +93,8 @@ namespace iguana {
     public:
       MemoizedParam();
       ~MemoizedParam() override = default;
-      T const Load(concurrent_key_t const key = 0) const override;
-      void Save(T const& value, concurrent_key_t const key = 0) override;
+      T const Load(concurrent_key_t const key) const override;
+      void Save(T const& value, concurrent_key_t const key) override;
       bool HasKey(concurrent_key_t const key) const override;
       std::size_t GetSize() const override;
 
@@ -117,8 +117,8 @@ namespace iguana {
     public:
       ThreadPoolParam();
       ~ThreadPoolParam() override = default;
-      T const Load(concurrent_key_t const key = 0) const override;
-      void Save(T const& value, concurrent_key_t const key = 0) override;
+      T const Load(concurrent_key_t const key) const override;
+      void Save(T const& value, concurrent_key_t const key) override;
       bool HasKey(concurrent_key_t const key) const override;
       std::size_t GetSize() const override;
 
