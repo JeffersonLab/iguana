@@ -27,7 +27,7 @@ foreach algo : algo_dict
 
     # test and benchmark algorithm
     if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
-      test_args = [ '-a', algo_name, '-n', get_option('test_num_events') ]
+      test_args = [ '-a', algo_name ]
       if fs.is_file(get_option('test_data_file'))
         test_args += [ '-f', get_option('test_data_file') ]
       endif
@@ -37,41 +37,52 @@ foreach algo : algo_dict
       foreach prerequisite : algo['test_args'].get('prerequisites', [])
         test_args += [ '-p', prerequisite ]
       endforeach
+
+      # single threaded tests
       test(
-        'algorithm-' + test_name_algo,
+        '-'.join(['algorithm', test_name_algo]),
         test_exe,
         suite: [ 'algorithm', 'single_threaded' ],
-        args: [ 'algorithm' ] + test_args,
+        args: [ 'algorithm', '-n', get_option('test_num_events') ] + test_args,
         env: project_test_env,
         timeout: 0,
       )
-      test(
-        'multithreading-' + test_name_algo,
+      benchmark(
+        '-'.join(['benchmark', 'single_threaded', test_name_algo]),
         test_exe,
-        suite: [ 'multithreading' ],
-        args: [ 'multithreading', '-j', get_option('test_multithreading').to_string() ] + test_args,
-        is_parallel: false,
+        suite: [ 'algorithm', 'single_threaded' ],
+        args: [ 'algorithm', '-n', '0' ] + test_args, # benchmark all the events
         env: project_test_env,
         timeout: 0,
       )
-      if(algo['test_args'].get('banks', []).contains('RUN::config')) ### FIXME: this doesn't mean the algorithm actually has run-number-dependent configuration params
-        test( # same as above 'multithreading' test, but randomly vary the run number
-          'multithreading-with-variation-' + test_name_algo,
+
+      # multithreaded tests
+      foreach concurrency_model : [ 'memoize', 'threadpool' ]
+        multithreading_args = [
+          'multithreading',
+          '-j', get_option('test_multithreading').to_string(),
+          '-m', concurrency_model,
+          '-V',
+        ]
+        test(
+          '-'.join(['multithreading', concurrency_model, test_name_algo]),
           test_exe,
-          suite: [ 'multithreading' ],
-          args: [ 'multithreading', '-V', '-j', get_option('test_multithreading').to_string() ] + test_args,
+          suite: [ 'multithreading', concurrency_model ],
+          args: multithreading_args + [ '-n', get_option('test_num_events') ] + test_args,
           is_parallel: false,
           env: project_test_env,
           timeout: 0,
         )
-      endif
-      benchmark(
-        'benchmark-algorithm-' + test_name_algo,
-        test_exe,
-        args: [ 'algorithm', '-n', '0' ] + test_args, # test all the events
-        env: project_test_env,
-        timeout: 0,
-      )
+        benchmark(
+          '-'.join(['benchmark', f'multithreading_@concurrency_model@', test_name_algo]),
+          test_exe,
+          suite: [ 'multithreading', concurrency_model ],
+          args: multithreading_args + [ '-n', '0' ] + test_args, # benchmark all the events
+          env: project_test_env,
+          timeout: 0,
+        )
+      endforeach
+
     endif
 
     # test validator
@@ -79,10 +90,8 @@ foreach algo : algo_dict
       if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
         test_args = [
           'validator',
-          '-n',
-          get_option('test_validator_all_stats') ? '0' : get_option('test_num_events'),
-          '-a',
-          algo_name + 'Validator',
+          '-n', get_option('test_validator_all_stats') ? '0' : get_option('test_num_events'),
+          '-a', algo_name + 'Validator',
         ]
         if fs.is_file(get_option('test_data_file'))
           test_args += [ '-f', get_option('test_data_file') ]

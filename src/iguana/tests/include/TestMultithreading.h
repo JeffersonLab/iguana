@@ -2,6 +2,7 @@
 
 #include <hipo4/reader.h>
 #include <iguana/algorithms/AlgorithmSequence.h>
+#include <iguana/services/GlobalParam.h>
 
 inline int TestMultithreading(
     std::string command,
@@ -11,6 +12,7 @@ inline int TestMultithreading(
     std::string data_file,
     int num_events,
     int num_threads,
+    std::string concurrency_model,
     bool vary_run,
     bool verbose)
 {
@@ -27,6 +29,10 @@ inline int TestMultithreading(
     return 1;
   }
 
+  // set the concurrency model
+  if(!concurrency_model.empty())
+    iguana::GlobalConcurrencyModel = concurrency_model;
+
   // find the 'RUN::config' bank, if any
   std::optional<hipo::banklist::size_type> run_config_bank_idx{};
   if(vary_run) {
@@ -39,17 +45,22 @@ inline int TestMultithreading(
   }
 
   // number of events per thread
+  int const default_frame_size = 50;
   int num_events_per_thread = (int) std::round((double) num_events / num_threads);
-  int num_events_per_frame  = std::min(num_events_per_thread, 50);
-  int num_frames_per_thread = (int) std::ceil((double) num_events_per_thread / num_events_per_frame);
+  int num_events_per_frame  = num_events > 0 ? std::min(num_events_per_thread, default_frame_size) : default_frame_size;
+  int num_frames_per_thread = num_events > 0 ? (int) std::ceil((double) num_events_per_thread / num_events_per_frame) : 0;
   int num_events_actual     = num_events_per_frame * num_frames_per_thread * num_threads;
   log.Debug("num_events_per_thread = {}", num_events_per_thread);
   log.Debug("num_events_per_frame  = {}", num_events_per_frame );
   log.Debug("num_frames_per_thread = {}", num_frames_per_thread);
-  log.Debug("=> will actually process num_events = {}", num_events_actual);
-  if(num_events != num_events_actual)
-    log.Warn("argument's num_events ({}) differs from the actual num_events that will be processed ({})",
-        num_events, num_events_actual);
+  if(num_events > 0) {
+    log.Debug("=> will actually process num_events = {}", num_events_actual);
+    if(num_events != num_events_actual)
+      log.Warn("argument's num_events ({}) differs from the actual num_events that will be processed ({})",
+          num_events, num_events_actual);
+  } else {
+    log.Debug("=> will actually process num_events = ALL OF THEM");
+  }
 
   // start the stream
   hipo::readerstream stream;
@@ -92,7 +103,7 @@ inline int TestMultithreading(
 
     // loop over frames
     int nProcessed = 0;
-    while(nProcessed < num_events_per_thread) {
+    while(nProcessed < num_events_per_thread || num_events_per_thread == 0) {
       stream.pull(events);
 
       // loop over events in this frame

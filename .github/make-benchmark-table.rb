@@ -1,51 +1,45 @@
 #!/usr/bin/env ruby
 
+require 'pry'
+
 if ARGV.empty?
-  $stderr.puts "USAGE: #{$0} [benchmark_output]"
+  $stderr.puts "USAGE: #{$0} [benchmark_outputs]"
   exit 2
 end
 
-# parse the benchmark output
-benchmark_results = File.readlines(ARGV[0])
-  .grep(/.*benchmark-algorithm.*/)
-  .map(&:chomp)
-  .map do |line|
-    tokens = line.split
-    if tokens.size == 4
-      [
-        tokens[1],
-        tokens[3].gsub('s','').to_f
-      ]
-    else
-      nil
-    end
-  end.compact
+results = Hash.new
+suites = Array.new
 
-# collect the algorithms' execution times into a Hash
-benchmark_hash = Hash.new
-benchmark_results.each do |result|
-  name = result[0]
-    .gsub(/benchmark-algorithm-/, '')
-    .gsub(/-/, '::')
-  unless benchmark_hash.has_key? name
-    benchmark_hash[name] = Array.new
+ARGV.each do |benchmark_file|
+  File.readlines(benchmark_file).grep(/.*benchmark-.*/).map(&:chomp).each do |line|
+
+    tokens = line.split
+    next unless tokens.size == 6
+
+    name      = tokens[3]
+    time      = tokens[5].gsub('s','').to_f
+    suite     = name.split('-')[1]
+    algo_name = name.split('-')[2..-1].join('::')
+
+    results[algo_name] = Hash.new unless results.has_key? algo_name
+    results[algo_name][suite] = time
+    suites << suite
   end
-  benchmark_hash[name] << result[1]
 end
 
-# print the table
+suites.uniq!
+
 def row(arr)
   puts '| ' + arr.join(' | ') + ' |'
 end
-puts "### Benchmarks\n\n"
-row ['Algorithm', 'Average Time (s)']
-row ['---', '---']
-benchmark_hash.each do |name,times|
-  n      = times.size
-  ave    = times.sum / n
-  stddev = Math.sqrt( 1.0 / n * times.map{ |t| (t-ave)**2 }.sum )
-  err    = stddev / Math.sqrt(n)
-  prec   = 3
-  row ["`#{name}`", "$#{ave.round prec}~~~\\pm~~~#{err.round prec}$"]
+puts """### Benchmarks
+Algorithm execution times in seconds
+
+"""
+row ['Algorithm', *suites.map{|suite|suite.gsub /_/, ' '}]
+row (suites.size+1).times.map{ |i| '---' }
+
+results.each do |algo_name, algo_results|
+  times = suites.map{ |suite| algo_results[suite] }
+  row ["`#{algo_name}`", *times]
 end
-puts ''
