@@ -411,7 +411,7 @@ jobs:
           for suite in single_threaded memoize threadpool; do
             meson test --benchmark --suite $suite -C iguana_build | tee benchmark_$suite.txt
           done
-          iguana_src/.github/make-benchmark-table.rb benchmark*.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+          iguana_src/.github/make-benchmark-table.rb benchmark_{single_threaded,memoize,threadpool}.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
       ### coverage
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
