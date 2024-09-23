@@ -34,11 +34,9 @@ namespace iguana::physics {
 
     // parse config file
     ParseYAMLConfig();
-    o_runnum          = ConcurrentParamFactory::Create<int>();
-    o_beam_energy     = ConcurrentParamFactory::Create<double>();
-    o_beam_direction  = ConcurrentParamFactory::Create<std::vector<double>>();
-    o_beam_particle   = ConcurrentParamFactory::Create<std::string>();
-    o_target_particle = ConcurrentParamFactory::Create<std::string>();
+    o_runnum         = ConcurrentParamFactory::Create<int>();
+    o_target_PxPyPzM = ConcurrentParamFactory::Create<std::vector<double>>();
+    o_beam_PxPyPzM   = ConcurrentParamFactory::Create<std::vector<double>>();
 
     // get reconstruction method configuration
     auto method_reconstruction_str = GetOptionScalar<std::string>("method_reconstruction", {"method", "reconstruction"});
@@ -60,10 +58,20 @@ namespace iguana::physics {
       throw std::runtime_error("Start failed");
     }
 
-    // print the configuration
-    m_log->Debug(Logger::Header("CONFIGURATION"));
-    m_log->Debug("{:>30}: {}", "reconstruction method", method_reconstruction_str);
-    m_log->Debug("{:>30}: {}", "lepton finder method", method_lepton_finder_str);
+    // get beam PDG and mass
+    o_beam_pdg = 0;
+    auto beam_particle = GetOptionScalar<std::string>("beam_pdg", {"method", "beam_particle"});
+    for(auto const& [pdg, name] : particle::name) {
+      if(name == beam_particle) {
+        o_beam_pdg  = pdg;
+        o_beam_mass = particle::mass.at(pdg);
+        break;
+      }
+    }
+    if(o_beam_pdg == 0) {
+      m_log->Error("Unknown beam particle {:?}", beam_particle);
+      throw std::runtime_error("Start failed");
+    }
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -114,13 +122,12 @@ namespace iguana::physics {
     switch(o_method_lepton_finder) {
     case method_lepton_finder::highest_energy_FD_trigger: {
       // find highest energy lepton
-      auto beam = m_beam->Load(key);
       for(auto const& row : particle_bank.getRowList()) {
-        if(particle_bank.getInt("pid", row) == beam.pdg) {
+        if(particle_bank.getInt("pid", row) == o_beam_pdg) {
           double px = particle_bank.getFloat("px", row);
           double py = particle_bank.getFloat("py", row);
           double pz = particle_bank.getFloat("pz", row);
-          double en = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(beam.mass, 2));
+          double en = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(o_beam_mass, 2));
           if(en > lepton_energy) {
             lepton_row    = row;
             lepton_energy = en;
@@ -168,63 +175,48 @@ namespace iguana::physics {
     m_log->Trace("-> calling Reload({}, {})", runnum, key);
     o_runnum->Save(runnum, key);
 
+    // parse config params
     auto beam_energy     = GetOptionScalar<double>("beam_energy", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_energy"});
     auto beam_direction  = GetOptionVector<double>("beam_direction", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_direction"});
-    auto beam_particle   = GetOptionScalar<std::string>("beam_particle", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_particle"});
     auto target_particle = GetOptionScalar<std::string>("target_particle", {"initial_state", GetConfig()->InRange("runs", runnum), "target_particle"});
 
-    particle_t beam, target;
-
-    beam.pdg        = 0;
-    beam.mass       = -1.0;
-    target.mass     = -1.0;
+    // get the target mass and momentum
+    double target_mass = -1;
     for(auto const& [pdg, name] : particle::name) {
-      if(name == beam_particle) {
-        beam.pdg  = pdg;
-        beam.mass = particle::mass.at(pdg);
+      if(name == target_particle) {
+        target_mass = particle::mass.at(pdg);
+        break;
       }
-      if(name == target_particle)
-        target.mass = particle::mass.at(pdg);
     }
-    if(beam.pdg == 0) {
-      m_log->Error("Unknown beam particle {:?}", beam_particle);
-      throw std::runtime_error("Start failed");
-    }
-    if(target.mass < 0.0) {
+    if(target_mass < 0) {
       m_log->Error("Unknown target particle {:?}", target_particle);
       throw std::runtime_error("Start failed");
     }
+    double target_px = 0.0;
+    double target_py = 0.0;
+    double target_pz = 0.0;
 
-    // set the beam and target momenta
+    // get the beam momentum
+    double beam_px, beam_py, beam_pz;
     if(beam_direction.size() != 3) {
       m_log->Error("Beam direction is not a 3-vector; assuming it is (0, 0, 1) instead");
       beam_direction = {0.0, 0.0, 1.0};
     }
     auto dir_mag = std::hypot(beam_direction[0], beam_direction[1], beam_direction[2]);
-    auto beam_p  = std::sqrt(std::pow(beam_energy, 2) - std::pow(beam.mass, 2));
+    auto beam_p  = std::sqrt(std::pow(beam_energy, 2) - std::pow(o_beam_mass, 2));
     if(dir_mag > 0) {
-      beam.px = beam_direction[0] * beam_p / dir_mag;
-      beam.py = beam_direction[1] * beam_p / dir_mag;
-      beam.pz = beam_direction[2] * beam_p / dir_mag;
+      beam_px = beam_direction[0] * beam_p / dir_mag;
+      beam_py = beam_direction[1] * beam_p / dir_mag;
+      beam_pz = beam_direction[2] * beam_p / dir_mag;
     }
     else {
       m_log->Error("Beam direction magnitude is not > 0");
       throw ::std::runtime_error("Start failed");
     }
-    target.px = 0.0;
-    target.py = 0.0;
-    target.pz = 0.0;
 
-    o_beam_energy->Save(beam_energy, key);
-    o_beam_direction->Save(beam_direction, key);
-    o_beam_particle->Save(beam_particle, key);
-    o_target_particle->Save(target_particle, key);
-    m_beam->Save(beam, key);
-    m_target->Save(target, key);
-
-    m_log->Debug("{:>30}: {}", "beam energy", beam_energy);
-    m_log->Debug("{:>30}: {}, mass = {}, p = ({}, {}, {})", "beam particle", beam_particle, beam.mass, beam.px, beam.py, beam.pz);
-    m_log->Debug("{:>30}: {}, mass = {}, p = ({}, {}, {})", "target particle", target_particle, target.mass, target.px, target.py, target.pz);
+    // save the configuration
+    o_beam_PxPyPzM->Save({beam_px, beam_py, beam_pz, o_beam_mass}, key);
+    o_target_PxPyPzM->Save({target_px, target_py, target_pz, target_mass}, key);
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -240,12 +232,13 @@ namespace iguana::physics {
 
     m_log->Trace("Reconstruct inclusive kinematics from lepton with p=({}, {}, {})", lepton_px, lepton_py, lepton_pz);
 
-    auto beam   = m_beam->Load(key);
-    auto target = m_target->Load(key);
+    enum {px, py, pz, m};
+    auto beam   = o_beam_PxPyPzM->Load(key);
+    auto target = o_target_PxPyPzM->Load(key);
 
-    ROOT::Math::PxPyPzMVector vec_beam(beam.px, beam.py, beam.pz, beam.mass);
-    ROOT::Math::PxPyPzMVector vec_target(target.px, target.py, target.pz, target.mass);
-    ROOT::Math::PxPyPzMVector vec_lepton(lepton_px, lepton_py, lepton_pz, beam.mass);
+    ROOT::Math::PxPyPzMVector vec_beam(beam[px], beam[py], beam[pz], beam[m]);
+    ROOT::Math::PxPyPzMVector vec_target(target[px], target[py], target[pz], target[m]);
+    ROOT::Math::PxPyPzMVector vec_lepton(lepton_px, lepton_py, lepton_pz, beam[m]);
 
     auto vec_q = vec_beam - vec_lepton;
     result.qx  = vec_q.Px();
@@ -256,7 +249,7 @@ namespace iguana::physics {
     result.x   = result.Q2 / (2 * vec_q.Dot(vec_target));
     result.y   = vec_target.Dot(vec_q) / vec_target.Dot(vec_beam);
     result.W   = (vec_beam + vec_target - vec_lepton).M();
-    result.nu  = vec_target.Dot(vec_q) / target.mass;
+    result.nu  = vec_target.Dot(vec_q) / target[m];
 
     return result;
   }

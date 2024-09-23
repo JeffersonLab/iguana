@@ -102,24 +102,15 @@ namespace iguana::physics {
 
       // config options
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
-      mutable std::unique_ptr<ConcurrentParam<double>> o_beam_energy;
-      mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_beam_direction;
-      mutable std::unique_ptr<ConcurrentParam<std::string>> o_beam_particle;
-      mutable std::unique_ptr<ConcurrentParam<std::string>> o_target_particle;
+      mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_target_PxPyPzM;
+      mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_beam_PxPyPzM;
+      double o_beam_mass; // unlikely to change
+      int o_beam_pdg; // unlikely to change
+
       enum method_reconstruction { scattered_lepton };
       enum method_lepton_finder { highest_energy_FD_trigger };
       method_reconstruction o_method_reconstruction;
       method_lepton_finder o_method_lepton_finder;
-
-      // additional properties
-      struct particle_t {
-          int pdg;
-          double mass;
-          double px;
-          double py;
-          double pz;
-      };
-      mutable std::unique_ptr<ConcurrentParam<particle_t>> m_beam, m_target;
   };
 
 }
