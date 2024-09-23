@@ -54,7 +54,12 @@ namespace iguana {
   template <typename T>
   T const ThreadPoolParam<T>::Load(concurrent_key_t const key) const
   {
-    throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
+    try {
+      return m_container.at(key);
+    }
+    catch(std::out_of_range const& ex) {
+      throw std::runtime_error("ThreadPoolParam::Load failed to find the parameter");
+    }
   }
 
   // ==================================================================================
@@ -79,8 +84,14 @@ namespace iguana {
   template <typename T>
   void ThreadPoolParam<T>::Save(T const& value, concurrent_key_t const key)
   {
+    std::lock_guard<std::mutex> const lock(this->m_mutex);
     this->m_empty = false;
-    throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
+    while(key >= m_container.size()) {
+      m_container.push_back({}); // allocate space...
+      if(m_container.size() > 256) // ...but not too much
+        throw std::runtime_error("ThreadPoolParam::Save allocated a very large array; if you really need such a large threadpool, contact the developers");
+    }
+    m_container[key] = value;
   }
 
   // ==================================================================================
@@ -102,7 +113,7 @@ namespace iguana {
   template <typename T>
   bool ThreadPoolParam<T>::HasKey(concurrent_key_t const key) const
   {
-    throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
+    throw std::runtime_error("do not call ConcurrentParam::HasKey when model is 'threadpool'");
   }
 
   // ==================================================================================
@@ -123,7 +134,7 @@ namespace iguana {
   template <typename T>
   std::size_t ThreadPoolParam<T>::GetSize() const
   {
-    throw std::runtime_error("TODO: 'threadpool' model not yet implemented");
+    return m_container.size();
   }
 
   // ==================================================================================
