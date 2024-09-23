@@ -23,7 +23,8 @@ void iguana_ex_cpp_ROOT_macro() {
 
   // run the inclusive kinematics action function for a scattered electron lepton momentum,
   // and print out the resulting inclusive kinematics
-  auto result = algo.ComputeFromLepton(0.3, 0.3, 5.0);
+  auto key = algo.PrepareEvent(5032);
+  auto result = algo.ComputeFromLepton(0.3, 0.3, 5.0, key);
   std::cout << "kinematics:"
     << "\n Q2 = " << result.Q2
     << "\n  x = " << result.x

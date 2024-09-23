@@ -55,7 +55,7 @@ namespace iguana::physics {
       /// @param runnum the run number
       /// @param thread_id @thread_id_desc
       /// @returns the key to be used in `::ComputeFromLepton`
-      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t thread_id) const;
+      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t thread_id = 0) const;
 
       /// @action_function{scalar creator} compute kinematics from the scattered lepton.
       /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)

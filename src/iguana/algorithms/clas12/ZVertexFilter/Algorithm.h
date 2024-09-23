@@ -31,7 +31,7 @@ namespace iguana::clas12 {
       /// @param runnum the run number
       /// @param thread_id @thread_id_desc
       /// @returns the key to be used in `::Filter`
-      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t thread_id) const;
+      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t thread_id = 0) const;
 
       /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds if pid is one for which the filter should be applied to.;
       /// Cuts applied to particles in FD or CD (ie not in FT).
