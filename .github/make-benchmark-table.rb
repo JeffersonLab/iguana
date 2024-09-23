@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'pry'
-
 if ARGV.empty?
   $stderr.puts "USAGE: #{$0} [benchmark_outputs]"
   exit 2
