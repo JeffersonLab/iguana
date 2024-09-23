@@ -32,7 +32,7 @@ namespace iguana::clas12 {
   }
 
 
-  void LorentzTransformer::Run(hipo::banklist& banks) const
+  void LorentzTransformer::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
   {
 
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");

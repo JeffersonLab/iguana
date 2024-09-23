@@ -11,14 +11,13 @@ namespace iguana::clas12 {
     ParseYAMLConfig();
     o_runnum = ConcurrentParamFactory::Create<int>();
     o_zcuts  = ConcurrentParamFactory::Create<std::vector<double>>();
-    PrepareEvent(0); // load default values (using runnum==0)
 
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config = GetBankIndex(banks, "RUN::config");
   }
 
-  void ZVertexFilter::Run(hipo::banklist& banks) const
+  void ZVertexFilter::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
   {
 
     // get the banks
@@ -29,14 +28,14 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // prepare the event, reloading configuration parameters, if necessary
-    auto key = PrepareEvent(configBank.getInt("run", 0));
+    auto key = PrepareEvent(configBank.getInt("run", 0), thread_id);
 
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this, &key](auto bank, auto row) {
         auto zvertex = bank.getFloat("vz", row);
         auto pid = bank.getInt("pid", row);
         auto status = bank.getShort("status", row);
-        auto accept  = Filter(zvertex,pid,status,key);
+        auto accept  = Filter(zvertex, pid, status, key);
         m_log->Debug("input vz {} pid {} status {} -- accept = {}", zvertex, pid, status, accept);
         return accept ? 1 : 0;
         });
@@ -45,8 +44,8 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
-  concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum, concurrent_key_t key) const {
-    m_log->Trace("calling PrepareEvent({}, {})", runnum, key);
+  concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum, concurrent_key_t thread_id) const {
+    m_log->Trace("calling PrepareEvent({}, {})", runnum, thread_id);
     if(o_runnum->NeedsHashing()) {
       std::hash<int> hash_ftn;
       auto hash_key = hash_ftn(runnum);
@@ -54,9 +53,9 @@ namespace iguana::clas12 {
         Reload(runnum, hash_key);
       return hash_key;
     }
-    if(o_runnum->IsEmpty() || o_runnum->Load(key) != runnum)
-      Reload(runnum, key);
-    return key;
+    if(o_runnum->IsEmpty() || o_runnum->Load(thread_id) != runnum)
+      Reload(runnum, thread_id);
+    return thread_id;
   }
 
   void ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {

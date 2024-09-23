@@ -27,7 +27,7 @@ namespace iguana {
       virtual ~Validator() {}
 
       void Start(hipo::banklist& banks) override{};
-      void Run(hipo::banklist& banks) const override{};
+      void Run(hipo::banklist& banks, concurrent_key_t const thread_id = 0) const override{};
       void Stop() override{};
 
       /// Set this validator's output directory

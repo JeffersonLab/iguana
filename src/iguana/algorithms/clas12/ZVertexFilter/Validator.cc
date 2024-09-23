@@ -49,7 +49,7 @@ namespace iguana::clas12 {
   }
 
 
-  void ZVertexFilterValidator::Run(hipo::banklist& banks) const
+  void ZVertexFilterValidator::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
 
@@ -69,7 +69,7 @@ namespace iguana::clas12 {
     }
       
     // run the momentum corrections
-    m_algo_seq->Run(banks);
+    m_algo_seq->Run(banks, thread_id);
 
     // fill the plots after
     for(auto const& row : particle_bank.getRowList()) {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
-#include "iguana/algorithms/TypeDefs.h"
 #include "models/RGA_inbending_pass1.cpp"
 #include "models/RGA_outbending_pass1.cpp"
 #include "models/RGA_inbending_pass2.cpp"
@@ -35,7 +34,7 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      void Run(hipo::banklist& banks, concurrent_key_t const thread_id = 0) const override;
       void Stop() override;   
 
       /// **Method**: Applies forward detector cut using REC::Particle Theta

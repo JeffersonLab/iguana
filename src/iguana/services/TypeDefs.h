@@ -7,6 +7,9 @@
 
 namespace iguana {
 
+  /// concurrent hash key type
+  using concurrent_key_t = std::size_t;
+
   /// Vector element type
   using vector_element_t = double;
 

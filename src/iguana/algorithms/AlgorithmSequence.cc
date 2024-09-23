@@ -9,10 +9,10 @@ namespace iguana {
     for(auto const& algo : m_sequence)
       algo->Start(banks);
   }
-  void AlgorithmSequence::Run(hipo::banklist& banks) const
+  void AlgorithmSequence::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
   {
     for(auto const& algo : m_sequence)
-      algo->Run(banks);
+      algo->Run(banks, thread_id);
   }
   void AlgorithmSequence::Stop()
   {

@@ -8,6 +8,7 @@
 
 
 #include "iguana/algorithms/AlgorithmBoilerplate.h"
+#include "iguana/services/TypeDefs.h"
 #include "iguana/services/YAMLReader.h"
 
 namespace iguana {
@@ -64,7 +65,8 @@ namespace iguana {
 
       /// @brief Run this algorithm for an event.
       /// @param banks the list of banks to process
-      virtual void Run(hipo::banklist& banks) const = 0;
+      /// @param thread_id @thread_id_desc
+      virtual void Run(hipo::banklist& banks, concurrent_key_t const thread_id = 0) const = 0;
 
       /// @brief Finalize this algorithm after all events are processed.
       virtual void Stop() = 0;

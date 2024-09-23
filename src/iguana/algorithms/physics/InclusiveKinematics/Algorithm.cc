@@ -39,7 +39,6 @@ namespace iguana::physics {
     o_beam_direction  = ConcurrentParamFactory::Create<std::vector<double>>();
     o_beam_particle   = ConcurrentParamFactory::Create<std::string>();
     o_target_particle = ConcurrentParamFactory::Create<std::string>();
-    PrepareEvent(0); // load default values (using runnum==0)
 
     // get reconstruction method configuration
     auto method_reconstruction_str = GetOptionScalar<std::string>("method_reconstruction", {"method", "reconstruction"});
@@ -69,14 +68,14 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void InclusiveKinematics::Run(hipo::banklist& banks) const
+  void InclusiveKinematics::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& config_bank   = GetBank(banks, b_config, "RUN::config");
     auto& result_bank   = GetBank(banks, b_result, GetClassName());
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
-    auto key = PrepareEvent(config_bank.getInt("run",0));
+    auto key = PrepareEvent(config_bank.getInt("run",0), thread_id);
 
     auto lepton_pindex = FindScatteredLepton(particle_bank, key);
     if(lepton_pindex < 0) {
@@ -146,9 +145,9 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  concurrent_key_t InclusiveKinematics::PrepareEvent(int const runnum, concurrent_key_t key) const
+  concurrent_key_t InclusiveKinematics::PrepareEvent(int const runnum, concurrent_key_t thread_id) const
   {
-    m_log->Trace("calling PrepareEvent({}, {})", runnum, key);
+    m_log->Trace("calling PrepareEvent({}, {})", runnum, thread_id);
     if(o_runnum->NeedsHashing()) {
       std::hash<int> hash_ftn;
       auto hash_key = hash_ftn(runnum);
@@ -156,9 +155,9 @@ namespace iguana::physics {
         Reload(runnum, hash_key);
       return hash_key;
     }
-    if(o_runnum->IsEmpty() || o_runnum->Load(key) != runnum)
-      Reload(runnum, key);
-    return key;
+    if(o_runnum->IsEmpty() || o_runnum->Load(thread_id) != runnum)
+      Reload(runnum, thread_id);
+    return thread_id;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

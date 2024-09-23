@@ -48,7 +48,7 @@ namespace iguana::clas12 {
   }
 
 
-  void MomentumCorrectionValidator::Run(hipo::banklist& banks) const
+  void MomentumCorrectionValidator::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
   {
     // get the momenta before
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -61,7 +61,7 @@ namespace iguana::clas12 {
           particle_bank.getFloat("pz", row)));
 
     // run the momentum corrections
-    m_algo_seq->Run(banks);
+    m_algo_seq->Run(banks, thread_id);
 
     // lock the mutex, so we can mutate plots
     std::scoped_lock<std::mutex> lock(m_mutex);

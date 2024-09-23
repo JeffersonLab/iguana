@@ -83,7 +83,7 @@ namespace iguana::clas12 {
   }
 
 
-  void FiducialFilterValidator::Run(hipo::banklist& banks) const
+  void FiducialFilterValidator::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
   {
     // get the momenta before
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -104,7 +104,7 @@ namespace iguana::clas12 {
     }
 
     // run the fiducial cuts
-    m_algo_seq->Run(banks);
+    m_algo_seq->Run(banks, thread_id);
 
     // fill the plots
     for(auto const& row : particle_bank.getRowList()) {

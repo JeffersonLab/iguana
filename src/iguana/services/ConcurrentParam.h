@@ -1,11 +1,9 @@
 #pragma once
 
 #include "GlobalParam.h"
+#include "TypeDefs.h"
 
 namespace iguana {
-
-  /// concurrent hash key type
-  using concurrent_key_t = std::size_t;
 
   // ==================================================================================
   // ConcurrentParam

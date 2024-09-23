@@ -59,7 +59,7 @@ int main(int argc, char** argv)
         // - only use `SetZcuts` if for any reason you want to hard-code a specific value; usage
         //   of configuration files is preferred in general
         algo->Start();
-        concurrent_key_t const key = 0; // need the same key in `SetZcuts` and `GetZcuts`
+        iguana::concurrent_key_t const key = 0; // need the same key in `SetZcuts` and `GetZcuts`
         algo->SetZcuts(-5.0, 3.0, key);
         assert((algo->GetZcuts(key).at(0) == -5.0));
         assert((algo->GetZcuts(key).at(1) == 3.0));

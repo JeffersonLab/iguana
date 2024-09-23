@@ -1,7 +1,6 @@
 #pragma once
 
 #include "iguana/algorithms/Validator.h"
-#include "iguana/algorithms/TypeDefs.h"
 #include <TH1F.h>
 #include <TFile.h>
 #include <TCanvas.h>
@@ -20,7 +19,7 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      void Run(hipo::banklist& banks, concurrent_key_t const thread_id = 0) const override;
       void Stop() override;
 
     private:

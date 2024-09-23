@@ -119,7 +119,7 @@ inline int TestMultithreading(
           }
 
           // run the iguana algorithm
-          seq.Run(banks);
+          seq.Run(banks, order);
         }
       }
       if(nNonEmpty == 0)

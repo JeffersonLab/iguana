@@ -54,7 +54,7 @@ namespace iguana::clas12 {
 
   }
 
-  void SectorFinderValidator::Run(hipo::banklist& banks) const
+  void SectorFinderValidator::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
   {
     
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -62,7 +62,7 @@ namespace iguana::clas12 {
     auto& cal_bank = GetBank(banks, b_cal, "REC::Calorimeter");
 
     
-    m_algo_seq->Run(banks);
+    m_algo_seq->Run(banks, thread_id);
 
     // lock the mutex, so we can mutate plots
     std::scoped_lock<std::mutex> lock(m_mutex);

@@ -49,7 +49,7 @@ namespace iguana::clas12 {
     i_pindex = result_schema.getEntryOrder("pindex");
   }
 
-  void SectorFinder::Run(hipo::banklist& banks) const
+  void SectorFinder::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
   {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& resultBank   = GetBank(banks, b_result, "REC::Particle::Sector");
