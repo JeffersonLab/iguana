@@ -31,12 +31,6 @@ int main(int argc, char** argv)
     configDir = iguana::ConfigFileReader::GetConfigInstallationPrefix() + "/examples";
   fmt::print("Using top-level configuration directory {}\n", configDir);
 
-  // set concurrency model to single-threaded, so we don't have to always
-  // handle concurrency keys here (the point of this example is to show
-  // configuration examples, not concurrency details); normally you should
-  // pick the concurrency model appropriate for your analysis code
-  iguana::GlobalConcurrencyModel = "single";
-
   // loop over multiple examples how to use configuration files and set options
   for(int example = 1; example <= 6; example++) {
     fmt::print("\n" + iguana::Logger::Header(fmt::format("CONFIG EXAMPLE {}", example)) + "\n");
@@ -51,7 +45,7 @@ int main(int argc, char** argv)
       {
         // Use the default configuration, from `../src/iguana/algorithms/clas12/ZVertexFilter.yaml`
         algo->Start();
-        auto key = algo->PrepareEvent(4800); // sets the run number and loads the cuts
+        auto key = algo->PrepareEvent(4800, 0); // sets the run number and loads the cuts
         assert((algo->GetRunNum(key) == 4800)); // pass the key into the 'Get*' methods
         assert((algo->GetZcuts(key).at(0) == -13.0));
         assert((algo->GetZcuts(key).at(1) == 12.0));
@@ -65,9 +59,10 @@ int main(int argc, char** argv)
         // - only use `SetZcuts` if for any reason you want to hard-code a specific value; usage
         //   of configuration files is preferred in general
         algo->Start();
-        algo->SetZcuts(-5.0, 3.0);
-        assert((algo->GetZcuts().at(0) == -5.0)); // no need to pass the key to these 'Get*' methods, since the default was used in 'SetZcuts'
-        assert((algo->GetZcuts().at(1) == 3.0));
+        concurrent_key_t const key = 0; // need the same key in `SetZcuts` and `GetZcuts`
+        algo->SetZcuts(-5.0, 3.0, key);
+        assert((algo->GetZcuts(key).at(0) == -5.0));
+        assert((algo->GetZcuts(key).at(1) == 3.0));
         break;
       }
 
@@ -76,7 +71,7 @@ int main(int argc, char** argv)
         // Use a specific configuration file
         algo->SetConfigFile(configDir + "/my_z_vertex_cuts.yaml");
         algo->Start();
-        auto key = algo->PrepareEvent(5500);
+        auto key = algo->PrepareEvent(5500, 0);
         assert((algo->GetZcuts(key).at(0) == -0.8));
         assert((algo->GetZcuts(key).at(1) == 0.7));
         break;
@@ -89,8 +84,9 @@ int main(int argc, char** argv)
         algo->SetConfigDirectory(configDir);
         algo->SetConfigFile("my_z_vertex_cuts.yaml");
         algo->Start();
-        assert((algo->GetZcuts().at(0) == -1.5));
-        assert((algo->GetZcuts().at(1) == 1.3));
+        auto key = algo->PrepareEvent(0, 0); // run number "0" means "no run number"
+        assert((algo->GetZcuts(key).at(0) == -1.5));
+        assert((algo->GetZcuts(key).at(1) == 1.3));
         break;
       }
 
@@ -102,8 +98,9 @@ int main(int argc, char** argv)
         // may use that directory instead of the default, and modify any configuration file within.
         algo->SetConfigDirectory(configDir + "/my_config_directory");
         algo->Start();
-        assert((algo->GetZcuts().at(0) == -15.0));
-        assert((algo->GetZcuts().at(1) == 15.0));
+        auto key = algo->PrepareEvent(0, 0); // run number "0" means "no run number"
+        assert((algo->GetZcuts(key).at(0) == -15.0));
+        assert((algo->GetZcuts(key).at(1) == 15.0));
         break;
       }
 
@@ -113,8 +110,9 @@ int main(int argc, char** argv)
         algo->SetConfigDirectory(configDir);
         algo->SetConfigFile("my_combined_config_file.yaml");
         algo->Start();
-        assert((algo->GetZcuts().at(0) == -33.0));
-        assert((algo->GetZcuts().at(1) == 11.0));
+        auto key = algo->PrepareEvent(0, 0); // run number "0" means "no run number"
+        assert((algo->GetZcuts(key).at(0) == -33.0));
+        assert((algo->GetZcuts(key).at(1) == 11.0));
         break;
       }
 

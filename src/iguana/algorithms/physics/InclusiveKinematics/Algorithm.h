@@ -56,7 +56,7 @@ namespace iguana::physics {
       /// @param runnum the run number
       /// @param key @key_desc
       /// @returns the key to be used in `::ComputeFromLepton`
-      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t key = 0) const;
+      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t key) const;
 
       /// @action_function{scalar creator} compute kinematics from the scattered lepton.
       /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)
@@ -82,7 +82,7 @@ namespace iguana::physics {
       /// @returns the bank row of the scattered lepton, or `-1` if not found
       int FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const;
 
-      void Reload(int const runnum, concurrent_key_t key = 0) const;
+      void Reload(int const runnum, concurrent_key_t key) const;
 
       // banklist indices
       hipo::banklist::size_type b_particle;

@@ -31,7 +31,7 @@ namespace iguana::clas12 {
       /// @param runnum the run number
       /// @param key @key_desc
       /// @returns the key to be used in `::Filter`
-      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t key = 0) const;
+      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t key) const;
 
       /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds if pid is one for which the filter should be applied to.;
       /// Cuts applied to particles in FD or CD (ie not in FT).
@@ -45,11 +45,11 @@ namespace iguana::clas12 {
 
       /// @param key the return value of `::PrepareEvent`
       /// @returns the current run number
-      int GetRunNum(concurrent_key_t const key = 0) const;
+      int GetRunNum(concurrent_key_t const key) const;
 
       /// @param key the return value of `::PrepareEvent`
       /// @returns the current z-vertex cuts
-      std::vector<double> GetZcuts(concurrent_key_t const key = 0) const;
+      std::vector<double> GetZcuts(concurrent_key_t const key) const;
 
       /// @brief sets the z-vertex cuts
       /// @warning this method is not thread safe; instead, for thread safety,
@@ -57,13 +57,13 @@ namespace iguana::clas12 {
       /// @param zcut_lower the lower bound of the cut
       /// @param zcut_upper the upper bound of the cut
       /// @param key the, for `::GetZcuts`
-      void SetZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key = 0);
+      void SetZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key);
 
     private:
       hipo::banklist::size_type b_particle, b_config;
 
       // Reload function
-      void Reload(int const runnum, concurrent_key_t key = 0) const;
+      void Reload(int const runnum, concurrent_key_t key) const;
 
       /// Run number
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
