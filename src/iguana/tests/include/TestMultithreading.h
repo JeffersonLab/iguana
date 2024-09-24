@@ -118,7 +118,8 @@ inline int TestMultithreading(
             event.read(bank);
 
           // occasionally vary the run number (if the user wants to)
-          banks[run_config_bank_idx.value()].putInt("run", 0, std::rand() % 3000);
+          if(run_config_bank_idx.has_value())
+            banks[run_config_bank_idx.value()].putInt("run", 0, std::rand() % 3000);
           // if(vary_run && run_config_bank_idx.has_value()) {
           //   if(std::rand() % 10 == 0) {
           //     auto runnum = banks[run_config_bank_idx.value()].getInt("run", 0);
