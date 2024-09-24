@@ -2,6 +2,7 @@
 
 #include <hipo4/reader.h>
 #include <iguana/algorithms/AlgorithmSequence.h>
+#include <iguana/services/GlobalParam.h>
 
 inline int TestAlgorithm(
     std::string command,
@@ -22,6 +23,9 @@ inline int TestAlgorithm(
     fmt::print(stderr, "ERROR: need a data file for command 'algorithm'\n");
     return 1;
   }
+
+  // set the concurrency model to single-threaded, for optimal performance
+  iguana::GlobalConcurrencyModel = "single";
 
   // open the HIPO file; we use 2 readers, one for 'before' (i.e., not passed through iguana), and one for 'after'
   // (passed through iguana), so we may compare them
