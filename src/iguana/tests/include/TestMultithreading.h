@@ -17,7 +17,7 @@ inline int TestMultithreading(
     bool verbose)
 {
 
-  iguana::Logger log("test", iguana::Logger::Level::debug);
+  iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info);
 
   // check arguments
   if(algo_name.empty() || bank_names.empty()) {
@@ -50,16 +50,16 @@ inline int TestMultithreading(
   int num_events_per_frame  = num_events > 0 ? std::min(num_events_per_thread, default_frame_size) : default_frame_size;
   int num_frames_per_thread = num_events > 0 ? (int) std::ceil((double) num_events_per_thread / num_events_per_frame) : 0;
   int num_events_actual     = num_events_per_frame * num_frames_per_thread * num_threads;
-  log.Debug("num_events_per_thread = {}", num_events_per_thread);
-  log.Debug("num_events_per_frame  = {}", num_events_per_frame );
-  log.Debug("num_frames_per_thread = {}", num_frames_per_thread);
+  log.Info("num_events_per_thread = {}", num_events_per_thread);
+  log.Info("num_events_per_frame  = {}", num_events_per_frame );
+  log.Info("num_frames_per_thread = {}", num_frames_per_thread);
   if(num_events > 0) {
-    log.Debug("=> will actually process num_events = {}", num_events_actual);
+    log.Info("=> will actually process num_events = {}", num_events_actual);
     if(num_events != num_events_actual)
       log.Warn("argument's num_events ({}) differs from the actual num_events that will be processed ({})",
           num_events, num_events_actual);
   } else {
-    log.Debug("=> will actually process num_events = ALL OF THEM");
+    log.Info("=> will actually process num_events = ALL OF THEM");
   }
 
   // start the stream
@@ -96,7 +96,7 @@ inline int TestMultithreading(
     seq.Add(algo_name);
     seq.SetName("TEST thread " + std::to_string(order));
     seq.PrintSequence();
-    seq.SetOption(algo_name, "log", verbose ? "info" : "info"); // FIXME
+    seq.SetOption(algo_name, "log", verbose ? "trace" : "info");
 
     // start the algorithm
     seq.Start(banks);
