@@ -26,7 +26,7 @@ namespace iguana::clas12 {
     InitializeHistograms();
   }
 
-  void PhotonGBTFilterValidator::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
+  void PhotonGBTFilterValidator::Run(hipo::banklist& banks) const
   {
     // get the particle bank
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -45,7 +45,7 @@ namespace iguana::clas12 {
     }
 
     // run the photon filter
-    m_algo_seq->Run(banks, thread_id);
+    m_algo_seq->Run(banks);
       
     std::vector<ROOT::Math::PxPyPzEVector> filtered_photons;
     for(auto const& row : particle_bank.getRowList()) {

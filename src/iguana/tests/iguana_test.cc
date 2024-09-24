@@ -99,8 +99,7 @@ int main(int argc, char** argv)
         {"m", [&]()
          {
            fmt::print("    {:<20} {}\n", "-m CONCURRENCY_MODEL", "concurrency model");
-           fmt::print("    {:<20} 'single', 'memoize', or 'threadpool'\n", "");
-           fmt::print("    {:<20} default: use the internal default\n", "");
+           fmt::print("    {:<20} 'memoize' is currently the only option\n", "");
          }},
         {"V", [&]()
          {

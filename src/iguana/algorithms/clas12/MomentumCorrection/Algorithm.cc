@@ -13,7 +13,7 @@ namespace iguana::clas12 {
   }
 
 
-  void MomentumCorrection::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
+  void MomentumCorrection::Run(hipo::banklist& banks) const
   {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& sectorBank   = GetBank(banks, b_sector, "REC::Particle::Sector");

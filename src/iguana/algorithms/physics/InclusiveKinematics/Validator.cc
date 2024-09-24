@@ -52,10 +52,10 @@ namespace iguana::physics {
   }
 
 
-  void InclusiveKinematicsValidator::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
+  void InclusiveKinematicsValidator::Run(hipo::banklist& banks) const
   {
     // calculate kinematics
-    m_algo_seq->Run(banks, thread_id);
+    m_algo_seq->Run(banks);
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& result_bank   = GetBank(banks, b_result, "physics::InclusiveKinematics");
 

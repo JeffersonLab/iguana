@@ -76,14 +76,14 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void InclusiveKinematics::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
+  void InclusiveKinematics::Run(hipo::banklist& banks) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& config_bank   = GetBank(banks, b_config, "RUN::config");
     auto& result_bank   = GetBank(banks, b_result, GetClassName());
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
-    auto key = PrepareEvent(config_bank.getInt("run",0), thread_id);
+    auto key = PrepareEvent(config_bank.getInt("run",0));
 
     auto lepton_pindex = FindScatteredLepton(particle_bank, key);
     if(lepton_pindex < 0) {
@@ -152,19 +152,20 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  concurrent_key_t InclusiveKinematics::PrepareEvent(int const runnum, concurrent_key_t thread_id) const
+  concurrent_key_t InclusiveKinematics::PrepareEvent(int const runnum) const
   {
-    m_log->Trace("calling PrepareEvent({}, {})", runnum, thread_id);
+    m_log->Trace("calling PrepareEvent({})", runnum);
     if(o_runnum->NeedsHashing()) {
       std::hash<int> hash_ftn;
       auto hash_key = hash_ftn(runnum);
       if(!o_runnum->HasKey(hash_key))
         Reload(runnum, hash_key);
       return hash_key;
+    } else {
+      if(o_runnum->IsEmpty() || o_runnum->Load(0) != runnum)
+        Reload(runnum, 0);
+      return 0;
     }
-    if(o_runnum->IsEmpty() || o_runnum->Load(thread_id) != runnum)
-      Reload(runnum, thread_id);
-    return thread_id;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

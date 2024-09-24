@@ -102,30 +102,6 @@ namespace iguana {
   };
 
   // ==================================================================================
-  // ThreadPoolParam
-  // ==================================================================================
-
-  /// @brief a `ConcurrentParam` that uses unique thread-pool indices for thread safety
-  template <typename T>
-  class ThreadPoolParam : public ConcurrentParam<T> {
-
-    /// hash table container for memoization
-    using container_t = std::vector<T>;
-
-    public:
-      ThreadPoolParam();
-      ~ThreadPoolParam() override = default;
-      T const Load(concurrent_key_t const key) const override;
-      void Save(T const& value, concurrent_key_t const key) override;
-      bool HasKey(concurrent_key_t const key) const override;
-      std::size_t GetSize() const override;
-
-    private:
-      container_t m_container;
-
-  };
-
-  // ==================================================================================
   // ConcurrentParamFactory
   // ==================================================================================
 
@@ -147,10 +123,8 @@ namespace iguana {
           return std::make_unique<SingleThreadParam<T>>();
         else if(GlobalConcurrencyModel() == "memoize")
           return std::make_unique<MemoizedParam<T>>();
-        else if(GlobalConcurrencyModel() == "threadpool")
-          return std::make_unique<ThreadPoolParam<T>>();
 
-        throw std::runtime_error("unknown GlobalConcurrencyModel '" + GlobalConcurrencyModel() + "'");
+        throw std::runtime_error("unknown GlobalConcurrencyModel '" + GlobalConcurrencyModel() + "'; valid options are 'single' or 'memoize'");
       }
 
   };

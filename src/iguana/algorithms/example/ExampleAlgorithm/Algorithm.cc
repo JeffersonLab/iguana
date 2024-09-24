@@ -59,7 +59,7 @@ namespace iguana::example {
   // # - try to avoid expensive operations here; instead, put them in the `Start` method
   // #   if it is reasonable to do so
   // ############################################################################
-  void ExampleAlgorithm::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
+  void ExampleAlgorithm::Run(hipo::banklist& banks) const
   {
     // ############################################################################
     // # get the banks; here we just need `REC::Particle`
