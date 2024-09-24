@@ -7,6 +7,7 @@ on:
     tags: [ '*' ]
   schedule:
     - cron: '15 7 * * 0' # Sundays at 0715Z
+  workflow_dispatch:
 
 jobs:
 
