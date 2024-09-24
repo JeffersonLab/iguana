@@ -72,7 +72,7 @@ inline int TestMultithreading(
     algo_name,
     prerequisite_algos,
     bank_names,
-    vary_run,
+    // vary_run,
     verbose,
     num_events_per_thread,
     num_events_per_frame,
