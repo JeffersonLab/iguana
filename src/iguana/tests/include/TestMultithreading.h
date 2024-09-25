@@ -79,32 +79,27 @@ inline int TestMultithreading(
     run_config_bank_idx
   ](int order) {
 
-    auto algo = iguana::AlgorithmFactory::Create(algo_name);
-    algo->Start();
-    algo->Stop();
-    return 1;
+    // fill a frame
+    std::vector<hipo::event> events;
+    for(int i = 0; i < num_events_per_frame; i++)
+      events.push_back(hipo::event());
 
-    // // fill a frame
-    // std::vector<hipo::event> events;
-    // for(int i = 0; i < num_events_per_frame; i++)
-    //   events.push_back(hipo::event());
-    //
-    // // bank list
-    // hipo::banklist banks;
-    // for(auto const& bank_name : bank_names)
-    //   banks.push_back(hipo::bank(stream.dictionary().getSchema(bank_name.c_str()),48));
-    //
-    // // define the algorithm
-    // iguana::AlgorithmSequence seq;
-    // for(auto const& prerequisite_algo : prerequisite_algos)
-    //   seq.Add(prerequisite_algo);
-    // seq.Add(algo_name);
-    // seq.SetName("TEST thread " + std::to_string(order));
-    // seq.PrintSequence();
-    // seq.SetOption(algo_name, "log", verbose ? "trace" : "info");
-    //
-    // // start the algorithm
-    // seq.Start(banks);
+    // bank list
+    hipo::banklist banks;
+    for(auto const& bank_name : bank_names)
+      banks.push_back(hipo::bank(stream.dictionary().getSchema(bank_name.c_str()),48));
+
+    // define the algorithm
+    iguana::AlgorithmSequence seq;
+    for(auto const& prerequisite_algo : prerequisite_algos)
+      seq.Add(prerequisite_algo);
+    seq.Add(algo_name);
+    seq.SetName("TEST thread " + std::to_string(order));
+    seq.PrintSequence();
+    seq.SetOption(algo_name, "log", verbose ? "trace" : "info");
+
+    // start the algorithm
+    seq.Start(banks);
 
     // // loop over frames
     // int nProcessed = 0;
@@ -150,11 +145,12 @@ inline int TestMultithreading(
     //     break;
     // }
 
-    // // stop the algorithm
-    // seq.Stop();
+    // stop the algorithm
+    seq.Stop();
     //
     // seq.GetLog()->Info("nProcessed = {}", nProcessed);
     // return nProcessed;
+    return 1;
   };
 
   // run
