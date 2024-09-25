@@ -117,21 +117,24 @@ inline int TestMultithreading(
           for(auto& bank : banks)
             event.read(bank);
 
-          // occasionally vary the run number (if the user wants to)
+          // occasionally vary the run number; so far, algorithms with data-dependent configuration
+          // parameters have dependence on run number, so this variation aims to improve thread
+          // sanitizer test coverage
           if(vary_run && run_config_bank_idx.has_value()) {
             // === rapid variation ===
-            banks[run_config_bank_idx.value()].putInt("run", 0, std::rand() % 3000);
-            // === slower variation ===
             /*
-            if(std::rand() % 10 == 0) {
+            banks[run_config_bank_idx.value()].putInt("run", 0, std::rand() % 3000);
+            */
+            // === slower variation ===
+            if(std::rand() % 10 == 0) { // randomly increase or decrease the run number
               auto runnum = banks[run_config_bank_idx.value()].getInt("run", 0);
-              runnum += (std::rand() % 2 == 0) ? 1 : -1; // randomly increase or decrease the runnum by 1
+              runnum += (std::rand() % 2 == 0) ? 1000 : -1000;
+              runnum = std::max(runnum, 0); // prevent negative run number
               banks[run_config_bank_idx.value()].putInt("run", 0, runnum);
             }
             else if(std::rand() % 10 == 1) {
               banks[run_config_bank_idx.value()].putInt("run", 0, 1); // set the runnum to '1'
             }
-            */
           }
 
           // run the iguana algorithm
