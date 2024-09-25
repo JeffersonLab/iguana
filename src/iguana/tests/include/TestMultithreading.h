@@ -62,11 +62,12 @@ inline int TestMultithreading(
     log.Info("=> will actually process num_events = ALL OF THEM");
   }
 
-  // // start the stream
-  // hipo::readerstream stream;
-  // stream.open(data_file.c_str());
-  //
-  // // define the worker function
+  // start the stream
+  hipo::readerstream stream;
+  stream.open(data_file.c_str());
+
+  // define the worker function
+  auto ftn = [](int order) { return 1; };
   // auto ftn = [
   //   &stream,
   //   algo_name,
@@ -151,8 +152,8 @@ inline int TestMultithreading(
   //   seq.GetLog()->Info("nProcessed = {}", nProcessed);
   //   return nProcessed;
   // };
-  //
-  // // run
-  // stream.run(ftn, num_threads);
+
+  // run
+  stream.run(ftn, num_threads);
   return 0;
 }
