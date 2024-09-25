@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/ConcurrentParam.h"
 
 namespace iguana::physics {

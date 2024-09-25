@@ -8,7 +8,6 @@
 
 
 #include "iguana/algorithms/AlgorithmBoilerplate.h"
-#include "iguana/services/TypeDefs.h"
 #include "iguana/services/YAMLReader.h"
 
 namespace iguana {

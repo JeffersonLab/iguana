@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Validator.h"
+#include "iguana/algorithms/TypeDefs.h"
 #include <TH1F.h>
 #include <TFile.h>
 #include <TCanvas.h>
