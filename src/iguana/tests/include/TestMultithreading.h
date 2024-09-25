@@ -17,51 +17,51 @@ inline int TestMultithreading(
     bool verbose)
 {
 
-  // iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info);
-  //
-  // // check arguments
-  // if(algo_name.empty() || bank_names.empty()) {
-  //   log.Error("need algorithm name and banks");
-  //   return 1;
-  // }
-  // if(data_file.empty()) {
-  //   log.Error("need a data file for command {:?}", command);
-  //   return 1;
-  // }
-  //
-  // // set the concurrency model
-  // if(!concurrency_model.empty())
-  //   iguana::GlobalConcurrencyModel = concurrency_model;
-  //
-  // // find the 'RUN::config' bank, if any
-  // std::optional<hipo::banklist::size_type> run_config_bank_idx{};
-  // if(vary_run) {
-  //   for(hipo::banklist::size_type idx = 0; idx < bank_names.size(); idx++) {
-  //     if(bank_names.at(idx) == "RUN::config") {
-  //       run_config_bank_idx = idx;
-  //       break;
-  //     }
-  //   }
-  // }
-  //
-  // // number of events per thread
-  // int const default_frame_size = 50;
-  // int num_events_per_thread = (int) std::round((double) num_events / num_threads);
-  // int num_events_per_frame  = num_events > 0 ? std::min(num_events_per_thread, default_frame_size) : default_frame_size;
-  // int num_frames_per_thread = num_events > 0 ? (int) std::ceil((double) num_events_per_thread / num_events_per_frame) : 0;
-  // int num_events_actual     = num_events_per_frame * num_frames_per_thread * num_threads;
-  // log.Info("num_events_per_thread = {}", num_events_per_thread);
-  // log.Info("num_events_per_frame  = {}", num_events_per_frame );
-  // log.Info("num_frames_per_thread = {}", num_frames_per_thread);
-  // if(num_events > 0) {
-  //   log.Info("=> will actually process num_events = {}", num_events_actual);
-  //   if(num_events != num_events_actual)
-  //     log.Warn("argument's num_events ({}) differs from the actual num_events that will be processed ({})",
-  //         num_events, num_events_actual);
-  // } else {
-  //   log.Info("=> will actually process num_events = ALL OF THEM");
-  // }
-  //
+  iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info);
+
+  // check arguments
+  if(algo_name.empty() || bank_names.empty()) {
+    log.Error("need algorithm name and banks");
+    return 1;
+  }
+  if(data_file.empty()) {
+    log.Error("need a data file for command {:?}", command);
+    return 1;
+  }
+
+  // set the concurrency model
+  if(!concurrency_model.empty())
+    iguana::GlobalConcurrencyModel = concurrency_model;
+
+  // find the 'RUN::config' bank, if any
+  std::optional<hipo::banklist::size_type> run_config_bank_idx{};
+  if(vary_run) {
+    for(hipo::banklist::size_type idx = 0; idx < bank_names.size(); idx++) {
+      if(bank_names.at(idx) == "RUN::config") {
+        run_config_bank_idx = idx;
+        break;
+      }
+    }
+  }
+
+  // number of events per thread
+  int const default_frame_size = 50;
+  int num_events_per_thread = (int) std::round((double) num_events / num_threads);
+  int num_events_per_frame  = num_events > 0 ? std::min(num_events_per_thread, default_frame_size) : default_frame_size;
+  int num_frames_per_thread = num_events > 0 ? (int) std::ceil((double) num_events_per_thread / num_events_per_frame) : 0;
+  int num_events_actual     = num_events_per_frame * num_frames_per_thread * num_threads;
+  log.Info("num_events_per_thread = {}", num_events_per_thread);
+  log.Info("num_events_per_frame  = {}", num_events_per_frame );
+  log.Info("num_frames_per_thread = {}", num_frames_per_thread);
+  if(num_events > 0) {
+    log.Info("=> will actually process num_events = {}", num_events_actual);
+    if(num_events != num_events_actual)
+      log.Warn("argument's num_events ({}) differs from the actual num_events that will be processed ({})",
+          num_events, num_events_actual);
+  } else {
+    log.Info("=> will actually process num_events = ALL OF THEM");
+  }
+
   // // start the stream
   // hipo::readerstream stream;
   // stream.open(data_file.c_str());

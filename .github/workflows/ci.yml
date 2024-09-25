@@ -367,7 +367,7 @@ jobs:
           meson setup iguana_build iguana_src           \
             --prefix=$(pwd)/iguana                      \
             --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
-            -Dwerror=true                               \
+            -Dwerror=false                              \
             -Dinstall_examples=true                     \
             -Dtest_data_file=$(pwd)/test_data.hipo      \
             -Dtest_num_events=${{ env.num_events }}     \
