@@ -16,7 +16,7 @@ namespace iguana::clas12 {
   }
 
 
-  void EventBuilderFilter::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
+  void EventBuilderFilter::Run(hipo::banklist& banks) const
   {
 
     // get the banks

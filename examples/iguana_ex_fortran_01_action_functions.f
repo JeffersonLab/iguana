@@ -188,12 +188,11 @@ c       read banks
 c       before using the Z-vertext filter, we must "prepare" the
 c       algorithm's configuration for this event; the resulting
 c       'key_vz_filter' must be passed to the action function;
-c       we leave the `thread_id` at zero (since we don't need it)
         call iguana_clas12_zvertexfilter_prepareevent(
-     &      algo_vz_filter, runnum(1), 0, key_vz_filter)
+     &      algo_vz_filter, runnum(1), key_vz_filter)
 c       similarly for the inclusive kinematics algorithm
         call iguana_physics_inclusivekinematics_prepareevent(
-     &      algo_inc_kin, runnum(1), 0, key_inc_kin)
+     &      algo_inc_kin, runnum(1), key_inc_kin)
 
 c       call iguana filters
 c       - the `logical` variable `accept` must be initialized to

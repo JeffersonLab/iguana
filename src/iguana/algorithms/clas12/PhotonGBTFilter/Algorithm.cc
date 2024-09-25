@@ -18,7 +18,7 @@ namespace iguana::clas12 {
 
 
     
-  void PhotonGBTFilter::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
+  void PhotonGBTFilter::Run(hipo::banklist& banks) const
   {
       
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");

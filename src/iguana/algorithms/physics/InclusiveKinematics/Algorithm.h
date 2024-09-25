@@ -47,15 +47,14 @@ namespace iguana::physics {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks, concurrent_key_t const thread_id = 0) const override;
+      void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
       /// @action_function{reload} prepare the event
       /// @when_to_call{for each event}
       /// @param runnum the run number
-      /// @param thread_id @thread_id_desc
       /// @returns the key to be used in `::ComputeFromLepton`
-      concurrent_key_t PrepareEvent(int const runnum, concurrent_key_t thread_id = 0) const;
+      concurrent_key_t PrepareEvent(int const runnum) const;
 
       /// @action_function{scalar creator} compute kinematics from the scattered lepton.
       /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)

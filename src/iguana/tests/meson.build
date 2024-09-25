@@ -57,7 +57,7 @@ foreach algo : algo_dict
       )
 
       # multithreaded tests
-      foreach concurrency_model : [ 'memoize', 'threadpool' ]
+      foreach concurrency_model : [ 'memoize' ] # note: we used to have more, so leave this array in case we want more
         multithreading_args = [
           'multithreading',
           '-j', get_option('test_multithreading').to_string(),
@@ -67,7 +67,7 @@ foreach algo : algo_dict
         test(
           '-'.join(['multithreading', concurrency_model, test_name_algo]),
           test_exe,
-          suite: [ 'multithreading', concurrency_model ],
+          suite: [ 'algorithm', 'multithreading', concurrency_model ],
           args: multithreading_args + [ '-n', get_option('test_num_events') ] + test_args,
           is_parallel: false,
           env: project_test_env,
@@ -76,7 +76,7 @@ foreach algo : algo_dict
         benchmark(
           '-'.join(['benchmark', f'multithreading_@concurrency_model@', test_name_algo]),
           test_exe,
-          suite: [ 'multithreading', concurrency_model ],
+          suite: [ 'algorithm', 'multithreading', concurrency_model ],
           args: multithreading_args + [ '-n', '0' ] + test_args, # benchmark all the events
           env: project_test_env,
           timeout: 0,

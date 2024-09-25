@@ -17,7 +17,7 @@ namespace iguana::clas12 {
     b_config = GetBankIndex(banks, "RUN::config");
   }
 
-  void ZVertexFilter::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const
+  void ZVertexFilter::Run(hipo::banklist& banks) const
   {
 
     // get the banks
@@ -28,7 +28,7 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // prepare the event, reloading configuration parameters, if necessary
-    auto key = PrepareEvent(configBank.getInt("run", 0), thread_id);
+    auto key = PrepareEvent(configBank.getInt("run", 0));
 
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this, &key](auto bank, auto row) {
@@ -44,18 +44,19 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
-  concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum, concurrent_key_t thread_id) const {
-    m_log->Trace("calling PrepareEvent({}, {})", runnum, thread_id);
+  concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum) const {
+    m_log->Trace("calling PrepareEvent({})", runnum);
     if(o_runnum->NeedsHashing()) {
       std::hash<int> hash_ftn;
       auto hash_key = hash_ftn(runnum);
       if(!o_runnum->HasKey(hash_key))
         Reload(runnum, hash_key);
       return hash_key;
+    } else {
+      if(o_runnum->IsEmpty() || o_runnum->Load(0) != runnum)
+        Reload(runnum, 0);
+      return 0;
     }
-    if(o_runnum->IsEmpty() || o_runnum->Load(thread_id) != runnum)
-      Reload(runnum, thread_id);
-    return thread_id;
   }
 
   void ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {

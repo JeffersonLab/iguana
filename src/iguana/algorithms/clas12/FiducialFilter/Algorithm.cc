@@ -21,7 +21,7 @@ namespace iguana::clas12 {
       
   }
 
-void FiducialFilter::Run(hipo::banklist& banks, concurrent_key_t const thread_id) const {
+void FiducialFilter::Run(hipo::banklist& banks) const {
     // get the banks
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& trajBank     = GetBank(banks, b_traj, "REC::Traj");
