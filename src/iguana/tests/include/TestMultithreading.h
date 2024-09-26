@@ -17,9 +17,7 @@ inline int TestMultithreading(
     bool const verbose)
 {
 
-  // GCOVR_EXCL_START
-
-  iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info);
+  iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info); // GCOVR_EXCL_START
 
   // check arguments
   if(algo_name.empty() || bank_names.empty()) {
