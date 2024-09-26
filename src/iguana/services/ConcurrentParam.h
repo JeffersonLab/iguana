@@ -12,6 +12,7 @@ namespace iguana {
   // ==================================================================================
 
   /// @brief abstract base class for concurrently mutable configuration parameters
+  /// @see `iguana::ConcurrentParamFactory` for instantiation
   template <typename T>
   class ConcurrentParam {
 
@@ -33,17 +34,17 @@ namespace iguana {
       virtual void Save(T const& value, concurrent_key_t const key) = 0;
 
       /// @param key the key
-      /// @returns if key `key` is used
+      /// @returns `true` if key `key` is used
       virtual bool HasKey(concurrent_key_t const key) const = 0;
 
       /// @brief whether or not hashing is needed to use this parameter
-      /// @returns true if hashing is needed
+      /// @returns `true` if hashing is needed
       bool NeedsHashing() const { return m_needs_hashing; }
 
       /// @returns the size of the internal data storage container
       virtual std::size_t GetSize() const = 0;
 
-      /// @returns true if no value has been saved
+      /// @returns `true` if no value has been saved
       bool IsEmpty() const { return m_empty; }
 
     protected:
@@ -64,7 +65,7 @@ namespace iguana {
   // ==================================================================================
 
   /// @brief a parameter that is _not_ thread safe;
-  /// used when `GlobalConcurrencyModel == "single"`
+  /// used when `iguana::GlobalConcurrencyModel` is "single"
   template <typename T>
   class SingleThreadParam : public ConcurrentParam<T> {
 
@@ -88,8 +89,8 @@ namespace iguana {
   // MemoizedParam
   // ==================================================================================
 
-  /// @brief a `ConcurrentParam` that uses memoization for thread safety;
-  /// used when `GlobalConcurrencyModel == "memoize"`
+  /// @brief an `iguana::ConcurrentParam` that uses memoization for thread safety;
+  /// used when `iguana::GlobalConcurrencyModel` is "memoize"
   template <typename T>
   class MemoizedParam : public ConcurrentParam<T> {
 

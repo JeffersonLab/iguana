@@ -9,10 +9,13 @@ namespace iguana {
 
   /// @brief a globally accessible parameter
   ///
-  /// A global parameter:
-  /// - has a default value
+  /// A global parameter has the following properties
+  /// - a default value
   /// - may be changed only _one time_
   /// - may be read from _anywhere_
+  ///
+  /// @par Available global parameters
+  /// - `iguana::GlobalConcurrencyModel`
   template <typename T>
   class GlobalParam : public Object {
 
