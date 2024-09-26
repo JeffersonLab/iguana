@@ -32,7 +32,7 @@ namespace iguana::clas12 {
     auto key = PrepareEvent(configBank.getInt("run", 0));
 
     // filter the input bank for requested PDG code(s)
-    particleBank.getMutableRowList().filter([this, &key](auto bank, auto row) {
+    particleBank.getMutableRowList().filter([this, key](auto bank, auto row) {
         auto zvertex = bank.getFloat("vz", row);
         auto pid = bank.getInt("pid", row);
         auto status = bank.getShort("status", row);
