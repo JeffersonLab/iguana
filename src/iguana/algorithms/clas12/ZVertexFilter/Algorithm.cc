@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
 
@@ -10,7 +11,7 @@ namespace iguana::clas12 {
     // get configuration
     ParseYAMLConfig();
     o_runnum = ConcurrentParamFactory::Create<int>();
-    o_zcuts  = ConcurrentParamFactory::Create<std::vector<double>>();
+    o_electron_vz_cuts  = ConcurrentParamFactory::Create<std::vector<double>>();
 
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
@@ -63,25 +64,16 @@ namespace iguana::clas12 {
     std::lock_guard<std::mutex> const lock(m_mutex); // NOTE: be sure to lock successive `ConcurrentParam::Save` calls !!!
     m_log->Trace("-> calling Reload({}, {})", runnum, key);
     o_runnum->Save(runnum, key);
-    o_zcuts->Save(GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", runnum), "cuts"}), key);
-    // FIXME: handle PIDs
+    o_electron_vz_cuts->Save(GetOptionVector<double>("electron_vz", {GetConfig()->InRange("runs", runnum), "electron_vz"}), key);
   }
 
   bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status, concurrent_key_t key) const
   {
-    auto zcuts = GetZcuts(key);
-    return zvertex > zcuts.at(0) && zvertex < zcuts.at(1);
-
-    // FIXME
-    // FIXME
-    // FIXME
-    // //only apply filter if particle pid is in list of pids
-    // //and particles not in FT (ie FD or CD)
-    // if(o_pids.find(pid) != o_pids.end() && abs(status)>=2000) {
-    //   return zvertex > GetZcutLower() && zvertex < GetZcutUpper();
-    // } else {
-    //   return true;
-    // }
+    if(pid == particle::PDG::electron && abs(status) >= 2000) {
+      auto zcuts = GetElectronZcuts(key);
+      return zvertex > zcuts.at(0) && zvertex < zcuts.at(1);
+    }
+    return true; // cuts don't apply
   }
 
   int ZVertexFilter::GetRunNum(concurrent_key_t const key) const
@@ -89,14 +81,14 @@ namespace iguana::clas12 {
     return o_runnum->Load(key);
   }
 
-  std::vector<double> ZVertexFilter::GetZcuts(concurrent_key_t const key) const
+  std::vector<double> ZVertexFilter::GetElectronZcuts(concurrent_key_t const key) const
   {
-    return o_zcuts->Load(key);
+    return o_electron_vz_cuts->Load(key);
   }
 
-  void ZVertexFilter::SetZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key)
+  void ZVertexFilter::SetElectronZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key)
   {
-    o_zcuts->Save({zcut_lower, zcut_upper}, key);
+    o_electron_vz_cuts->Save({zcut_lower, zcut_upper}, key);
   }
 
   void ZVertexFilter::Stop()

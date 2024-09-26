@@ -13,7 +13,7 @@ namespace iguana::clas12 {
   /// @end_doc
   ///
   /// @begin_doc_config
-  /// @config_param{cuts | list[double] | lower and upper @f$z@f$-vertex cuts; run-range dependent}
+  /// @config_param{electron_vz | list[double] | lower and upper electron @f$z@f$-vertex cuts; run-range dependent; cuts are not applied to FT electrons (FD and CD only)}
   /// @end_doc
   class ZVertexFilter : public Algorithm
   {
@@ -48,15 +48,15 @@ namespace iguana::clas12 {
 
       /// @param key the return value of `::PrepareEvent`
       /// @returns the current z-vertex cuts
-      std::vector<double> GetZcuts(concurrent_key_t const key) const;
+      std::vector<double> GetElectronZcuts(concurrent_key_t const key) const;
 
       /// @brief sets the z-vertex cuts
       /// @warning this method is not thread safe; instead, for thread safety,
       /// use `::PrepareEvent` and a custom configuration file.
       /// @param zcut_lower the lower bound of the cut
       /// @param zcut_upper the upper bound of the cut
-      /// @param key the, for `::GetZcuts`
-      void SetZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key);
+      /// @param key the, for `::GetElectronZcuts`
+      void SetElectronZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key);
 
     private:
       hipo::banklist::size_type b_particle, b_config;
@@ -67,11 +67,9 @@ namespace iguana::clas12 {
       /// Run number
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
 
-      /// Z-vertex cut
-      mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_zcuts;
+      /// Electron Z-vertex cuts
+      mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_electron_vz_cuts;
 
-      /// pids to apply ZVertexFilter to
-      std::set<int> o_pids;
   };
 
 }
