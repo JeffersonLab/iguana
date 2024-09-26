@@ -9,6 +9,7 @@
 
 #include "iguana/algorithms/AlgorithmBoilerplate.h"
 #include "iguana/services/YAMLReader.h"
+#include <iguana/services/GlobalParam.h>
 
 namespace iguana {
 

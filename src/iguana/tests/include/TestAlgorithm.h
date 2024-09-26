@@ -2,7 +2,6 @@
 
 #include <hipo4/reader.h>
 #include <iguana/algorithms/AlgorithmSequence.h>
-#include <iguana/services/GlobalParam.h>
 
 inline int TestAlgorithm(
     std::string command,

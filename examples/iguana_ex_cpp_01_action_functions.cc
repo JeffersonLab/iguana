@@ -33,6 +33,10 @@ int main(int argc, char** argv)
   enum banks_enum { b_particle,
                     b_config }; // TODO: users shouldn't have to do this
 
+  // set the concurrency model to single-threaded, since this example is single-threaded;
+  // not doing this will use the thread-safe model, `"memoize"`
+  iguana::GlobalConcurrencyModel = "single";
+
   // create the algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
   iguana::clas12::MomentumCorrection algo_momentum_correction;
