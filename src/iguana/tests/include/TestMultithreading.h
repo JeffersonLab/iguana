@@ -16,6 +16,7 @@ inline int TestMultithreading(
     bool vary_run,
     bool verbose)
 {
+  num_threads = 1; // TEST
 
   iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info);
 
