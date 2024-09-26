@@ -277,7 +277,7 @@ namespace iguana {
           if(m_log->GetLevel() > Logger::Level::debug)
             m_log->Error("to see the actual option values used (and their types), set the log level to 'debug' or lower");
         };
-        std::visit(printer, it->second); // TODO: test this
+        std::visit(printer, it->second);
       }
     }
     return {};
