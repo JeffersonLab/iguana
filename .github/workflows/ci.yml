@@ -39,6 +39,7 @@ env:
   hipo_ref: 20094876df040ec234dd376fa527cf58442b775a
   # test options
   num_events: 1000
+  num_threads: 0 # use 0 for "all" available cores
   verbose_test: 'false' # only set this to 'true' if `meson test` fails and you need more output to investigate
 
 jobs:
@@ -364,14 +365,15 @@ jobs:
       ### build
       - name: meson setup
         run: |
-          meson setup iguana_build iguana_src           \
-            --prefix=$(pwd)/iguana                      \
-            --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
-            -Dwerror=false                              \
-            -Dinstall_examples=true                     \
-            -Dtest_data_file=$(pwd)/test_data.hipo      \
-            -Dtest_num_events=${{ env.num_events }}     \
-            -Dtest_output_dir=$(pwd)/validation_results \
+          meson setup iguana_build iguana_src            \
+            --prefix=$(pwd)/iguana                       \
+            --pkg-config-path=$(pwd)/hipo/lib/pkgconfig  \
+            -Dwerror=true                                \
+            -Dinstall_examples=true                      \
+            -Dtest_data_file=$(pwd)/test_data.hipo       \
+            -Dtest_num_events=${{ env.num_events }}      \
+            -Dtest_output_dir=$(pwd)/validation_results  \
+            -Dtest_multithreading=${{ env.num_threads }} \
             ${{ matrix.opts }}
       - name: dump all build options
         run: meson configure iguana_build --no-pager
@@ -416,8 +418,10 @@ jobs:
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
         run: |
+          meson configure iguana_build -Dtest_multithreading=1  # workaround gcovr issue in `TestMultithreading.h` when num_threads!=1
           ninja -C iguana_build coverage-html
           ninja -C iguana_build coverage-text
+          meson configure iguana_build -Dtest_multithreading=${{ env.num_threads }}  # revert the above workaround
           mv iguana_build/meson-logs/coveragereport coverage-report
           echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY

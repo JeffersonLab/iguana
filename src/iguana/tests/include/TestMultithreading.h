@@ -16,7 +16,6 @@ inline int TestMultithreading(
     bool vary_run,
     bool verbose)
 {
-  num_threads = 1; // TEST
 
   iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info);
 
@@ -73,11 +72,11 @@ inline int TestMultithreading(
     algo_name,
     prerequisite_algos,
     bank_names,
-    vary_run,
+    /*vary_run,*/
     verbose,
-    num_events_per_thread,
-    num_events_per_frame,
-    run_config_bank_idx
+    /*num_events_per_thread,*/
+    num_events_per_frame/*,
+    run_config_bank_idx*/
   ](int order) {
 
     // fill a frame
