@@ -417,12 +417,8 @@ jobs:
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
         run: |
-          meson configure iguana_build -Dtest_multithreading=1  # workaround gcovr issue in `TestMultithreading.h` when num_threads!=1
-          ninja clean
-          ninja
           ninja -C iguana_build coverage-html
           ninja -C iguana_build coverage-text
-          meson configure iguana_build -Dtest_multithreading=${{ env.num_threads }}  # revert the above workaround
           mv iguana_build/meson-logs/coveragereport coverage-report
           echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY

@@ -17,6 +17,8 @@ inline int TestMultithreading(
     bool const verbose)
 {
 
+  // GCOVR_EXCL_START
+
   iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info);
 
   // check arguments
@@ -155,5 +157,5 @@ inline int TestMultithreading(
 
   // run
   stream.run(ftn, num_threads);
-  return 0;
+  return 0; // GCOVR_EXCL_STOP
 }
