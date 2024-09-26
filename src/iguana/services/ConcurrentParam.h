@@ -28,8 +28,8 @@ namespace iguana {
       virtual T const Load(concurrent_key_t const key) const = 0;
 
       /// @brief modify a value
-      /// @param key the access key
       /// @param value the value
+      /// @param key the access key
       virtual void Save(T const& value, concurrent_key_t const key) = 0;
 
       /// @param key the key
@@ -51,7 +51,7 @@ namespace iguana {
       /// whether this `ConcurrentParam` needs hashing for calling `::Load` or `::Save`
       bool m_needs_hashing;
 
-      /// mutex
+      /// mutex for this `ConcurrentParam`
       std::mutex m_mutex;
 
       /// whether this `ConcurrentParam` has something saved
@@ -63,7 +63,8 @@ namespace iguana {
   // SingleThreadParam
   // ==================================================================================
 
-  /// @brief a parameter that is _not_ thread safe
+  /// @brief a parameter that is _not_ thread safe;
+  /// used when `GlobalConcurrencyModel == "single"`
   template <typename T>
   class SingleThreadParam : public ConcurrentParam<T> {
 
@@ -76,14 +77,19 @@ namespace iguana {
       std::size_t GetSize() const override;
 
     private:
+
+      /// the stored value; it is not `std::atomic` since `std::string` is one of
+      /// the specializations (for `T`), which is not trivially copyable
       T m_value;
+
   };
 
   // ==================================================================================
   // MemoizedParam
   // ==================================================================================
 
-  /// @brief a `ConcurrentParam` that uses memoization for thread safety
+  /// @brief a `ConcurrentParam` that uses memoization for thread safety;
+  /// used when `GlobalConcurrencyModel == "memoize"`
   template <typename T>
   class MemoizedParam : public ConcurrentParam<T> {
 
@@ -99,6 +105,8 @@ namespace iguana {
       std::size_t GetSize() const override;
 
     private:
+
+      /// the hash table for stored (memoized) values
       container_t m_container;
 
   };
@@ -114,6 +122,8 @@ namespace iguana {
       ConcurrentParamFactory() = delete;
 
       /// @brief create a new `ConcurrentParam`-derived class instance
+      /// @warning if `GlobalConcurrencyModel` is not set, the model `"memoize"` will be chosen,
+      /// since it is thread safe and does not assume anything about the user's implementation
       /// @returns a pointer to the new instance
       template <typename T>
       static std::unique_ptr<ConcurrentParam<T>> Create() {

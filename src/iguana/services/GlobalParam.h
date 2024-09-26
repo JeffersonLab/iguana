@@ -11,8 +11,8 @@ namespace iguana {
   ///
   /// A global parameter:
   /// - has a default value
-  /// - may be changed _once_
-  /// - may be read from anywhere
+  /// - may be changed only _one time_
+  /// - may be read from _anywhere_
   template <typename T>
   class GlobalParam : public Object {
 
@@ -22,7 +22,7 @@ namespace iguana {
       GlobalParam(T val) : Object("IGUANA"), m_val(val) {}
 
       /// @brief assign a new value to this parameter
-      /// @warning this may _only_ used one time; a second attempt to set the parameter will fail
+      /// @warning this may _only_ be used one time; a second attempt to set the parameter will fail
       /// @param val the new value of this parameter
       /// @returns `*this`
       GlobalParam<T>& operator=(T const& val)
@@ -52,7 +52,13 @@ namespace iguana {
   // IGUANA GLOBAL PARAMETERS (see source file 'GlobalParam.cc' for their default values)
   // ==================================================================================
 
-  /// the concurrency model, for running certain algorithms in a thread-safe way
+  /// @brief The concurrency model, for running certain algorithms in a thread-safe way
+  /// @par Available Models
+  /// - "single": no thread safety, but optimal for single-threaded users
+  /// - "memoize": thread-safe lazy loading of configuration parameters
+  /// - "none": no concurrency model set by user; this is the *default option*, and if this
+  ///   is the choice when `ConcurrentParamFactory::Create` is called, an appropriate
+  ///   option will be _chosen_ by `ConcurrentParamFactory::Create` instead
   extern GlobalParam<std::string> GlobalConcurrencyModel;
 
 }
