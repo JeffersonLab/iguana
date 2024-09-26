@@ -5,16 +5,16 @@
 #include <iguana/services/GlobalParam.h>
 
 inline int TestMultithreading(
-    std::string command,
-    std::string algo_name,
-    std::vector<std::string> prerequisite_algos,
-    std::vector<std::string> bank_names,
-    std::string data_file,
-    int num_events,
-    int num_threads,
-    std::string concurrency_model,
-    bool vary_run,
-    bool verbose)
+    std::string const command,
+    std::string const algo_name,
+    std::vector<std::string> const prerequisite_algos,
+    std::vector<std::string> const bank_names,
+    std::string const data_file,
+    int const num_events,
+    int const num_threads,
+    std::string const concurrency_model,
+    bool const vary_run,
+    bool const verbose)
 {
 
   iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info);
