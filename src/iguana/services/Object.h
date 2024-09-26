@@ -25,7 +25,7 @@ namespace iguana {
       /// @param name the new name
       void SetName(std::string_view name);
 
-      /// Get the name of this object
+      /// @returns the name of this object
       std::string GetName() const;
 
       /// Set the log level to this level. Log messages with a lower level will not be printed.
@@ -37,6 +37,9 @@ namespace iguana {
       /// @see `Logger::Level` for available levels.
       /// @param lev the log level
       void SetLogLevel(Logger::Level const lev);
+
+      /// @returns reference to this object's logger
+      std::unique_ptr<Logger>& GetLog();
 
 
     protected:

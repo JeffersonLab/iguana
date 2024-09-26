@@ -39,6 +39,7 @@ env:
   hipo_ref: 20094876df040ec234dd376fa527cf58442b775a
   # test options
   num_events: 1000
+  num_threads: 0 # use 0 for "all" available cores
   verbose_test: 'false' # only set this to 'true' if `meson test` fails and you need more output to investigate
 
 jobs:
@@ -364,14 +365,15 @@ jobs:
       ### build
       - name: meson setup
         run: |
-          meson setup iguana_build iguana_src           \
-            --prefix=$(pwd)/iguana                      \
-            --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
-            -Dwerror=true                               \
-            -Dinstall_examples=true                     \
-            -Dtest_data_file=$(pwd)/test_data.hipo      \
-            -Dtest_num_events=${{ env.num_events }}     \
-            -Dtest_output_dir=$(pwd)/validation_results \
+          meson setup iguana_build iguana_src            \
+            --prefix=$(pwd)/iguana                       \
+            --pkg-config-path=$(pwd)/hipo/lib/pkgconfig  \
+            -Dwerror=true                                \
+            -Dinstall_examples=true                      \
+            -Dtest_data_file=$(pwd)/test_data.hipo       \
+            -Dtest_num_events=${{ env.num_events }}      \
+            -Dtest_output_dir=$(pwd)/validation_results  \
+            -Dtest_multithreading=${{ env.num_threads }} \
             ${{ matrix.opts }}
       - name: dump all build options
         run: meson configure iguana_build --no-pager
@@ -407,8 +409,10 @@ jobs:
       - name: benchmark algorithms
         if: ${{ matrix.id == 'coverage' }} # use the coverage job's GITHUB_STEP_SUMMARY
         run: |
-          meson test --benchmark --repeat 5 -C iguana_build > benchmark.txt
-          iguana_src/.github/make-benchmark-table.rb benchmark.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+          for suite in single_threaded memoize; do
+            meson test --benchmark --suite $suite -C iguana_build | tee benchmark_$suite.txt
+          done
+          iguana_src/.github/make-benchmark-table.rb benchmark_{single_threaded,memoize}.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
       ### coverage
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
@@ -487,7 +491,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: logs_iguana_build_${{ matrix.id }}
+          name: meson_logs_${{ matrix.id }}
           retention-days: 5
           path: iguana_build/meson-logs
       - name: upload coverage artifacts

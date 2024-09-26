@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include <optional>
 #include <set>
 
@@ -8,6 +9,7 @@
 
 #include "iguana/algorithms/AlgorithmBoilerplate.h"
 #include "iguana/services/YAMLReader.h"
+#include <iguana/services/GlobalParam.h>
 
 namespace iguana {
 
@@ -15,7 +17,7 @@ namespace iguana {
   /* NOTE: if you modify this, you also must modify:
    * - [ ] `PrintOptionValue`
    * - [ ] Template specializations in this class
-   * - [ ] Template specializations in `YAMLReader` or `ConfigFileReader`
+   * - [ ] Template specializations in `YAMLReader` or `ConfigFileReader`, and `ConcurrentParam`
    * - [ ] Add new tests, if you added new types
    */
   using option_t = std::variant<
@@ -86,10 +88,8 @@ namespace iguana {
           else
             m_log->Error("Option '{}' must be a string or a Logger::Level", key);
         }
-        else {
+        else
           m_option_cache[key] = val;
-          m_log->Debug("  USER OPTION: {:>20} = {}", key, PrintOptionValue(key));
-        }
         return val;
       }
 
@@ -98,21 +98,21 @@ namespace iguana {
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the scalar option
       template <typename OPTION_TYPE>
-      OPTION_TYPE GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path = {});
+      OPTION_TYPE GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the value of a vector option
       /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the vector option
       template <typename OPTION_TYPE>
-      std::vector<OPTION_TYPE> GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path = {});
+      std::vector<OPTION_TYPE> GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the value of a vector option, and convert it to `std::set`
       /// @param key the unique key name of this option
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
       /// @returns the vector option converted to `std::set`
       template <typename OPTION_TYPE>
-      std::set<OPTION_TYPE> GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path = {});
+      std::set<OPTION_TYPE> GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
 
       /// Set the name of this algorithm
       /// @param name the new name
@@ -120,7 +120,7 @@ namespace iguana {
 
       /// Get a reference to this algorithm's configuration (`YAMLReader`)
       /// @returns the configuration
-      std::unique_ptr<YAMLReader>& GetConfig();
+      std::unique_ptr<YAMLReader> const& GetConfig() const;
 
       /// Set a custom `YAMLReader` to use for this algorithm
       /// @param yaml_config the custom `YAMLReader` instance
@@ -146,11 +146,6 @@ namespace iguana {
       /// @param bank_name the name of the bank
       /// returns the `hipo::banklist` index of the bank
       hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
-
-      /// Return a string with the value of an option along with its type
-      /// @param key the name of the option
-      /// @return the string value and its type
-      std::string PrintOptionValue(std::string const& key) const;
 
       /// Get the reference to a bank from a `hipo::banklist`; optionally checks if the bank name matches the expectation
       /// @param banks the `hipo::banklist` from which to get the specified bank
@@ -200,13 +195,18 @@ namespace iguana {
       /// @param node_path the `YAMLReader::node_path_t` to prepend
       void CompleteOptionNodePath(std::string const& key, YAMLReader::node_path_t& node_path) const;
 
+      // PrintOptionValue: overloaded for different value types
+      void PrintOptionValue(std::string const& key, int const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
+      void PrintOptionValue(std::string const& key, double const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
+      void PrintOptionValue(std::string const& key, std::string const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
+      void PrintOptionValue(std::string const& key, std::vector<int> const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
+      void PrintOptionValue(std::string const& key, std::vector<double> const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
+      void PrintOptionValue(std::string const& key, std::vector<std::string> const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
+
     protected: // members
 
       /// Class name of this algorithm
       std::string m_class_name;
-
-      /// Data structure to hold configuration options
-      std::unordered_map<std::string, option_t> m_option_cache;
 
       /// If true, algorithm can only operate on bank _rows_; `Algorithm::GetBank`, and therefore `Algorithm::Run`, cannot be called
       bool m_rows_only;
@@ -222,10 +222,17 @@ namespace iguana {
       /// Set it with `Algorithm::SetConfigDirectory`
       std::string o_user_config_dir;
 
+      /// A mutex for this algorithm
+      mutable std::mutex m_mutex;
+
     private: // members
 
       /// YAML reader
       std::unique_ptr<YAMLReader> m_yaml_config;
+
+      /// Data structure to hold configuration options set by `Algorithm::SetOption`
+      std::unordered_map<std::string, option_t> m_option_cache;
+
   };
 
   //////////////////////////////////////////////////////////////////////////////

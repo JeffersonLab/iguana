@@ -1,18 +1,19 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include "iguana/services/ConcurrentParam.h"
 
 namespace iguana::clas12 {
 
   /// @brief_algo Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex
   ///
   /// @begin_doc_algo{clas12::ZVertexFilter | Filter}
-  /// @input_banks{REC::Particle}
+  /// @input_banks{REC::Particle, RUN::config}
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
   /// @begin_doc_config
-  /// @config_param{cuts | list[double] | lower and upper @f$z@f$-vertex cuts; run-range dependent}
+  /// @config_param{electron_vz | list[double] | lower and upper electron @f$z@f$-vertex cuts; run-range dependent; cuts are not applied to FT electrons (FD and CD only)}
   /// @end_doc
   class ZVertexFilter : public Algorithm
   {
@@ -25,33 +26,50 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
+      /// @action_function{reload} prepare the event
+      /// @when_to_call{for each event}
+      /// @param runnum the run number
+      /// @returns the key to be used in `::Filter`
+      concurrent_key_t PrepareEvent(int const runnum) const;
+
       /// @action_function{scalar filter} checks if the Z Vertex is within specified bounds if pid is one for which the filter should be applied to.;
       /// Cuts applied to particles in FD or CD (ie not in FT).
+      /// @when_to_call{for each particle}
       /// @param zvertex the particle Z Vertex to check
       /// @param pid the particle pid
       /// @param status particle status used to check particle is not in FT
+      /// @param key the return value of `::PrepareEvent`
       /// @returns `true` if `zvertex` is within specified bounds
-      bool Filter(double const zvertex, int const pid, int const status) const;
+      bool Filter(double const zvertex, int const pid, int const status, concurrent_key_t const key) const;
 
+      /// @param key the return value of `::PrepareEvent`
       /// @returns the current run number
-      int GetRunNum() const;
-      /// @returns the current z-vertex lower cut
-      double GetZcutLower() const;
-      /// @returns the current z-vertex upper cut
-      double GetZcutUpper() const;
+      int GetRunNum(concurrent_key_t const key) const;
+
+      /// @param key the return value of `::PrepareEvent`
+      /// @returns the current z-vertex cuts
+      std::vector<double> GetElectronZcuts(concurrent_key_t const key) const;
+
+      /// @brief sets the z-vertex cuts
+      /// @warning this method is not thread safe; instead, for thread safety,
+      /// use `::PrepareEvent` and a custom configuration file.
+      /// @param zcut_lower the lower bound of the cut
+      /// @param zcut_upper the upper bound of the cut
+      /// @param key the, for `::GetElectronZcuts`
+      void SetElectronZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key);
 
     private:
-      /// `hipo::banklist` index for the particle bank
-      hipo::banklist::size_type b_particle;
+      hipo::banklist::size_type b_particle, b_config;
+
+      // Reload function
+      void Reload(int const runnum, concurrent_key_t key) const;
 
       /// Run number
-      int o_runnum;
+      mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
 
-      /// Z-vertex cut
-      std::vector<double> o_zcuts;
+      /// Electron Z-vertex cuts
+      mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_electron_vz_cuts;
 
-      /// pids to apply ZVertexFilter to
-      std::set<int> o_pids;
   };
 
 }

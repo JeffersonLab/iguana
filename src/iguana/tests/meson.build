@@ -1,12 +1,12 @@
 test_exe_name = 'iguana_test'
 test_exe_inc = include_directories('include')
-test_exe_links = [ project_libs, vdor_lib ]
+test_exe_links = project_libs + [ vdor_lib ]
 
 test_exe = executable(
   test_exe_name,
   test_exe_name + '.cc',
   include_directories: [ test_exe_inc, project_inc ],
-  dependencies: project_deps,
+  dependencies: [ project_deps ],
   link_with: test_exe_links,
   link_args: ROOT_dep_link_args,
   install: true,
@@ -27,7 +27,7 @@ foreach algo : algo_dict
 
     # test and benchmark algorithm
     if (algo_needs_ROOT and ROOT_dep.found()) or not algo_needs_ROOT
-      test_args = [ 'algorithm', '-a', algo_name ]
+      test_args = [ '-a', algo_name ]
       if fs.is_file(get_option('test_data_file'))
         test_args += [ '-f', get_option('test_data_file') ]
       endif
@@ -37,20 +37,52 @@ foreach algo : algo_dict
       foreach prerequisite : algo['test_args'].get('prerequisites', [])
         test_args += [ '-p', prerequisite ]
       endforeach
+
+      # single threaded tests
       test(
-        'algorithm-' + test_name_algo,
+        '-'.join(['algorithm', test_name_algo]),
         test_exe,
-        suite: [ 'algorithm' ],
-        args: test_args + [ '-n', get_option('test_num_events') ],
-        env: project_test_env,
-      )
-      benchmark(
-        'benchmark-algorithm-' + test_name_algo,
-        test_exe,
-        args: test_args + [ '-n', '0' ], # test all the events
+        suite: [ 'algorithm', 'single_threaded' ],
+        args: [ 'algorithm', '-n', get_option('test_num_events') ] + test_args,
         env: project_test_env,
         timeout: 0,
       )
+      benchmark(
+        '-'.join(['benchmark', 'single_threaded', test_name_algo]),
+        test_exe,
+        suite: [ 'algorithm', 'single_threaded' ],
+        args: [ 'algorithm', '-n', '0' ] + test_args, # benchmark all the events
+        env: project_test_env,
+        timeout: 0,
+      )
+
+      # multithreaded tests
+      foreach concurrency_model : [ 'memoize' ] # note: we used to have more, so leave this array in case we want more
+        multithreading_args = [
+          'multithreading',
+          '-j', get_option('test_multithreading').to_string(),
+          '-m', concurrency_model,
+          '-V', # vary run number
+        ]
+        test(
+          '-'.join(['multithreading', concurrency_model, test_name_algo]),
+          test_exe,
+          suite: [ 'algorithm', 'multithreading', concurrency_model ],
+          args: multithreading_args + [ '-n', get_option('test_num_events') ] + test_args,
+          is_parallel: false,
+          env: project_test_env,
+          timeout: 0,
+        )
+        benchmark(
+          '-'.join(['benchmark', f'multithreading_@concurrency_model@', test_name_algo]),
+          test_exe,
+          suite: [ 'algorithm', 'multithreading', concurrency_model ],
+          args: multithreading_args + [ '-n', '0' ] + test_args, # benchmark all the events
+          env: project_test_env,
+          timeout: 0,
+        )
+      endforeach
+
     endif
 
     # test validator
@@ -58,10 +90,8 @@ foreach algo : algo_dict
       if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
         test_args = [
           'validator',
-          '-n',
-          get_option('test_validator_all_stats') ? '0' : get_option('test_num_events'),
-          '-a',
-          algo_name + 'Validator',
+          '-n', get_option('test_validator_all_stats') ? '0' : get_option('test_num_events'),
+          '-a', algo_name + 'Validator',
         ]
         if fs.is_file(get_option('test_data_file'))
           test_args += [ '-f', get_option('test_data_file') ]
@@ -73,7 +103,7 @@ foreach algo : algo_dict
         test(
           'validator-' + test_name_algo,
           test_exe,
-          suite: [ 'validator' ],
+          suite: [ 'validator', 'single_threaded' ],
           args: test_args,
           env: project_test_env,
           timeout: get_option('test_validator_all_stats') ? 0 : 120,
@@ -89,6 +119,7 @@ foreach command : [ '', 'unknown', 'algorithm', 'validator', 'unit', 'config' ]
   test(
     'iguana_test-usage-guide' + (command == '' ? '' : '-' + command),
     test_exe,
+    suite: [ 'misc', 'single_threaded' ],
     args: command == '' ? [] : [ command ],
     env: project_test_env,
     should_fail: true,
@@ -102,10 +133,17 @@ foreach test_num : [ '1', '2', '3' ]
   test(
     'config-test_' + test_num,
     test_exe,
+    suite: [ 'misc', 'single_threaded' ],
     args: [ 'config', '-t', test_num, '-v' ],
     env: project_test_env,
   )
 endforeach
 
 # test Logger
-test('logger', test_exe, args: [ 'logger' ], env: project_test_env)
+test(
+  'logger',
+  test_exe,
+  suite: [ 'misc', 'single_threaded' ],
+  args: [ 'logger' ],
+  env: project_test_env
+)

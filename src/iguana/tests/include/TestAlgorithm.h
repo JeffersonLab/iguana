@@ -23,6 +23,9 @@ inline int TestAlgorithm(
     return 1;
   }
 
+  // set the concurrency model to single-threaded, for optimal performance
+  iguana::GlobalConcurrencyModel = "single";
+
   // open the HIPO file; we use 2 readers, one for 'before' (i.e., not passed through iguana), and one for 'after'
   // (passed through iguana), so we may compare them
   hipo::reader reader_before(data_file.c_str()); // NOTE: not copy-constructable, so make two separate readers

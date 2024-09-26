@@ -167,7 +167,12 @@ project_test_env.set(
   'print_stacktrace=1',
   'suppressions=' + meson.project_source_root() / 'meson' / 'ubsan.supp',
 )
-project_test_env.set('ASAN_OPTIONS', 'halt_on_error=1', 'abort_on_error=1', 'print_summary=1')
+project_test_env.set(
+  'ASAN_OPTIONS',
+  'halt_on_error=1',
+  'abort_on_error=1',
+  'print_summary=1',
+)
 project_test_env.set(
   'LSAN_OPTIONS',
   'suppressions=' + meson.project_source_root() / 'meson' / 'lsan.supp',

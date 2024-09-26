@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
 
@@ -7,22 +8,14 @@ namespace iguana::clas12 {
   void ZVertexFilter::Start(hipo::banklist& banks)
   {
 
-    // Read YAML config file with cuts for a given run number.
+    // get configuration
     ParseYAMLConfig();
-    o_runnum = GetCachedOption<int>("runnum").value_or(0); // FIXME: should be set form RUN::config
-    o_zcuts  = GetOptionVector<double>("cuts", {GetConfig()->InRange("runs", o_runnum), "cuts"});
-    o_pids  =  GetOptionSet<int>("pids", {GetConfig()->InRange("runs", o_runnum), "pids"});
-    if(o_zcuts.size() != 2) {
-      m_log->Error("configuration option 'cuts' must be an array of size 2, but it is {}", PrintOptionValue("cuts"));
-      throw std::runtime_error("bad configuration");
-    }
-    if(o_pids.size() < 1) {
-      m_log->Error("configuration option 'pids' must have at least one value");
-      throw std::runtime_error("bad configuration");
-    }
+    o_runnum = ConcurrentParamFactory::Create<int>();
+    o_electron_vz_cuts  = ConcurrentParamFactory::Create<std::vector<double>>();
 
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
+    b_config = GetBankIndex(banks, "RUN::config");
   }
 
   void ZVertexFilter::Run(hipo::banklist& banks) const
@@ -30,16 +23,20 @@ namespace iguana::clas12 {
 
     // get the banks
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
+    auto& configBank = GetBank(banks, b_config, "RUN::config");
 
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
+    // prepare the event, reloading configuration parameters, if necessary
+    auto key = PrepareEvent(configBank.getInt("run", 0));
+
     // filter the input bank for requested PDG code(s)
-    particleBank.getMutableRowList().filter([this](auto bank, auto row) {
+    particleBank.getMutableRowList().filter([this, key](auto bank, auto row) {
         auto zvertex = bank.getFloat("vz", row);
         auto pid = bank.getInt("pid", row);
         auto status = bank.getShort("status", row);
-        auto accept  = Filter(zvertex,pid,status);
+        auto accept  = Filter(zvertex, pid, status, key);
         m_log->Debug("input vz {} pid {} status {} -- accept = {}", zvertex, pid, status, accept);
         return accept ? 1 : 0;
         });
@@ -48,30 +45,50 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
   }
 
-  bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status) const
-  {
-    //only apply filter if particle pid is in list of pids
-    //and particles not in FT (ie FD or CD)
-    if(o_pids.find(pid) != o_pids.end() && abs(status)>=2000) {
-      return zvertex > GetZcutLower() && zvertex < GetZcutUpper();
+  concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum) const {
+    m_log->Trace("calling PrepareEvent({})", runnum);
+    if(o_runnum->NeedsHashing()) {
+      std::hash<int> hash_ftn;
+      auto hash_key = hash_ftn(runnum);
+      if(!o_runnum->HasKey(hash_key))
+        Reload(runnum, hash_key);
+      return hash_key;
     } else {
-      return true;
+      if(o_runnum->IsEmpty() || o_runnum->Load(0) != runnum)
+        Reload(runnum, 0);
+      return 0;
     }
   }
 
-  int ZVertexFilter::GetRunNum() const
-  {
-    return o_runnum;
+  void ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {
+    std::lock_guard<std::mutex> const lock(m_mutex); // NOTE: be sure to lock successive `ConcurrentParam::Save` calls !!!
+    m_log->Trace("-> calling Reload({}, {})", runnum, key);
+    o_runnum->Save(runnum, key);
+    o_electron_vz_cuts->Save(GetOptionVector<double>("electron_vz", {GetConfig()->InRange("runs", runnum), "electron_vz"}), key);
   }
 
-  double ZVertexFilter::GetZcutLower() const
+  bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status, concurrent_key_t key) const
   {
-    return o_zcuts.at(0);
+    if(pid == particle::PDG::electron && abs(status) >= 2000) {
+      auto zcuts = GetElectronZcuts(key);
+      return zvertex > zcuts.at(0) && zvertex < zcuts.at(1);
+    }
+    return true; // cuts don't apply
   }
 
-  double ZVertexFilter::GetZcutUpper() const
+  int ZVertexFilter::GetRunNum(concurrent_key_t const key) const
   {
-    return o_zcuts.at(1);
+    return o_runnum->Load(key);
+  }
+
+  std::vector<double> ZVertexFilter::GetElectronZcuts(concurrent_key_t const key) const
+  {
+    return o_electron_vz_cuts->Load(key);
+  }
+
+  void ZVertexFilter::SetElectronZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key)
+  {
+    o_electron_vz_cuts->Save({zcut_lower, zcut_upper}, key);
   }
 
   void ZVertexFilter::Stop()

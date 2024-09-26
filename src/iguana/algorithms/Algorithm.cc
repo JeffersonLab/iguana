@@ -14,16 +14,13 @@ namespace iguana {
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
-  OPTION_TYPE Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path)
+  OPTION_TYPE Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const
   {
     try {
       CompleteOptionNodePath(key, node_path);
       auto opt = GetCachedOption<OPTION_TYPE>(key);
       auto val = opt ? opt.value() : m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
-      if(key != "") {
-        m_option_cache[key] = val;
-        m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
-      }
+      PrintOptionValue(key, val);
       return val;
     }
     catch(std::runtime_error const& ex) {
@@ -31,23 +28,20 @@ namespace iguana {
       throw std::runtime_error("config file parsing issue");
     }
   }
-  template int Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path);
-  template double Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path);
-  template std::string Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path);
+  template int Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template double Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template std::string Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
-  std::vector<OPTION_TYPE> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path)
+  std::vector<OPTION_TYPE> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const
   {
     try {
       CompleteOptionNodePath(key, node_path);
       auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
       auto val = opt ? opt.value() : m_yaml_config->GetVector<OPTION_TYPE>(node_path);
-      if(key != "") {
-        m_option_cache[key] = val;
-        m_log->Debug("CACHED OPTION: {:>20} = {}", key, PrintOptionValue(key));
-      }
+      PrintOptionValue(key, val);
       return val;
     }
     catch(std::runtime_error const& ex) {
@@ -55,23 +49,23 @@ namespace iguana {
       throw std::runtime_error("config file parsing issue");
     }
   }
-  template std::vector<int> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path);
-  template std::vector<double> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path);
-  template std::vector<std::string> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path);
+  template std::vector<int> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template std::vector<double> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template std::vector<std::string> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
-  std::set<OPTION_TYPE> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path)
+  std::set<OPTION_TYPE> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const
   {
     auto val_vec = GetOptionVector<OPTION_TYPE>(key, node_path);
     std::set<OPTION_TYPE> val_set;
     std::copy(val_vec.begin(), val_vec.end(), std::inserter(val_set, val_set.end()));
     return val_set;
   }
-  template std::set<int> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path);
-  template std::set<double> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path);
-  template std::set<std::string> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path);
+  template std::set<int> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template std::set<double> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template std::set<std::string> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -84,7 +78,7 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  std::unique_ptr<YAMLReader>& Algorithm::GetConfig()
+  std::unique_ptr<YAMLReader> const& Algorithm::GetConfig() const
   {
     return m_yaml_config;
   }
@@ -154,34 +148,37 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  std::string Algorithm::PrintOptionValue(std::string const& key) const
+  void Algorithm::PrintOptionValue(std::string const& key, int const& val, Logger::Level const level, std::string_view prefix) const
   {
-    if(auto it{m_option_cache.find(key)}; it != m_option_cache.end()) {
-      auto val = it->second;
-      if(auto const valPtr(std::get_if<int>(&val)); valPtr)
-        return fmt::format("{} [{}]", *valPtr, "int");
-      else if(auto const valPtr(std::get_if<double>(&val)); valPtr)
-        return fmt::format("{} [{}]", *valPtr, "double");
-      else if(auto const valPtr(std::get_if<std::string>(&val)); valPtr)
-        return fmt::format("{:?} [{}]", *valPtr, "string");
-      else if(auto const valPtr(std::get_if<std::vector<int>>(&val)); valPtr)
-        return fmt::format("({}) [{}]", fmt::join(*valPtr, ", "), "vector<int>");
-      else if(auto const valPtr(std::get_if<std::vector<double>>(&val)); valPtr)
-        return fmt::format("({}) [{}]", fmt::join(*valPtr, ", "), "vector<double>");
-      else if(auto const valPtr(std::get_if<std::vector<std::string>>(&val)); valPtr) {
-        std::vector<std::string> valQuoted;
-        for(auto const& s : *valPtr)
-          valQuoted.push_back(fmt::format("{:?}", s));
-        return fmt::format("({}) [{}]", fmt::join(valQuoted, ", "), "vector<string>");
-      }
-      else {
-        m_log->Error("option '{}' type has no printer defined in Algorithm::PrintOptionValue", key);
-        return "UNKNOWN";
-      }
-    }
-    else
-      m_log->Error("option '{}' not found by Algorithm::PrintOptionValue", key);
-    return "UNKNOWN";
+    m_log->Print(level, "{}: {:>20} = {} [int]", prefix, key, val);
+  }
+
+  void Algorithm::PrintOptionValue(std::string const& key, double const& val, Logger::Level const level, std::string_view prefix) const
+  {
+    m_log->Print(level, "{}: {:>20} = {} [double]", prefix, key, val);
+  }
+
+  void Algorithm::PrintOptionValue(std::string const& key, std::string const& val, Logger::Level const level, std::string_view prefix) const
+  {
+    m_log->Print(level, "{}: {:>20} = {:?} [string]", prefix, key, val);
+  }
+
+  void Algorithm::PrintOptionValue(std::string const& key, std::vector<int> const& val, Logger::Level const level, std::string_view prefix) const
+  {
+    m_log->Print(level, "{}: {:>20} = ({}) [std::vector<int>]", prefix, key, fmt::join(val, ", "));
+  }
+
+  void Algorithm::PrintOptionValue(std::string const& key, std::vector<double> const& val, Logger::Level const level, std::string_view prefix) const
+  {
+    m_log->Print(level, "{}: {:>20} = ({}) [std::vector<double>]", prefix, key, fmt::join(val, ", "));
+  }
+
+  void Algorithm::PrintOptionValue(std::string const& key, std::vector<std::string> const& val, Logger::Level const level, std::string_view prefix) const
+  {
+    std::vector<std::string> val_quoted;
+    for(auto const& s : val)
+      val_quoted.push_back(fmt::format("{:?}", s));
+    m_log->Print(level, "{}: {:>20} = ({}) [std::vector<string>]", prefix, key, fmt::join(val_quoted, ", "));
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -194,7 +191,7 @@ namespace iguana {
     else {
       try {
         auto& result = banks.at(idx);
-        if(expected_bank_name != "" && result.getSchema().getName() != expected_bank_name)
+        if(!expected_bank_name.empty() && result.getSchema().getName() != expected_bank_name)
           m_log->Error("expected input bank '{}' at index={}; got bank named '{}'", expected_bank_name, idx, result.getSchema().getName());
         else
           return result;
@@ -244,7 +241,7 @@ namespace iguana {
   void Algorithm::ShowBanks(hipo::banklist& banks, std::string_view message, Logger::Level const level) const
   {
     if(m_log->GetLevel() <= level) {
-      if(message != "")
+      if(!message.empty())
         m_log->Print(level, message);
       for(auto& bank : banks)
         bank.show();
@@ -256,7 +253,7 @@ namespace iguana {
   void Algorithm::ShowBank(hipo::bank& bank, std::string_view message, Logger::Level const level) const
   {
     if(m_log->GetLevel() <= level) {
-      if(message != "")
+      if(!message.empty())
         m_log->Print(level, message);
       bank.show();
     }
@@ -274,7 +271,13 @@ namespace iguana {
         return std::get<OPTION_TYPE>(it->second);
       }
       catch(std::bad_variant_access const& ex) {
-        m_log->Warn("user called SetOption for option '{}' and set it to '{}', which is the wrong type; IGNORING", key, PrintOptionValue(key));
+        auto printer = [&key, this](auto const& v) {
+          m_log->Error("wrong type used in SetOption call for option {:?}; using its default value instead", key);
+          PrintOptionValue(key, v, Logger::Level::error, "  USER");
+          if(m_log->GetLevel() > Logger::Level::debug)
+            m_log->Error("to see the actual option values used (and their types), set the log level to 'debug' or lower");
+        };
+        std::visit(printer, it->second);
       }
     }
     return {};

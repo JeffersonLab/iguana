@@ -1,6 +1,7 @@
 #include <getopt.h>
 
 #include "TestAlgorithm.h"
+#include "TestMultithreading.h"
 #include "TestConfig.h"
 #include "TestLogger.h"
 #include "TestValidator.h"
@@ -13,6 +14,9 @@ int main(int argc, char** argv)
   int num_events         = 10;
   std::string algo_name  = "";
   int test_num           = 0;
+  int num_threads        = 0;
+  std::string concurrency_model = "";
+  bool vary_run          = false;
   std::string output_dir = "";
   bool verbose           = false;
   std::vector<std::string> bank_names;
@@ -25,6 +29,7 @@ int main(int argc, char** argv)
     fmt::print(stderr, "\nUSAGE: {} [COMMAND] [OPTIONS]...\n", exe);
     fmt::print("\n  COMMANDS:\n\n");
     fmt::print("    {:<20} {}\n", "algorithm", "call `Run` on an algorithm");
+    fmt::print("    {:<20} {}\n", "multithreading", "call `Run` on an algorithm, multithreaded");
     fmt::print("    {:<20} {}\n", "validator", "run an algorithm's validator");
     fmt::print("    {:<20} {}\n", "unit", "call `Test` on an algorithm, for unit tests");
     fmt::print("    {:<20} {}\n", "config", "test config file parsing");
@@ -84,6 +89,23 @@ int main(int argc, char** argv)
          {
            fmt::print("    {:<20} {}\n", "-t TESTNUM", "test number");
          }},
+        {"j", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-j NUM_THREADS", "number of threads to run");
+           fmt::print("    {:<20} - if = 0: run with `std::thread::hardware_concurrency()` threads\n", "");
+           fmt::print("    {:<20} - if > 0: run with NUM_THREADS threads\n", "");
+           fmt::print("    {:<20} default: {}\n", "", num_threads);
+         }},
+        {"m", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-m CONCURRENCY_MODEL", "concurrency model");
+           fmt::print("    {:<20} 'memoize' is currently the only option\n", "");
+         }},
+        {"V", [&]()
+         {
+           fmt::print("    {:<20} {}\n", "-V", "randomly vary the run number");
+           fmt::print("    {:<20} this is for testing run-dependent configuration thread safety\n", "");
+         }},
         {"o", [&]()
          {
            fmt::print("    {:<20} {}\n", "-o OUTPUT_DIR", fmt::format("if specified, {} output will write to this directory;", command));
@@ -96,6 +118,9 @@ int main(int argc, char** argv)
     std::vector<std::string> available_options;
     if(command == "algorithm" || command == "unit") {
       available_options = {"f", "n", "a-algo", "b", "p"};
+    }
+    if(command == "multithreading") {
+      available_options = {"f", "n", "a-algo", "b", "p", "j", "m", "V"};
     }
     else if(command == "validator") {
       available_options = {"f", "n", "a-vdor", "b", "o"};
@@ -127,7 +152,7 @@ int main(int argc, char** argv)
 
   // parse option arguments
   int opt;
-  while((opt = getopt(argc, argv, "hf:n:a:b:p:t:o:v|")) != -1) {
+  while((opt = getopt(argc, argv, "hf:n:a:b:p:t:j:m:Vo:v|")) != -1) {
     switch(opt) {
     case 'h':
       return UsageOptions(2);
@@ -148,6 +173,17 @@ int main(int argc, char** argv)
       break;
     case 't':
       test_num = std::stoi(optarg);
+      break;
+    case 'j':
+      num_threads = std::stoi(optarg);
+      if(num_threads == 0)
+        num_threads = std::thread::hardware_concurrency();
+      break;
+    case 'm':
+      concurrency_model = std::string(optarg);
+      break;
+    case 'V':
+      vary_run = true;
       break;
     case 'o':
       output_dir = std::string(optarg);
@@ -180,12 +216,17 @@ int main(int argc, char** argv)
   fmt::print("  {:>20} = {}\n", "banks", fmt::join(bank_names, ", "));
   fmt::print("  {:>20} = {}\n", "prerequisite_algos", fmt::join(prerequisite_algos, ", "));
   fmt::print("  {:>20} = {}\n", "test_num", test_num);
+  fmt::print("  {:>20} = {}\n", "num_threads", num_threads);
+  fmt::print("  {:>20} = {}\n", "concurrency_model", concurrency_model);
+  fmt::print("  {:>20} = {}\n", "vary_run", vary_run);
   fmt::print("  {:>20} = {}\n", "output_dir", output_dir);
   fmt::print("\n");
 
   // run test
   if(command == "algorithm" || command == "unit")
     return TestAlgorithm(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, verbose);
+  if(command == "multithreading")
+    return TestMultithreading(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, num_threads, concurrency_model, vary_run, verbose);
   else if(command == "validator")
     return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, verbose);
   else if(command == "config")

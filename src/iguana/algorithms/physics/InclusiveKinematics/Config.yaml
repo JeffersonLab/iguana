@@ -4,9 +4,9 @@ physics::InclusiveKinematics:
     - default:
       beam_energy: 10.6
       beam_direction: [ 0.0, 0.0, 1.0 ]
-      beam_particle: electron
       target_particle: proton
 
   method:
+    beam_particle: electron
     reconstruction: scattered_lepton
     lepton_finder: highest_energy_FD_trigger

@@ -23,6 +23,7 @@ The following sections (🟩) list the dependencies and how to obtain them.
 > git log --tags --decorate --simplify-by-decoration --oneline     # list all the tags (latest first)
 > git checkout 1.0.0                                               # checkout the tag '1.0.0'
 > ```
+<!--`-->
 
 ### 🟩 `meson`: Build system used by Iguana
 <https://mesonbuild.com/>
@@ -146,6 +147,7 @@ meson install   # installs Iguana to your prefix (build option 'prefix')
 > meson setup --wipe /path/to/iguana-source
 > ```
 > This will preserve your build options; then try to rebuild.
+<!--`-->
 
 
 <a name="env"></a>

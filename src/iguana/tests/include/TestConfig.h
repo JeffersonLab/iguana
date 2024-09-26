@@ -104,9 +104,6 @@ inline int TestConfig(int test_num, bool verbose)
     assert((algo->GetOptionVector<int>("t2v2", {"tree2", "vector2"}) == std::vector<int>{3, -4, 5}));
     assert((algo->GetOptionVector<std::string>("vector1", {"vector1"}) == std::vector<std::string>{"bee"}));
     assert((algo->GetOptionVector<std::string>("vector1") == std::vector<std::string>{"bee"}));
-    // options are immutable; if cached once, they cannot be changed:
-    assert((algo->GetOptionVector<std::string>("vector1", {"tree2", "tree2", "tree3", "vector1"}) == std::vector<std::string>{"bee"})); // != {"gecko", "snake"}
-    assert((algo->GetOptionVector<std::string>("t2t2t3v1") == std::vector<std::string>{"gecko", "snake"}));
     break;
   }
 
