@@ -36,7 +36,10 @@ namespace iguana::physics {
   /// @end_doc
   ///
   /// @begin_doc_config
-  /// @config_param{initial_state | dict | description of the initial state}
+  /// @config_param{initial_state:beam_energy | double | beam energy [GeV]}
+  /// @config_param{initial_state:beam_direction | list[double] | beam direction vector}
+  /// @config_param{initial_state:target_particle | string | target particle}
+  /// @config_param{method:beam_particle | string | beam particle}
   /// @config_param{method:reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available}
   /// @config_param{method:lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available}
   /// @end_doc
