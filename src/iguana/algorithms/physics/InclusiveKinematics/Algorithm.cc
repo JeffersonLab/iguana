@@ -191,7 +191,7 @@ namespace iguana::physics {
     }
     if(target_mass < 0) {
       m_log->Error("Unknown target particle {:?}", target_particle);
-      throw std::runtime_error("Start failed");
+      throw std::runtime_error("Reload failed");
     }
     double target_px = 0.0;
     double target_py = 0.0;
@@ -212,7 +212,7 @@ namespace iguana::physics {
     }
     else {
       m_log->Error("Beam direction magnitude is not > 0");
-      throw ::std::runtime_error("Start failed");
+      throw ::std::runtime_error("Reload failed");
     }
 
     // save the configuration
