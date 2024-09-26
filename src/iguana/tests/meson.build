@@ -62,7 +62,7 @@ foreach algo : algo_dict
           'multithreading',
           '-j', get_option('test_multithreading').to_string(),
           '-m', concurrency_model,
-          # '-V', # vary run number
+          '-V', # vary run number
         ]
         test(
           '-'.join(['multithreading', concurrency_model, test_name_algo]),
