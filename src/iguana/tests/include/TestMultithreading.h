@@ -74,11 +74,11 @@ inline int TestMultithreading(
     algo_name,
     prerequisite_algos,
     bank_names,
-    /*vary_run,*/
+    vary_run,
     verbose,
-    /*num_events_per_thread,*/
-    num_events_per_frame/*,
-    run_config_bank_idx*/
+    num_events_per_thread,
+    num_events_per_frame,
+    run_config_bank_idx
   ](int order) {
 
     // fill a frame
@@ -103,56 +103,55 @@ inline int TestMultithreading(
     // start the algorithm
     seq.Start(banks);
 
-    // // loop over frames
-    // int nProcessed = 0;
-    // while(nProcessed < num_events_per_thread || num_events_per_thread == 0) {
-    //   stream.pull(events);
-    //
-    //   // loop over events in this frame
-    //   int nNonEmpty = 0;
-    //   for(auto& event : events) {
-    //     if(event.getSize() > 16) {
-    //       nNonEmpty++;
-    //       nProcessed++;
-    //
-    //       // read the banks
-    //       for(auto& bank : banks)
-    //         event.read(bank);
-    //
-    //       // occasionally vary the run number; so far, algorithms with data-dependent configuration
-    //       // parameters have dependence on run number, so this variation aims to improve thread
-    //       // sanitizer test coverage
-    //       if(vary_run && run_config_bank_idx.has_value()) {
-    //         // === rapid variation ===
-    //         /*
-    //         banks[run_config_bank_idx.value()].putInt("run", 0, std::rand() % 3000);
-    //         */
-    //         // === slower variation ===
-    //         if(std::rand() % 10 == 0) { // randomly increase or decrease the run number
-    //           auto runnum = banks[run_config_bank_idx.value()].getInt("run", 0);
-    //           runnum += (std::rand() % 2 == 0) ? 1000 : -1000;
-    //           runnum = std::max(runnum, 0); // prevent negative run number
-    //           banks[run_config_bank_idx.value()].putInt("run", 0, runnum);
-    //         }
-    //         else if(std::rand() % 10 == 1) {
-    //           banks[run_config_bank_idx.value()].putInt("run", 0, 1); // set the runnum to '1'
-    //         }
-    //       }
-    //
-    //       // run the iguana algorithm
-    //       seq.Run(banks);
-    //     }
-    //   }
-    //   if(nNonEmpty == 0)
-    //     break;
-    // }
+    // loop over frames
+    int nProcessed = 0;
+    while(nProcessed < num_events_per_thread || num_events_per_thread == 0) {
+      stream.pull(events);
+
+      // loop over events in this frame
+      int nNonEmpty = 0;
+      for(auto& event : events) {
+        if(event.getSize() > 16) {
+          nNonEmpty++;
+          nProcessed++;
+
+          // read the banks
+          for(auto& bank : banks)
+            event.read(bank);
+
+          // occasionally vary the run number; so far, algorithms with data-dependent configuration
+          // parameters have dependence on run number, so this variation aims to improve thread
+          // sanitizer test coverage
+          if(vary_run && run_config_bank_idx.has_value()) {
+            // === rapid variation ===
+            /*
+            banks[run_config_bank_idx.value()].putInt("run", 0, std::rand() % 3000);
+            */
+            // === slower variation ===
+            if(std::rand() % 10 == 0) { // randomly increase or decrease the run number
+              auto runnum = banks[run_config_bank_idx.value()].getInt("run", 0);
+              runnum += (std::rand() % 2 == 0) ? 1000 : -1000;
+              runnum = std::max(runnum, 0); // prevent negative run number
+              banks[run_config_bank_idx.value()].putInt("run", 0, runnum);
+            }
+            else if(std::rand() % 10 == 1) {
+              banks[run_config_bank_idx.value()].putInt("run", 0, 1); // set the runnum to '1'
+            }
+          }
+
+          // run the iguana algorithm
+          seq.Run(banks);
+        }
+      }
+      if(nNonEmpty == 0)
+        break;
+    }
 
     // stop the algorithm
     seq.Stop();
-    //
-    // seq.GetLog()->Info("nProcessed = {}", nProcessed);
-    // return nProcessed;
-    return 1;
+
+    seq.GetLog()->Info("nProcessed = {}", nProcessed);
+    return nProcessed;
   };
 
   // run
