@@ -3,9 +3,6 @@ project(
   'cpp',
   meson_version: '>=1.2',
   version: 'iguana subproject',
-  default_options: {
-    'cpp_std': 'c++11',
-  },
 )
 
 # check if RCDB is installed
