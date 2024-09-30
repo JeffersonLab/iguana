@@ -34,6 +34,8 @@ GENERAL_PACKAGE_LIST_LINUX=(
   openssl
   gsl
   davix
+  ### RCDB dependencies
+  mariadb
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
@@ -56,6 +58,8 @@ GENERAL_PACKAGE_LIST_MACOS=(
   libxext
   openssl
   gsl
+  ### RCDB dependencies
+  mariadb # NOTE: could also use 'mysql'
 )
 IGUANA_PACKAGE_LIST_MACOS=(
   fmt

@@ -351,6 +351,19 @@ jobs:
       - name: set ROOT environment
         if: ${{ matrix.id != 'noROOT' }}
         run: iguana_src/.github/source-ROOT.sh root
+      ###### RCDB
+      - name: get RCDB
+        uses: actions/checkout@v4
+        with:
+          repository: JeffersonLab/rcdb
+          ref: main
+          path: rcdb_src
+      - name: set RCDB env
+        id: rcdb_env
+        working-directory: rcdb_src
+        run: |
+          echo RCDB_HOME=$(pwd) >> $GITHUB_ENV
+          echo ver=$(git rev-parse HEAD | cut -c1-7) >> $GITHUB_OUTPUT
       ###### summarize dependencies
       - name: summarize dependencies
         if: ${{ matrix.id == 'cpp' }}
@@ -359,6 +372,7 @@ jobs:
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | ${{ env.hipo_ref }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`rcdb\` | commit hash \`${{ steps.rcdb_env.outputs.ver }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| \`root\` | $(root --version 2>&1 | head -n1) |" >> $GITHUB_STEP_SUMMARY
           echo "| \`ruby\` | $(ruby --version) |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
@@ -368,6 +382,7 @@ jobs:
           meson setup iguana_build iguana_src            \
             --prefix=$(pwd)/iguana                       \
             --pkg-config-path=$(pwd)/hipo/lib/pkgconfig  \
+            -Drcdb:home=$RCDB_HOME                       \
             -Dwerror=true                                \
             -Dinstall_examples=true                      \
             -Dtest_data_file=$(pwd)/test_data.hipo       \

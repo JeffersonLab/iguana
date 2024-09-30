@@ -2,7 +2,10 @@ project(
   'rcdb',
   'cpp',
   meson_version: '>=1.2',
-  version: 'iguana subproject'
+  version: 'iguana subproject',
+  default_options: {
+    'cpp_std': 'c++11',
+  },
 )
 
 # check if RCDB is installed
@@ -24,14 +27,17 @@ endif
 # - looking for mysql here, since clas12root uses this
 # - prioritizing mariadb, an open source fork of mysql
 if use_rcdb
-  rcdb_backend_dep = dependency('mariadb', required: false)
-  if not rcdb_backend_dep.found()
-    message('"mariadb" not found... looking for "mysql" instead...')
-    rcdb_backend_dep = dependency('mysql', required: false)
-    if not rcdb_backend_dep.found()
-      warning('neither "mariadb" nor "mysql" were found, so RCDB will not be used in this build')
-      use_rcdb = false
+  backend_list = ['mariadb', 'mysql', 'mysqlclient']
+  foreach backend_name : backend_list
+    rcdb_backend_dep = dependency(backend_name, required: false)
+    if rcdb_backend_dep.found()
+      message(f'using "@backend_name@" for the RCDB backend')
+      break
     endif
+  endforeach
+  if not rcdb_backend_dep.found()
+    warning('none of the backends (' + ', '.join(backend_list) + ') were found, so RCDB will not be used in this build')
+    use_rcdb = false
   endif
 endif
 
