@@ -5,42 +5,46 @@ project(
   version: 'iguana subproject'
 )
 
+# check if RCDB is installed
 use_rcdb = false
 rcdb_home = get_option('home')
-includedir = get_option('home') / 'cpp' / 'include'
-
+rcdb_includedir = get_option('home') / 'cpp' / 'include'
 if get_option('home') != ''
   fs = import('fs')
-  if fs.is_dir(includedir)
+  if fs.is_dir(rcdb_includedir)
     use_rcdb = true
   else
-    warning(f'RCDB include directory "@includedir@" does not exist; RCDB will not be used')
+    warning(f'RCDB include directory "@rcdb_includedir@" does not exist, so RCDB will not be used; are you sure your build option "rcdb:home" is correct?')
   endif
 else
   warning('RCDB not found; set build option "rcdb:home" to the RCDB installation (e.g., "$RCDB_HOME") if you want to use it, but it is not strictly required.')
 endif
 
-mariadb_dep = dependency('mariadb', required: use_rcdb)
-# sqlite_dep = dependency('sqlite3', required: use_rcdb)
-#
-#
-### clas12root consumes rcdb using mysql, NOT sqlite
-#
-#
+# RCDB dependencies: either mysql or sqlite
+# - looking for mysql here, since clas12root uses this
+# - prioritizing mariadb, an open source fork of mysql
+if use_rcdb
+  rcdb_backend_dep = dependency('mariadb', required: false)
+  if not rcdb_backend_dep.found()
+    message('"mariadb" not found... looking for "mysql" instead...')
+    rcdb_backend_dep = dependency('mysql', required: false)
+    if not rcdb_backend_dep.found()
+      warning('neither "mariadb" nor "mysql" were found, so RCDB will not be used in this build')
+      use_rcdb = false
+    endif
+  endif
+endif
 
 rcdb_dep = not use_rcdb ? dependency('', required: false) : declare_dependency(
-  # RCDB lacks a public version number, use its prefix instead to at least
-  # inform the user which RCDB installation is used; alternatively, we could
-  # use `module info-loaded rcdb` on ifarm, but it's better to use a
-  # platform-independent approach
-  version: get_option('home'),
+  version: get_option('home'), # RCDB lacks an easily accessible version number; instead just use the prefix
   variables: {
     'name': meson.project_name(),
-    'includedir': includedir,
+    'includedir': rcdb_includedir,
   },
   include_directories: include_directories(
-    includedir,
+    rcdb_includedir,
     is_system: true, # suppress consumer warnings
   ),
-  dependencies: [ mariadb_dep ],
+  compile_args: ['-DRCDB_MYSQL' ],
+  dependencies: [ rcdb_backend_dep ],
 )

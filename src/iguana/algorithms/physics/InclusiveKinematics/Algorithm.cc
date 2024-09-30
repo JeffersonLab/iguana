@@ -181,7 +181,7 @@ namespace iguana::physics {
 
     // get the beam energy //////////////////////////////////////////////////////////
     auto beam_energy = m_rcdb->GetBeamEnergy(runnum);
-    m_log->Error("Beam energy = {}", beam_energy);
+    m_log->Warn("Run = {}, Beam energy = {}", runnum, beam_energy);
     /////////////////////////////////////////////////////////////////////////////////
 
     // parse config params

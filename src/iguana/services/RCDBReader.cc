@@ -14,15 +14,17 @@ namespace iguana {
 
   double RCDBReader::GetBeamEnergy(int const runnum)
   {
+    double const default_value = 10.6;
 #ifdef USE_RCDB
     auto cnd = m_rcdb_connection->GetCondition(runnum, "beam_energy");
-    if(!cnd)
-      throw std::runtime_error(fmt::format("Failed to find beam energy from RCDB for run {}", runnum));
-    return cnd->ToDouble();
+    if(!cnd) {
+      m_log->Error("Failed to find beam energy from RCDB for run {}; assuming it is {} GeV", runnum, default_value);
+      return default_value;
+    }
+    return cnd->ToDouble() / 1e3; // convert [MeV] -> [GeV]
 #else
-    double def = 10.6;
-    m_log->Warn("RCDB dependency not found; GetBeamEnergy will return default value of {} GeV.", def);
-    return def;
+    std::call_once(m_error_once, [&]() { m_log->Error("RCDB dependency not found; RCDBReader::GetBeamEnergy will return the default value of {} GeV.", default_value); });
+    return default_value;
 #endif
   }
 
