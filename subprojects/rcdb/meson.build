@@ -17,10 +17,11 @@ if get_option('home') != ''
     warning(f'RCDB include directory "@includedir@" does not exist; RCDB will not be used')
   endif
 else
-  warning('RCDB not found; either use build option "rcdb:home" or set environment variable "$RCDB_HOME"')
+  warning('RCDB not found; set build option "rcdb:home" to the RCDB installation (e.g., "$RCDB_HOME") if you want to use it, but it is not strictly required.')
 endif
 
-sqlite_dep = dependency('sqlite3', required: use_rcdb)
+mariadb_dep = dependency('mariadb', required: use_rcdb)
+# sqlite_dep = dependency('sqlite3', required: use_rcdb)
 #
 #
 ### clas12root consumes rcdb using mysql, NOT sqlite
@@ -41,5 +42,5 @@ rcdb_dep = not use_rcdb ? dependency('', required: false) : declare_dependency(
     includedir,
     is_system: true, # suppress consumer warnings
   ),
-  dependencies: [ sqlite_dep ],
+  dependencies: [ mariadb_dep ],
 )

@@ -28,12 +28,7 @@ pkg = import('pkgconfig')
 fs = import('fs')
 
 # build subprojects
-rcdb_subproj = subproject(
-  'rcdb',
-  default_options: {
-    'home': run_command('meson' / 'get-env.py', 'RCDB_HOME', check: false).stdout().strip(),
-  }
-)
+rcdb_subproj = subproject('rcdb')
 
 # resolve dependencies
 prog_minver = find_program('meson' / 'minimum-version.sh')
@@ -194,6 +189,8 @@ project_test_env.set(
 # set preprocessor macros
 add_project_arguments(
   '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etc + '"',
+  '-DDRCDB_MYSQL=1', # FIXME: not really the best place for this...
+  '-DDRCDB_SQLITE=0', # FIXME: not really the best place for this...
   language: [ 'cpp' ],
 )
 

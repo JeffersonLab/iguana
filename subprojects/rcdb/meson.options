@@ -1,1 +1,1 @@
-option('home', type: 'string', value: '', description: 'Location of RCDB installation; if empty, use `$RCDB_HOME`')
+option('home', type: 'string', value: '', description: 'Location of RCDB installation; if empty, RCDB will not be included')
