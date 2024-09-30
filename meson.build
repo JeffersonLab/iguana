@@ -189,8 +189,6 @@ project_test_env.set(
 # set preprocessor macros
 add_project_arguments(
   '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etc + '"',
-  '-DDRCDB_MYSQL=1', # FIXME: not really the best place for this...
-  '-DDRCDB_SQLITE=0', # FIXME: not really the best place for this...
   language: [ 'cpp' ],
 )
 
