@@ -50,12 +50,6 @@ algo_dict = [
     },
   },
   {
-    'name': 'clas12::LorentzTransformer',
-    'algorithm_needs_ROOT': true,
-    'has_validator': false,
-    'test_args': {'banks': [ 'REC::Particle' ]},
-  },
-  {
     'name': 'clas12::FTEnergyCorrection',
     'has_config': false,
     'has_validator': false,
