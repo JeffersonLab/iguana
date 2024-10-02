@@ -7,6 +7,8 @@ actions:
     inputs:
       - name: runnum
         type: int
+      - name: beam_energy
+        type: double
     outputs:
       - type: concurrent_key_t
         cast: int
