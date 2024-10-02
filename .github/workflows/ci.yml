@@ -355,8 +355,8 @@ jobs:
       - name: get RCDB
         uses: actions/checkout@v4
         with:
-          repository: c-dilks/rcdb ### FIXME ### FIXME ### FIXME ### FIXME ### FIXME ### FIXME
-          ref: fix-ptr_fun-deprecation ### FIXME ### FIXME ### FIXME ### FIXME ### FIXME ### FIXME
+          repository: JeffersonLab/rcdb
+          ref: main
           path: rcdb_src
       - name: set RCDB env
         id: rcdb_env
