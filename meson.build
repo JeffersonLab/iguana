@@ -59,7 +59,11 @@ prog_ruby = find_program(
   version: '>=' + run_command(prog_minver, 'ruby', check: true).stdout().strip(),
   required: use_chameleon,
 )
-rcdb_dep = dependency('rcdb', fallback: ['rcdb', 'rcdb_dep'], required: false)
+rcdb_dep = dependency(
+  'rcdb',
+  fallback: ['rcdb', 'rcdb_dep'],
+  required: get_option('z_require_rcdb'),
+)
 
 # list of dependencies
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list

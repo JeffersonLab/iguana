@@ -59,7 +59,7 @@ GENERAL_PACKAGE_LIST_MACOS=(
   openssl
   gsl
   ### RCDB dependencies
-  mariadb # NOTE: could also use 'mysql'
+  mariadb
 )
 IGUANA_PACKAGE_LIST_MACOS=(
   fmt

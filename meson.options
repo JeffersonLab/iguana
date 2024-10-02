@@ -16,3 +16,4 @@ option('test_multithreading',      type: 'integer', value: 4, min: 0, descriptio
 # expert options: the defaults should be reasonable for a local installation; different values may be preferred for installation in common areas
 option('z_install_envfile',     type: 'boolean', value: true,  description: 'Install a sourceable environment variable file')
 option('z_require_root',        type: 'boolean', value: false, description: 'Fail if ROOT is not found')
+option('z_require_rcdb',        type: 'boolean', value: false, description: 'Fail if RCDB is not found')
