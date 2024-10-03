@@ -32,6 +32,9 @@ namespace iguana::physics {
     i_qz     = result_schema.getEntryOrder("qz");
     i_qE     = result_schema.getEntryOrder("qE");
 
+    // instantiate RCDB reader
+    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName());
+
     // parse config file
     ParseYAMLConfig();
     o_runnum         = ConcurrentParamFactory::Create<int>();
@@ -152,32 +155,32 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  concurrent_key_t InclusiveKinematics::PrepareEvent(int const runnum) const
+  concurrent_key_t InclusiveKinematics::PrepareEvent(int const runnum, double const beam_energy) const
   {
     m_log->Trace("calling PrepareEvent({})", runnum);
     if(o_runnum->NeedsHashing()) {
       std::hash<int> hash_ftn;
       auto hash_key = hash_ftn(runnum);
       if(!o_runnum->HasKey(hash_key))
-        Reload(runnum, hash_key);
+        Reload(runnum, beam_energy, hash_key);
       return hash_key;
     } else {
       if(o_runnum->IsEmpty() || o_runnum->Load(0) != runnum)
-        Reload(runnum, 0);
+        Reload(runnum, beam_energy, 0);
       return 0;
     }
   }
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void InclusiveKinematics::Reload(int const runnum, concurrent_key_t key) const
+  void InclusiveKinematics::Reload(int const runnum, double const user_beam_energy, concurrent_key_t key) const
   {
     std::lock_guard<std::mutex> const lock(m_mutex);
-    m_log->Trace("-> calling Reload({}, {})", runnum, key);
+    m_log->Trace("-> calling Reload({}, {}, {})", runnum, user_beam_energy, key);
     o_runnum->Save(runnum, key);
 
     // parse config params
-    auto beam_energy     = GetOptionScalar<double>("beam_energy", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_energy"});
+    auto beam_energy     = user_beam_energy < 0 ? m_rcdb->GetBeamEnergy(runnum) : user_beam_energy;
     auto beam_direction  = GetOptionVector<double>("beam_direction", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_direction"});
     auto target_particle = GetOptionScalar<std::string>("target_particle", {"initial_state", GetConfig()->InRange("runs", runnum), "target_particle"});
 

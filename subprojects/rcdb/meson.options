@@ -1,0 +1,1 @@
+option('home', type: 'string', value: '', description: 'Location of RCDB installation; if empty, RCDB-dependent code will not be included')

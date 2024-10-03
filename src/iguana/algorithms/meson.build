@@ -134,8 +134,6 @@ foreach algo : algo_dict
         ],
       )
       algo_bind_c_sources += tgt[0]
-    else
-      warning('Algorithm "' + algo_name + '" has no bindings')
     endif
 
   else
@@ -154,8 +152,6 @@ foreach algo : algo_dict
         vdor_headers += algo_dir / src_file
       endforeach
     endif
-  else
-    warning('Algorithm "' + algo_name + '" has no validator')
   endif
 
 endforeach

@@ -3,6 +3,7 @@
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/ConcurrentParam.h"
+#include "iguana/services/RCDBReader.h"
 
 namespace iguana::physics {
 
@@ -57,8 +58,9 @@ namespace iguana::physics {
       /// @action_function{reload} prepare the event
       /// @when_to_call{for each event}
       /// @param runnum the run number
+      /// @param beam_energy the beam energy; if negative (the default), RCDB will be used to get the beam energy from `runnum`
       /// @returns the key to be used in `::ComputeFromLepton`
-      concurrent_key_t PrepareEvent(int const runnum) const;
+      concurrent_key_t PrepareEvent(int const runnum, double const beam_energy = -1) const;
 
       /// @action_function{scalar creator} compute kinematics from the scattered lepton.
       /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)
@@ -84,7 +86,7 @@ namespace iguana::physics {
       /// @returns the bank row of the scattered lepton, or `-1` if not found
       int FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const;
 
-      void Reload(int const runnum, concurrent_key_t key) const;
+      void Reload(int const runnum, double const user_beam_energy, concurrent_key_t key) const;
 
       // banklist indices
       hipo::banklist::size_type b_particle;
@@ -114,6 +116,8 @@ namespace iguana::physics {
       enum method_lepton_finder { highest_energy_FD_trigger };
       method_reconstruction o_method_reconstruction;
       method_lepton_finder o_method_lepton_finder;
+
+      std::unique_ptr<RCDBReader> m_rcdb;
   };
 
 }

@@ -70,6 +70,7 @@ msg "meson setup"
 meson setup $buildDir $sourceDir \
   --native-file=$nativeFile      \
   --prefix=$installDir           \
+  -Drcdb:home=$RCDB_HOME         \
   -Dtest_data_file=$testFile
 msg "meson install"
 meson install -C $buildDir

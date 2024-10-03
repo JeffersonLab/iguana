@@ -34,6 +34,8 @@ GENERAL_PACKAGE_LIST_LINUX=(
   openssl
   gsl
   davix
+  ### RCDB dependencies
+  mariadb
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
@@ -56,6 +58,8 @@ GENERAL_PACKAGE_LIST_MACOS=(
   libxext
   openssl
   gsl
+  ### RCDB dependencies
+  mariadb
 )
 IGUANA_PACKAGE_LIST_MACOS=(
   fmt
@@ -139,6 +143,8 @@ case $runner in
     ### link homebrew's gcc, for gfortran
     brew unlink gcc
     brew link gcc
+    ### kluge ssl linker issue (see, e.g., https://github.com/brianmario/mysql2/issues/795)
+    echo "LIBRARY_PATH=${LIBRARY_PATH:+${LIBRARY_PATH}:}$(pkg-config libssl --variable libdir)" | tee -a $GITHUB_ENV
     ;;
 
   *)

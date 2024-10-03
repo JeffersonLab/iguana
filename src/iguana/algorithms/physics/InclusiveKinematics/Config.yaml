@@ -1,8 +1,7 @@
 physics::InclusiveKinematics:
 
-  initial_state: # FIXME: add run ranges
+  initial_state:
     - default:
-      beam_energy: 10.6
       beam_direction: [ 0.0, 0.0, 1.0 ]
       target_particle: proton
 
