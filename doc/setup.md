@@ -74,11 +74,9 @@ cmake --install build-hipo
 <https://github.com/JeffersonLab/rcdb>
 - RCDB is optional, but needed for algorithms that use, _e.g._, the beam energy
 - You do not need to compile RCDB, just clone the repository
-
-> [!NOTE]
-> As of July 2024, the most recent tagged version of RCDB is quite far behind
-> the current main branch, so you may just use the latest main branch version
-> (`master`).
+- You may need to use the latest version on the main branch, rather than the most recent tag
+- Iguana uses `mysql` for RCDB; you may need to install `mariadb` or `mysql` client on your system
+  ([`mariadb` is an open source fork of `mysql`](https://mariadb.org/))
 
 <a name="building"></a>
 ## 🟠 Building and Installing
