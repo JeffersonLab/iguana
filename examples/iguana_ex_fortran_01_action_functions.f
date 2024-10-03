@@ -190,9 +190,10 @@ c       algorithm's configuration for this event; the resulting
 c       'key_vz_filter' must be passed to the action function;
         call iguana_clas12_zvertexfilter_prepareevent(
      &      algo_vz_filter, runnum(1), key_vz_filter)
-c       similarly for the inclusive kinematics algorithm
+c       similarly for the inclusive kinematics algorithm; use '-1'
+c       for the beam energy, so RCDB is used to get the energy
         call iguana_physics_inclusivekinematics_prepareevent(
-     &      algo_inc_kin, runnum(1), key_inc_kin)
+     &      algo_inc_kin, runnum(1), -1, key_inc_kin)
 
 c       call iguana filters
 c       - the `logical` variable `accept` must be initialized to
