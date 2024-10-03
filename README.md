@@ -25,7 +25,7 @@ Iguana is not a framework for _reading_ data, rather it is a set of algorithms t
 
 ### For Developers
 1. [Design Notes](doc/design.md)
-1. [Developing a new Algorithm](src/iguana/algorithms/example/README.md)
+1. [Developing a new Algorithm](src/iguana/algorithms/example/ExampleAlgorithm/README.md)
 1. [Algorithm Tests and Validators](doc/testing.md)
 1. [Repository Maintenance](doc/maintenance.md)
 1. [Building for `cvmfs` or `ifarm`](doc/ifarm.md)
