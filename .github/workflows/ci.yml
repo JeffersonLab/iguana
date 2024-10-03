@@ -358,11 +358,11 @@ jobs:
           repository: JeffersonLab/rcdb
           ref: main
           path: rcdb_src
-      - name: set RCDB env
-        id: rcdb_env
+      - name: set RCDB CI vars
+        id: rcdb
         working-directory: rcdb_src
         run: |
-          echo RCDB_HOME=$(pwd) >> $GITHUB_ENV
+          echo prefix=$(pwd) >> $GITHUB_OUTPUT
           echo ver=$(git rev-parse HEAD) >> $GITHUB_OUTPUT
       ###### summarize dependencies
       - name: summarize dependencies
@@ -372,7 +372,7 @@ jobs:
           echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
           echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
           echo "| \`hipo\` | \`${{ env.hipo_ref }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`rcdb\` | \`${{ steps.rcdb_env.outputs.ver }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`rcdb\` | \`${{ steps.rcdb.outputs.ver }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| \`root\` | $(root --version 2>&1 | head -n1) |" >> $GITHUB_STEP_SUMMARY
           echo "| \`ruby\` | $(ruby --version) |" >> $GITHUB_STEP_SUMMARY
           cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
@@ -382,7 +382,7 @@ jobs:
           meson setup iguana_build iguana_src            \
             --prefix=$(pwd)/iguana                       \
             --pkg-config-path=$(pwd)/hipo/lib/pkgconfig  \
-            -Drcdb:home=$RCDB_HOME                       \
+            -Drcdb:home=${{ steps.rcdb.outputs.prefix }} \
             -Dz_require_rcdb=true                        \
             -Dwerror=true                                \
             -Dinstall_examples=true                      \

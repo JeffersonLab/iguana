@@ -17,7 +17,7 @@ if get_option('home') != ''
     warning(f'RCDB include directory "@rcdb_includedir@" does not exist, so RCDB will not be used; are you sure your build option "rcdb:home" is correct?')
   endif
 else
-  warning('RCDB not found; set build option "rcdb:home" to the RCDB installation (e.g., "$RCDB_HOME") if you want to use it, but it is not strictly required.')
+  warning('RCDB not found; set build option "rcdb:home" to the RCDB installation (e.g., to "$RCDB_HOME") if you want to use it, but it is not strictly required.')
 endif
 
 # RCDB dependencies: either mysql or sqlite
