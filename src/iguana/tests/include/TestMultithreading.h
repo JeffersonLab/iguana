@@ -121,11 +121,11 @@ inline int TestMultithreading(
           // sanitizer test coverage
           if(vary_run && run_config_bank_idx.has_value()) {
             // === rapid variation ===
-            ///*
-            banks[run_config_bank_idx.value()].putInt("run", 0, std::rand() % 20000);
-            //*/
-            // === slower variation ===
             /*
+            banks[run_config_bank_idx.value()].putInt("run", 0, std::rand() % 20000);
+            */
+            // === slower variation ===
+            ///*
             if(std::rand() % 10 == 0) { // randomly increase or decrease the run number
               auto runnum = banks[run_config_bank_idx.value()].getInt("run", 0);
               runnum += (std::rand() % 2 == 0) ? 1000 : -1000;
@@ -135,7 +135,7 @@ inline int TestMultithreading(
             else if(std::rand() % 10 == 1) {
               banks[run_config_bank_idx.value()].putInt("run", 0, 1); // set the runnum to '1'
             }
-            */
+            //*/
           }
 
           // run the iguana algorithm
