@@ -1,6 +1,7 @@
 # Troubleshooting Notes
 
-### 🔵 My output appears to be out of order: errors are not printed exactly when they occur
+<details>
+<summary>🔵 My output appears to be out of order: errors are not printed exactly when they occur</summary>
 
 If you redirect `stdout` and `stderr` to a file, you may notice that `stderr` lines are out-of-order with respect to the `stdout` lines; for example:
 ```bash
@@ -16,8 +17,10 @@ stdbuf -o0 myAnalysisProgram |& tee output.txt
 
 > [!NOTE]
 > `stdbuf` on macOS may be installed as `gstdbuf`, from the Homebrew package `coreutils`.
+</details>
 
-### 🔵 I got a crash, but the stack trace (or debugger) is not telling me exactly where
+<details>
+<summary>🔵 I got a crash, but the stack trace (or debugger) is not telling me exactly where</summary>
 
 Enable debugging symbols by setting the Iguana build option `buildtype` to `'debug'`, then rebuild.
 Assuming you're in your build directory, run:
@@ -28,8 +31,10 @@ Then rebuild (`meson compile` and/or `meson install`).
 
 Remember to revert this change and rebuild/re-install, so that Iguana runs with
 full optimization when you are processing large data sets (`-Dbuildtype=release`).
+</details>
 
-### 🔵 I got some error about "chameleon", or an error in some "chameleon" file that I can't find
+<details>
+<summary>🔵 I got some error about "chameleon", or an error in some "chameleon" file that I can't find</summary>
 
 [Chameleon is a code generator](/src/chameleon) to automatically create
 `iguana` bindings for programming languages other than C++. All generated code
@@ -38,3 +43,4 @@ is produced in your build directory. If you have issues with Chameleon, either:
 - something is wrong with `chameleon`
 
 In either case, open an issue or contact the maintainers.
+</details>

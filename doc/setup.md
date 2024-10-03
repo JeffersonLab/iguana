@@ -93,7 +93,7 @@ The following sections (🟩) list the dependencies and how to obtain them. Clic
 <details>
 <summary>🟩 RCDB [optional]: Run Condition Database</summary>
 
-<https://github.com/JeffersonLab/rcdb>
+> <https://github.com/JeffersonLab/rcdb>
 > - RCDB is optional, but needed for algorithms that use, _e.g._, the beam energy
 > - You do not need to compile RCDB, just clone the repository
 > - You may need to use the latest version on the main branch, rather than the most recent tag
