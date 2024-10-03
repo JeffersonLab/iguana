@@ -15,8 +15,7 @@ To redirect output to a file with the ordering preserved, run your executable wi
 stdbuf -o0 myAnalysisProgram |& tee output.txt
 ```
 
-> [!NOTE]
-> `stdbuf` on macOS may be installed as `gstdbuf`, from the Homebrew package `coreutils`.
+**NOTE:** `stdbuf` on macOS may be installed as `gstdbuf`, from the Homebrew package `coreutils`.
 </details>
 
 <details>
