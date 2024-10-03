@@ -1,3 +1,0 @@
-clas12::LorentzTransformer:
-  # the frame to transform to
-  frame: beam_rest_frame
