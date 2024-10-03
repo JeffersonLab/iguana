@@ -10,6 +10,7 @@ project(
     'libdir': 'lib',
     'licensedir': 'share/licenses/iguana',
     'pkgconfig.relocatable': 'true',
+    'force_fallback_for': ['rcdb'],
   },
   version: run_command(
     meson.project_source_root() / 'meson' / 'detect-version.sh',
@@ -28,7 +29,7 @@ pkg = import('pkgconfig')
 fs = import('fs')
 
 # build subprojects
-rcdb_subproj = subproject('rcdb')
+rcdb_subproj = subproject('rcdb', required: get_option('z_require_rcdb'))
 
 # resolve dependencies
 prog_minver = find_program('meson' / 'minimum-version.sh')
@@ -63,6 +64,10 @@ rcdb_dep = dependency(
   'rcdb',
   fallback: ['rcdb', 'rcdb_dep'],
   required: get_option('z_require_rcdb'),
+)
+thread_dep = dependency(
+  'threads',
+  required: true, # FIXME: actually, it's only needed for multi-threading tests/examples
 )
 
 # list of dependencies

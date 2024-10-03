@@ -76,7 +76,8 @@ cmake --install build-hipo
 - You do not need to compile RCDB, just clone the repository
 - You may need to use the latest version on the main branch, rather than the most recent tag
 - Iguana uses `mysql` for RCDB; you may need to install `mariadb` or `mysql` client on your system
-  ([`mariadb` is an open source fork of `mysql`](https://mariadb.org/))
+  - [`mariadb` is an open source fork of `mysql`](https://mariadb.org/)
+  - depending on your OS's packages, you may need the "dev" version, _e.g._, `libmariadb-dev`
 
 <a name="building"></a>
 ## 🟠 Building and Installing
