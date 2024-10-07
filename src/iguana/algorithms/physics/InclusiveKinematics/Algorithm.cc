@@ -35,7 +35,7 @@ namespace iguana::physics {
     i_targetM = result_schema.getEntryOrder("targetM");
 
     // instantiate RCDB reader
-    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName());
+    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
 
     // parse config file
     ParseYAMLConfig();

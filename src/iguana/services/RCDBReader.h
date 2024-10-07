@@ -16,7 +16,8 @@ namespace iguana {
     public:
 
       /// @param name the name of this reader
-      RCDBReader(std::string_view name = "rcdb");
+      /// @param lev the log level
+      RCDBReader(std::string_view name = "rcdb", Logger::Level lev = Logger::DEFAULT_LEVEL);
 
       /// @param runnum run number
       /// @returns the beam energy in GeV
@@ -24,8 +25,10 @@ namespace iguana {
 
     private:
 
+      /// @brief default RCDB URL, used as a last resort
+      std::string const m_default_url = "mysql://rcdb@clasdb.jlab.org/rcdb";
+
       std::string m_url;
-      std::string const default_url = "mysql://rcdb@clasdb.jlab.org/rcdb";
       std::once_flag m_error_once;
 
 #ifdef USE_RCDB

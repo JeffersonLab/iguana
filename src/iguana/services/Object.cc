@@ -2,9 +2,9 @@
 
 namespace iguana {
 
-  Object::Object(std::string_view name)
+  Object::Object(std::string_view name, Logger::Level lev)
       : m_name(name)
-      , m_log(std::make_unique<Logger>(m_name))
+      , m_log(std::make_unique<Logger>(m_name, lev))
   {}
 
   std::unique_ptr<Logger>& Object::Log()
