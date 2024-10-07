@@ -64,4 +64,12 @@ namespace iguana {
   ///   option will be _chosen_ by `ConcurrentParamFactory::Create` instead
   extern GlobalParam<std::string> GlobalConcurrencyModel;
 
+  /// @brief RCDB URL
+  /// @par Notes
+  /// The RCDB will check for a URL in the following order:
+  /// - This parameter, `iguana::GlobalRcdbUrl`; by default it is not set to any value
+  /// - The environment variable `RCDB_CONNECTION` (which is likely set if you are on `ifarm`)
+  /// - A default URL, which will be printed in a warning; see `iguana::RCDBReader::m_default_url`
+  extern GlobalParam<std::string> GlobalRcdbUrl;
+
 }

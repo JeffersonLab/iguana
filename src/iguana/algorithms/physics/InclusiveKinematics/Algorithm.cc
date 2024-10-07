@@ -33,7 +33,7 @@ namespace iguana::physics {
     i_qE     = result_schema.getEntryOrder("qE");
 
     // instantiate RCDB reader
-    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName());
+    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
 
     // parse config file
     ParseYAMLConfig();

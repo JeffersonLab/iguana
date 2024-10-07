@@ -1,14 +1,34 @@
 #include "RCDBReader.h"
+#include "GlobalParam.h"
 
 namespace iguana {
 
-  RCDBReader::RCDBReader(std::string_view name) : Object(name)
+  RCDBReader::RCDBReader(std::string_view name, Logger::Level lev) : Object(name, lev)
   {
 #ifdef USE_RCDB
-    auto url_ptr = std::getenv("RCDB_CONNECTION");
-    m_url = url_ptr != nullptr ? std::string(url_ptr) : default_url;
-    m_log->Debug("RCDB URL: {}", m_url);
+
+    // choose the RCDB URL, from the following priority ordering
+    // 1. try `GlobalRcdbUrl`
+    m_url = GlobalRcdbUrl();
+    if(!m_url.empty())
+      m_log->Debug("RCDB URL set from 'iguana::GlobalRcdbUrl': {:?}", m_url);
+    else {
+      // 2. try env var `RCDB_CONNECTION`
+      if(auto url_ptr{std::getenv("RCDB_CONNECTION")}; url_ptr != nullptr)
+        m_url = std::string(url_ptr);
+      if(!m_url.empty())
+        m_log->Debug("RCDB URL set from env var 'RCDB_CONNECTION': {:?}", m_url);
+      else {
+        // 3. fallback to default value
+        m_log->Warn("RCDB URL not set; you may choose a URL with the environment variable 'RCDB_CONNECTION' or with the global parameter 'iguana::GlobalRcdbUrl'; for now, let's proceed with the URL set to {:?}", m_default_url);
+        m_url = m_default_url;
+        m_log->Debug("RCDB URL set from default fallback: {:?}", m_url);
+      }
+    }
+
+    // then start the connection
     m_rcdb_connection = std::make_unique<rcdb::Connection>(m_url, true);
+
 #endif
   }
 
