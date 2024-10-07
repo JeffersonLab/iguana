@@ -64,4 +64,8 @@ namespace iguana {
   ///   option will be _chosen_ by `ConcurrentParamFactory::Create` instead
   extern GlobalParam<std::string> GlobalConcurrencyModel;
 
+  /// @brief Path to the RCDB
+  /// @see `iguana::RCDBReader` for details
+  extern GlobalParam<std::string> GlobalRcdbUrl;
+
 }
