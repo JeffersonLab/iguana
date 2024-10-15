@@ -1,7 +1,5 @@
 #include "Algorithm.h"
-
-// ROOT
-#include <Math/Vector4D.h>
+#include "TypeDefs.h"
 
 namespace iguana::physics {
 
@@ -49,6 +47,12 @@ namespace iguana::physics {
     o_hadron_b_pdgs = GetOptionSet<int>("hadron_b_list");
     o_phi_r_method  = GetOptionScalar<std::string>("phi_r_method");
 
+    // check configuration
+    if(o_phi_r_method == "RT_via_covariant_kT")
+      m_phi_r_method = RT_via_covariant_kT;
+    else
+      throw std::runtime_error(fmt::format("unknown phi_r_method: {:?}", o_phi_r_method));
+
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -60,44 +64,172 @@ namespace iguana::physics {
     auto& result_bank   = GetBank(banks, b_result, GetClassName());
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
-
-    // build list of dihadron rows (pindices)
-    std::vector<std::pair<int,int>> dih_rows;
-    for(auto const& row_a : particle_bank.getRowList()) {
-      // check PDG is in the hadron-A list
-      if(o_hadron_a_pdgs.find(particle_bank.getInt("pid", row_a)) == o_hadron_a_pdgs.end())
-        continue;
-      for(auto const& row_b : particle_bank.getRowList()) {
-        // don't pair a particle with itself
-        if(row_a == row_b)
-          continue;
-        // check PDG is in the hadron-B list
-        if(o_hadron_b_pdgs.find(particle_bank.getInt("pid", row_b)) == o_hadron_b_pdgs.end())
-          continue;
-        dih_rows.push_back({row_a, row_b});
-      }
+    if(particle_bank.getRowList().empty() || inc_kin_bank.getRowList().empty()) {
+      m_log->Debug("skip this event, since not all required banks have entries");
+      return;
     }
 
-    result_bank.setRows(dih_rows.size());
+    // get beam and target momenta
+    // FIXME: makes some assumptions about the beam; this should be generalized...
+    ROOT::Math::PxPyPzMVector p_beam(
+        0.0,
+        0.0,
+        inc_kin_bank.getDouble("beamPz", 0),
+        particle::mass.at(particle::electron));
+    ROOT::Math::PxPyPzMVector p_target(
+        0.0,
+        0.0,
+        0.0,
+        inc_kin_bank.getDouble("targetM", 0));
 
+    // get virtual photon momentum
+    ROOT::Math::PxPyPzEVector p_q(
+        inc_kin_bank.getDouble("qx", 0),
+        inc_kin_bank.getDouble("qy", 0),
+        inc_kin_bank.getDouble("qz", 0),
+        inc_kin_bank.getDouble("qE", 0));
+
+    // build list of dihadron rows (pindices)
+    auto dih_rows = PairHadrons(particle_bank);
+
+    // loop over dihadrons
+    result_bank.setRows(dih_rows.size());
     int dih_row = 0;
     for(const auto& [row_a, row_b] : dih_rows) {
 
-      result_bank.putShort(i_pindex_a, dih_row, row_a);
-      result_bank.putShort(i_pindex_b, dih_row, row_b);
-      // result_bank.putInt(i_pdg_a,      dih_row, 0);
-      // result_bank.putInt(i_pdg_b,      dih_row, 0);
-      // result_bank.putDouble(i_Mh,      dih_row, 0);
-      // result_bank.putDouble(i_z,       dih_row, 0);
-      // result_bank.putDouble(i_MX,      dih_row, 0);
+      // get hadron momenta
+      Hadron had_a{.row = row_a};
+      Hadron had_b{.row = row_b};
+      for(auto& had : {&had_a, &had_b}) {
+        had->pdg = particle_bank.getInt("pid", had->row);
+        had->p   = ROOT::Math::PxPyPzMVector(
+            particle_bank.getFloat("px", had->row),
+            particle_bank.getFloat("py", had->row),
+            particle_bank.getFloat("pz", had->row),
+            particle::mass.at(static_cast<particle::PDG>(had->pdg)));
+      }
+
+      // calculate dihadron momenta
+      auto p_Ph = had_a.p + had_b.p;
+
+      // calculate kinematics
+      double z    = p_target.Dot(p_Ph) / p_target.Dot(p_q);
+      double Mh   = p_Ph.M();
+      double MX   = (p_target + p_q - p_Ph).M();
+
+      // calculate phiH
+      double phiH = PlaneAngle(
+          p_q.Vect(),
+          p_beam.Vect(),
+          p_q.Vect(),
+          p_Ph.Vect()).value_or(UNDEF);
+
+      // calculate PhiR
+      double phiR = UNDEF;
+      switch(m_phi_r_method) {
+        case RT_via_covariant_kT:
+          {
+            for(auto& had : {&had_a, &had_b}) {
+              had->z      = p_target.Dot(had->p) / p_target.Dot(p_q);
+              had->p_perp = RejectVector(had->p.Vect(), p_q.Vect());
+            }
+            if(had_a.p_perp.has_value() && had_b.p_perp.has_value()) {
+              auto RT = 1 / (had_a.z + had_b.z) * (had_b.z * had_a.p_perp.value() - had_a.z * had_b.p_perp.value());
+              phiR    = PlaneAngle(
+                  p_q.Vect(),
+                  p_beam.Vect(),
+                  p_q.Vect(),
+                  RT).value_or(UNDEF);
+            }
+            break;
+          }
+      }
+
+      result_bank.putShort(i_pindex_a, dih_row, had_a.row);
+      result_bank.putShort(i_pindex_b, dih_row, had_b.row);
+      result_bank.putInt(i_pdg_a,      dih_row, had_a.pdg);
+      result_bank.putInt(i_pdg_b,      dih_row, had_b.pdg);
+      result_bank.putDouble(i_Mh,      dih_row, Mh);
+      result_bank.putDouble(i_z,       dih_row, z);
+      result_bank.putDouble(i_MX,      dih_row, MX);
       // result_bank.putDouble(i_xF,      dih_row, 0);
-      // result_bank.putDouble(i_phiH,    dih_row, 0);
-      // result_bank.putDouble(i_phiR,    dih_row, 0);
+      result_bank.putDouble(i_phiH,    dih_row, phiH);
+      result_bank.putDouble(i_phiR,    dih_row, phiR);
 
       dih_row++;
     }
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  std::vector<std::pair<int,int>> DihadronKinematics::PairHadrons(hipo::bank const& particle_bank) const {
+    std::vector<std::pair<int,int>> result;
+    // loop over REC::Particle rows, for hadron A
+    for(auto const& row_a : particle_bank.getRowList()) {
+      // check PDG is in the hadron-A list
+      if(auto pdg_a{particle_bank.getInt("pid", row_a)}; o_hadron_a_pdgs.find(pdg_a) != o_hadron_a_pdgs.end()) {
+        // loop over REC::Particle rows, for hadron B
+        for(auto const& row_b : particle_bank.getRowList()) {
+          // don't pair a particle with itself
+          if(row_a == row_b)
+            continue;
+          // check PDG is in the hadron-B list
+          if(auto pdg_b{particle_bank.getInt("pid", row_b)}; o_hadron_b_pdgs.find(pdg_b) != o_hadron_b_pdgs.end()) {
+            // if the PDGs of hadrons A and B are the same, don't double count
+            if(pdg_a == pdg_b && row_b < row_a)
+              continue;
+            // we have a unique dihadron, add it to the list
+            result.push_back({row_a, row_b});
+          }
+        }
+      }
+    }
+    // trace logging
+    if(m_log->GetLevel() <= Logger::Level::trace) {
+      if(result.empty())
+        m_log->Trace("=> no dihadrons in this event");
+      else
+        m_log->Trace("=> number of dihadrons found: {}", result.size());
+    }
+    return result;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  std::optional<double> DihadronKinematics::PlaneAngle(
+      ROOT::Math::XYZVector const v_a,
+      ROOT::Math::XYZVector const v_b,
+      ROOT::Math::XYZVector const v_c,
+      ROOT::Math::XYZVector const v_d)
+  {
+    auto cross_ab = v_a.Cross(v_b); // A x B
+    auto cross_cd = v_c.Cross(v_d); // C x D
+
+    auto sgn = cross_ab.Dot(v_d); // (A x B) . D
+    if(!(std::abs(sgn) > 0))
+      return {};
+    sgn /= std::abs(sgn);
+
+    auto numer = cross_ab.Dot(cross_cd); // (A x B) . (C x D)
+    auto denom = std::sqrt(cross_ab.Mag2()) * std::sqrt(cross_cd.Mag2()); // |A x B| * |C x D|
+    if(!(std::abs(denom) > 0))
+      return {};
+    return sgn * std::acos(numer / denom);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  std::optional<ROOT::Math::XYZVector> DihadronKinematics::RejectVector(
+      ROOT::Math::XYZVector const v_a,
+      ROOT::Math::XYZVector const v_b)
+  {
+    auto denom = v_b.Dot(v_b);
+    if(!(std::abs(denom) > 0))
+      return {};
+    auto v_c = v_b * ( v_a.Dot(v_b) / denom ); // v_a projected onto v_b
+    return v_a - v_c;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

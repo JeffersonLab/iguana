@@ -62,15 +62,15 @@ inline int TestAlgorithm(
       return 1;
     }
     // print the banks, before and after
-    if(verbose) {
-      for(decltype(bank_names)::size_type it_bank = 0; it_bank < bank_names.size(); it_bank++) {
-        fmt::print("{:=^70}\n", fmt::format(" BEFORE: {} ", bank_names.at(it_bank)));
-        banks_before.at(it_bank).show();
-        fmt::print("{:=^70}\n", fmt::format(" AFTER: {} ", bank_names.at(it_bank)));
-        banks_after.at(it_bank).show();
-        fmt::print("\n");
-      }
-    }
+    // if(verbose) {
+    //   for(decltype(bank_names)::size_type it_bank = 0; it_bank < bank_names.size(); it_bank++) {
+    //     fmt::print("{:=^70}\n", fmt::format(" BEFORE: {} ", bank_names.at(it_bank)));
+    //     banks_before.at(it_bank).show();
+    //     fmt::print("{:=^70}\n", fmt::format(" AFTER: {} ", bank_names.at(it_bank)));
+    //     banks_after.at(it_bank).show();
+    //     fmt::print("\n");
+    //   }
+    // }
   }
 
   // stop the algorithm

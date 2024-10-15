@@ -1,6 +1,8 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include <Math/Vector3D.h>
+#include <Math/Vector4D.h>
 
 namespace iguana::physics {
 
@@ -23,8 +25,10 @@ namespace iguana::physics {
     /// @latex{x_F}: Feynman-x of the dihadron
     double xF;
     /// @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane
+    /// if the value is `UNDEF`, the calculation failed
     double phiH;
     /// @latex{\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane
+    /// if the value is `UNDEF`, the calculation failed
     double phiR;
   };
 
@@ -51,7 +55,7 @@ namespace iguana::physics {
   /// is the @latex{\pi^+} for both of these, whereas hadron B is the @latex{\pi^-} for the former and the proton
   /// for the latter.
   ///
-  /// @par @latex{\phi_R} calculation methods
+  /// @par phiR calculation methods
   /// - `"RT_via_covariant_kT"`: use @latex{R_T} computed via covariant @latex{k_T} formula
   class DihadronKinematics : public Algorithm
   {
@@ -63,6 +67,33 @@ namespace iguana::physics {
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @brief form dihadrons by pairing hadrons
+      /// @param particle_bank the particle bank (`REC::Particle`)
+      /// @returns a list of pairs of hadron rows
+      std::vector<std::pair<int,int>> PairHadrons(hipo::bank const& particle_bank) const;
+
+      /// @brief calculate the angle between two planes
+      ///
+      /// The two planes are transverse to @latex{\vec{v}_a\times\vec{v}_b} and @latex{\vec{v}_c\times\vec{v}_d}
+      /// @param v_a vector @latex{\vec{v}_a}
+      /// @param v_b vector @latex{\vec{v}_b}
+      /// @param v_c vector @latex{\vec{v}_c}
+      /// @param v_d vector @latex{\vec{v}_d}
+      /// @returns the angle between the planes, in radians, if the calculation is successful
+      static std::optional<double> PlaneAngle(
+          ROOT::Math::XYZVector const v_a,
+          ROOT::Math::XYZVector const v_b,
+          ROOT::Math::XYZVector const v_c,
+          ROOT::Math::XYZVector const v_d);
+
+      /// @brief vector rejection
+      /// @param v_a vector @latex{\vec{v}_a}
+      /// @param v_b vector @latex{\vec{v}_b}
+      /// @returns the vector @latex{\vec{v}_a} projected onto the plane transverse to @latex{\vec{v}_b}, if the calculation is successful
+      static std::optional<ROOT::Math::XYZVector> RejectVector(
+          ROOT::Math::XYZVector const v_a,
+          ROOT::Math::XYZVector const v_b);
 
     private:
 
@@ -87,6 +118,22 @@ namespace iguana::physics {
       std::set<int> o_hadron_a_pdgs;
       std::set<int> o_hadron_b_pdgs;
       std::string o_phi_r_method;
+
+      enum {
+        RT_via_covariant_kT
+      } m_phi_r_method;
+
+      // storage for a single hadron
+      struct Hadron {
+        int row;
+        int pdg;
+        ROOT::Math::PxPyPzMVector p;
+        double z;
+        std::optional<ROOT::Math::XYZVector> p_perp;
+      };
+
+      /// a value used when some calculation fails
+      double const UNDEF{-10000};
 
   };
 

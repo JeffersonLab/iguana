@@ -1,6 +1,6 @@
 physics::DihadronKinematics:
 
   hadron_a_list: [ 211 ]
-  hadron_b_list: [ -211 ]
+  hadron_b_list: [ -211, 211, 2212 ]
 
   phi_r_method: RT_via_covariant_kT

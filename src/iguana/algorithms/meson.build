@@ -77,8 +77,9 @@ algo_dict = [
   {
     'name': 'physics::DihadronKinematics',
     'algorithm_needs_ROOT': true,
+    'has_action_yaml': false, # FIXME  # FIXME  # FIXME  # FIXME  # FIXME  # FIXME  # FIXME 
     'test_args': {
-      'banks': [ 'REC::Particle' ],
+      'banks': [ 'REC::Particle', 'RUN::config' ],
       'prerequisites': [ 'physics::InclusiveKinematics' ],
     },
   },

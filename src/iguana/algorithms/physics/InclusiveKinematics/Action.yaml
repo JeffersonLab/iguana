@@ -46,3 +46,7 @@ actions:
         type: double
       - name: nu
         type: double
+      - name: beamPz
+        type: double
+      - name: targetM
+        type: double

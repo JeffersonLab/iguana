@@ -18,19 +18,21 @@ namespace iguana::physics {
         banks,
         b_result,
         GetClassName(),
-        {"pindex/S", "Q2/D", "x/D", "y/D", "W/D", "nu/D", "qx/D", "qy/D", "qz/D", "qE/D"},
+        {"pindex/S", "Q2/D", "x/D", "y/D", "W/D", "nu/D", "qx/D", "qy/D", "qz/D", "qE/D", "beamPz/D", "targetM/D"},
         0xF000,
         1);
-    i_pindex = result_schema.getEntryOrder("pindex");
-    i_Q2     = result_schema.getEntryOrder("Q2");
-    i_x      = result_schema.getEntryOrder("x");
-    i_y      = result_schema.getEntryOrder("y");
-    i_W      = result_schema.getEntryOrder("W");
-    i_nu     = result_schema.getEntryOrder("nu");
-    i_qx     = result_schema.getEntryOrder("qx");
-    i_qy     = result_schema.getEntryOrder("qy");
-    i_qz     = result_schema.getEntryOrder("qz");
-    i_qE     = result_schema.getEntryOrder("qE");
+    i_pindex  = result_schema.getEntryOrder("pindex");
+    i_Q2      = result_schema.getEntryOrder("Q2");
+    i_x       = result_schema.getEntryOrder("x");
+    i_y       = result_schema.getEntryOrder("y");
+    i_W       = result_schema.getEntryOrder("W");
+    i_nu      = result_schema.getEntryOrder("nu");
+    i_qx      = result_schema.getEntryOrder("qx");
+    i_qy      = result_schema.getEntryOrder("qy");
+    i_qz      = result_schema.getEntryOrder("qz");
+    i_qE      = result_schema.getEntryOrder("qE");
+    i_beamPz  = result_schema.getEntryOrder("beamPz");
+    i_targetM = result_schema.getEntryOrder("targetM");
 
     // instantiate RCDB reader
     m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName());
@@ -111,6 +113,8 @@ namespace iguana::physics {
     result_bank.putDouble(i_qy, 0, result_vars.qy);
     result_bank.putDouble(i_qz, 0, result_vars.qz);
     result_bank.putDouble(i_qE, 0, result_vars.qE);
+    result_bank.putDouble(i_beamPz, 0, result_vars.beamPz);
+    result_bank.putDouble(i_targetM, 0, result_vars.targetM);
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
   }
@@ -244,16 +248,18 @@ namespace iguana::physics {
     ROOT::Math::PxPyPzMVector vec_target(target[px], target[py], target[pz], target[m]);
     ROOT::Math::PxPyPzMVector vec_lepton(lepton_px, lepton_py, lepton_pz, beam[m]);
 
-    auto vec_q = vec_beam - vec_lepton;
-    result.qx  = vec_q.Px();
-    result.qy  = vec_q.Py();
-    result.qz  = vec_q.Pz();
-    result.qE  = vec_q.E();
-    result.Q2  = -1 * vec_q.M2();
-    result.x   = result.Q2 / (2 * vec_q.Dot(vec_target));
-    result.y   = vec_target.Dot(vec_q) / vec_target.Dot(vec_beam);
-    result.W   = (vec_beam + vec_target - vec_lepton).M();
-    result.nu  = vec_target.Dot(vec_q) / target[m];
+    auto vec_q     = vec_beam - vec_lepton;
+    result.qx      = vec_q.Px();
+    result.qy      = vec_q.Py();
+    result.qz      = vec_q.Pz();
+    result.qE      = vec_q.E();
+    result.Q2      = -1 * vec_q.M2();
+    result.x       = result.Q2 / (2 * vec_q.Dot(vec_target));
+    result.y       = vec_target.Dot(vec_q) / vec_target.Dot(vec_beam);
+    result.W       = (vec_beam + vec_target - vec_lepton).M();
+    result.nu      = vec_target.Dot(vec_q) / target[m];
+    result.beamPz  = beam[pz];
+    result.targetM = target[m];
 
     return result;
   }
