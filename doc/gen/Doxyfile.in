@@ -302,6 +302,8 @@ ALIASES += end_doc_example="@}"
 # ignore things we don't want to document
 ALIASES += doxygen_off="@cond NO_DOC"
 ALIASES += doxygen_on="@endcond"
+# latex
+ALIASES += latex{1}="@f$\1@f$"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
