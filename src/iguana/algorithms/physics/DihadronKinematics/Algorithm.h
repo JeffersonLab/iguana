@@ -30,6 +30,9 @@ namespace iguana::physics {
     /// @latex{\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane
     /// if the value is `UNDEF`, the calculation failed
     double phiR;
+    /// @latex{\theta}: the "decay" angle of hadron A in the dihadron rest frame, with respect
+    /// to the dihadron momentum direction
+    double theta;
   };
 
   /// @brief_algo Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`
@@ -42,7 +45,8 @@ namespace iguana::physics {
   /// @begin_doc_config
   /// @config_param{hadron_a_list | list[int] | list of "hadron A" PDGs}
   /// @config_param{hadron_b_list | list[int] | list of "hadron B" PDGs}
-  /// @config_param{phi_r_method | string | method used to calculate @latex{\phi_R} (see below)}
+  /// @config_param{phi_r_method | string | method used to calculate @latex{\phi_R} (see section "phiR calculation methods" below)}
+  /// @config_param{theta_method | string | method used to calculate @latex{\theta} (see section "theta calculation methods" below)}
   /// @end_doc
   ///
   /// Dihadron PDGs will be formed from pairs from `hadron_a_list` and `hadron_b_list`. For example,
@@ -57,6 +61,9 @@ namespace iguana::physics {
   ///
   /// @par phiR calculation methods
   /// - `"RT_via_covariant_kT"`: use @latex{R_T} computed via covariant @latex{k_T} formula
+  ///
+  /// @par theta calculation methods
+  /// - `"hadron_a"`: use hadron A's "decay angle" in the dihadron rest frame
   class DihadronKinematics : public Algorithm
   {
 
@@ -95,6 +102,14 @@ namespace iguana::physics {
           ROOT::Math::XYZVector const v_a,
           ROOT::Math::XYZVector const v_b);
 
+      /// @brief calculate the angle between two vectors
+      /// @param v_a vector @latex{\vec{v}_a}
+      /// @param v_b vector @latex{\vec{v}_b}
+      /// @returns the angle between @latex{\vec{v}_a} and @latex{\vec{v}_b}, if the calculation is successful
+      static std::optional<double> VectorAngle(
+          ROOT::Math::XYZVector const v_a,
+          ROOT::Math::XYZVector const v_b);
+
     private:
 
       // banklist indices
@@ -113,15 +128,15 @@ namespace iguana::physics {
       int i_xF;
       int i_phiH;
       int i_phiR;
+      int i_theta;
 
       // config options
       std::set<int> o_hadron_a_pdgs;
       std::set<int> o_hadron_b_pdgs;
       std::string o_phi_r_method;
-
-      enum {
-        RT_via_covariant_kT
-      } m_phi_r_method;
+      std::string o_theta_method;
+      enum {e_RT_via_covariant_kT} m_phi_r_method;
+      enum {e_hadron_a} m_theta_method;
 
       // storage for a single hadron
       struct Hadron {

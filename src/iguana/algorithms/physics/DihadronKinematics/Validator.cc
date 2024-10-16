@@ -12,6 +12,7 @@ namespace iguana::physics {
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
+    m_algo_seq->Add("physics::InclusiveKinematics");
     m_algo_seq->Add("physics::DihadronKinematics");
     m_algo_seq->SetOption("physics::DihadronKinematics", "log", m_log->GetLevel());
     m_algo_seq->SetOption<std::vector<int>>("physics::DihadronKinematics", "hadron_a_list", {particle::pi_plus});
@@ -29,16 +30,47 @@ namespace iguana::physics {
     }
 
     // define plots
-    // clang-format off
     gStyle->SetOptStat(0);
     const int n_bins = 100;
-    Mh_dist = new TH1D("Mh_dist", "#pi^{+}#pi^{-} invariant mass M_{h};M_{h} [GeV]", n_bins, 0, 4);
-    // clang-format on
+    plot_list = {
+      {
+        new TH1D("Mh_dist", "invariant mass M_{h} [GeV]", n_bins, 0, 4),
+        [](auto const& b, auto const r) { return b.getDouble("Mh", r); }
+      },
+      {
+        new TH1D("z_dist", "z", n_bins, 0, 1),
+        [](auto const& b, auto const r) { return b.getDouble("z", r); }
+      },
+      {
+        new TH1D("MX_dist", "missing mass M_X [GeV];", n_bins, 0, 4),
+        [](auto const& b, auto const r) { return b.getDouble("MX", r); }
+      },
+      {
+        new TH1D("xF_dist", "x_{F};", n_bins, -1, 1),
+        [](auto const& b, auto const r) { return b.getDouble("xF", r); }
+      },
+      {
+        new TH1D("phiH_dist", "#phi_{h};", n_bins, -M_PI, M_PI),
+        [](auto const& b, auto const r) { return b.getDouble("phiH", r); }
+      },
+      {
+        new TH1D("phiR_dist", "#phi_{R}", n_bins, -M_PI, M_PI),
+        [](auto const& b, auto const r) { return b.getDouble("phiR", r); }
+      },
+      {
+        new TH1D("theta_dist", "#theta;", n_bins, 0, M_PI),
+        [](auto const& b, auto const r) { return b.getDouble("theta", r); }
+      }
+    };
 
     // format plots
-    for(auto hist : {Mh_dist}) {
-      hist->SetLineColor(kRed);
-      hist->SetFillColor(kRed);
+    for(auto& plot : plot_list) {
+      plot.hist->SetLineColor(kRed);
+      plot.hist->SetFillColor(kRed);
+        plot.hist->SetTitle(
+          TString(particle::title.at(particle::pi_plus)) +
+          TString(particle::title.at(particle::pi_minus)) +
+          " " + plot.hist->GetTitle());
     }
   }
 
@@ -49,6 +81,7 @@ namespace iguana::physics {
     m_algo_seq->Run(banks);
     auto& result_bank   = GetBank(banks, b_result, "physics::DihadronKinematics");
 
+    // skip events with no dihadrons
     if(result_bank.getRowList().size() == 0) {
       m_log->Debug("skip this event, since it has no kinematics results");
       return;
@@ -57,7 +90,8 @@ namespace iguana::physics {
     // lock mutex and fill the plots
     std::scoped_lock<std::mutex> lock(m_mutex);
     for(auto const& row : result_bank.getRowList()) {
-      Mh_dist->Fill(result_bank.getDouble("Mh", row));
+      for(auto& plot : plot_list)
+        plot.hist->Fill(plot.get_val(result_bank, row));
     }
   }
 
@@ -65,22 +99,19 @@ namespace iguana::physics {
   void DihadronKinematicsValidator::Stop()
   {
     if(GetOutputDirectory()) {
-      int n_rows = 2;
-      int n_cols = 4;
+      int const n_cols = 4;
+      int const n_rows = (plot_list.size() - 1) / n_cols + 1;
       auto canv  = new TCanvas("canv", "canv", n_cols * 800, n_rows * 600);
       canv->Divide(n_cols, n_rows);
-      for(int pad_num = 1; pad_num <= n_rows * n_cols; pad_num++) {
-        auto pad = canv->GetPad(pad_num);
+      int pad_num = 0;
+      for(auto& plot : plot_list) {
+        auto pad = canv->GetPad(++pad_num);
         pad->cd();
         pad->SetGrid(1, 1);
         pad->SetLeftMargin(0.12);
         pad->SetRightMargin(0.12);
         pad->SetBottomMargin(0.12);
-        switch(pad_num) {
-        case 1:
-          Mh_dist->Draw();
-          break;
-        }
+        plot.hist->Draw();
       }
       canv->SaveAs(m_output_file_basename + ".png");
       m_output_file->Write();

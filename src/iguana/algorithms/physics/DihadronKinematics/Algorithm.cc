@@ -1,6 +1,8 @@
 #include "Algorithm.h"
 #include "TypeDefs.h"
 
+#include <Math/Boost.h>
+
 namespace iguana::physics {
 
   REGISTER_IGUANA_ALGORITHM(DihadronKinematics, "physics::DihadronKinematics");
@@ -26,7 +28,8 @@ namespace iguana::physics {
           "MX/D",
           "xF/D",
           "phiH/D",
-          "phiR/D"
+          "phiR/D",
+          "theta/D"
         },
         0xF000,
         5);
@@ -40,18 +43,26 @@ namespace iguana::physics {
     i_xF       = result_schema.getEntryOrder("xF");
     i_phiH     = result_schema.getEntryOrder("phiH");
     i_phiR     = result_schema.getEntryOrder("phiR");
+    i_theta    = result_schema.getEntryOrder("theta");
 
     // parse config file
     ParseYAMLConfig();
     o_hadron_a_pdgs = GetOptionSet<int>("hadron_a_list");
     o_hadron_b_pdgs = GetOptionSet<int>("hadron_b_list");
     o_phi_r_method  = GetOptionScalar<std::string>("phi_r_method");
+    o_theta_method  = GetOptionScalar<std::string>("theta_method");
 
-    // check configuration
+    // check phiR method
     if(o_phi_r_method == "RT_via_covariant_kT")
-      m_phi_r_method = RT_via_covariant_kT;
+      m_phi_r_method = e_RT_via_covariant_kT;
     else
       throw std::runtime_error(fmt::format("unknown phi_r_method: {:?}", o_phi_r_method));
+
+    // check theta method
+    if(o_theta_method == "hadron_a")
+      m_theta_method = e_hadron_a;
+    else
+      throw std::runtime_error(fmt::format("unknown theta_method: {:?}", o_theta_method));
 
   }
 
@@ -89,6 +100,13 @@ namespace iguana::physics {
         inc_kin_bank.getDouble("qz", 0),
         inc_kin_bank.getDouble("qE", 0));
 
+    // get additional inclusive variables
+    auto W = inc_kin_bank.getDouble("W", 0);
+
+    // boosts
+    ROOT::Math::Boost boost__qp((p_q + p_target).BoostToCM()); // CoM frame of target and virtual photon
+    auto p_q__qp = boost__qp(p_q);
+
     // build list of dihadron rows (pindices)
     auto dih_rows = PairHadrons(particle_bank);
 
@@ -109,13 +127,22 @@ namespace iguana::physics {
             particle::mass.at(static_cast<particle::PDG>(had->pdg)));
       }
 
-      // calculate dihadron momenta
-      auto p_Ph = had_a.p + had_b.p;
+      // calculate dihadron momenta and boosts
+      auto p_Ph     = had_a.p + had_b.p;
+      auto p_Ph__qp = boost__qp(p_Ph);
+      ROOT::Math::Boost boost__dih(p_Ph.BoostToCM()); // CoM frame of dihadron
 
-      // calculate kinematics
-      double z    = p_target.Dot(p_Ph) / p_target.Dot(p_q);
-      double Mh   = p_Ph.M();
-      double MX   = (p_target + p_q - p_Ph).M();
+      // calculate z
+      double z = p_target.Dot(p_Ph) / p_target.Dot(p_q);
+
+      // calculate Mh
+      double Mh = p_Ph.M();
+
+      // calculate MX
+      double MX = (p_target + p_q - p_Ph).M();
+
+      // calculate xF
+      double xF = 2 * p_Ph__qp.Vect().Dot(p_q__qp.Vect()) / (W * p_q__qp.Vect().R());
 
       // calculate phiH
       double phiH = PlaneAngle(
@@ -127,22 +154,33 @@ namespace iguana::physics {
       // calculate PhiR
       double phiR = UNDEF;
       switch(m_phi_r_method) {
-        case RT_via_covariant_kT:
-          {
-            for(auto& had : {&had_a, &had_b}) {
-              had->z      = p_target.Dot(had->p) / p_target.Dot(p_q);
-              had->p_perp = RejectVector(had->p.Vect(), p_q.Vect());
-            }
-            if(had_a.p_perp.has_value() && had_b.p_perp.has_value()) {
-              auto RT = 1 / (had_a.z + had_b.z) * (had_b.z * had_a.p_perp.value() - had_a.z * had_b.p_perp.value());
-              phiR    = PlaneAngle(
-                  p_q.Vect(),
-                  p_beam.Vect(),
-                  p_q.Vect(),
-                  RT).value_or(UNDEF);
-            }
-            break;
+      case e_RT_via_covariant_kT:
+        {
+          for(auto& had : {&had_a, &had_b}) {
+            had->z      = p_target.Dot(had->p) / p_target.Dot(p_q);
+            had->p_perp = RejectVector(had->p.Vect(), p_q.Vect());
           }
+          if(had_a.p_perp.has_value() && had_b.p_perp.has_value()) {
+            auto RT = 1 / (had_a.z + had_b.z) *
+              (had_b.z * had_a.p_perp.value() - had_a.z * had_b.p_perp.value());
+            phiR = PlaneAngle(
+                p_q.Vect(),
+                p_beam.Vect(),
+                p_q.Vect(),
+                RT).value_or(UNDEF);
+          }
+          break;
+        }
+      }
+
+      // calculate theta
+      double theta = UNDEF;
+      switch(m_theta_method) {
+      case e_hadron_a:
+        {
+          theta = VectorAngle(boost__dih(had_a.p).Vect(), p_Ph.Vect()).value_or(UNDEF);
+          break;
+        }
       }
 
       result_bank.putShort(i_pindex_a, dih_row, had_a.row);
@@ -152,9 +190,10 @@ namespace iguana::physics {
       result_bank.putDouble(i_Mh,      dih_row, Mh);
       result_bank.putDouble(i_z,       dih_row, z);
       result_bank.putDouble(i_MX,      dih_row, MX);
-      // result_bank.putDouble(i_xF,      dih_row, 0);
+      result_bank.putDouble(i_xF,      dih_row, xF);
       result_bank.putDouble(i_phiH,    dih_row, phiH);
       result_bank.putDouble(i_phiR,    dih_row, phiR);
+      result_bank.putDouble(i_theta,   dih_row, theta);
 
       dih_row++;
     }
@@ -213,13 +252,11 @@ namespace iguana::physics {
     sgn /= std::abs(sgn);
 
     auto numer = cross_ab.Dot(cross_cd); // (A x B) . (C x D)
-    auto denom = std::sqrt(cross_ab.Mag2()) * std::sqrt(cross_cd.Mag2()); // |A x B| * |C x D|
+    auto denom = cross_ab.R() * cross_cd.R(); // |A x B| * |C x D|
     if(!(std::abs(denom) > 0))
       return {};
     return sgn * std::acos(numer / denom);
   }
-
-  ///////////////////////////////////////////////////////////////////////////////
 
   std::optional<ROOT::Math::XYZVector> DihadronKinematics::RejectVector(
       ROOT::Math::XYZVector const v_a,
@@ -230,6 +267,16 @@ namespace iguana::physics {
       return {};
     auto v_c = v_b * ( v_a.Dot(v_b) / denom ); // v_a projected onto v_b
     return v_a - v_c;
+  }
+
+  std::optional<double> DihadronKinematics::VectorAngle(
+      ROOT::Math::XYZVector const v_a,
+      ROOT::Math::XYZVector const v_b)
+  {
+    double m = v_a.R() * v_b.R();
+    if(m > 0)
+      return std::acos(v_a.Dot(v_b) / m);
+    return {};
   }
 
   ///////////////////////////////////////////////////////////////////////////////
