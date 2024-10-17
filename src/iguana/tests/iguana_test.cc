@@ -26,7 +26,7 @@ int main(int argc, char** argv)
   auto exe           = std::string(argv[0]);
   auto UsageCommands = [&](int exit_code)
   {
-    fmt::print(stderr, "\nUSAGE: {} [COMMAND] [OPTIONS]...\n", exe);
+    fmt::print("\nUSAGE: {} [COMMAND] [OPTIONS]...\n", exe);
     fmt::print("\n  COMMANDS:\n\n");
     fmt::print("    {:<20} {}\n", "algorithm", "call `Run` on an algorithm");
     fmt::print("    {:<20} {}\n", "multithreading", "call `Run` on an algorithm, multithreaded");
@@ -44,12 +44,13 @@ int main(int argc, char** argv)
     return UsageCommands(2);
   command = std::string(argv[1]);
   if(command == "--help" || command == "-h")
-    return UsageCommands(2);
+    return UsageCommands(0);
   // omit the command, for getopt
   argv++;
   argc--;
 
   // usage options
+  // clang-format off
   auto UsageOptions = [&](int exit_code)
   {
     std::unordered_map<std::string, std::function<void()>> print_option = {
@@ -115,39 +116,36 @@ int main(int argc, char** argv)
          {
            fmt::print("    {:<20} {}\n", "-v", "increase verbosity");
          }}};
-    std::vector<std::string> available_options;
-    if(command == "algorithm" || command == "unit") {
-      available_options = {"f", "n", "a-algo", "b", "p"};
-    }
-    if(command == "multithreading") {
-      available_options = {"f", "n", "a-algo", "b", "p", "j", "m", "V"};
-    }
-    else if(command == "validator") {
-      available_options = {"f", "n", "a-vdor", "b", "o"};
-    }
-    else if(command == "config") {
-      available_options = {"t"};
-    }
-    else if(command == "logger") {
-      available_options = {};
+    std::map<std::string, std::vector<std::string>> available_options = {
+      {"algorithm",      {"f", "n", "a-algo", "b", "p"}},
+      {"unit",           {"f", "n", "a-algo", "b", "p"}},
+      {"multithreading", {"f", "n", "a-algo", "b", "p", "j", "m", "V"}},
+      {"validator",      {"f", "n", "a-vdor", "b", "o"}},
+      {"config",         {"t"}},
+      {"logger",         {}}
+    };
+    for(auto& it : available_options)
+      it.second.push_back("v");
+    if(auto it{available_options.find(command)}; it != available_options.end()) {
+      fmt::print("\nUSAGE: {} {} [OPTIONS]...\n", exe, command);
+      fmt::print("\n  OPTIONS:\n\n");
+      for(auto available_opt : it->second) {
+        print_option.at(available_opt)();
+        fmt::print("\n");
+      }
+      return exit_code;
     }
     else {
       fmt::print(stderr, "ERROR: unknown command '{}'\n", command);
       return 1;
     }
-    available_options.push_back("v");
-    fmt::print(stderr, "\nUSAGE: {} {} [OPTIONS]...\n", exe, command);
-    fmt::print("\n  OPTIONS:\n\n");
-    for(auto available_opt : available_options) {
-      print_option.at(available_opt)();
-      fmt::print("\n");
-    }
-    return exit_code;
   };
-  if(argc <= 2 && command != "logger")
-    return UsageOptions(2);
-  auto first_option = std::string(argv[2]);
+  // clang-format on
+
+  auto first_option = argc >= 2 ? std::string(argv[1]) : "";
   if(first_option == "--help" || first_option == "-h")
+    return UsageOptions(0);
+  if(argc <= 2 && command != "logger")
     return UsageOptions(2);
 
   // parse option arguments
@@ -155,7 +153,7 @@ int main(int argc, char** argv)
   while((opt = getopt(argc, argv, "hf:n:a:b:p:t:j:m:Vo:v|")) != -1) {
     switch(opt) {
     case 'h':
-      return UsageOptions(2);
+      return UsageOptions(0);
     case 'f':
       data_file = std::string(optarg);
       break;
@@ -192,7 +190,7 @@ int main(int argc, char** argv)
       verbose = true;
       break;
     default:
-      return UsageOptions(1);
+      return UsageOptions(2);
     }
   }
 
