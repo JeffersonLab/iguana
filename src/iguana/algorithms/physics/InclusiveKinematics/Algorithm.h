@@ -9,27 +9,27 @@ namespace iguana::physics {
 
   /// Set of inclusive kinematics variables
   struct InclusiveKinematicsVars {
-      /// @latex{x}-component of virtual photon momentum @latex{q}
+      /// @brief @latex{x}-component of virtual photon momentum @latex{q}
       vector_element_t qx;
-      /// @latex{y}-component of virtual photon momentum @latex{q}
+      /// @brief @latex{y}-component of virtual photon momentum @latex{q}
       vector_element_t qy;
-      /// @latex{z}-component of virtual photon momentum @latex{q}
+      /// @brief @latex{z}-component of virtual photon momentum @latex{q}
       vector_element_t qz;
-      /// @latex{E}-component of virtual photon momentum @latex{q}
+      /// @brief @latex{E}-component of virtual photon momentum @latex{q}
       vector_element_t qE;
-      /// @latex{Q2} (GeV@latex{^2})
+      /// @brief @latex{Q^2} (GeV@latex{^2})
       double Q2;
-      /// @latex{x_B}
+      /// @brief @latex{x_B}
       double x;
-      /// @latex{y}
+      /// @brief @latex{y}
       double y;
-      /// @latex{W} (GeV)
+      /// @brief @latex{W} (GeV)
       double W;
-      /// @latex{\nu}
+      /// @brief @latex{\nu}
       double nu;
-      /// beam momentum @latex{z}-component (GeV)
+      /// @brief beam momentum @latex{z}-component (GeV)
       double beamPz;
-      /// target mass (GeV)
+      /// @brief target mass (GeV)
       double targetM;
   };
 
