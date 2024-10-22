@@ -38,7 +38,7 @@ namespace iguana::physics {
   /// @brief_algo Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`
   ///
   /// @begin_doc_algo{physics::DihadronKinematics | Creator}
-  /// @input_banks{REC::Particle}
+  /// @input_banks{REC::Particle, physics::InclusiveKinematics}
   /// @output_banks{%physics::DihadronKinematics}
   /// @end_doc
   ///
@@ -97,7 +97,7 @@ namespace iguana::physics {
           ROOT::Math::XYZVector const v_c,
           ROOT::Math::XYZVector const v_d);
 
-      /// @brief vector projection
+      /// @brief projection of one vector onto another
       /// @param v_a vector @latex{\vec{v}_a}
       /// @param v_b vector @latex{\vec{v}_b}
       /// @returns the vector @latex{\vec{v}_a} projected onto vector @latex{\vec{v}_b}, if the calculation is successful
@@ -105,7 +105,7 @@ namespace iguana::physics {
           ROOT::Math::XYZVector const v_a,
           ROOT::Math::XYZVector const v_b);
 
-      /// @brief vector rejection
+      /// @brief projection of one vector onto the plane transverse to another vector
       /// @param v_a vector @latex{\vec{v}_a}
       /// @param v_b vector @latex{\vec{v}_b}
       /// @returns the vector @latex{\vec{v}_a} projected onto the plane transverse to @latex{\vec{v}_b}, if the calculation is successful
