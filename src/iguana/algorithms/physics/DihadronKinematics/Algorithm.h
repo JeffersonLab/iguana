@@ -8,29 +8,29 @@ namespace iguana::physics {
 
   /// Set of dihadron kinematics variables
   struct DihadronKinematicsVars {
-    /// `REC::Particle` row (`pindex`) of hadron A
+    /// @brief `REC::Particle` row (`pindex`) of hadron A
     int pindex_a;
-    /// `REC::Particle` row (`pindex`) of hadron B
+    /// @brief `REC::Particle` row (`pindex`) of hadron B
     int pindex_b;
-    /// PDG code of hadron A
+    /// @brief PDG code of hadron A
     int pdg_a;
-    /// PDG code of hadron B
+    /// @brief PDG code of hadron B
     int pdg_b;
-    /// @latex{M_h}: Invariant mass of the dihadron
+    /// @brief @latex{M_h}: Invariant mass of the dihadron
     double Mh;
-    /// @latex{z}: Fraction of energy of fragmenting parton carried by the hadron
+    /// @brief @latex{z}: Fraction of energy of fragmenting parton carried by the dihadron
     double z;
-    /// @latex{M_X(ehhX)}: Missing mass of the dihadron
+    /// @brief @latex{M_X(ehhX)}: Missing mass of the dihadron
     double MX;
-    /// @latex{x_F}: Feynman-x of the dihadron
+    /// @brief @latex{x_F}: Feynman-x of the dihadron
     double xF;
-    /// @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane
-    /// if the value is `UNDEF`, the calculation failed
+    /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
+    /// if the value is `DihadronKinematics::UNDEF`, the calculation failed
     double phiH;
-    /// @latex{\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane
-    /// if the value is `UNDEF`, the calculation failed
+    /// @brief @latex{\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane;
+    /// if the value is `DihadronKinematics::UNDEF`, the calculation failed
     double phiR;
-    /// @latex{\theta}: the "decay" angle of hadron A in the dihadron rest frame, with respect
+    /// @brief @latex{\theta}: the "decay" angle of hadron A in the dihadron rest frame, with respect;
     /// to the dihadron momentum direction
     double theta;
   };
@@ -74,6 +74,9 @@ namespace iguana::physics {
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// a value used when some calculation fails
+      double const UNDEF{-10000};
 
       /// @brief form dihadrons by pairing hadrons
       /// @param particle_bank the particle bank (`REC::Particle`)
@@ -154,9 +157,6 @@ namespace iguana::physics {
         double z;
         std::optional<ROOT::Math::XYZVector> p_perp;
       };
-
-      /// a value used when some calculation fails
-      double const UNDEF{-10000};
 
   };
 
