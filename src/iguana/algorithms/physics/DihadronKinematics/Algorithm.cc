@@ -161,8 +161,7 @@ namespace iguana::physics {
             had->p_perp = RejectVector(had->p.Vect(), p_q.Vect());
           }
           if(had_a.p_perp.has_value() && had_b.p_perp.has_value()) {
-            auto RT = 1 / (had_a.z + had_b.z) *
-              (had_b.z * had_a.p_perp.value() - had_a.z * had_b.p_perp.value());
+            auto RT = (had_b.z * had_a.p_perp.value() - had_a.z * had_b.p_perp.value()) / (had_a.z + had_b.z);
             phiR = PlaneAngle(
                 p_q.Vect(),
                 p_beam.Vect(),
@@ -178,7 +177,9 @@ namespace iguana::physics {
       switch(m_theta_method) {
       case e_hadron_a:
         {
-          theta = VectorAngle(boost__dih(had_a.p).Vect(), p_Ph.Vect()).value_or(UNDEF);
+          theta = VectorAngle(
+              boost__dih(had_a.p).Vect(),
+              p_Ph.Vect()).value_or(UNDEF);
           break;
         }
       }
@@ -248,25 +249,34 @@ namespace iguana::physics {
 
     auto sgn = cross_ab.Dot(v_d); // (A x B) . D
     if(!(std::abs(sgn) > 0))
-      return {};
-    sgn /= std::abs(sgn);
+      return std::nullopt;
+    sgn /= std::abs(sgn); // sign of (A x B) . D
 
     auto numer = cross_ab.Dot(cross_cd); // (A x B) . (C x D)
     auto denom = cross_ab.R() * cross_cd.R(); // |A x B| * |C x D|
     if(!(std::abs(denom) > 0))
-      return {};
+      return std::nullopt;
     return sgn * std::acos(numer / denom);
+  }
+
+  std::optional<ROOT::Math::XYZVector> DihadronKinematics::ProjectVector(
+      ROOT::Math::XYZVector const v_a,
+      ROOT::Math::XYZVector const v_b)
+  {
+    auto denom = v_b.Dot(v_b);
+    if(!(std::abs(denom) > 0))
+      return std::nullopt;
+    return v_b * ( v_a.Dot(v_b) / denom );
   }
 
   std::optional<ROOT::Math::XYZVector> DihadronKinematics::RejectVector(
       ROOT::Math::XYZVector const v_a,
       ROOT::Math::XYZVector const v_b)
   {
-    auto denom = v_b.Dot(v_b);
-    if(!(std::abs(denom) > 0))
-      return {};
-    auto v_c = v_b * ( v_a.Dot(v_b) / denom ); // v_a projected onto v_b
-    return v_a - v_c;
+    auto v_c = ProjectVector(v_a, v_b);
+    if(v_c.has_value())
+      return v_a - v_c.value();
+    return std::nullopt;
   }
 
   std::optional<double> DihadronKinematics::VectorAngle(
@@ -276,7 +286,7 @@ namespace iguana::physics {
     double m = v_a.R() * v_b.R();
     if(m > 0)
       return std::acos(v_a.Dot(v_b) / m);
-    return {};
+    return std::nullopt;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

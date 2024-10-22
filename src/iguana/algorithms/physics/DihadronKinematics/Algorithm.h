@@ -94,6 +94,14 @@ namespace iguana::physics {
           ROOT::Math::XYZVector const v_c,
           ROOT::Math::XYZVector const v_d);
 
+      /// @brief vector projection
+      /// @param v_a vector @latex{\vec{v}_a}
+      /// @param v_b vector @latex{\vec{v}_b}
+      /// @returns the vector @latex{\vec{v}_a} projected onto vector @latex{\vec{v}_b}, if the calculation is successful
+      static std::optional<ROOT::Math::XYZVector> ProjectVector(
+          ROOT::Math::XYZVector const v_a,
+          ROOT::Math::XYZVector const v_b);
+
       /// @brief vector rejection
       /// @param v_a vector @latex{\vec{v}_a}
       /// @param v_b vector @latex{\vec{v}_b}
