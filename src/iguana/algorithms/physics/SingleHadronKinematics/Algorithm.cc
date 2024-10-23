@@ -88,9 +88,12 @@ namespace iguana::physics {
     // banks' row lists
     auto const& particle_bank_rowlist = particle_bank.getRowList();
     hipo::bank::rowlist::list_t result_bank_rowlist{};
+    result_bank.setRows(particle_bank.getRows());
 
-    // loop over ALL rows of `particle_bank`; we will calculate kinematics for rows in `particle_bank_rowlist`,
-    // and zero out all the other rows
+    // loop over ALL rows of `particle_bank`
+    // - we will calculate kinematics for rows in `particle_bank_rowlist`, and zero out all the other rows
+    // - we want the `result_bank` to have the same number of rows as `particle_bank` and the same ordering,
+    //   so that banks which reference `particle_bank` rows can be used to reference `result_bank` rows too
     for(int row = 0; row < particle_bank.getRows(); row++) {
 
       // if the particle is in `o_hadron_pdgs` AND the row is in `particle_bank`'s filtered row list
@@ -148,6 +151,9 @@ namespace iguana::physics {
         result_bank.putDouble(i_xi,    row, 0);
       }
     }
+
+    // apply the filtered rowlist to `result_bank`
+    result_bank.getMutableRowList().setList(result_bank_rowlist);
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
   }

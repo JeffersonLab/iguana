@@ -28,7 +28,7 @@ namespace iguana::physics {
   /// @brief_algo Calculate semi-inclusive hadron kinematic quantities defined in `iguana::physics::SingleHadronKinematicsVars`
   ///
   /// @begin_doc_algo{physics::SingleHadronKinematics | Creator}
-  /// @input_banks{REC::Particle, physics::InclusiveKinematics}
+  /// @input_banks{REC::Particle, %physics::InclusiveKinematics}
   /// @output_banks{%physics::SingleHadronKinematics}
   /// @end_doc
   ///
@@ -36,13 +36,14 @@ namespace iguana::physics {
   /// @config_param{hadron_list | list[int] | list of hadron PDGs}
   /// @end_doc
   ///
-  /// The output bank `physics::SingleHadronKinematics` will have the same number of rows as the input bank `REC::Particle`
-  /// - this design is for consistent bank-to-bank linking, _e.g._, via `pindex`, which often refers to a row in `REC::Particle`
-  /// - rows of `REC::Particle` which were filtered upstream will also be filtered out here, and all the values of the
-  ///   corresponding row in `physics::SingleHadronKinematics` will be zeroed, since no calculations are performed for
+  /// The output bank `%physics::SingleHadronKinematics` will have the same number of rows as the input particle bank `REC::Particle`
+  /// - we want the output bank to have the same number of rows and ordering as the input
+  ///   particle bank, so that banks which reference the input particle bank's rows (usually via `pindex`) can be used to
+  ///   reference the output bank's rows too
+  /// - rows of the input particle bank which were filtered upstream will also be filtered out here, and all the values of the
+  ///   corresponding row in the output bank will be zeroed, since no calculations are performed for
   ///   those particles
   /// - particles which are not listed in the configuration parameter `hadron_list` will also be filtered out and zeroed
-  ///
   class SingleHadronKinematics : public Algorithm
   {
 

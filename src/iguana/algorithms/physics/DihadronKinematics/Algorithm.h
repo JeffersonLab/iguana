@@ -39,7 +39,7 @@ namespace iguana::physics {
   /// @brief_algo Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`
   ///
   /// @begin_doc_algo{physics::DihadronKinematics | Creator}
-  /// @input_banks{REC::Particle, physics::InclusiveKinematics}
+  /// @input_banks{REC::Particle, %physics::InclusiveKinematics}
   /// @output_banks{%physics::DihadronKinematics}
   /// @end_doc
   ///
