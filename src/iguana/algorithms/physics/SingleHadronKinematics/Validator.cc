@@ -37,7 +37,7 @@ namespace iguana::physics {
         [](auto const& b, auto const r) { return b.getDouble("z", r); }
       },
       {
-        new TH1D("MX_dist", "missing mass M_X [GeV];", n_bins, 0, 4),
+        new TH1D("MX_dist", "missing mass M_{X} [GeV];", n_bins, 0, 4),
         [](auto const& b, auto const r) { return b.getDouble("MX", r); }
       },
       {
@@ -49,7 +49,7 @@ namespace iguana::physics {
         [](auto const& b, auto const r) { return b.getDouble("phiH", r); }
       },
       {
-        new TH1D("xi_dist", "#xi", n_bins, 0, 1),
+        new TH1D("xi_dist", "#xi", n_bins, -1, 1),
         [](auto const& b, auto const r) { return b.getDouble("xi", r); }
       },
     };
