@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include "iguana/algorithms/physics/Tools.h"
 #include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
 
@@ -18,19 +19,19 @@ namespace iguana::physics {
     int pdg_b;
     /// @brief @latex{M_h}: Invariant mass of the dihadron
     double Mh;
-    /// @brief @latex{z}: Fraction of energy of fragmenting parton carried by the dihadron
+    /// @brief @latex{z}: Momentum fraction of the fragmenting parton carried by the dihadron
     double z;
     /// @brief @latex{M_X(ehhX)}: Missing mass of the dihadron
     double MX;
     /// @brief @latex{x_F}: Feynman-x of the dihadron
     double xF;
     /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
-    /// if the value is `DihadronKinematics::UNDEF`, the calculation failed
+    /// if the value is `tools::UNDEF`, the calculation failed
     double phiH;
     /// @brief @latex{\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane;
-    /// if the value is `DihadronKinematics::UNDEF`, the calculation failed
+    /// if the value is `tools::UNDEF`, the calculation failed
     double phiR;
-    /// @brief @latex{\theta}: the "decay" angle of hadron A in the dihadron rest frame, with respect;
+    /// @brief @latex{\theta}: The "decay" angle of hadron A in the dihadron rest frame, with respect;
     /// to the dihadron momentum direction
     double theta;
   };
@@ -38,7 +39,7 @@ namespace iguana::physics {
   /// @brief_algo Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`
   ///
   /// @begin_doc_algo{physics::DihadronKinematics | Creator}
-  /// @input_banks{REC::Particle, physics::InclusiveKinematics}
+  /// @input_banks{REC::Particle, %physics::InclusiveKinematics}
   /// @output_banks{%physics::DihadronKinematics}
   /// @end_doc
   ///
@@ -75,51 +76,10 @@ namespace iguana::physics {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// a value used when some calculation fails
-      double const UNDEF{-10000};
-
       /// @brief form dihadrons by pairing hadrons
       /// @param particle_bank the particle bank (`REC::Particle`)
       /// @returns a list of pairs of hadron rows
       std::vector<std::pair<int,int>> PairHadrons(hipo::bank const& particle_bank) const;
-
-      /// @brief calculate the angle between two planes
-      ///
-      /// The two planes are transverse to @latex{\vec{v}_a\times\vec{v}_b} and @latex{\vec{v}_c\times\vec{v}_d}
-      /// @param v_a vector @latex{\vec{v}_a}
-      /// @param v_b vector @latex{\vec{v}_b}
-      /// @param v_c vector @latex{\vec{v}_c}
-      /// @param v_d vector @latex{\vec{v}_d}
-      /// @returns the angle between the planes, in radians, if the calculation is successful
-      static std::optional<double> PlaneAngle(
-          ROOT::Math::XYZVector const v_a,
-          ROOT::Math::XYZVector const v_b,
-          ROOT::Math::XYZVector const v_c,
-          ROOT::Math::XYZVector const v_d);
-
-      /// @brief projection of one vector onto another
-      /// @param v_a vector @latex{\vec{v}_a}
-      /// @param v_b vector @latex{\vec{v}_b}
-      /// @returns the vector @latex{\vec{v}_a} projected onto vector @latex{\vec{v}_b}, if the calculation is successful
-      static std::optional<ROOT::Math::XYZVector> ProjectVector(
-          ROOT::Math::XYZVector const v_a,
-          ROOT::Math::XYZVector const v_b);
-
-      /// @brief projection of one vector onto the plane transverse to another vector
-      /// @param v_a vector @latex{\vec{v}_a}
-      /// @param v_b vector @latex{\vec{v}_b}
-      /// @returns the vector @latex{\vec{v}_a} projected onto the plane transverse to @latex{\vec{v}_b}, if the calculation is successful
-      static std::optional<ROOT::Math::XYZVector> RejectVector(
-          ROOT::Math::XYZVector const v_a,
-          ROOT::Math::XYZVector const v_b);
-
-      /// @brief calculate the angle between two vectors
-      /// @param v_a vector @latex{\vec{v}_a}
-      /// @param v_b vector @latex{\vec{v}_b}
-      /// @returns the angle between @latex{\vec{v}_a} and @latex{\vec{v}_b}, if the calculation is successful
-      static std::optional<double> VectorAngle(
-          ROOT::Math::XYZVector const v_a,
-          ROOT::Math::XYZVector const v_b);
 
     private:
 

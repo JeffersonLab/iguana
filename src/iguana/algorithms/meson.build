@@ -75,6 +75,15 @@ algo_dict = [
     'test_args': {'banks': [ 'REC::Particle', 'RUN::config' ]},
   },
   {
+    'name': 'physics::SingleHadronKinematics',
+    'algorithm_needs_ROOT': true,
+    'has_action_yaml': false, # FIXME: needs a vector action function
+    'test_args': {
+      'banks': [ 'REC::Particle', 'RUN::config' ],
+      'prerequisites': [ 'physics::InclusiveKinematics' ],
+    },
+  },
+  {
     'name': 'physics::DihadronKinematics',
     'algorithm_needs_ROOT': true,
     'has_action_yaml': false, # FIXME: needs a vector action function
@@ -92,8 +101,21 @@ algo_dict = [
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
-algo_sources = [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ]
-algo_headers = [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ]
+algo_sources = [
+  'Algorithm.cc',
+  'AlgorithmFactory.cc',
+  'AlgorithmSequence.cc',
+]
+algo_headers = [
+  'Algorithm.h',
+  'AlgorithmBoilerplate.h',
+  'TypeDefs.h',
+  'AlgorithmSequence.h',
+]
+if ROOT_dep.found()
+  algo_sources += [ 'physics/Tools.cc' ]
+  algo_headers += [ 'physics/Tools.h' ]
+endif
 vdor_sources = [ 'Validator.cc' ]
 vdor_headers = [ 'Validator.h' ]
 algo_configs = []

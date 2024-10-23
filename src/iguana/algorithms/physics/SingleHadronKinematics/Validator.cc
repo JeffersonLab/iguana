@@ -6,26 +6,25 @@
 
 namespace iguana::physics {
 
-  REGISTER_IGUANA_VALIDATOR(DihadronKinematicsValidator);
+  REGISTER_IGUANA_VALIDATOR(SingleHadronKinematicsValidator);
 
-  void DihadronKinematicsValidator::Start(hipo::banklist& banks)
+  void SingleHadronKinematicsValidator::Start(hipo::banklist& banks)
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("physics::InclusiveKinematics");
-    m_algo_seq->Add("physics::DihadronKinematics");
-    m_algo_seq->SetOption("physics::DihadronKinematics", "log", m_log->GetLevel());
-    m_algo_seq->SetOption<std::vector<int>>("physics::DihadronKinematics", "hadron_a_list", {particle::pi_plus});
-    m_algo_seq->SetOption<std::vector<int>>("physics::DihadronKinematics", "hadron_b_list", {particle::pi_minus});
+    m_algo_seq->Add("physics::SingleHadronKinematics");
+    m_algo_seq->SetOption("physics::SingleHadronKinematics", "log", m_log->GetLevel());
+    m_algo_seq->SetOption<std::vector<int>>("physics::SingleHadronKinematics", "hadron_list", {particle::pi_plus});
     m_algo_seq->Start(banks);
 
     // get bank indices
-    b_result   = GetBankIndex(banks, "physics::DihadronKinematics");
+    b_result = GetBankIndex(banks, "physics::SingleHadronKinematics");
 
     // set an output file
     auto output_dir = GetOutputDirectory();
     if(output_dir) {
-      m_output_file_basename = output_dir.value() + "/dihadron_kinematics";
+      m_output_file_basename = output_dir.value() + "/single_hadron_kinematics";
       m_output_file          = new TFile(m_output_file_basename + ".root", "RECREATE");
     }
 
@@ -33,10 +32,6 @@ namespace iguana::physics {
     gStyle->SetOptStat(0);
     const int n_bins = 100;
     plot_list = {
-      {
-        new TH1D("Mh_dist", "invariant mass M_{h} [GeV]", n_bins, 0, 4),
-        [](auto const& b, auto const r) { return b.getDouble("Mh", r); }
-      },
       {
         new TH1D("z_dist", "z", n_bins, 0, 1),
         [](auto const& b, auto const r) { return b.getDouble("z", r); }
@@ -54,34 +49,29 @@ namespace iguana::physics {
         [](auto const& b, auto const r) { return b.getDouble("phiH", r); }
       },
       {
-        new TH1D("phiR_dist", "#phi_{R}", n_bins, -M_PI, M_PI),
-        [](auto const& b, auto const r) { return b.getDouble("phiR", r); }
+        new TH1D("xi_dist", "#xi", n_bins, -1, 1),
+        [](auto const& b, auto const r) { return b.getDouble("xi", r); }
       },
-      {
-        new TH1D("theta_dist", "#theta;", n_bins, 0, M_PI),
-        [](auto const& b, auto const r) { return b.getDouble("theta", r); }
-      }
     };
 
     // format plots
     for(auto& plot : plot_list) {
-      plot.hist->SetLineColor(kRed);
-      plot.hist->SetFillColor(kRed);
+      plot.hist->SetLineColor(kGreen+1);
+      plot.hist->SetFillColor(kGreen+1);
         plot.hist->SetTitle(
           TString(particle::title.at(particle::pi_plus)) +
-          TString(particle::title.at(particle::pi_minus)) +
           " " + plot.hist->GetTitle());
     }
   }
 
 
-  void DihadronKinematicsValidator::Run(hipo::banklist& banks) const
+  void SingleHadronKinematicsValidator::Run(hipo::banklist& banks) const
   {
     // calculate kinematics
     m_algo_seq->Run(banks);
-    auto& result_bank   = GetBank(banks, b_result, "physics::DihadronKinematics");
+    auto& result_bank   = GetBank(banks, b_result, "physics::SingleHadronKinematics");
 
-    // skip events with no dihadrons
+    // skip events with no hadrons
     if(result_bank.getRowList().size() == 0) {
       m_log->Debug("skip this event, since it has no kinematics results");
       return;
@@ -96,7 +86,7 @@ namespace iguana::physics {
   }
 
 
-  void DihadronKinematicsValidator::Stop()
+  void SingleHadronKinematicsValidator::Stop()
   {
     if(GetOutputDirectory()) {
       int const n_cols = 4;

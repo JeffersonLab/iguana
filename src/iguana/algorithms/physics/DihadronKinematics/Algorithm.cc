@@ -145,41 +145,41 @@ namespace iguana::physics {
       double xF = 2 * p_Ph__qp.Vect().Dot(p_q__qp.Vect()) / (W * p_q__qp.Vect().R());
 
       // calculate phiH
-      double phiH = PlaneAngle(
+      double phiH = tools::PlaneAngle(
           p_q.Vect(),
           p_beam.Vect(),
           p_q.Vect(),
-          p_Ph.Vect()).value_or(UNDEF);
+          p_Ph.Vect()).value_or(tools::UNDEF);
 
       // calculate PhiR
-      double phiR = UNDEF;
+      double phiR = tools::UNDEF;
       switch(m_phi_r_method) {
       case e_RT_via_covariant_kT:
         {
           for(auto& had : {&had_a, &had_b}) {
             had->z      = p_target.Dot(had->p) / p_target.Dot(p_q);
-            had->p_perp = RejectVector(had->p.Vect(), p_q.Vect());
+            had->p_perp = tools::RejectVector(had->p.Vect(), p_q.Vect());
           }
           if(had_a.p_perp.has_value() && had_b.p_perp.has_value()) {
             auto RT = (had_b.z * had_a.p_perp.value() - had_a.z * had_b.p_perp.value()) / (had_a.z + had_b.z);
-            phiR = PlaneAngle(
+            phiR = tools::PlaneAngle(
                 p_q.Vect(),
                 p_beam.Vect(),
                 p_q.Vect(),
-                RT).value_or(UNDEF);
+                RT).value_or(tools::UNDEF);
           }
           break;
         }
       }
 
       // calculate theta
-      double theta = UNDEF;
+      double theta = tools::UNDEF;
       switch(m_theta_method) {
       case e_hadron_a:
         {
-          theta = VectorAngle(
+          theta = tools::VectorAngle(
               boost__dih(had_a.p).Vect(),
-              p_Ph.Vect()).value_or(UNDEF);
+              p_Ph.Vect()).value_or(tools::UNDEF);
           break;
         }
       }
@@ -234,59 +234,6 @@ namespace iguana::physics {
         m_log->Trace("=> number of dihadrons found: {}", result.size());
     }
     return result;
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-
-  std::optional<double> DihadronKinematics::PlaneAngle(
-      ROOT::Math::XYZVector const v_a,
-      ROOT::Math::XYZVector const v_b,
-      ROOT::Math::XYZVector const v_c,
-      ROOT::Math::XYZVector const v_d)
-  {
-    auto cross_ab = v_a.Cross(v_b); // A x B
-    auto cross_cd = v_c.Cross(v_d); // C x D
-
-    auto sgn = cross_ab.Dot(v_d); // (A x B) . D
-    if(!(std::abs(sgn) > 0))
-      return std::nullopt;
-    sgn /= std::abs(sgn); // sign of (A x B) . D
-
-    auto numer = cross_ab.Dot(cross_cd); // (A x B) . (C x D)
-    auto denom = cross_ab.R() * cross_cd.R(); // |A x B| * |C x D|
-    if(!(std::abs(denom) > 0))
-      return std::nullopt;
-    return sgn * std::acos(numer / denom);
-  }
-
-  std::optional<ROOT::Math::XYZVector> DihadronKinematics::ProjectVector(
-      ROOT::Math::XYZVector const v_a,
-      ROOT::Math::XYZVector const v_b)
-  {
-    auto denom = v_b.Dot(v_b);
-    if(!(std::abs(denom) > 0))
-      return std::nullopt;
-    return v_b * ( v_a.Dot(v_b) / denom );
-  }
-
-  std::optional<ROOT::Math::XYZVector> DihadronKinematics::RejectVector(
-      ROOT::Math::XYZVector const v_a,
-      ROOT::Math::XYZVector const v_b)
-  {
-    auto v_c = ProjectVector(v_a, v_b);
-    if(v_c.has_value())
-      return v_a - v_c.value();
-    return std::nullopt;
-  }
-
-  std::optional<double> DihadronKinematics::VectorAngle(
-      ROOT::Math::XYZVector const v_a,
-      ROOT::Math::XYZVector const v_b)
-  {
-    double m = v_a.R() * v_b.R();
-    if(m > 0)
-      return std::acos(v_a.Dot(v_b) / m);
-    return std::nullopt;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
