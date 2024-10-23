@@ -9,24 +9,28 @@ namespace iguana::physics {
 
   /// Set of inclusive kinematics variables
   struct InclusiveKinematicsVars {
-      /// @f$x@f$-component of virtual photon momentum @f$q@f$
+      /// @brief @latex{x}-component of virtual photon momentum @latex{q}
       vector_element_t qx;
-      /// @f$y@f$-component of virtual photon momentum @f$q@f$
+      /// @brief @latex{y}-component of virtual photon momentum @latex{q}
       vector_element_t qy;
-      /// @f$z@f$-component of virtual photon momentum @f$q@f$
+      /// @brief @latex{z}-component of virtual photon momentum @latex{q}
       vector_element_t qz;
-      /// @f$E@f$-component of virtual photon momentum @f$q@f$
+      /// @brief @latex{E}-component of virtual photon momentum @latex{q}
       vector_element_t qE;
-      /// @f$Q2@f$ (GeV@f$^2@f$)
+      /// @brief @latex{Q^2} (GeV@latex{^2})
       double Q2;
-      /// @f$x_B@f$
+      /// @brief @latex{x_B}
       double x;
-      /// @f$y@f$
+      /// @brief @latex{y}
       double y;
-      /// @f$W@f$ (GeV)
+      /// @brief @latex{W} (GeV)
       double W;
-      /// @f$\nu@f$
+      /// @brief @latex{\nu}
       double nu;
+      /// @brief beam momentum @latex{z}-component (GeV)
+      double beamPz;
+      /// @brief target mass (GeV)
+      double targetM;
   };
 
   /// @brief_algo Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
@@ -63,9 +67,9 @@ namespace iguana::physics {
       concurrent_key_t PrepareEvent(int const runnum, double const beam_energy = -1) const;
 
       /// @action_function{scalar creator} compute kinematics from the scattered lepton.
-      /// @param lepton_px scattered lepton momentum component @f$p_x@f$ (GeV)
-      /// @param lepton_py scattered lepton momentum component @f$p_y@f$ (GeV)
-      /// @param lepton_pz scattered lepton momentum component @f$p_z@f$ (GeV)
+      /// @param lepton_px scattered lepton momentum component @latex{p_x} (GeV)
+      /// @param lepton_py scattered lepton momentum component @latex{p_y} (GeV)
+      /// @param lepton_pz scattered lepton momentum component @latex{p_z} (GeV)
       /// @param key the return value of `::PrepareEvent`
       /// @returns the reconstructed inclusive kinematics in a `iguana::physics::InclusiveKinematicsVars` instance
       InclusiveKinematicsVars ComputeFromLepton(
@@ -104,6 +108,8 @@ namespace iguana::physics {
       int i_qy;
       int i_qz;
       int i_qE;
+      int i_beamPz;
+      int i_targetM;
 
       // config options
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;

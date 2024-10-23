@@ -51,6 +51,7 @@ c     iguana algorithm outputs
       logical(c_bool) accept(N_MAX)  ! filter
       real(c_double) qx, qy, qz, qE  ! q vector
       real(c_double) Q2, x, y, W, nu ! inclusive kinematics
+      real(c_double) beamPz, targetM ! beam and target
       integer(c_int) key_vz_filter   ! key for Z-vertex filter
       integer(c_int) key_inc_kin     ! key for inclusive kinematics
 
@@ -273,7 +274,8 @@ c       compute DIS kinematics with iguana, if electron is found
      &      px(i_ele), py(i_ele), pz(i_ele),
      &      key_inc_kin,
      &      qx, qy, qz, qE,
-     &      Q2, x, y, W, nu)
+     &      Q2, x, y, W, nu,
+     &      beamPz, targetM)
           print *, '===> inclusive kinematics:'
           print *, '  q = (', qx, qy, qz, qE, ')'
           print *, ' Q2 = ', Q2
