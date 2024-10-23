@@ -3,3 +3,4 @@ alignment:hipo::structure::getFloatAt
 alignment:hipo::structure::getShortAt
 alignment:hipo::structure::getDoubleAt
 alignment:hipo::structure::putDoubleAt
+alignment:hipo::structure::putIntAt

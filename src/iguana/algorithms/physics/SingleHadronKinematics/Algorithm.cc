@@ -97,7 +97,7 @@ namespace iguana::physics {
     for(int row = 0; row < particle_bank.getRows(); row++) {
 
       // if the particle is in `o_hadron_pdgs` AND the row is in `particle_bank`'s filtered row list
-      if(int pdg{particle_bank.getInt("pid", row)};
+      if(auto pdg{particle_bank.getInt("pid", row)};
           o_hadron_pdgs.find(pdg) != o_hadron_pdgs.end() &&
           std::find(particle_bank_rowlist.begin(), particle_bank_rowlist.end(), row) != particle_bank_rowlist.end()) {
 
