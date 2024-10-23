@@ -19,7 +19,7 @@ namespace iguana::physics {
     int pdg_b;
     /// @brief @latex{M_h}: Invariant mass of the dihadron
     double Mh;
-    /// @brief @latex{z}: Fraction of energy of fragmenting parton carried by the dihadron
+    /// @brief @latex{z}: Momentum fraction of the fragmenting parton carried by the dihadron
     double z;
     /// @brief @latex{M_X(ehhX)}: Missing mass of the dihadron
     double MX;
@@ -31,7 +31,7 @@ namespace iguana::physics {
     /// @brief @latex{\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane;
     /// if the value is `tools::UNDEF`, the calculation failed
     double phiR;
-    /// @brief @latex{\theta}: the "decay" angle of hadron A in the dihadron rest frame, with respect;
+    /// @brief @latex{\theta}: The "decay" angle of hadron A in the dihadron rest frame, with respect;
     /// to the dihadron momentum direction
     double theta;
   };

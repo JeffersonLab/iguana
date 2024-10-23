@@ -1,0 +1,3 @@
+physics::DihadronKinematics:
+
+  hadron_list: [ 211, -211, 2212 ]

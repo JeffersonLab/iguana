@@ -75,6 +75,15 @@ algo_dict = [
     'test_args': {'banks': [ 'REC::Particle', 'RUN::config' ]},
   },
   {
+    'name': 'physics::SingleHadronKinematics',
+    'algorithm_needs_ROOT': true,
+    'has_action_yaml': false, # FIXME: needs a vector action function
+    'test_args': {
+      'banks': [ 'REC::Particle', 'RUN::config' ],
+      'prerequisites': [ 'physics::InclusiveKinematics' ],
+    },
+  },
+  {
     'name': 'physics::DihadronKinematics',
     'algorithm_needs_ROOT': true,
     'has_action_yaml': false, # FIXME: needs a vector action function
