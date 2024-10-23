@@ -92,8 +92,19 @@ algo_dict = [
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
-algo_sources = [ 'Algorithm.cc', 'AlgorithmFactory.cc', 'AlgorithmSequence.cc' ]
-algo_headers = [ 'Algorithm.h', 'AlgorithmBoilerplate.h', 'TypeDefs.h', 'AlgorithmSequence.h' ]
+algo_sources = [
+  'Algorithm.cc',
+  'AlgorithmFactory.cc',
+  'AlgorithmSequence.cc',
+  'physics/Tools.cc',
+]
+algo_headers = [
+  'Algorithm.h',
+  'AlgorithmBoilerplate.h',
+  'TypeDefs.h',
+  'AlgorithmSequence.h',
+  'physics/Tools.h',
+]
 vdor_sources = [ 'Validator.cc' ]
 vdor_headers = [ 'Validator.h' ]
 algo_configs = []
