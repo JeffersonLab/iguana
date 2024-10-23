@@ -105,15 +105,17 @@ algo_sources = [
   'Algorithm.cc',
   'AlgorithmFactory.cc',
   'AlgorithmSequence.cc',
-  'physics/Tools.cc',
 ]
 algo_headers = [
   'Algorithm.h',
   'AlgorithmBoilerplate.h',
   'TypeDefs.h',
   'AlgorithmSequence.h',
-  'physics/Tools.h',
 ]
+if ROOT_dep.found()
+  algo_sources += [ 'physics/Tools.cc' ]
+  algo_headers += [ 'physics/Tools.h' ]
+endif
 vdor_sources = [ 'Validator.cc' ]
 vdor_headers = [ 'Validator.h' ]
 algo_configs = []
