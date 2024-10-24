@@ -136,16 +136,16 @@ namespace iguana {
       /// @param name the directory name
       void SetConfigDirectory(std::string const& name);
 
-    protected: // methods
-
-      /// Parse YAML configuration files. Sets `m_yaml_config`.
-      void ParseYAMLConfig();
-
       /// Get the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
       /// @param banks the list of banks this algorithm will use
       /// @param bank_name the name of the bank
       /// returns the `hipo::banklist` index of the bank
       hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
+
+    protected: // methods
+
+      /// Parse YAML configuration files. Sets `m_yaml_config`.
+      void ParseYAMLConfig();
 
       /// Get the reference to a bank from a `hipo::banklist`; optionally checks if the bank name matches the expectation
       /// @param banks the `hipo::banklist` from which to get the specified bank
