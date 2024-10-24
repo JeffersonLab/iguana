@@ -108,19 +108,37 @@ namespace iguana {
 
   void Algorithm::ParseYAMLConfig()
   {
+
+    // start YAMLReader instance, if not yet started
     if(!m_yaml_config) {
+      // set config files and directories specified by `::SetConfigFile`, `::SetConfigDirectory`, etc.
       o_user_config_file = GetCachedOption<std::string>("config_file").value_or("");
       o_user_config_dir  = GetCachedOption<std::string>("config_dir").value_or("");
       m_log->Debug("Instantiating `YAMLReader`");
       m_yaml_config = std::make_unique<YAMLReader>("config|" + m_name);
-      m_yaml_config->SetLogLevel(m_log->GetLevel());
+      m_yaml_config->SetLogLevel(m_log->GetLevel()); // synchronize log levels
       m_yaml_config->AddDirectory(o_user_config_dir);
       m_yaml_config->AddFile(m_default_config_file);
       m_yaml_config->AddFile(o_user_config_file);
     }
     else
       m_log->Debug("`YAMLReader` already instantiated for this algorithm; using that");
+
+    // parse the files
     m_yaml_config->LoadFiles();
+
+    // if "log" was not set by `SetOption` (i.e., not in `m_option_cache`), check if 'log' is set in
+    // the YAML node for this algorithm
+    if(m_option_cache.find("log") == m_option_cache.end()) {
+      try {
+        auto log_level = m_yaml_config->GetScalar<std::string>({m_class_name, "log"});
+        m_log->SetLevel(log_level);
+        m_yaml_config->SetLogLevel(log_level);
+      }
+      catch(std::runtime_error const& ex) {
+        // FIXME: maybe YAMLReader::GetScalar etc. should return std::optional
+      }
+    }
   }
 
   ///////////////////////////////////////////////////////////////////////////////
