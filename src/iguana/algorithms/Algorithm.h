@@ -88,8 +88,7 @@ namespace iguana {
           else
             m_log->Error("Option '{}' must be a string or a Logger::Level", key);
         }
-        else
-          m_option_cache[key] = val;
+        m_option_cache[key] = val;
         return val;
       }
 
