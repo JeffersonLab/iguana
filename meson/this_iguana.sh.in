@@ -22,6 +22,8 @@ for arg in "$@"; do
       unset arg_githubCI
       return 2
       ;;
+    source*|.*) # handle callers which cause `$1` to be 'source this_iguana.sh' or '. this_iguana.sh'
+      ;;
     *)
       echo "ERROR: unknown option '$arg'" >&2
       unset arg
