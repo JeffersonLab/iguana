@@ -18,19 +18,31 @@ else
   error(f'RCDB not found; set build option "rcdb:home" to the RCDB installation (e.g., to "$RCDB_HOME"); @require_message@')
 endif
 
-# RCDB dependencies: either mysql or sqlite
-# - looking for mysql here, since clas12root uses this
-# - prioritizing mariadb, an open source fork of mysql
-backend_list = ['mariadb', 'mysql', 'mysqlclient']
-foreach backend_name : backend_list
-  rcdb_backend_dep = dependency(backend_name, required: false)
-  if rcdb_backend_dep.found()
-    message(f'using "@backend_name@" for the RCDB backend')
-    break
-  endif
+# RCDB dependencies: a database management system (DBMS), mysql and/or sqlite
+dbms_args = []
+dbms_deps = []
+dbms_dict = {
+  'mysql':  [ 'mariadb', 'mysql', 'mysqlclient' ], # prioritizing mariadb, an open source fork of mysql
+  'sqlite': [ 'sqlite3' ],
+}
+foreach dbms, pkgs : dbms_dict
+  found = false
+  foreach pkg : pkgs
+    dep = dependency(pkg, required: false)
+    if dep.found()
+      dbms_deps += dep
+      dbms_args += { 'mysql': '-DRCDB_MYSQL', 'sqlite': '-DRCDB_SQLITE' }[dbms]
+      message(f'using @pkg@ for RCDB DBMS')
+      found = true
+      break
+    endif
+  endforeach
+  # if not found
+  #   warning(f'no dependencies found for RCDB DBMS @dbms@')
+  # endif
 endforeach
-if not rcdb_backend_dep.found()
-  error('none of the backends (' + ', '.join(backend_list) + ') were found, so RCDB will not be used in this build; ' + require_message)
+if dbms_deps.length() == 0
+  error('none of the DBMSs (' + ', '.join(dbms_dict.keys()) + ') were found, so RCDB will not be used in this build; ' + require_message)
 endif
 
 rcdb_dep = declare_dependency(
@@ -43,6 +55,6 @@ rcdb_dep = declare_dependency(
     rcdb_includedir,
     is_system: true, # suppress consumer warnings
   ),
-  compile_args: ['-DRCDB_MYSQL' ],
-  dependencies: [ rcdb_backend_dep ],
+  compile_args: dbms_args,
+  dependencies: dbms_deps,
 )

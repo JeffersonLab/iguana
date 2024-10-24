@@ -14,7 +14,8 @@ namespace iguana {
     public:
 
       /// @param name the name of this object
-      Object(std::string_view name = "");
+      /// @param lev the log level
+      Object(std::string_view name = "", Logger::Level lev = Logger::DEFAULT_LEVEL);
       ~Object() {}
 
       /// Get the logger
