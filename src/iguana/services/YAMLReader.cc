@@ -22,7 +22,7 @@ namespace iguana {
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename SCALAR>
-  SCALAR YAMLReader::GetScalar(YAML::Node node)
+  std::optional<SCALAR> YAMLReader::GetScalar(YAML::Node node)
   {
     if(node.IsDefined() && !node.IsNull()) {
       try {
@@ -35,32 +35,32 @@ namespace iguana {
         m_log->Error("YAML Misc. Exception: {}", e.what());
       }
     }
-    throw std::runtime_error("Failed `GetScalar`");
+    return std::nullopt;
   }
-  template int YAMLReader::GetScalar(YAML::Node node);
-  template double YAMLReader::GetScalar(YAML::Node node);
-  template std::string YAMLReader::GetScalar(YAML::Node node);
+  template std::optional<int> YAMLReader::GetScalar(YAML::Node node);
+  template std::optional<double> YAMLReader::GetScalar(YAML::Node node);
+  template std::optional<std::string> YAMLReader::GetScalar(YAML::Node node);
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename SCALAR>
-  SCALAR YAMLReader::GetScalar(node_path_t node_path)
+  std::optional<SCALAR> YAMLReader::GetScalar(node_path_t node_path)
   {
     for(auto const& [config, filename] : m_configs) {
       auto node = FindNode(config, node_path);
       if(node.IsDefined() && !node.IsNull())
         return GetScalar<SCALAR>(node);
     }
-    throw std::runtime_error("Failed `GetScalar`");
+    return std::nullopt;
   }
-  template int YAMLReader::GetScalar(node_path_t node_path);
-  template double YAMLReader::GetScalar(node_path_t node_path);
-  template std::string YAMLReader::GetScalar(node_path_t node_path);
+  template std::optional<int> YAMLReader::GetScalar(node_path_t node_path);
+  template std::optional<double> YAMLReader::GetScalar(node_path_t node_path);
+  template std::optional<std::string> YAMLReader::GetScalar(node_path_t node_path);
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename SCALAR>
-  std::vector<SCALAR> YAMLReader::GetVector(YAML::Node node)
+  std::optional<std::vector<SCALAR>> YAMLReader::GetVector(YAML::Node node)
   {
     if(node.IsDefined() && !node.IsNull() && node.IsSequence()) {
       try {
@@ -76,27 +76,27 @@ namespace iguana {
         m_log->Error("YAML Misc. Exception: {}", e.what());
       }
     }
-    throw std::runtime_error("Failed `GetVector`");
+    return std::nullopt;
   }
-  template std::vector<int> YAMLReader::GetVector(YAML::Node node);
-  template std::vector<double> YAMLReader::GetVector(YAML::Node node);
-  template std::vector<std::string> YAMLReader::GetVector(YAML::Node node);
+  template std::optional<std::vector<int>> YAMLReader::GetVector(YAML::Node node);
+  template std::optional<std::vector<double>> YAMLReader::GetVector(YAML::Node node);
+  template std::optional<std::vector<std::string>> YAMLReader::GetVector(YAML::Node node);
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename SCALAR>
-  std::vector<SCALAR> YAMLReader::GetVector(node_path_t node_path)
+  std::optional<std::vector<SCALAR>> YAMLReader::GetVector(node_path_t node_path)
   {
     for(auto const& [config, filename] : m_configs) {
       auto node = FindNode(config, node_path);
       if(node.IsDefined() && !node.IsNull())
         return GetVector<SCALAR>(node);
     }
-    throw std::runtime_error("Failed `GetVector`");
+    return std::nullopt;
   }
-  template std::vector<int> YAMLReader::GetVector(node_path_t node_path);
-  template std::vector<double> YAMLReader::GetVector(node_path_t node_path);
-  template std::vector<std::string> YAMLReader::GetVector(node_path_t node_path);
+  template std::optional<std::vector<int>> YAMLReader::GetVector(node_path_t node_path);
+  template std::optional<std::vector<double>> YAMLReader::GetVector(node_path_t node_path);
+  template std::optional<std::vector<std::string>> YAMLReader::GetVector(node_path_t node_path);
 
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -114,7 +114,7 @@ namespace iguana {
         auto bounds_node = sub_node[key];
         if(bounds_node.IsDefined()) {
           auto bounds = GetVector<SCALAR>(bounds_node);
-          if(bounds.size() == 2 && bounds[0] <= val && bounds[1] >= val)
+          if(bounds.value().size() == 2 && bounds.value()[0] <= val && bounds.value()[1] >= val)
             return sub_node;
         }
       }

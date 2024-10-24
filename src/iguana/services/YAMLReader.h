@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <variant>
 #include <vector>
 
@@ -37,27 +38,27 @@ namespace iguana {
 
       /// Read a scalar value from a `YAML::Node`
       /// @param node the `YAML::Node` to read
-      /// @return the scalar
+      /// @return the scalar, if found
       template <typename SCALAR>
-      SCALAR GetScalar(YAML::Node node);
+      std::optional<SCALAR> GetScalar(YAML::Node node);
 
       /// Read a scalar value from a `YAML::Node` path; searches all currently loaded config files.
       /// @param node_path the `YAML::Node` path
-      /// @return the scalar
+      /// @return the scalar, if found
       template <typename SCALAR>
-      SCALAR GetScalar(node_path_t node_path);
+      std::optional<SCALAR> GetScalar(node_path_t node_path);
 
       /// Read a vector value from a `YAML::Node`
       /// @param node the `YAML::Node` to read
-      /// @return the vector
+      /// @return the vector, if found
       template <typename SCALAR>
-      std::vector<SCALAR> GetVector(YAML::Node node);
+      std::optional<std::vector<SCALAR>> GetVector(YAML::Node node);
 
       /// Read a vector value from a `YAML::Node` path; searches all currently loaded config files.
       /// @param node_path the `YAML::Node` path
-      /// @return the vector
+      /// @return the vector, if found
       template <typename SCALAR>
-      std::vector<SCALAR> GetVector(node_path_t node_path);
+      std::optional<std::vector<SCALAR>> GetVector(node_path_t node_path);
 
       /// Create a function to search a `YAML::Node` for a sub-`YAML::Node` such that
       /// the scalar `val` is within a range specified by `key`

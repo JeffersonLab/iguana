@@ -16,17 +16,17 @@ namespace iguana {
   template <typename OPTION_TYPE>
   OPTION_TYPE Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const
   {
-    try {
-      CompleteOptionNodePath(key, node_path);
-      auto opt = GetCachedOption<OPTION_TYPE>(key);
-      auto val = opt ? opt.value() : m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
-      PrintOptionValue(key, val);
-      return val;
+    CompleteOptionNodePath(key, node_path);
+    auto opt = GetCachedOption<OPTION_TYPE>(key);
+    if(!opt.has_value()) {
+      opt = m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
     }
-    catch(std::runtime_error const& ex) {
-      m_log->Error("Failed to `GetOptionScalar` for key '{}'", key);
+    if(!opt.has_value()) {
+      m_log->Error("Failed to `GetOptionScalar` for key {:?}", key);
       throw std::runtime_error("config file parsing issue");
     }
+    PrintOptionValue(key, opt.value());
+    return opt.value();
   }
   template int Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
   template double Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
@@ -37,17 +37,17 @@ namespace iguana {
   template <typename OPTION_TYPE>
   std::vector<OPTION_TYPE> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const
   {
-    try {
-      CompleteOptionNodePath(key, node_path);
-      auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
-      auto val = opt ? opt.value() : m_yaml_config->GetVector<OPTION_TYPE>(node_path);
-      PrintOptionValue(key, val);
-      return val;
+    CompleteOptionNodePath(key, node_path);
+    auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
+    if(!opt.has_value()) {
+      opt = m_yaml_config->GetVector<OPTION_TYPE>(node_path);
     }
-    catch(std::runtime_error const& ex) {
-      m_log->Error("Failed to `GetOptionVector` for key '{}'", key);
+    if(!opt.has_value()) {
+      m_log->Error("Failed to `GetOptionVector` for key {:?}", key);
       throw std::runtime_error("config file parsing issue");
     }
+    PrintOptionValue(key, opt.value());
+    return opt.value();
   }
   template std::vector<int> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
   template std::vector<double> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
@@ -127,16 +127,14 @@ namespace iguana {
     // parse the files
     m_yaml_config->LoadFiles();
 
-    // if "log" was not set by `SetOption` (i.e., not in `m_option_cache`), check if 'log' is set in
-    // the YAML node for this algorithm
+    // if "log" was not set by `SetOption` (i.e., not in `m_option_cache`)
+    // - NB: not using `GetCachedOption<T>` here, since `T` can be a few different types for key=='log'
     if(m_option_cache.find("log") == m_option_cache.end()) {
-      try {
-        auto log_level = m_yaml_config->GetScalar<std::string>({m_class_name, "log"});
-        m_log->SetLevel(log_level);
-        m_yaml_config->SetLogLevel(log_level);
-      }
-      catch(std::runtime_error const& ex) {
-        // FIXME: maybe YAMLReader::GetScalar etc. should return std::optional
+      // check if 'log' is set in the YAML node for this algorithm
+      auto log_level_from_yaml = m_yaml_config->GetScalar<std::string>({m_class_name, "log"});
+      if(log_level_from_yaml) {
+        m_log->SetLevel(log_level_from_yaml.value());
+        m_yaml_config->SetLogLevel(log_level_from_yaml.value());
       }
     }
   }
