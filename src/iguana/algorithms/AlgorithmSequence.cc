@@ -67,4 +67,22 @@ namespace iguana {
       m_log->Print(level, " - {}", algo->GetName());
   }
 
+  void AlgorithmSequence::SetConfigFileForEachAlgorithm(std::string const& name)
+  {
+    for(auto const& algo : m_sequence)
+      algo->SetConfigFile(name);
+  }
+
+  void AlgorithmSequence::SetConfigDirectoryForEachAlgorithm(std::string const& name)
+  {
+    for(auto const& algo : m_sequence)
+      algo->SetConfigDirectory(name);
+  }
+
+  void AlgorithmSequence::ForEachAlgorithm(std::function<void(algo_t&)> func)
+  {
+    for(auto& algo : m_sequence)
+      func(algo);
+  }
+
 }

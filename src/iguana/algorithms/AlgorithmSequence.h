@@ -93,6 +93,29 @@ namespace iguana {
       /// @param level the log level of the printout
       void PrintSequence(Logger::Level level = Logger::info) const;
 
+      /// @brief Set a custom configuration file for each algorithm in the sequence
+      ///
+      /// Use this function if you have a single configuration file for all the
+      /// algorithms in your sequence
+      /// @param name the configuration file name
+      void SetConfigFileForEachAlgorithm(std::string const& name);
+
+      /// @brief Set a custom configuration file directory for each algorithm in the sequence
+      ///
+      /// Use this function if you have a single configuration file directory for all the
+      /// algorithms in your sequence
+      /// @param name the directory name
+      void SetConfigDirectoryForEachAlgorithm(std::string const& name);
+
+      /// @brief Call a function for each algorithm in the sequence
+      ///
+      /// Use as:
+      /// ```cpp
+      /// ForEachAlgorithm([](auto& algo){ algo->...; });
+      /// ```
+      /// @param func the function to call for each algorithm `algo`
+      void ForEachAlgorithm(std::function<void(algo_t&)> func);
+
     private:
 
       /// The sequence of algorithms
