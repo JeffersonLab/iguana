@@ -1,6 +1,13 @@
 # Cut values for different run periods
 clas12::ZVertexFilter:
 
+  # NOTE: you can set the log level from the configuration file
+  log: trace
+
+  # FIXME: with the addition of `log`, this is now
+  # now a proper YAML file; the list below should be put
+  # in their own separate node
+
   # default cuts
   - default:
     electron_vz: [ -1.5, 1.3 ]
