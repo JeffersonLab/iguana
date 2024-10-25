@@ -184,8 +184,8 @@ namespace iguana::physics {
         }
       }
 
-      result_bank.putShort(i_pindex_a, dih_row, had_a.row);
-      result_bank.putShort(i_pindex_b, dih_row, had_b.row);
+      result_bank.putShort(i_pindex_a, dih_row, static_cast<int16_t>(had_a.row));
+      result_bank.putShort(i_pindex_b, dih_row, static_cast<int16_t>(had_b.row));
       result_bank.putInt(i_pdg_a,      dih_row, had_a.pdg);
       result_bank.putInt(i_pdg_b,      dih_row, had_b.pdg);
       result_bank.putDouble(i_Mh,      dih_row, Mh);

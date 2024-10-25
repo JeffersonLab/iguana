@@ -132,7 +132,7 @@ namespace iguana::physics {
         result_bank_rowlist.push_back(row);
 
         // fill the bank
-        result_bank.putShort(i_pindex, row, row);
+        result_bank.putShort(i_pindex, row, static_cast<int16_t>(row));
         result_bank.putInt(i_pdg,      row, pdg);
         result_bank.putDouble(i_z,     row, z);
         result_bank.putDouble(i_MX,    row, MX);
@@ -142,7 +142,7 @@ namespace iguana::physics {
       }
       else {
         // zero the row
-        result_bank.putShort(i_pindex, row, row);
+        result_bank.putShort(i_pindex, row, static_cast<int16_t>(row));
         result_bank.putInt(i_pdg,      row, pdg);
         result_bank.putDouble(i_z,     row, 0);
         result_bank.putDouble(i_MX,    row, 0);

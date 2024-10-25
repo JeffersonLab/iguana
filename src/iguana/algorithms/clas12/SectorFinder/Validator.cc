@@ -74,7 +74,7 @@ namespace iguana::clas12 {
 
       double x=0,y=0;
       for(auto const& rowcal : cal_bank.getRowList()){
-        if(cal_bank.getInt("pindex", rowcal)==row){
+        if(cal_bank.getShort("pindex", rowcal)==row){
           x=cal_bank.getFloat("x", rowcal);
           y=cal_bank.getFloat("y", rowcal);
         }

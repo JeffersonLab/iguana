@@ -44,7 +44,7 @@ namespace iguana::clas12 {
 
     // create the output bank
     // FIXME: generalize the groupid and itemid
-    auto result_schema = CreateBank(banks, b_result, "REC::Particle::Sector", {"sector/I","pindex/I"}, 0xF000, 4);
+    auto result_schema = CreateBank(banks, b_result, "REC::Particle::Sector", {"sector/I","pindex/S"}, 0xF000, 4);
     i_sector = result_schema.getEntryOrder("sector");
     i_pindex = result_schema.getEntryOrder("pindex");
   }
@@ -95,7 +95,7 @@ namespace iguana::clas12 {
     resultBank.getMutableRowList().setList(particleBank.getRowList());
     for(int row = 0; row < resultBank.getRows(); row++){
       resultBank.putInt(i_sector, row, 0);
-      resultBank.putInt(i_pindex, row, row);
+      resultBank.putShort(i_pindex, row, static_cast<int16_t>(row));
     }
 
 
@@ -112,7 +112,7 @@ namespace iguana::clas12 {
         int sect=GetSector(sct_us, pin_us,row);
         if (sect!=-1){
           resultBank.putInt(i_sector, row, sect);
-          resultBank.putInt(i_pindex, row, row);
+          resultBank.putShort(i_pindex, row, static_cast<int16_t>(row));
         }
       } else {
         enum det_enum {kTrack, kScint, kCal, nDet}; // try to get sector from these detectors, in this order
@@ -136,7 +136,7 @@ namespace iguana::clas12 {
           if(sect != -1) {
             m_log->Trace("{} pindex {} sect {}", det_name, row, sect);
             resultBank.putInt(i_sector, row, sect);
-            resultBank.putInt(i_pindex, row, row);
+            resultBank.putShort(i_pindex, row, static_cast<int16_t>(row));
             break;
           }
         }
@@ -154,7 +154,7 @@ namespace iguana::clas12 {
       int det=bank.getByte("detector",row);
       if (listFDDets.find(det) != listFDDets.end()) {
         sectors.push_back(bank.getInt("sector", row));
-        pindices.push_back(bank.getInt("pindex", row));
+        pindices.push_back(bank.getShort("pindex", row));
       }
     }
   }
