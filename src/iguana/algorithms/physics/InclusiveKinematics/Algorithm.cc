@@ -101,9 +101,10 @@ namespace iguana::physics {
         particle_bank.getFloat("py", lepton_pindex),
         particle_bank.getFloat("pz", lepton_pindex),
         key);
+    result_vars.pindex = lepton_pindex; // FIXME: should be done in `ComputeFromLepton`, but need a proper action function first...
 
     result_bank.setRows(1);
-    result_bank.putShort(i_pindex, 0, static_cast<int16_t>(lepton_pindex));
+    result_bank.putShort(i_pindex, 0, static_cast<int16_t>(result_vars.pindex));
     result_bank.putDouble(i_Q2, 0, result_vars.Q2);
     result_bank.putDouble(i_x, 0, result_vars.x);
     result_bank.putDouble(i_y, 0, result_vars.y);

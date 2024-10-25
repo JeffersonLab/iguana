@@ -9,6 +9,8 @@ namespace iguana::physics {
 
   /// Set of inclusive kinematics variables
   struct InclusiveKinematicsVars {
+      /// @brief `REC::Particle` row (`pindex`) of the scattered electron
+      int pindex;
       /// @brief @latex{x}-component of virtual photon momentum @latex{q}
       vector_element_t qx;
       /// @brief @latex{y}-component of virtual photon momentum @latex{q}
