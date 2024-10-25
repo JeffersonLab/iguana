@@ -1,14 +1,16 @@
-# Cut values for different run periods
 clas12::ZVertexFilter:
 
-  # default cuts
-  - default:
-    electron_vz: [ -20.0, 20.0 ]
+  # scattered electron cuts
+  electron:
 
-  # RG-A fall2018 inbending
-  - runs: [ 4760, 5419 ]
-    electron_vz: [ -13.0, 12.0 ]
+    # default cuts
+    - default:
+      vz: [ -20.0, 20.0 ]
 
-  # RG-A fall2018 outbending
-  - runs: [ 5420, 5674 ]
-    electron_vz: [ -18.0, 10.0 ]
+    # RG-A fall2018 inbending
+    - runs: [ 4760, 5419 ]
+      vz: [ -13.0, 12.0 ]
+
+    # RG-A fall2018 outbending
+    - runs: [ 5420, 5674 ]
+      vz: [ -18.0, 10.0 ]

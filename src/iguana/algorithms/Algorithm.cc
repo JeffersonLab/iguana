@@ -16,17 +16,17 @@ namespace iguana {
   template <typename OPTION_TYPE>
   OPTION_TYPE Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const
   {
-    try {
-      CompleteOptionNodePath(key, node_path);
-      auto opt = GetCachedOption<OPTION_TYPE>(key);
-      auto val = opt ? opt.value() : m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
-      PrintOptionValue(key, val);
-      return val;
+    CompleteOptionNodePath(key, node_path);
+    auto opt = GetCachedOption<OPTION_TYPE>(key);
+    if(!opt.has_value()) {
+      opt = m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
     }
-    catch(std::runtime_error const& ex) {
-      m_log->Error("Failed to `GetOptionScalar` for key '{}'", key);
+    if(!opt.has_value()) {
+      m_log->Error("Failed to `GetOptionScalar` for key {:?}", key);
       throw std::runtime_error("config file parsing issue");
     }
+    PrintOptionValue(key, opt.value());
+    return opt.value();
   }
   template int Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
   template double Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
@@ -37,17 +37,17 @@ namespace iguana {
   template <typename OPTION_TYPE>
   std::vector<OPTION_TYPE> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const
   {
-    try {
-      CompleteOptionNodePath(key, node_path);
-      auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
-      auto val = opt ? opt.value() : m_yaml_config->GetVector<OPTION_TYPE>(node_path);
-      PrintOptionValue(key, val);
-      return val;
+    CompleteOptionNodePath(key, node_path);
+    auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
+    if(!opt.has_value()) {
+      opt = m_yaml_config->GetVector<OPTION_TYPE>(node_path);
     }
-    catch(std::runtime_error const& ex) {
-      m_log->Error("Failed to `GetOptionVector` for key '{}'", key);
+    if(!opt.has_value()) {
+      m_log->Error("Failed to `GetOptionVector` for key {:?}", key);
       throw std::runtime_error("config file parsing issue");
     }
+    PrintOptionValue(key, opt.value());
+    return opt.value();
   }
   template std::vector<int> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
   template std::vector<double> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
@@ -108,19 +108,35 @@ namespace iguana {
 
   void Algorithm::ParseYAMLConfig()
   {
+
+    // start YAMLReader instance, if not yet started
     if(!m_yaml_config) {
+      // set config files and directories specified by `::SetConfigFile`, `::SetConfigDirectory`, etc.
       o_user_config_file = GetCachedOption<std::string>("config_file").value_or("");
       o_user_config_dir  = GetCachedOption<std::string>("config_dir").value_or("");
       m_log->Debug("Instantiating `YAMLReader`");
       m_yaml_config = std::make_unique<YAMLReader>("config|" + m_name);
-      m_yaml_config->SetLogLevel(m_log->GetLevel());
+      m_yaml_config->SetLogLevel(m_log->GetLevel()); // synchronize log levels
       m_yaml_config->AddDirectory(o_user_config_dir);
       m_yaml_config->AddFile(m_default_config_file);
       m_yaml_config->AddFile(o_user_config_file);
     }
     else
       m_log->Debug("`YAMLReader` already instantiated for this algorithm; using that");
+
+    // parse the files
     m_yaml_config->LoadFiles();
+
+    // if "log" was not set by `SetOption` (i.e., not in `m_option_cache`)
+    // - NB: not using `GetCachedOption<T>` here, since `T` can be a few different types for key=='log'
+    if(m_option_cache.find("log") == m_option_cache.end()) {
+      // check if 'log' is set in the YAML node for this algorithm
+      auto log_level_from_yaml = m_yaml_config->GetScalar<std::string>({m_class_name, "log"});
+      if(log_level_from_yaml) {
+        m_log->SetLevel(log_level_from_yaml.value());
+        m_yaml_config->SetLogLevel(log_level_from_yaml.value());
+      }
+    }
   }
 
   ///////////////////////////////////////////////////////////////////////////////
