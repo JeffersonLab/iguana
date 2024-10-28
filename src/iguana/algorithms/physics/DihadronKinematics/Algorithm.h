@@ -21,6 +21,8 @@ namespace iguana::physics {
     double Mh;
     /// @brief @latex{z}: Momentum fraction of the fragmenting parton carried by the dihadron
     double z;
+    /// @brief @latex{P_h^\perp}: transverse momentum of the dihadron in the @latex{\perp}-frame (transverse to @latex{\vec{q}})
+    double PhPerp;
     /// @brief @latex{M_X(ehhX)}: Missing mass of the dihadron
     double MX;
     /// @brief @latex{x_F}: Feynman-x of the dihadron
@@ -95,6 +97,7 @@ namespace iguana::physics {
       int i_pdg_b;
       int i_Mh;
       int i_z;
+      int i_PhPerp;
       int i_MX;
       int i_xF;
       int i_phiH;
