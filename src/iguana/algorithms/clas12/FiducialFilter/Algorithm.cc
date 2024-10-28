@@ -242,7 +242,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
       std::map<int, FiducialFilter::traj_row_data> traj_map;
       
       for(auto const& row : bank.getRowList()){
-          auto pindex = bank.getInt("pindex",row);
+          auto pindex = bank.getShort("pindex",row);
           auto x      = bank.getFloat("x",row);
           auto y      = bank.getFloat("y",row);
           auto z      = bank.getFloat("z",row);

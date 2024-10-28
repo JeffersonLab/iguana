@@ -313,7 +313,7 @@ namespace iguana::clas12 {
       // Loop over REC::Calorimeter rows
       // Here we use bank.getRows() to purposefully ignore upstream filters
       for(int row = 0; row < bank.getRows(); row++){
-          auto pindex = bank.getInt("pindex",row);
+          auto pindex = bank.getShort("pindex",row);
           auto x      = bank.getFloat("x",row);
           auto y      = bank.getFloat("y",row);
           auto z      = bank.getFloat("z",row);

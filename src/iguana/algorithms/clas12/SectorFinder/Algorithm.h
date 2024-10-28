@@ -48,7 +48,7 @@ namespace iguana::clas12 {
       ///     // eg det 7 is the ECAL
       ///     if(det==7){
       ///       sectors.push_back(bank.getInt("sector", row));
-      ///       pindices.push_back(bank.getInt("pindex", row));
+      ///       pindices.push_back(bank.getShort("pindex", row));
       ///     }
       /// }
       ///
