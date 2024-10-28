@@ -138,7 +138,8 @@ namespace iguana::physics {
       double z = p_target.Dot(p_Ph) / p_target.Dot(p_q);
 
       // calculate PhPerp
-      double PhPerp = tools::RejectVector(p_Ph.Vect(), p_q.Vect()).R();
+      auto opt_PhPerp = tools::RejectVector(p_Ph.Vect(), p_q.Vect());
+      double PhPerp   = opt_PhPerp.has_value() ? opt_PhPerp.value().R() : tools::UNDEF;
 
       // calculate Mh
       double Mh = p_Ph.M();
