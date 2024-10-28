@@ -42,6 +42,10 @@ namespace iguana::physics {
         [](auto const& b, auto const r) { return b.getDouble("z", r); }
       },
       {
+        new TH1D("PhPerp_dist", "P_{h}^{{}^{#perp}}", n_bins, 0, 2),
+        [](auto const& b, auto const r) { return b.getDouble("PhPerp", r); }
+      },
+      {
         new TH1D("MX_dist", "missing mass M_{X} [GeV];", n_bins, 0, 4),
         [](auto const& b, auto const r) { return b.getDouble("MX", r); }
       },

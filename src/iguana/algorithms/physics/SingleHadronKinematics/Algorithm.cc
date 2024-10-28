@@ -23,6 +23,7 @@ namespace iguana::physics {
           "pindex/S",
           "pdg/I",
           "z/D",
+          "PhPerp/D",
           "MX/D",
           "xF/D",
           "phiH/D",
@@ -33,6 +34,7 @@ namespace iguana::physics {
     i_pindex = result_schema.getEntryOrder("pindex");
     i_pdg    = result_schema.getEntryOrder("pdg");
     i_z      = result_schema.getEntryOrder("z");
+    i_PhPerp = result_schema.getEntryOrder("PhPerp");
     i_MX     = result_schema.getEntryOrder("MX");
     i_xF     = result_schema.getEntryOrder("xF");
     i_phiH   = result_schema.getEntryOrder("phiH");
@@ -112,6 +114,10 @@ namespace iguana::physics {
         // calculate z
         double z = p_target.Dot(p_Ph) / p_target.Dot(p_q);
 
+        // calculate PhPerp
+        auto opt_PhPerp = tools::RejectVector(p_Ph.Vect(), p_q.Vect());
+        double PhPerp   = opt_PhPerp.has_value() ? opt_PhPerp.value().R() : tools::UNDEF;
+
         // calculate xi
         double xi = p_q.Dot(p_Ph) / p_target.Dot(p_q);
 
@@ -132,23 +138,25 @@ namespace iguana::physics {
         result_bank_rowlist.push_back(row);
 
         // fill the bank
-        result_bank.putShort(i_pindex, row, static_cast<int16_t>(row));
-        result_bank.putInt(i_pdg,      row, pdg);
-        result_bank.putDouble(i_z,     row, z);
-        result_bank.putDouble(i_MX,    row, MX);
-        result_bank.putDouble(i_xF,    row, xF);
-        result_bank.putDouble(i_phiH,  row, phiH);
-        result_bank.putDouble(i_xi,    row, xi);
+        result_bank.putShort(i_pindex,  row, static_cast<int16_t>(row));
+        result_bank.putInt(i_pdg,       row, pdg);
+        result_bank.putDouble(i_z,      row, z);
+        result_bank.putDouble(i_PhPerp, row, PhPerp);
+        result_bank.putDouble(i_MX,     row, MX);
+        result_bank.putDouble(i_xF,     row, xF);
+        result_bank.putDouble(i_phiH,   row, phiH);
+        result_bank.putDouble(i_xi,     row, xi);
       }
       else {
         // zero the row
-        result_bank.putShort(i_pindex, row, static_cast<int16_t>(row));
-        result_bank.putInt(i_pdg,      row, pdg);
-        result_bank.putDouble(i_z,     row, 0);
-        result_bank.putDouble(i_MX,    row, 0);
-        result_bank.putDouble(i_xF,    row, 0);
-        result_bank.putDouble(i_phiH,  row, 0);
-        result_bank.putDouble(i_xi,    row, 0);
+        result_bank.putShort(i_pindex,  row, static_cast<int16_t>(row));
+        result_bank.putInt(i_pdg,       row, pdg);
+        result_bank.putDouble(i_z,      row, 0);
+        result_bank.putDouble(i_PhPerp, row, 0);
+        result_bank.putDouble(i_MX,     row, 0);
+        result_bank.putDouble(i_xF,     row, 0);
+        result_bank.putDouble(i_phiH,   row, 0);
+        result_bank.putDouble(i_xi,     row, 0);
       }
     }
 
