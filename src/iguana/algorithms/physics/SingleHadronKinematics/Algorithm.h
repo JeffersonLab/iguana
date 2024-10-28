@@ -14,6 +14,8 @@ namespace iguana::physics {
     int pdg;
     /// @brief @latex{z}: Momentum fraction of the fragmenting parton carried by the hadron
     double z;
+    /// @brief @latex{P_h^\perp}: transverse momentum of the hadron in the @latex{\perp}-frame (transverse to @latex{\vec{q}})
+    double PhPerp;
     /// @brief @latex{M_X(ehX)}: Missing mass of the hadron
     double MX;
     /// @brief @latex{x_F}: Feynman-x of the hadron
@@ -66,6 +68,7 @@ namespace iguana::physics {
       int i_pindex;
       int i_pdg;
       int i_z;
+      int i_PhPerp;
       int i_MX;
       int i_xF;
       int i_phiH;
