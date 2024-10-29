@@ -145,6 +145,7 @@ case $runner in
     ### link homebrew's gcc, for gfortran
     brew unlink gcc
     brew link gcc
+    ### link homebrew's sqlite, for RCDB
     brew unlink sqlite
     brew link --force sqlite
     ### kluge ssl linker issue (see, e.g., https://github.com/brianmario/mysql2/issues/795)

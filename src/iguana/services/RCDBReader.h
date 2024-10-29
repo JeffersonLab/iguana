@@ -16,7 +16,8 @@ namespace iguana {
   /// - The environment variable `RCDB_CONNECTION` (which is likely set if you are on `ifarm`)
   /// - A default URL, which will be printed in a warning; see `iguana::RCDBReader::m_default_url`
   ///
-  /// RCDB will automatically use `mariadb` / `mysql` or `sqlite`, depending on the RCDB path, and whether you have satisfied the dependencies.
+  /// RCDB will automatically use `mariadb` / `mysql` or `sqlite`, depending on the above RCDB database path,
+  /// and whether you have satisfied the dependencies.
   class RCDBReader : public Object
   {
 

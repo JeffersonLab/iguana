@@ -26,20 +26,15 @@ dbms_dict = {
   'sqlite': [ 'sqlite3' ],
 }
 foreach dbms, pkgs : dbms_dict
-  found = false
   foreach pkg : pkgs
     dep = dependency(pkg, required: false)
     if dep.found()
       dbms_deps += dep
       dbms_args += { 'mysql': '-DRCDB_MYSQL', 'sqlite': '-DRCDB_SQLITE' }[dbms]
       message(f'using @pkg@ for RCDB DBMS')
-      found = true
       break
     endif
   endforeach
-  # if not found
-  #   warning(f'no dependencies found for RCDB DBMS @dbms@')
-  # endif
 endforeach
 if dbms_deps.length() == 0
   error('none of the DBMSs (' + ', '.join(dbms_dict.keys()) + ') were found, so RCDB will not be used in this build; ' + require_message)
