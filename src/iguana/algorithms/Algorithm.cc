@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "BankDefs.h"
 
 #include <numeric>
 
@@ -246,6 +247,22 @@ namespace iguana {
     banks.push_back({bank_schema});
     bank_idx = GetBankIndex(banks, bank_name);
     return bank_schema;
+  }
+
+  hipo::schema Algorithm::CreateBankNew(
+      hipo::banklist& banks,
+      hipo::banklist::size_type& idx,
+      std::string const& bank_name) const noexcept(false)
+  {
+    for(auto const& bank_def : bank_defs) {
+      if(bank_def.name == bank_name) {
+        std::vector<std::string> bank_cols;
+        for(auto const& entry : bank_def.entries)
+          bank_cols.push_back(entry.name + "/" + entry.type);
+        return CreateBank(banks, idx, bank_name, bank_cols, bank_def.group, bank_def.item);
+      }
+    }
+    throw std::runtime_error(fmt::format("bank {:?} not found in 'BankDefs.h'", bank_name));
   }
 
   ///////////////////////////////////////////////////////////////////////////////

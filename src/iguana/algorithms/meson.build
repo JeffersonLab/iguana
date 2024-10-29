@@ -110,6 +110,7 @@ algo_headers = [
   'Algorithm.h',
   'AlgorithmBoilerplate.h',
   'TypeDefs.h',
+  'BankDefs.h',
   'AlgorithmSequence.h',
 ]
 if ROOT_dep.found()

@@ -13,14 +13,7 @@ namespace iguana::physics {
     b_config   = GetBankIndex(banks, "RUN::config");
 
     // create the output bank
-    // FIXME: generalize the groupid and itemid
-    auto result_schema = CreateBank(
-        banks,
-        b_result,
-        GetClassName(),
-        {"pindex/S", "Q2/D", "x/D", "y/D", "W/D", "nu/D", "qx/D", "qy/D", "qz/D", "qE/D", "beamPz/D", "targetM/D"},
-        0xF000,
-        1);
+    auto result_schema = CreateBankNew(banks, b_result, GetClassName());
     i_pindex  = result_schema.getEntryOrder("pindex");
     i_Q2      = result_schema.getEntryOrder("Q2");
     i_x       = result_schema.getEntryOrder("x");
