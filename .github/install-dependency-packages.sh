@@ -146,7 +146,7 @@ case $runner in
     brew unlink gcc
     brew link gcc
     brew unlink sqlite
-    brew link sqlite
+    brew link --force sqlite
     ### kluge ssl linker issue (see, e.g., https://github.com/brianmario/mysql2/issues/795)
     echo "LIBRARY_PATH=${LIBRARY_PATH:+${LIBRARY_PATH}:}$(pkg-config libssl --variable libdir)" | tee -a $GITHUB_ENV
     ;;
