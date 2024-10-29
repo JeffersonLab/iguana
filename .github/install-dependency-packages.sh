@@ -36,6 +36,7 @@ GENERAL_PACKAGE_LIST_LINUX=(
   davix
   ### RCDB dependencies
   mariadb
+  sqlite
 )
 IGUANA_PACKAGE_LIST_LINUX=(
   fmt
@@ -60,6 +61,7 @@ GENERAL_PACKAGE_LIST_MACOS=(
   gsl
   ### RCDB dependencies
   mariadb
+  sqlite
 )
 IGUANA_PACKAGE_LIST_MACOS=(
   fmt
