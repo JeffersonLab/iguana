@@ -445,6 +445,7 @@ jobs:
       #     echo '- to compare to the report from the `main` branch, see <https://jeffersonlab.github.io/iguana/coverage-report>' >> $GITHUB_STEP_SUMMARY
       ### test relocatability
       - name: test relocatability
+        if: ${{ matrix.id == 'cpp' }} # don't bother re-running santizers, etc.
         run: |
           mv iguana relocated
           source relocated/bin/this_iguana.sh --verbose # do not use --githubCI option, since we want this environment to be for only this step
