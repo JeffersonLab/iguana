@@ -45,13 +45,11 @@ fi
 buildDir=$1
 installDir=$(realpath $2)
 testFile=$(realpath $3)
-nativeFile=$sourceDir/meson/release/native/release.ini
 echo """
 sourceDir  = $sourceDir
 buildDir   = $buildDir
 installDir = $installDir
-testFile   = $testFile
-nativeFile = $nativeFile"""
+testFile   = $testFile"""
 [ ! -f "$testFile" ] && echo "ERROR: test file does not exist" >&2 && exit 1
 print_dep_vars
 printf "\nProceed with installation? [y/N] "
@@ -68,10 +66,17 @@ esac
 
 msg "meson setup"
 meson setup $buildDir $sourceDir \
-  --native-file=$nativeFile      \
   --prefix=$installDir           \
-  -Drcdb:home=$RCDB_HOME         \
-  -Dtest_data_file=$testFile
+  -D buildtype=release           \
+  -D bind_fortran=true           \
+  -D bind_python=true            \
+  -D install_examples=true       \
+  -D z_install_envfile=false     \
+  -D z_require_root=true         \
+  -D rcdb:home=$RCDB_HOME        \
+  -D rcdb:use_mariadb=true       \
+  -D rcdb:use_sqlite=true        \
+  -D test_data_file=$testFile
 msg "meson install"
 meson install -C $buildDir
 msg "meson test"

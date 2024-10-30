@@ -18,23 +18,31 @@ else
   error(f'RCDB not found; set build option "rcdb:home" to the RCDB installation (e.g., to "$RCDB_HOME"); @require_message@')
 endif
 
-# RCDB dependencies: a database management system (DBMS), mysql and/or sqlite
+# RCDB dependencies: a database management system (DBMS), mariadb and/or sqlite
 dbms_args = []
 dbms_deps = []
 dbms_dict = {
-  'mysql':  [ 'mariadb', 'mysql', 'mysqlclient' ], # prioritizing mariadb, an open source fork of mysql
-  'sqlite': [ 'sqlite3' ],
+  'mariadb':  {
+    'use': get_option('use_mariadb'),
+    'pkgs': [ 'mariadb', 'mysql', 'mysqlclient' ], # prioritizing mariadb, an open source fork of mysql
+  },
+  'sqlite': {
+    'use': get_option('use_sqlite'),
+    'pkgs': [ 'sqlite3' ],
+  },
 }
-foreach dbms, pkgs : dbms_dict
-  foreach pkg : pkgs
-    dep = dependency(pkg, required: false)
-    if dep.found()
-      dbms_deps += dep
-      dbms_args += { 'mysql': '-DRCDB_MYSQL', 'sqlite': '-DRCDB_SQLITE' }[dbms]
-      message(f'using @pkg@ for RCDB DBMS')
-      break
-    endif
-  endforeach
+foreach dbms, info : dbms_dict
+  if info['use']
+    foreach pkg : info['pkgs']
+      dep = dependency(pkg, required: false)
+      if dep.found()
+        dbms_deps += dep
+        dbms_args += { 'mariadb': '-DRCDB_MYSQL', 'sqlite': '-DRCDB_SQLITE' }[dbms]
+        message(f'using @pkg@ for RCDB DBMS')
+        break
+      endif
+    endforeach
+  endif
 endforeach
 if dbms_deps.length() == 0
   error('none of the DBMSs (' + ', '.join(dbms_dict.keys()) + ') were found, so RCDB will not be used in this build; ' + require_message)
