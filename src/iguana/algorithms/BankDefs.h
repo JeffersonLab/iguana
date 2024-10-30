@@ -2,13 +2,6 @@
 #include <string>
 
 
-// FIXME
-// This really ought to be a YAML file, however:
-// - could be handled by `ConfigFileReader`, but need to prevent users from accidentally overriding this
-//   file with `IGUANA_CONFIG_PATH`
-// - we could generate this header file, given a YAML file, with Python (not Ruby, since Meson already needs Python, but Ruby
-//   is only needed for Chameleon)
-
 namespace iguana {
 
   struct BankColDef {

@@ -1,0 +1,22 @@
+[
+  {
+    "name": "physics::InclusiveKinematics",
+    "group": 30000,
+    "item": 1,
+    "info": "",
+    "entries": [
+      { "name": "pindex",  "type": "S", "info": ""},
+      { "name": "Q2",      "type": "D", "info": ""},
+      { "name": "x",       "type": "D", "info": ""},
+      { "name": "y",       "type": "D", "info": ""},
+      { "name": "W",       "type": "D", "info": ""},
+      { "name": "nu",      "type": "D", "info": ""},
+      { "name": "qx",      "type": "D", "info": ""},
+      { "name": "qy",      "type": "D", "info": ""},
+      { "name": "qz",      "type": "D", "info": ""},
+      { "name": "qE",      "type": "D", "info": ""},
+      { "name": "beamPz",  "type": "D", "info": ""},
+      { "name": "targetM", "type": "D", "info": ""}
+    ]
+  }
+]
