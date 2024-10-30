@@ -1,1 +1,3 @@
-option('home', type: 'string', value: '', description: 'Location of RCDB installation; if empty, RCDB-dependent code will not be included')
+option('home',        type: 'string',  value: '',   description: 'Location of RCDB installation; if empty, RCDB-dependent code will not be included')
+option('use_mariadb', type: 'boolean', value: true, description: 'Use mariadb or mysql, if found on the system; set this to false to disable support for this')
+option('use_sqlite',  type: 'boolean', value: true, description: 'Use sqlite, if found on the system; set this to false to disable support for this')
