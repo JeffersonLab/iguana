@@ -25,6 +25,8 @@ namespace iguana::physics {
     double phiH;
     /// @brief @latex{\xi_h}: Longitudinal momentum fraction of the nucleon carried by the hadron
     double xi;
+    /// @brief @latex{y_{h,B}}: Breit frame rapidity
+    double yB;
   };
 
   /// @brief_algo Calculate semi-inclusive hadron kinematic quantities defined in `iguana::physics::SingleHadronKinematicsVars`
@@ -73,6 +75,7 @@ namespace iguana::physics {
       int i_xF;
       int i_phiH;
       int i_xi;
+      int i_yB;
 
       // config options
       std::set<int> o_hadron_pdgs;

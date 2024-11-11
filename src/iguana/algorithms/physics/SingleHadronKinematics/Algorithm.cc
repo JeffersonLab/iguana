@@ -27,7 +27,8 @@ namespace iguana::physics {
           "MX2/D",
           "xF/D",
           "phiH/D",
-          "xi/D"
+          "xi/D",
+          "yB/D"
         },
         0xF000,
         7);
@@ -39,6 +40,7 @@ namespace iguana::physics {
     i_xF     = result_schema.getEntryOrder("xF");
     i_phiH   = result_schema.getEntryOrder("phiH");
     i_xi     = result_schema.getEntryOrder("xi");
+    i_yB     = result_schema.getEntryOrder("yB");
 
     // parse config file
     ParseYAMLConfig();
@@ -81,10 +83,12 @@ namespace iguana::physics {
         inc_kin_bank.getDouble("qE", 0));
 
     // get additional inclusive variables
+    auto x = inc_kin_bank.getDouble("x", 0);
     auto W = inc_kin_bank.getDouble("W", 0);
 
     // boosts
     ROOT::Math::Boost boost__qp((p_q + p_target).BoostToCM()); // CoM frame of target and virtual photon
+    ROOT::Math::Boost boost__breit((p_q + 2 * x * p_target).BoostToCM()); // Breit frame
     auto p_q__qp = boost__qp(p_q);
 
     // banks' row lists
@@ -109,7 +113,8 @@ namespace iguana::physics {
             particle_bank.getFloat("py", row),
             particle_bank.getFloat("pz", row),
             particle::mass.at(static_cast<particle::PDG>(pdg)));
-        auto p_Ph__qp = boost__qp(p_Ph);
+        auto p_Ph__qp    = boost__qp(p_Ph);
+        auto p_Ph__breit = boost__breit(p_Ph);
 
         // calculate z
         double z = p_target.Dot(p_Ph) / p_target.Dot(p_q);
@@ -120,6 +125,15 @@ namespace iguana::physics {
 
         // calculate xi
         double xi = p_q.Dot(p_Ph) / p_target.Dot(p_q);
+
+        // calculate yB
+        double yB = tools::UNDEF;
+        auto opt_pz__breit = tools::ProjectVector(p_Ph__breit.Vect(), p_q.Vect());
+        if(opt_pz__breit.has_value()) {
+          auto pz__breit = opt_pz__breit.value().R();
+          auto E__breit  = p_Ph__breit.E();
+          yB = 0.5 * std::log((E__breit + pz__breit) / (E__breit - pz__breit));
+        }
 
         // calculate MX2
         double MX2 = (p_target + p_q - p_Ph).M2();
@@ -146,6 +160,7 @@ namespace iguana::physics {
         result_bank.putDouble(i_xF,     row, xF);
         result_bank.putDouble(i_phiH,   row, phiH);
         result_bank.putDouble(i_xi,     row, xi);
+        result_bank.putDouble(i_yB,     row, yB);
       }
       else {
         // zero the row
@@ -157,6 +172,7 @@ namespace iguana::physics {
         result_bank.putDouble(i_xF,     row, 0);
         result_bank.putDouble(i_phiH,   row, 0);
         result_bank.putDouble(i_xi,     row, 0);
+        result_bank.putDouble(i_yB,     row, 0);
       }
     }
 
