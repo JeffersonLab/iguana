@@ -24,7 +24,7 @@ namespace iguana::physics {
           "pdg/I",
           "z/D",
           "PhPerp/D",
-          "MX/D",
+          "MX2/D",
           "xF/D",
           "phiH/D",
           "xi/D"
@@ -35,7 +35,7 @@ namespace iguana::physics {
     i_pdg    = result_schema.getEntryOrder("pdg");
     i_z      = result_schema.getEntryOrder("z");
     i_PhPerp = result_schema.getEntryOrder("PhPerp");
-    i_MX     = result_schema.getEntryOrder("MX");
+    i_MX2    = result_schema.getEntryOrder("MX2");
     i_xF     = result_schema.getEntryOrder("xF");
     i_phiH   = result_schema.getEntryOrder("phiH");
     i_xi     = result_schema.getEntryOrder("xi");
@@ -121,8 +121,8 @@ namespace iguana::physics {
         // calculate xi
         double xi = p_q.Dot(p_Ph) / p_target.Dot(p_q);
 
-        // calculate MX
-        double MX = (p_target + p_q - p_Ph).M();
+        // calculate MX2
+        double MX2 = (p_target + p_q - p_Ph).M2();
 
         // calculate xF
         double xF = 2 * p_Ph__qp.Vect().Dot(p_q__qp.Vect()) / (W * p_q__qp.Vect().R());
@@ -142,7 +142,7 @@ namespace iguana::physics {
         result_bank.putInt(i_pdg,       row, pdg);
         result_bank.putDouble(i_z,      row, z);
         result_bank.putDouble(i_PhPerp, row, PhPerp);
-        result_bank.putDouble(i_MX,     row, MX);
+        result_bank.putDouble(i_MX2,    row, MX2);
         result_bank.putDouble(i_xF,     row, xF);
         result_bank.putDouble(i_phiH,   row, phiH);
         result_bank.putDouble(i_xi,     row, xi);
@@ -153,7 +153,7 @@ namespace iguana::physics {
         result_bank.putInt(i_pdg,       row, pdg);
         result_bank.putDouble(i_z,      row, 0);
         result_bank.putDouble(i_PhPerp, row, 0);
-        result_bank.putDouble(i_MX,     row, 0);
+        result_bank.putDouble(i_MX2,    row, 0);
         result_bank.putDouble(i_xF,     row, 0);
         result_bank.putDouble(i_phiH,   row, 0);
         result_bank.putDouble(i_xi,     row, 0);
