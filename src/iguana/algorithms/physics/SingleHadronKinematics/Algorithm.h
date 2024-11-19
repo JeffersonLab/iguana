@@ -20,13 +20,13 @@ namespace iguana::physics {
     double MX2;
     /// @brief @latex{x_F}: Feynman-x of the hadron
     double xF;
+    /// @brief @latex{y_{h,B}}: Breit frame rapidity
+    double yB;
     /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
     /// if the value is `tools::UNDEF`, the calculation failed
     double phiH;
     /// @brief @latex{\xi_h}: Longitudinal momentum fraction of the nucleon carried by the hadron
     double xi;
-    /// @brief @latex{y_{h,B}}: Breit frame rapidity
-    double yB;
   };
 
   /// @brief_algo Calculate semi-inclusive hadron kinematic quantities defined in `iguana::physics::SingleHadronKinematicsVars`
@@ -73,9 +73,9 @@ namespace iguana::physics {
       int i_PhPerp;
       int i_MX2;
       int i_xF;
+      int i_yB;
       int i_phiH;
       int i_xi;
-      int i_yB;
 
       // config options
       std::set<int> o_hadron_pdgs;
