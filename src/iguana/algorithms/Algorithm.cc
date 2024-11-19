@@ -145,21 +145,17 @@ namespace iguana {
   {
     if(m_rows_only)
       return 0;
-    auto it = std::find_if(
-        banks.begin(),
-        banks.end(),
-        [&bank_name](auto& bank)
-        { return bank.getSchema().getName() == bank_name; });
-    if(it == banks.end()) {
+    try {
+      auto idx = hipo::getBanklistIndex(banks, bank_name);
+      m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
+      return idx;
+    } catch(std::runtime_error const& ex) {
       m_log->Error("required input bank '{}' not found; cannot `Start` algorithm '{}'", bank_name, m_class_name);
       auto creators = AlgorithmFactory::QueryNewBank(bank_name);
       if(creators)
         m_log->Error(" -> this bank is created by algorithm(s) [{}]; please `Start` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
       throw std::runtime_error("cannot cache bank index");
     }
-    auto idx = std::distance(banks.begin(), it);
-    m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
-    return idx;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
