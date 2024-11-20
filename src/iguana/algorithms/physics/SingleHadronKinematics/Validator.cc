@@ -42,7 +42,7 @@ namespace iguana::physics {
         [](auto const& b, auto const r) { return b.getDouble("PhPerp", r); }
       },
       {
-        new TH1D("MX_dist", "missing mass: M_{X} [GeV];", n_bins, 0, 4),
+        new TH1D("MX_dist", "Missing mass: M_{X} [GeV];", n_bins, 0, 4),
         [](auto const& b, auto const r) { auto MX2 = b.getDouble("MX2", r); return MX2 >= 0 ? std::sqrt(MX2) : tools::UNDEF; }
       },
       {

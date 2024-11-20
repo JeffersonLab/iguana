@@ -20,7 +20,7 @@ namespace iguana::physics {
     double MX2;
     /// @brief @latex{x_F}: Feynman-x of the hadron
     double xF;
-    /// @brief @latex{y_{h,B}}: Breit frame rapidity
+    /// @brief @latex{y_{h,B}}: Breit frame rapidity of the hadron
     double yB;
     /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
     /// if the value is `tools::UNDEF`, the calculation failed

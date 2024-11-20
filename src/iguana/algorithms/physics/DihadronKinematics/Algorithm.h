@@ -27,6 +27,8 @@ namespace iguana::physics {
     double MX2;
     /// @brief @latex{x_F}: Feynman-x of the dihadron
     double xF;
+    /// @brief @latex{y_{h,B}}: Breit frame rapidity of the dihadron
+    double yB;
     /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
     /// if the value is `tools::UNDEF`, the calculation failed
     double phiH;
@@ -100,6 +102,7 @@ namespace iguana::physics {
       int i_PhPerp;
       int i_MX2;
       int i_xF;
+      int i_yB;
       int i_phiH;
       int i_phiR;
       int i_theta;
