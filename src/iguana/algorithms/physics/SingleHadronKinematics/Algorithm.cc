@@ -89,7 +89,8 @@ namespace iguana::physics {
     // boosts
     ROOT::Math::Boost boost__qp((p_q + p_target).BoostToCM()); // CoM frame of target and virtual photon
     ROOT::Math::Boost boost__breit((p_q + 2 * x * p_target).BoostToCM()); // Breit frame
-    auto p_q__qp = boost__qp(p_q);
+    auto p_q__qp    = boost__qp(p_q);
+    auto p_q__breit = boost__breit(p_q);
 
     // banks' row lists
     auto const& particle_bank_rowlist = particle_bank.getRowList();
@@ -130,13 +131,7 @@ namespace iguana::physics {
         double xF = 2 * p_Ph__qp.Vect().Dot(p_q__qp.Vect()) / (W * p_q__qp.Vect().R());
 
         // calculate yB
-        double yB = tools::UNDEF;
-        auto opt_pz__breit = tools::ProjectVector(p_Ph__breit.Vect(), p_q.Vect());
-        if(opt_pz__breit.has_value()) {
-          auto pz__breit = opt_pz__breit.value().R();
-          auto E__breit  = p_Ph__breit.E();
-          yB = 0.5 * std::log((E__breit + pz__breit) / (E__breit - pz__breit));
-        }
+        double yB = tools::ParticleRapidity(p_Ph__breit, p_q__breit.Vect()).value_or(tools::UNDEF);
 
         // calculate phiH
         double phiH = tools::PlaneAngle(

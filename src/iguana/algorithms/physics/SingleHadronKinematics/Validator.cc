@@ -1,5 +1,6 @@
 #include "Validator.h"
 #include "TypeDefs.h"
+#include "iguana/algorithms/physics/Tools.h"
 
 #include <Math/Vector3D.h>
 #include <TStyle.h>
@@ -42,7 +43,7 @@ namespace iguana::physics {
       },
       {
         new TH1D("MX_dist", "missing mass: M_{X} [GeV];", n_bins, 0, 4),
-        [](auto const& b, auto const r) { auto MX2 = b.getDouble("MX2", r); return MX2 >= 0 ? std::sqrt(MX2) : -100; } // FIXME: handle space-like case better
+        [](auto const& b, auto const r) { auto MX2 = b.getDouble("MX2", r); return MX2 >= 0 ? std::sqrt(MX2) : tools::UNDEF; }
       },
       {
         new TH1D("xF_dist", "Feynman-x: x_{F};", n_bins, -1, 1),
