@@ -38,7 +38,7 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;   
 
-      /// **Method**: Applies forward detector cut using REC::Particle Theta
+      /// Applies forward detector cut using REC::Particle Theta
       /// @param theta lab angle of the particle with respect to the beam direction (radians)
       /// @returns `true` if the particle's theta is within the forward detector coverage, `false` otherwise
       bool ForwardDetectorFilter(float const theta) const;
@@ -66,14 +66,14 @@ namespace iguana::clas12 {
         double ecout_m2v = 0;
       }; 
       
-      /// **Method**: Applies pid purity cuts to photons, compatible to how the GBT models are trained
+      /// Applies pid purity cuts to photons, compatible to how the GBT models are trained
       /// @param E energy of the photon
       /// @param Epcal energy the photon has deposited in the pre-shower calorimeter
       /// @param theta lab angle of the photon with respect to the beam direction (radians)
       /// @returns `true` if the photon passes the pid purity cuts, `false` otherwise
       bool PidPurityPhotonFilter(float const E, float const Epcal, float const theta) const;
 
-      /// **Action function**: Classifies the photon for a given event as signal or background
+      /// Classifies the photon for a given event as signal or background
       /// @param particleBank the REC::Particle hipo bank
       /// @param caloBank the REC::Calorimeter hipo bank
       /// @param calo_map the std::map<> of calorimeter data for the event, indexed by pindex
@@ -83,32 +83,32 @@ namespace iguana::clas12 {
       bool Filter(hipo::bank const &particleBank, hipo::bank const &caloBank, std::map<int, PhotonGBTFilter::calo_row_data> calo_map, int const row, int const runnum) const;
       
       
-      /// **Method**: Calls the appropriate CatBoost model for the given run group, classifying the photon of interest
+      /// Calls the appropriate CatBoost model for the given run group, classifying the photon of interest
       /// @param input_data the input features of the model
       /// @param runnum the run number associated to the event
       /// @returns `true` if the 
       bool ClassifyPhoton(std::vector<float> const &input_data, int const runnum) const;
       
       
-      /// **Method**: Gets calorimeter data for particles in the event
+      /// Gets calorimeter data for particles in the event
       /// @param bank the bank to get data from
       /// @returns a map with keys as particle indices (pindex) and values as calo_row_data structs
       std::map<int, PhotonGBTFilter::calo_row_data> GetCaloMap(hipo::bank const &bank) const;
       
       
-      /// **Method**: Gets the calorimeter vector for a particle in the event
+      /// Gets the calorimeter vector for a particle in the event
       /// @param crd data struct of a single REC::Calorimeter's row data
       /// @returns a ROOT::Math::XYZVector with the coordinates of the particle in the calorimeter
       ROOT::Math::XYZVector GetParticleCaloVector(PhotonGBTFilter::calo_row_data calo_row) const;
       
       
-      /// **Method**: Gets the mass of a particle given its PID
+      /// Gets the mass of a particle given its PID
       /// @param pid the particle ID to get the mass for
       /// @returns the mass of the particle in GeV; returns -1.0 if the PID is not recognized
       double GetMass(int pid) const;
       
       
-      /// **Method**: Gets the model function for the run number
+      /// Gets the model function for the run number
       /// @param runnum the run of the associated event
       /// @returns GBT function for the run period
       std::function<double(std::vector<float> const &)> getModelFunction(int runnum) const;

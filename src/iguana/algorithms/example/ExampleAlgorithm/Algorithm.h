@@ -83,7 +83,7 @@ namespace iguana::example {
       // #   - `Transform` for a transformation type algorithm, such as momentum corrections
       // #   - `Create` for a creation type algorithm, such as inclusive kinematic (x, Q2, etc.) reconstruction
       // ############################################################################
-      /// **Action function**: checks if the PDG `pid` is positive;
+      /// @action_function{scalar filter} checks if the PDG `pid` is positive;
       /// this is an example action function, please replace it with your own
       /// @param pid the particle PDG to check
       /// @returns `true` if `pid` is positive
