@@ -430,19 +430,19 @@ jobs:
           done
           iguana_src/.github/make-benchmark-table.rb benchmark_{single_threaded,memoize}.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
       ### coverage
-      # - name: coverage
-      #   if: ${{ matrix.id == 'coverage' }}
-      #   run: |
-      #     ninja -C iguana_build coverage-html
-      #     ninja -C iguana_build coverage-text
-      #     mv iguana_build/meson-logs/coveragereport coverage-report
-      #     echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
-      #     echo '```' >> $GITHUB_STEP_SUMMARY
-      #     cat iguana_build/meson-logs/coverage.txt >> $GITHUB_STEP_SUMMARY
-      #     echo '```' >> $GITHUB_STEP_SUMMARY
-      #     echo '' >> $GITHUB_STEP_SUMMARY
-      #     echo '- for details, see the `coverage-report` artifact' >> $GITHUB_STEP_SUMMARY
-      #     echo '- to compare to the report from the `main` branch, see <https://jeffersonlab.github.io/iguana/coverage-report>' >> $GITHUB_STEP_SUMMARY
+      - name: coverage
+        if: ${{ matrix.id == 'coverage' }}
+        run: |
+          # ninja -C iguana_build coverage-html
+          ninja -C iguana_build coverage-text
+          # mv iguana_build/meson-logs/coveragereport coverage-report
+          echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat iguana_build/meson-logs/coverage.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          # echo '- for details, see the `coverage-report` artifact' >> $GITHUB_STEP_SUMMARY
+          # echo '- to compare to the report from the `main` branch, see <https://jeffersonlab.github.io/iguana/coverage-report>' >> $GITHUB_STEP_SUMMARY
       ### test relocatability
       - name: test relocatability
         if: ${{ matrix.id == 'cpp' }} # don't bother re-running santizers, etc.
