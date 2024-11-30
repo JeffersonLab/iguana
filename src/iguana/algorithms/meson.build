@@ -105,6 +105,7 @@ algo_sources = [
   'Algorithm.cc',
   'AlgorithmFactory.cc',
   'AlgorithmSequence.cc',
+  bankdef_tgt[0],
 ]
 algo_headers = [
   'Algorithm.h',

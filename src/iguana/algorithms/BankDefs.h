@@ -3,18 +3,27 @@
 
 namespace iguana {
 
+  /// A bank column
   struct BankColDef {
+    /// @brief the name of the column
     std::string name;
+    /// @brief the type of the column
     std::string type;
   };
 
+  /// The definition of a bank
   struct BankDef {
+    /// @brief the name of the bank
     std::string name;
+    /// @brief the group ID of the bank
     int group;
+    /// @brief the item ID of the bank
     int item;
+    /// @brief the set of columns
     std::vector<BankColDef> entries;
   };
 
-  static std::vector<BankDef> const bank_defs;
+  /// Definitions of banks that Iguana algorithms may create
+  extern std::vector<BankDef> const BANK_DEFS;
 
 }

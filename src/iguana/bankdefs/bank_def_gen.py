@@ -24,7 +24,7 @@ with open(input_file_name) as input_file:
         #include "iguana/algorithms/BankDefs.h"
 
         namespace iguana {{
-          std::vector<BankDef> const bank_defs = {{
+          std::vector<BankDef> const BANK_DEFS = {{
         '''))
 
         i_bank_def = 0

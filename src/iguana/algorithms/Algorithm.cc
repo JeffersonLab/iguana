@@ -1,8 +1,6 @@
 #include "Algorithm.h"
 #include "BankDefs.h"
 
-#include <numeric>
-
 namespace iguana {
 
   void Algorithm::Start()
@@ -223,11 +221,11 @@ namespace iguana {
 
   hipo::schema Algorithm::CreateBank(
       hipo::banklist& banks,
-      hipo::banklist::size_type& idx,
+      hipo::banklist::size_type& bank_idx,
       std::string const& bank_name) const noexcept(false)
   {
     // loop over bank definitions
-    for(auto const& bank_def : bank_defs) {
+    for(auto const& bank_def : BANK_DEFS) {
       if(bank_def.name == bank_name) {
         // make sure the new bank is in REGISTER_IGUANA_ALGORITHM
         if(!AlgorithmFactory::QueryNewBank(bank_name)) {
@@ -244,7 +242,7 @@ namespace iguana {
         bank_schema.parse(format_string);
         // create the new bank
         banks.push_back({bank_schema});
-        idx = GetBankIndex(banks, bank_name);
+        bank_idx = GetBankIndex(banks, bank_name);
         return bank_schema;
       }
     }

@@ -160,7 +160,7 @@ namespace iguana {
       /// @returns the bank's schema
       hipo::schema CreateBank(
           hipo::banklist& banks,
-          hipo::banklist::size_type& idx,
+          hipo::banklist::size_type& bank_idx,
           std::string const& bank_name) const noexcept(false);
 
       /// Dump all banks in a `hipo::banklist`
