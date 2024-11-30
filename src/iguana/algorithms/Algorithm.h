@@ -153,7 +153,7 @@ namespace iguana {
       /// returns the `hipo::banklist` index of the bank
       hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
 
-      /// Create a new bank and push it to the bank list. The bank must be defined in `BankDefs.h`.
+      /// Create a new bank and push it to the bank list. The bank must be defined in `BANK_DEFS`, which is generated at build time from `src/iguana/bankdefs/iguana.json`
       /// @param [out] banks the `hipo::banklist` onto which the new bank will be pushed
       /// @param [out] bank_idx will be set to the `hipo::banklist` index of the new bank
       /// @param [in] bank_name the new bank name
