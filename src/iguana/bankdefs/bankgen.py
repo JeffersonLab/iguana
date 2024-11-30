@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+"""
+Reads an input JSON data model file, which defines the bank schema,
+and generates a C++ source file setting the variable `iguana::BANK_DEFS`.
+Doing this allows us to embed the bank schema definition in a library,
+rather than having the library find the JSON file at runtime.
+"""
+
 import sys, json, textwrap
 
 if(len(sys.argv) < 3):

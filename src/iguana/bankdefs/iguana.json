@@ -3,7 +3,7 @@
     "name": "REC::Particle::Sector",
     "group": 30000,
     "item": 1,
-    "info": "",
+    "info": "The bank created by clas12::SectorFinder",
     "entries": [
       { "name": "pindex", "type": "S", "info": ""},
       { "name": "sector", "type": "I", "info": ""}
@@ -13,7 +13,7 @@
     "name": "physics::InclusiveKinematics",
     "group": 30000,
     "item": 2,
-    "info": "",
+    "info": "The bank created by physics::InclusiveKinematics",
     "entries": [
       { "name": "pindex",  "type": "S", "info": ""},
       { "name": "Q2",      "type": "D", "info": ""},
@@ -33,7 +33,7 @@
     "name": "physics::SingleHadronKinematics",
     "group": 30000,
     "item": 3,
-    "info": "",
+    "info": "The bank created by physics::SingleHadronKinematics",
     "entries": [
       { "name": "pindex", "type": "S", "info": ""},
       { "name": "pdg",    "type": "I", "info": ""},
@@ -49,7 +49,7 @@
     "name": "physics::DihadronKinematics",
     "group": 30000,
     "item": 4,
-    "info": "",
+    "info": "The bank created by physics::DihadronKinematics",
     "entries": [
       { "name": "pindex_a", "type": "S", "info": ""},
       { "name": "pindex_b", "type": "S", "info": ""},
