@@ -223,43 +223,29 @@ namespace iguana {
 
   hipo::schema Algorithm::CreateBank(
       hipo::banklist& banks,
-      hipo::banklist::size_type& bank_idx,
-      std::string const& bank_name,
-      std::vector<std::string> schema_def,
-      int group_id,
-      int item_id) const
-  {
-    if(!AlgorithmFactory::QueryNewBank(bank_name)) {
-      m_log->Error("{:?} creates bank {:?}, which is not registered; new banks must be included in `REGISTER_IGUANA_ALGORITHM` arguments", m_class_name, bank_name);
-      throw std::runtime_error("CreateBank failed");
-    }
-    if(schema_def.empty()) {
-      m_log->Error("empty schema_def in CreateBank");
-      throw std::runtime_error("CreateBank failed");
-    }
-    hipo::schema bank_schema(bank_name.c_str(), group_id, item_id);
-    bank_schema.parse(std::accumulate(
-        std::next(schema_def.begin()),
-        schema_def.end(),
-        schema_def[0],
-        [](std::string a, std::string b)
-        { return a + "," + b; }));
-    banks.push_back({bank_schema});
-    bank_idx = GetBankIndex(banks, bank_name);
-    return bank_schema;
-  }
-
-  hipo::schema Algorithm::CreateBankNew(
-      hipo::banklist& banks,
       hipo::banklist::size_type& idx,
       std::string const& bank_name) const noexcept(false)
   {
+    // loop over bank definitions
     for(auto const& bank_def : bank_defs) {
       if(bank_def.name == bank_name) {
-        std::vector<std::string> bank_cols;
+        // make sure the new bank is in REGISTER_IGUANA_ALGORITHM
+        if(!AlgorithmFactory::QueryNewBank(bank_name)) {
+          m_log->Error("{:?} creates bank {:?}, which is not registered; new banks must be included in `REGISTER_IGUANA_ALGORITHM` arguments", m_class_name, bank_name);
+          throw std::runtime_error("CreateBank failed");
+        }
+        // create the schema format string
+        std::vector<std::string> schema_def;
         for(auto const& entry : bank_def.entries)
-          bank_cols.push_back(entry.name + "/" + entry.type);
-        return CreateBank(banks, idx, bank_name, bank_cols, bank_def.group, bank_def.item);
+          schema_def.push_back(entry.name + "/" + entry.type);
+        auto format_string = fmt::format("{}", fmt::join(schema_def, ","));
+        // create the new bank schema
+        hipo::schema bank_schema(bank_name.c_str(), bank_def.group, bank_def.item);
+        bank_schema.parse(format_string);
+        // create the new bank
+        banks.push_back({bank_schema});
+        idx = GetBankIndex(banks, bank_name);
+        return bank_schema;
       }
     }
     throw std::runtime_error(fmt::format("bank {:?} not found in 'BankDefs.h'", bank_name));

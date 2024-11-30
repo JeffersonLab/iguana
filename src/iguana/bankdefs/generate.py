@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import json
+import sys, json, textwrap
 
 if(len(sys.argv) < 3):
     print(f'USAGE {__file__} [INPUT_JSON] [OUTPUT]')
@@ -20,25 +19,47 @@ with open(input_file_name) as input_file:
     try:
         bank_defs = json.load(input_file)
 
-        print('  std::vector<BankDef> const bank_defs{')
+        out = open(output_file_name, 'w')
+        out.write(textwrap.dedent(f'''\
+        #include "iguana/algorithms/BankDefs.h"
+
+        namespace iguana {{
+          std::vector<BankDef> const bank_defs = {{
+        '''))
+
         i_bank_def = 0
+        unique_item_ids = []
         for bank_def in bank_defs:
+
             i_bank_def += 1
             trail_bank_def = trailing_comma(bank_defs, i_bank_def)
-            print(f'    {{')
-            print(f'      .name = "{bank_def["name"]}",')
-            print(f'      .group = {bank_def["group"]},')
-            print(f'      .item = {bank_def["item"]},')
-            print(f'      .entries = {{')
+
+            if(bank_def["item"] in unique_item_ids):
+                print(f'ERROR: item ID {bank_def["item"]} is not unique in {input_file_name}', file=sys.stderr)
+                exit(1)
+            unique_item_ids.append(bank_def["item"])
+
+            out.write(textwrap.indent(textwrap.dedent(f'''\
+            {{
+              .name    = "{bank_def["name"]}",
+              .group   = {bank_def["group"]},
+              .item    = {bank_def["item"]},
+              .entries = {{
+            '''), '    '))
             i_entry = 0
             for entry in bank_def['entries']:
                 i_entry += 1
                 trail_entry = trailing_comma(bank_def['entries'], i_entry)
-                print(f'        {{ .name = "{entry["name"]}", .type = "{entry["type"]}" }}{trail_entry}')
-            print(f'      }}')
-            print(f'    }}{trail_bank_def}')
-        print('  };')
+                out.write(f'        {{ .name = "{entry["name"]}", .type = "{entry["type"]}" }}{trail_entry}\n')
+            out.write(f'      }}\n')
+            out.write(f'    }}{trail_bank_def}\n')
+
+        out.write('  };\n')
+        out.write('}\n')
+        out.close()
 
     except json.decoder.JSONDecodeError:
         print(f'ERROR: failed to parse {input_file_name}; check its JSON syntax', file=sys.stderr)
         exit(1)
+
+print(f'Generated {output_file_name}')

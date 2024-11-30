@@ -1,8 +1,18 @@
 [
   {
-    "name": "physics::InclusiveKinematics",
+    "name": "REC::Particle::Sector",
     "group": 30000,
     "item": 1,
+    "info": "",
+    "entries": [
+      { "name": "pindex", "type": "S", "info": ""},
+      { "name": "sector", "type": "I", "info": ""}
+    ]
+  },
+  {
+    "name": "physics::InclusiveKinematics",
+    "group": 30000,
+    "item": 2,
     "info": "",
     "entries": [
       { "name": "pindex",  "type": "S", "info": ""},
@@ -17,6 +27,42 @@
       { "name": "qE",      "type": "D", "info": ""},
       { "name": "beamPz",  "type": "D", "info": ""},
       { "name": "targetM", "type": "D", "info": ""}
+    ]
+  },
+  {
+    "name": "physics::SingleHadronKinematics",
+    "group": 30000,
+    "item": 3,
+    "info": "",
+    "entries": [
+      { "name": "pindex", "type": "S", "info": ""},
+      { "name": "pdg",    "type": "I", "info": ""},
+      { "name": "z",      "type": "D", "info": ""},
+      { "name": "PhPerp", "type": "D", "info": ""},
+      { "name": "MX",     "type": "D", "info": ""},
+      { "name": "xF",     "type": "D", "info": ""},
+      { "name": "phiH",   "type": "D", "info": ""},
+      { "name": "xi",     "type": "D", "info": ""}
+    ]
+  },
+  {
+    "name": "physics::DihadronKinematics",
+    "group": 30000,
+    "item": 4,
+    "info": "",
+    "entries": [
+      { "name": "pindex_a", "type": "S", "info": ""},
+      { "name": "pindex_b", "type": "S", "info": ""},
+      { "name": "pdg_a",    "type": "I", "info": ""},
+      { "name": "pdg_b",    "type": "I", "info": ""},
+      { "name": "Mh",       "type": "D", "info": ""},
+      { "name": "z",        "type": "D", "info": ""},
+      { "name": "PhPerp",   "type": "D", "info": ""},
+      { "name": "MX",       "type": "D", "info": ""},
+      { "name": "xF",       "type": "D", "info": ""},
+      { "name": "phiH",     "type": "D", "info": ""},
+      { "name": "phiR",     "type": "D", "info": ""},
+      { "name": "theta",    "type": "D", "info": ""}
     ]
   }
 ]

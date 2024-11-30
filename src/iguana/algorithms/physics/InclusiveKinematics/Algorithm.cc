@@ -13,7 +13,7 @@ namespace iguana::physics {
     b_config   = GetBankIndex(banks, "RUN::config");
 
     // create the output bank
-    auto result_schema = CreateBankNew(banks, b_result, GetClassName());
+    auto result_schema = CreateBank(banks, b_result, GetClassName());
     i_pindex  = result_schema.getEntryOrder("pindex");
     i_Q2      = result_schema.getEntryOrder("Q2");
     i_x       = result_schema.getEntryOrder("x");
