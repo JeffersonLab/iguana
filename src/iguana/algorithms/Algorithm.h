@@ -6,8 +6,8 @@
 
 #include <hipo4/bank.h>
 
-
-#include "iguana/algorithms/AlgorithmBoilerplate.h"
+#include "AlgorithmBoilerplate.h"
+#include "iguana/bankdefs/BankDefs.h"
 #include "iguana/services/YAMLReader.h"
 #include <iguana/services/GlobalParam.h>
 

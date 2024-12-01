@@ -105,13 +105,12 @@ algo_sources = [
   'Algorithm.cc',
   'AlgorithmFactory.cc',
   'AlgorithmSequence.cc',
-  bankdef_tgt[0],
+  bankdef_tgt[1], # BankDefs.cc
 ]
 algo_headers = [
   'Algorithm.h',
   'AlgorithmBoilerplate.h',
   'TypeDefs.h',
-  'BankDefs.h',
   'AlgorithmSequence.h',
 ]
 if ROOT_dep.found()

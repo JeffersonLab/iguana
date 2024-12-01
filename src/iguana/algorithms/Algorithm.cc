@@ -1,5 +1,4 @@
 #include "Algorithm.h"
-#include "BankDefs.h"
 
 namespace iguana {
 

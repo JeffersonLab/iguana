@@ -7,37 +7,6 @@
 
 namespace iguana::physics {
 
-  /// Set of dihadron kinematics variables
-  struct DihadronKinematicsVars {
-    /// @brief `REC::Particle` row (`pindex`) of hadron A
-    int pindex_a;
-    /// @brief `REC::Particle` row (`pindex`) of hadron B
-    int pindex_b;
-    /// @brief PDG code of hadron A
-    int pdg_a;
-    /// @brief PDG code of hadron B
-    int pdg_b;
-    /// @brief @latex{M_h}: Invariant mass of the dihadron
-    double Mh;
-    /// @brief @latex{z}: Momentum fraction of the fragmenting parton carried by the dihadron
-    double z;
-    /// @brief @latex{P_h^\perp}: transverse momentum of the dihadron in the @latex{\perp}-frame (transverse to @latex{\vec{q}})
-    double PhPerp;
-    /// @brief @latex{M_X(ehhX)}: Missing mass of the dihadron
-    double MX;
-    /// @brief @latex{x_F}: Feynman-x of the dihadron
-    double xF;
-    /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
-    /// if the value is `tools::UNDEF`, the calculation failed
-    double phiH;
-    /// @brief @latex{\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane;
-    /// if the value is `tools::UNDEF`, the calculation failed
-    double phiR;
-    /// @brief @latex{\theta}: The "decay" angle of hadron A in the dihadron rest frame, with respect;
-    /// to the dihadron momentum direction
-    double theta;
-  };
-
   /// @brief_algo Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`
   ///
   /// @begin_doc_algo{physics::DihadronKinematics | Creator}
