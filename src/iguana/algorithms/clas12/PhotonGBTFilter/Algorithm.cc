@@ -160,15 +160,15 @@ namespace iguana::clas12 {
           auto calo_PART = calo_map.at(inner_row);
           
           auto pid = particleBank.getInt("pid",inner_row);
-          auto mass = GetMass(pid);
+          auto mass = particle::get(particle::mass, pid);
           
           // Skip over particle if its mass was undefined
-          if (mass == -1.0) continue;
+          if (!mass.value()) continue;
           auto px = particleBank.getFloat("px",inner_row);
           auto py = particleBank.getFloat("py",inner_row);
           auto pz = particleBank.getFloat("pz",inner_row);
           auto p  = sqrt(px*px+py*py+pz*pz);
-          auto E  = sqrt(p*p+mass*mass);
+          auto E  = sqrt(p*p+mass.value()*mass.value());
           auto th = acos(pz/p);
           // Skip over particle if it is not in the forward detector (necessary for model compatibility)
           if (ForwardDetectorFilter(th)==false) continue;
@@ -367,15 +367,6 @@ namespace iguana::clas12 {
       return v;
   }
 
-  double PhotonGBTFilter::GetMass(int pid) const {
-      auto it = particle::mass.find(static_cast<particle::PDG>(pid));
-      if (it != particle::mass.end()) {
-        return it->second;
-      } else {
-        return -1.0; // Default mass if pid not found
-      }
-  }
-    
   std::function<double(std::vector<float> const &)> PhotonGBTFilter::getModelFunction(int runnum) const {
 
     for (const auto &entry : modelMap) {
