@@ -33,7 +33,7 @@ The algorithm types are defined based on what they do to HIPO bank data:
 </table>
 
 The definitions of the new banks that are created by **Creator** algorithms are found in:
-- [**Iguana Bank Definitions**](https://github.com/JeffersonLab/iguana/tree/main/src/iguana/bankdefs)
+- \link src/iguana/bankdefs/iguana.json **Iguana Bank Definitions:** `iguana.json` \endlink
 
 Most algorithms are configurable:
 - [**Algorithm Configuration Guide**](https://github.com/JeffersonLab/iguana/blob/main/doc/configuration.md)
