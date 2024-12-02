@@ -1,5 +1,6 @@
 #include "Validator.h"
 #include "TypeDefs.h"
+#include "iguana/algorithms/physics/Tools.h"
 
 #include <Math/Vector3D.h>
 #include <TStyle.h>
@@ -41,12 +42,16 @@ namespace iguana::physics {
         [](auto const& b, auto const r) { return b.getDouble("PhPerp", r); }
       },
       {
-        new TH1D("MX_dist", "missing mass M_{X} [GeV];", n_bins, 0, 4),
-        [](auto const& b, auto const r) { return b.getDouble("MX", r); }
+        new TH1D("MX_dist", "Missing mass: M_{X} [GeV];", n_bins, 0, 4),
+        [](auto const& b, auto const r) { auto MX2 = b.getDouble("MX2", r); return MX2 >= 0 ? std::sqrt(MX2) : tools::UNDEF; }
       },
       {
-        new TH1D("xF_dist", "x_{F};", n_bins, -1, 1),
+        new TH1D("xF_dist", "Feynman-x: x_{F};", n_bins, -1, 1),
         [](auto const& b, auto const r) { return b.getDouble("xF", r); }
+      },
+      {
+        new TH1D("yB_dist", "Breit frame rapidity: y_{B};", n_bins, -4, 4),
+        [](auto const& b, auto const r) { return b.getDouble("yB", r); }
       },
       {
         new TH1D("phiH_dist", "#phi_{h};", n_bins, -M_PI, M_PI),
