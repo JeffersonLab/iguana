@@ -6,27 +6,6 @@
 
 namespace iguana::physics {
 
-  /// Set of hadron kinematics variables
-  struct SingleHadronKinematicsVars {
-    /// @brief `REC::Particle` row (`pindex`) of the hadron
-    int pindex;
-    /// @brief PDG code of the hadron
-    int pdg;
-    /// @brief @latex{z}: Momentum fraction of the fragmenting parton carried by the hadron
-    double z;
-    /// @brief @latex{P_h^\perp}: transverse momentum of the hadron in the @latex{\perp}-frame (transverse to @latex{\vec{q}})
-    double PhPerp;
-    /// @brief @latex{M_X(ehX)}: Missing mass of the hadron
-    double MX;
-    /// @brief @latex{x_F}: Feynman-x of the hadron
-    double xF;
-    /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
-    /// if the value is `tools::UNDEF`, the calculation failed
-    double phiH;
-    /// @brief @latex{\xi_h}: Longitudinal momentum fraction of the nucleon carried by the hadron
-    double xi;
-  };
-
   /// @brief_algo Calculate semi-inclusive hadron kinematic quantities defined in `iguana::physics::SingleHadronKinematicsVars`
   ///
   /// @begin_doc_algo{physics::SingleHadronKinematics | Creator}
