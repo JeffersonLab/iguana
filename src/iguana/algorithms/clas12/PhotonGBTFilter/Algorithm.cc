@@ -163,7 +163,7 @@ namespace iguana::clas12 {
           auto mass = particle::get(particle::mass, pid);
           
           // Skip over particle if its mass was undefined
-          if (!mass.value()) continue;
+          if (!mass.has_value()) continue;
           auto px = particleBank.getFloat("px",inner_row);
           auto py = particleBank.getFloat("py",inner_row);
           auto pz = particleBank.getFloat("pz",inner_row);
