@@ -22,9 +22,10 @@ GENERAL_PACKAGE_LIST_LINUX=(
   meson
   llvm  # for `llvm-symbolizer`, for human-readable sanitizer results
   ### coverage
-  # python-colorlog
-  # python-pygments
-  lcov
+  python-colorlog
+  python-pygments
+  gcovr
+  # lcov
   ### ROOT dependencies
   binutils
   libx11
