@@ -423,7 +423,7 @@ jobs:
           fi
       ### run benchmarks
       - name: benchmark algorithms
-        if: ${{ matrix.id == 'coverage' }} # use the coverage job's GITHUB_STEP_SUMMARY
+        if: ${{ matrix.id == 'cpp' && inputs.id == 'linux-latest' }}
         run: |
           for suite in single_threaded memoize; do
             meson test --benchmark --suite $suite -C iguana_build | tee benchmark_$suite.txt
@@ -433,8 +433,8 @@ jobs:
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
         run: |
-          ninja -C iguana_build coverage-html
-          # ninja -C iguana_build coverage-text
+          # ninja -C iguana_build coverage-html
+          ninja -C iguana_build coverage-text
           # mv iguana_build/meson-logs/coveragereport coverage-report
           # echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
           # echo '```' >> $GITHUB_STEP_SUMMARY
