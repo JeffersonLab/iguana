@@ -413,6 +413,7 @@ jobs:
       - run: tree iguana
       ### run tests
       - name: meson test
+        if: ${{ matrix.id != 'coverage' && matrix.id != 'documentation' }}
         working-directory: iguana_build
         run: |
           if [ "${{ env.verbose_test }}" = "true" ]; then
