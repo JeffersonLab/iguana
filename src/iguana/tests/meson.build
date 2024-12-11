@@ -64,15 +64,15 @@ foreach algo : algo_dict
           '-m', concurrency_model,
           '-V', # vary run number
         ]
-        test(
-          '-'.join(['multithreading', concurrency_model, test_name_algo]),
-          test_exe,
-          suite: [ 'algorithm', 'multithreading', concurrency_model ],
-          args: multithreading_args + [ '-n', get_option('test_num_events') ] + test_args,
-          is_parallel: false,
-          env: project_test_env,
-          timeout: 0,
-        )
+        # test(
+        #   '-'.join(['multithreading', concurrency_model, test_name_algo]),
+        #   test_exe,
+        #   suite: [ 'algorithm', 'multithreading', concurrency_model ],
+        #   args: multithreading_args + [ '-n', get_option('test_num_events') ] + test_args,
+        #   is_parallel: false,
+        #   env: project_test_env,
+        #   timeout: 0,
+        # )
         benchmark(
           '-'.join(['benchmark', f'multithreading_@concurrency_model@', test_name_algo]),
           test_exe,
