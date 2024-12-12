@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 #include <unordered_map>
 
 namespace iguana {
@@ -91,6 +92,38 @@ namespace iguana {
       { kaon_plus, 0.493677 },
       { kaon_minus, 0.493677 }
     };
+
+    /// @brief get a particle property given a PDG code
+    ///
+    /// Example:
+    /// ```cpp
+    /// auto mass = particle::get(particle::mass, particle::PDG::photon); // mass => 0.0
+    /// ```
+    /// @param property the particle property, such as `particle::name`, `particle::title`, or `particle::mass`
+    /// @param pdg_code the `particle::PDG` value
+    /// @returns the value of the property, if defined for this `pdg_code`
+    template <typename VALUE_TYPE>
+    std::optional<VALUE_TYPE> const get(std::unordered_map<PDG,VALUE_TYPE> const& property, PDG const& pdg_code)
+    {
+      if(auto const& it = property.find(pdg_code); it != property.end())
+        return it->second;
+      return std::nullopt;
+    }
+
+    /// @brief get a particle property given a PDG code
+    ///
+    /// Example:
+    /// ```cpp
+    /// auto mass = particle::get(particle::mass, 22); // mass => 0.0
+    /// ```
+    /// @param property the particle property, such as `particle::name`, `particle::title`, or `particle::mass`
+    /// @param pdg_code the `particle::PDG` value
+    /// @returns the value of the property, if defined for this `pdg_code`
+    template <typename VALUE_TYPE>
+    std::optional<VALUE_TYPE> const get(std::unordered_map<PDG,VALUE_TYPE> const& property, int const& pdg_code)
+    {
+      return get(property, static_cast<particle::PDG>(pdg_code));
+    }
 
     // clang-format on
   }
