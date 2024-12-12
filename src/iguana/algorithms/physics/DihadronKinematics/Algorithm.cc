@@ -26,8 +26,9 @@ namespace iguana::physics {
           "Mh/D",
           "z/D",
           "PhPerp/D",
-          "MX/D",
+          "MX2/D",
           "xF/D",
+          "yB/D",
           "phiH/D",
           "phiR/D",
           "theta/D"
@@ -41,8 +42,9 @@ namespace iguana::physics {
     i_Mh       = result_schema.getEntryOrder("Mh");
     i_z        = result_schema.getEntryOrder("z");
     i_PhPerp   = result_schema.getEntryOrder("PhPerp");
-    i_MX       = result_schema.getEntryOrder("MX");
+    i_MX2      = result_schema.getEntryOrder("MX2");
     i_xF       = result_schema.getEntryOrder("xF");
+    i_yB       = result_schema.getEntryOrder("yB");
     i_phiH     = result_schema.getEntryOrder("phiH");
     i_phiR     = result_schema.getEntryOrder("phiR");
     i_theta    = result_schema.getEntryOrder("theta");
@@ -103,11 +105,14 @@ namespace iguana::physics {
         inc_kin_bank.getDouble("qE", 0));
 
     // get additional inclusive variables
+    auto x = inc_kin_bank.getDouble("x", 0);
     auto W = inc_kin_bank.getDouble("W", 0);
 
     // boosts
     ROOT::Math::Boost boost__qp((p_q + p_target).BoostToCM()); // CoM frame of target and virtual photon
-    auto p_q__qp = boost__qp(p_q);
+    ROOT::Math::Boost boost__breit((p_q + 2 * x * p_target).BoostToCM()); // Breit frame
+    auto p_q__qp    = boost__qp(p_q);
+    auto p_q__breit = boost__breit(p_q);
 
     // build list of dihadron rows (pindices)
     auto dih_rows = PairHadrons(particle_bank);
@@ -130,8 +135,9 @@ namespace iguana::physics {
       }
 
       // calculate dihadron momenta and boosts
-      auto p_Ph     = had_a.p + had_b.p;
-      auto p_Ph__qp = boost__qp(p_Ph);
+      auto p_Ph        = had_a.p + had_b.p;
+      auto p_Ph__qp    = boost__qp(p_Ph);
+      auto p_Ph__breit = boost__breit(p_Ph);
       ROOT::Math::Boost boost__dih(p_Ph.BoostToCM()); // CoM frame of dihadron
 
       // calculate z
@@ -144,11 +150,14 @@ namespace iguana::physics {
       // calculate Mh
       double Mh = p_Ph.M();
 
-      // calculate MX
-      double MX = (p_target + p_q - p_Ph).M();
+      // calculate MX2
+      double MX2 = (p_target + p_q - p_Ph).M2();
 
       // calculate xF
       double xF = 2 * p_Ph__qp.Vect().Dot(p_q__qp.Vect()) / (W * p_q__qp.Vect().R());
+
+      // calculate yB
+      double yB = tools::ParticleRapidity(p_Ph__breit, p_q__breit.Vect()).value_or(tools::UNDEF);
 
       // calculate phiH
       double phiH = tools::PlaneAngle(
@@ -197,8 +206,9 @@ namespace iguana::physics {
       result_bank.putDouble(i_Mh,      dih_row, Mh);
       result_bank.putDouble(i_z,       dih_row, z);
       result_bank.putDouble(i_PhPerp,  dih_row, PhPerp);
-      result_bank.putDouble(i_MX,      dih_row, MX);
+      result_bank.putDouble(i_MX2,     dih_row, MX2);
       result_bank.putDouble(i_xF,      dih_row, xF);
+      result_bank.putDouble(i_yB,      dih_row, yB);
       result_bank.putDouble(i_phiH,    dih_row, phiH);
       result_bank.putDouble(i_phiR,    dih_row, phiR);
       result_bank.putDouble(i_theta,   dih_row, theta);

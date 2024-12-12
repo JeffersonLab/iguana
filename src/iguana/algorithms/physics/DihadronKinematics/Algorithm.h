@@ -23,10 +23,12 @@ namespace iguana::physics {
     double z;
     /// @brief @latex{P_h^\perp}: transverse momentum of the dihadron in the @latex{\perp}-frame (transverse to @latex{\vec{q}})
     double PhPerp;
-    /// @brief @latex{M_X(ehhX)}: Missing mass of the dihadron
-    double MX;
+    /// @brief @latex{M_X(ehhX)^2}: Missing mass squared of the dihadron
+    double MX2;
     /// @brief @latex{x_F}: Feynman-x of the dihadron
     double xF;
+    /// @brief @latex{y_{h,B}}: Breit frame rapidity of the dihadron
+    double yB;
     /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
     /// if the value is `tools::UNDEF`, the calculation failed
     double phiH;
@@ -98,8 +100,9 @@ namespace iguana::physics {
       int i_Mh;
       int i_z;
       int i_PhPerp;
-      int i_MX;
+      int i_MX2;
       int i_xF;
+      int i_yB;
       int i_phiH;
       int i_phiR;
       int i_theta;
