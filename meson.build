@@ -209,6 +209,7 @@ endif
 
 # build and install shared libraries
 subdir('src/iguana/services')
+subdir('src/iguana/bankdefs')
 subdir('src/iguana/algorithms')
 subdir('src/iguana/tests')
 
