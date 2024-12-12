@@ -42,8 +42,9 @@
       { "name": "pdg",    "type": "I", "info": "PDG code of the hadron" },
       { "name": "z",      "type": "D", "info": "@latex{z}: Momentum fraction of the fragmenting parton carried by the hadron" },
       { "name": "PhPerp", "type": "D", "info": "@latex{P_h^\\perp}: transverse momentum of the hadron in the @latex{\\perp}-frame (transverse to @latex{\\vec{q}})" },
-      { "name": "MX",     "type": "D", "info": "@latex{M_X(ehX)}: Missing mass of the hadron" },
+      { "name": "MX2",    "type": "D", "info": "@latex{M_X^2(ehX)}: Missing mass squared of the hadron" },
       { "name": "xF",     "type": "D", "info": "@latex{x_F}: Feynman-x of the hadron" },
+      { "name": "yB",     "type": "D", "info": "@latex{y_{h,B}}: Breit frame rapidity of the hadron" },
       { "name": "phiH",   "type": "D", "info": "@latex{\\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\\vec{q}\\times\\vec{P}_h} plane; if the value is `tools::UNDEF`, the calculation failed" },
       { "name": "xi",     "type": "D", "info": "@latex{\\xi_h}: Longitudinal momentum fraction of the nucleon carried by the hadron" }
     ]
@@ -62,8 +63,9 @@
       { "name": "Mh",       "type": "D", "info": "@latex{M_h}: Invariant mass of the dihadron" },
       { "name": "z",        "type": "D", "info": "@latex{z}: Momentum fraction of the fragmenting parton carried by the dihadron" },
       { "name": "PhPerp",   "type": "D", "info": "@latex{P_h^\\perp}: transverse momentum of the dihadron in the @latex{\\perp}-frame (transverse to @latex{\\vec{q}})" },
-      { "name": "MX",       "type": "D", "info": "@latex{M_X(ehhX)}: Missing mass of the dihadron" },
+      { "name": "MX2",      "type": "D", "info": "@latex{M_X^2(ehhX)}: Missing mass squared of the dihadron" },
       { "name": "xF",       "type": "D", "info": "@latex{x_F}: Feynman-x of the dihadron" },
+      { "name": "yB",       "type": "D", "info": "@latex{y_{h,B}}: Breit frame rapidity of the dihadron" },
       { "name": "phiH",     "type": "D", "info": "@latex{\\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\\vec{q}\\times\\vec{P}_h} plane; if the value is `tools::UNDEF`, the calculation failed" },
       { "name": "phiR",     "type": "D", "info": "@latex{\\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane; if the value is `tools::UNDEF`, the calculation failed" },
       { "name": "theta",    "type": "D", "info": "@latex{\\theta}: The 'decay' angle of hadron A in the dihadron rest frame, with respect; to the dihadron momentum direction" }
