@@ -389,7 +389,7 @@ jobs:
             -Dtest_data_file=$(pwd)/test_data.hipo       \
             -Dtest_num_events=${{ env.num_events }}      \
             -Dtest_output_dir=$(pwd)/validation_results  \
-            -Dtest_multithreading=${{ env.num_threads }} \
+            -Dtest_num_threads=${{ env.num_threads }}    \
             ${{ matrix.opts }}
       - name: dump all build options
         run: meson configure iguana_build --no-pager
@@ -413,6 +413,7 @@ jobs:
       - run: tree iguana
       ### run tests
       - name: meson test
+        if: ${{ matrix.id != 'documentation' }}
         working-directory: iguana_build
         run: |
           if [ "${{ env.verbose_test }}" = "true" ]; then
@@ -423,26 +424,26 @@ jobs:
           fi
       ### run benchmarks
       - name: benchmark algorithms
-        if: ${{ matrix.id == 'coverage' }} # use the coverage job's GITHUB_STEP_SUMMARY
+        if: ${{ matrix.id == 'cpp' && inputs.id == 'linux-latest' }}
         run: |
           for suite in single_threaded memoize; do
             meson test --benchmark --suite $suite -C iguana_build | tee benchmark_$suite.txt
           done
           iguana_src/.github/make-benchmark-table.rb benchmark_{single_threaded,memoize}.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
       ### coverage
-      # - name: coverage
-      #   if: ${{ matrix.id == 'coverage' }}
-      #   run: |
-      #     ninja -C iguana_build coverage-html
-      #     ninja -C iguana_build coverage-text
-      #     mv iguana_build/meson-logs/coveragereport coverage-report
-      #     echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
-      #     echo '```' >> $GITHUB_STEP_SUMMARY
-      #     cat iguana_build/meson-logs/coverage.txt >> $GITHUB_STEP_SUMMARY
-      #     echo '```' >> $GITHUB_STEP_SUMMARY
-      #     echo '' >> $GITHUB_STEP_SUMMARY
-      #     echo '- for details, see the `coverage-report` artifact' >> $GITHUB_STEP_SUMMARY
-      #     echo '- to compare to the report from the `main` branch, see <https://jeffersonlab.github.io/iguana/coverage-report>' >> $GITHUB_STEP_SUMMARY
+      - name: coverage
+        if: ${{ matrix.id == 'coverage' }}
+        run: |
+          ninja -C iguana_build coverage-html
+          ninja -C iguana_build coverage-text
+          mv iguana_build/meson-logs/coveragereport coverage-report
+          echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat iguana_build/meson-logs/coverage.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '- for details, see the `coverage-report` artifact' >> $GITHUB_STEP_SUMMARY
+          echo '- to compare to the report from the `main` branch, see <https://jeffersonlab.github.io/iguana/coverage-report>' >> $GITHUB_STEP_SUMMARY
       ### test relocatability
       - name: test relocatability
         if: ${{ matrix.id == 'cpp' }} # don't bother re-running santizers, etc.
@@ -511,13 +512,13 @@ jobs:
           name: meson_logs_${{ matrix.id }}
           retention-days: 5
           path: iguana_build/meson-logs
-      # - name: upload coverage artifacts
-      #   uses: actions/upload-artifact@v4
-      #   if: ${{ matrix.id == 'coverage' }}
-      #   with:
-      #     name: coverage-report
-      #     retention-days: 5
-      #     path: coverage-report
+      - name: upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.id == 'coverage' }}
+        with:
+          name: coverage-report
+          retention-days: 5
+          path: coverage-report
       - name: upload validator artifacts
         uses: actions/upload-artifact@v4
         if: ${{ matrix.id == 'cpp' }}
@@ -551,18 +552,18 @@ jobs:
         with:
           name: doc_doxygen
           path: doxygen
-      # - name: download coverage report
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: coverage-report
-      #     path: coverage-report
+      - name: download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report
       - run: tree
       - name: collect
         run: |
           mkdir pages
           cp iguana_src/.github/pages-index.html pages/index.html
           mv doxygen pages/
-      # - run: mv coverage-report pages/
+      - run: mv coverage-report pages/
       - run: tree
       - uses: actions/upload-pages-artifact@v3
         with:
