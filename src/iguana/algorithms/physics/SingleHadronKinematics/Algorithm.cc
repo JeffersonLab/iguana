@@ -19,8 +19,9 @@ namespace iguana::physics {
     i_pdg    = result_schema.getEntryOrder("pdg");
     i_z      = result_schema.getEntryOrder("z");
     i_PhPerp = result_schema.getEntryOrder("PhPerp");
-    i_MX     = result_schema.getEntryOrder("MX");
+    i_MX2    = result_schema.getEntryOrder("MX2");
     i_xF     = result_schema.getEntryOrder("xF");
+    i_yB     = result_schema.getEntryOrder("yB");
     i_phiH   = result_schema.getEntryOrder("phiH");
     i_xi     = result_schema.getEntryOrder("xi");
 
@@ -65,11 +66,14 @@ namespace iguana::physics {
         inc_kin_bank.getDouble("qE", 0));
 
     // get additional inclusive variables
+    auto x = inc_kin_bank.getDouble("x", 0);
     auto W = inc_kin_bank.getDouble("W", 0);
 
     // boosts
     ROOT::Math::Boost boost__qp((p_q + p_target).BoostToCM()); // CoM frame of target and virtual photon
-    auto p_q__qp = boost__qp(p_q);
+    ROOT::Math::Boost boost__breit((p_q + 2 * x * p_target).BoostToCM()); // Breit frame
+    auto p_q__qp    = boost__qp(p_q);
+    auto p_q__breit = boost__breit(p_q);
 
     // banks' row lists
     auto const& particle_bank_rowlist = particle_bank.getRowList();
@@ -93,7 +97,8 @@ namespace iguana::physics {
             particle_bank.getFloat("py", row),
             particle_bank.getFloat("pz", row),
             particle::mass.at(static_cast<particle::PDG>(pdg)));
-        auto p_Ph__qp = boost__qp(p_Ph);
+        auto p_Ph__qp    = boost__qp(p_Ph);
+        auto p_Ph__breit = boost__breit(p_Ph);
 
         // calculate z
         double z = p_target.Dot(p_Ph) / p_target.Dot(p_q);
@@ -102,14 +107,14 @@ namespace iguana::physics {
         auto opt_PhPerp = tools::RejectVector(p_Ph.Vect(), p_q.Vect());
         double PhPerp   = opt_PhPerp.has_value() ? opt_PhPerp.value().R() : tools::UNDEF;
 
-        // calculate xi
-        double xi = p_q.Dot(p_Ph) / p_target.Dot(p_q);
-
-        // calculate MX
-        double MX = (p_target + p_q - p_Ph).M();
+        // calculate MX2
+        double MX2 = (p_target + p_q - p_Ph).M2();
 
         // calculate xF
         double xF = 2 * p_Ph__qp.Vect().Dot(p_q__qp.Vect()) / (W * p_q__qp.Vect().R());
+
+        // calculate yB
+        double yB = tools::ParticleRapidity(p_Ph__breit, p_q__breit.Vect()).value_or(tools::UNDEF);
 
         // calculate phiH
         double phiH = tools::PlaneAngle(
@@ -117,6 +122,9 @@ namespace iguana::physics {
             p_beam.Vect(),
             p_q.Vect(),
             p_Ph.Vect()).value_or(tools::UNDEF);
+
+        // calculate xi
+        double xi = p_q.Dot(p_Ph) / p_target.Dot(p_q);
 
         // put this particle in `result_bank`'s row list
         result_bank_rowlist.push_back(row);
@@ -126,8 +134,9 @@ namespace iguana::physics {
         result_bank.putInt(i_pdg,       row, pdg);
         result_bank.putDouble(i_z,      row, z);
         result_bank.putDouble(i_PhPerp, row, PhPerp);
-        result_bank.putDouble(i_MX,     row, MX);
+        result_bank.putDouble(i_MX2,    row, MX2);
         result_bank.putDouble(i_xF,     row, xF);
+        result_bank.putDouble(i_yB,     row, yB);
         result_bank.putDouble(i_phiH,   row, phiH);
         result_bank.putDouble(i_xi,     row, xi);
       }
@@ -137,8 +146,9 @@ namespace iguana::physics {
         result_bank.putInt(i_pdg,       row, pdg);
         result_bank.putDouble(i_z,      row, 0);
         result_bank.putDouble(i_PhPerp, row, 0);
-        result_bank.putDouble(i_MX,     row, 0);
+        result_bank.putDouble(i_MX2,    row, 0);
         result_bank.putDouble(i_xF,     row, 0);
+        result_bank.putDouble(i_yB,     row, 0);
         result_bank.putDouble(i_phiH,   row, 0);
         result_bank.putDouble(i_xi,     row, 0);
       }

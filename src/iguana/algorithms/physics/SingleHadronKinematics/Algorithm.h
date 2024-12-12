@@ -48,8 +48,9 @@ namespace iguana::physics {
       int i_pdg;
       int i_z;
       int i_PhPerp;
-      int i_MX;
+      int i_MX2;
       int i_xF;
+      int i_yB;
       int i_phiH;
       int i_xi;
 
