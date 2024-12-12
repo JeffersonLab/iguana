@@ -389,7 +389,7 @@ jobs:
             -Dtest_data_file=$(pwd)/test_data.hipo       \
             -Dtest_num_events=${{ env.num_events }}      \
             -Dtest_output_dir=$(pwd)/validation_results  \
-            -Dtest_multithreading=${{ env.num_threads }} \
+            -Dtest_num_threads=${{ env.num_threads }}    \
             ${{ matrix.opts }}
       - name: dump all build options
         run: meson configure iguana_build --no-pager
