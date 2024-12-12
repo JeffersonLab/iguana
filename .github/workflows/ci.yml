@@ -434,9 +434,9 @@ jobs:
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
         run: |
-          # ninja -C iguana_build coverage-html
+          ninja -C iguana_build coverage-html
           ninja -C iguana_build coverage-text
-          # mv iguana_build/meson-logs/coveragereport coverage-report
+          mv iguana_build/meson-logs/coveragereport coverage-report
           echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat iguana_build/meson-logs/coverage.txt >> $GITHUB_STEP_SUMMARY
@@ -512,13 +512,13 @@ jobs:
           name: meson_logs_${{ matrix.id }}
           retention-days: 5
           path: iguana_build/meson-logs
-      # - name: upload coverage artifacts
-      #   uses: actions/upload-artifact@v4
-      #   if: ${{ matrix.id == 'coverage' }}
-      #   with:
-      #     name: coverage-report
-      #     retention-days: 5
-      #     path: coverage-report
+      - name: upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.id == 'coverage' }}
+        with:
+          name: coverage-report
+          retention-days: 5
+          path: coverage-report
       - name: upload validator artifacts
         uses: actions/upload-artifact@v4
         if: ${{ matrix.id == 'cpp' }}
@@ -552,18 +552,18 @@ jobs:
         with:
           name: doc_doxygen
           path: doxygen
-      # - name: download coverage report
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: coverage-report
-      #     path: coverage-report
+      - name: download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report
       - run: tree
       - name: collect
         run: |
           mkdir pages
           cp iguana_src/.github/pages-index.html pages/index.html
           mv doxygen pages/
-      # - run: mv coverage-report pages/
+      - run: mv coverage-report pages/
       - run: tree
       - uses: actions/upload-pages-artifact@v3
         with:

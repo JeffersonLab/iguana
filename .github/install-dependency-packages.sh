@@ -25,7 +25,6 @@ GENERAL_PACKAGE_LIST_LINUX=(
   python-colorlog
   python-pygments
   gcovr
-  # lcov
   ### ROOT dependencies
   binutils
   libx11
