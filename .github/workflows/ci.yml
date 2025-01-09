@@ -430,6 +430,10 @@ jobs:
             meson test --benchmark --suite $suite -C iguana_build | tee benchmark_$suite.txt
           done
           iguana_src/.github/make-benchmark-table.rb benchmark_{single_threaded,memoize}.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+      ### reproducible build test
+      - name: reproducible build test
+        working-directory: iguana_src
+        run: meson reprotest
       ### coverage
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
