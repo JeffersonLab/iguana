@@ -434,7 +434,10 @@ jobs:
       - name: reproducible build test
         if: ${{ matrix.id == 'cpp' }}
         working-directory: iguana_src
-        run: meson reprotest
+        run: |
+          meson reprotest
+            --pkg-config-path=$(pwd)/hipo/lib/pkgconfig \
+            -Drcdb:home=${{ steps.rcdb.outputs.prefix }}
       ### coverage
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
