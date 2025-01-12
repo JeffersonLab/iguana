@@ -5,7 +5,10 @@ namespace iguana {
   Object::Object(std::string_view name, Logger::Level lev)
       : m_name(name)
       , m_log(std::make_unique<Logger>(m_name, lev))
-  {}
+      , m_spdlog(spdlog::default_logger()->clone(m_name))
+  {
+    m_spdlog->set_level(spdlog::level::trace);
+  }
 
   std::unique_ptr<Logger>& Object::Log()
   {
