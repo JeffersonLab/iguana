@@ -33,6 +33,7 @@ rcdb_subproj = subproject('rcdb', required: get_option('z_require_rcdb'))
 
 # resolve dependencies
 prog_minver = find_program('meson' / 'minimum-version.sh')
+rapidjson_ver = '1.1.0'
 # NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
 fmt_dep = dependency(
   'fmt',
@@ -47,8 +48,7 @@ yamlcpp_dep = dependency(
 rapidjson_dep = dependency(
   'RapidJSON',
   method: 'pkg-config',
-  version: '>=1.1.0',
-  fallback: ['rapidjson', 'rapidjson_dep'] ###### TODO: need to test the wrapDB fallback actually works, but last time I tried, I got 'error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Missing Authority Key Identifier'
+  version: f'>=@rapidjson_ver@',
 )
 hipo_dep = dependency(
   'hipo4',
@@ -88,6 +88,23 @@ foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, rapidjson_dep, rcdb_dep ]
   endif
 endforeach
 
+# list of 'requires' for generated pkg-config file
+# FIXME: depenencies built from wrapdb subprojects (type_name()=='internal') need to
+# be handled differently:
+# - add to `pkgconfig_reqs` by text
+# - dep.name() does not give the actual name
+pkgconfig_reqs = []
+foreach dep : dep_list
+  if dep.type_name() != 'internal'
+    pkgconfig_reqs += dep
+  endif
+endforeach
+foreach dep_name, dep : { 'RapidJSON': rapidjson_dep, }
+  if dep.type_name() == 'internal'
+    pkgconfig_reqs += f'@dep_name@ >= @rapidjson_ver@'
+  endif
+endforeach
+
 # pkgconfig configuration: make a list of dependency library and include directories
 dep_lib_dirs = []
 dep_include_dirs = []
@@ -105,17 +122,19 @@ foreach dep : dep_list
       libdirs += run_command('dirname', lib, check: true).stdout().strip()
     endforeach
     incdirs = ROOT_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
-  else
+  elif dep.type_name() == 'internal'
     name = dep.get_variable(internal: 'name', default_value: dep.name())
     if name == 'rcdb'
       incdirs += dep.get_variable(internal: 'includedir')
     else
-      warning(f'Unknown dependency "@name@"')
+      # warning(f'Unknown dependency "@name@"')
       continue
     endif
+  else
+    error('Dependency type "' + dep.type_name() + '" is unknown')
   endif
 
-  # append to `dep_*_dirs` arrays, uniquely
+  # append to `dep_*` arrays, uniquely
   foreach libdir : libdirs
     if not dep_lib_dirs.contains(libdir) and libdir != 'not_defined'
       dep_lib_dirs += libdir
@@ -248,7 +267,7 @@ pkg.generate(
   name: meson.project_name(),
   description: project_description,
   libraries: project_libs,
-  requires: [ fmt_dep, yamlcpp_dep, rapidjson_dep, hipo_dep ], # pkg-config dependencies only #### FIXME: using wrapDB with rapidjson will probably break this (cf. hipo repo)
+  requires: pkgconfig_reqs,
   variables: project_pkg_vars_nonempty,
 )
 
