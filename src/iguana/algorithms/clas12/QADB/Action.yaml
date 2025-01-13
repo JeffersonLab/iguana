@@ -1,0 +1,20 @@
+algorithm:
+  name: 'clas12::QADB'
+
+actions:
+  - name: PrepareEvent
+    type: creator
+    inputs:
+      - name: runnum
+        type: int
+      - name: evnum
+        type: int
+    outputs:
+      - type: concurrent_key_t
+        cast: int
+  - name: Filter
+    type: filter
+    inputs:
+      - name: key
+        type: concurrent_key_t
+        cast: int
