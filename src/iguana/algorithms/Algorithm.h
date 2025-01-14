@@ -235,14 +235,10 @@ namespace iguana {
       /// YAML reader
       std::unique_ptr<YAMLReader> m_yaml_config;
 
-<<<<<<< HEAD
       /// Data structure to hold configuration options set by `Algorithm::SetOption`
       std::unordered_map<std::string, option_t> m_option_cache;
-
-=======
       /// Data file reader
       std::unique_ptr<DataFileReader> m_datafile_reader;
->>>>>>> 0563625 (feat: install and use algorithm data files (viz., weight files))
   };
 
   //////////////////////////////////////////////////////////////////////////////
