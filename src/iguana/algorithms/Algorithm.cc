@@ -106,6 +106,17 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  std::string Algorithm::GetDataFile(std::string const& name)
+  {
+    if(!m_datafile_reader) {
+      m_datafile_reader = std::make_unique<DataFileReader>(ConfigFileReader::ConvertAlgoNameToConfigDir(m_class_name), "data|" + m_name);
+      m_datafile_reader->SetLogLevel(m_log->GetLevel());
+    }
+    return m_datafile_reader->FindFile(name);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::ParseYAMLConfig()
   {
 
