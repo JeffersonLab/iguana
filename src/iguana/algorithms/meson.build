@@ -112,7 +112,6 @@ algo_dict = [
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
-<<<<<<< HEAD
 algo_sources = [
   'Algorithm.cc',
   'AlgorithmFactory.cc',
