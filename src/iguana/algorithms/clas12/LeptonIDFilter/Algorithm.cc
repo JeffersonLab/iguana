@@ -7,6 +7,20 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(LeptonIDFilter , "clas12::LeptonIDFilter");
 
+void LeptonIDFilter::initializeTMVA() {
+          readerTMVA = std::make_unique<TMVA::Reader>("V");
+          // Initialize the variables for the TMVA reader
+          readerTMVA->AddVariable( "P", &P );
+          readerTMVA->AddVariable( "Theta", &Theta );
+          readerTMVA->AddVariable( "Phi", &Phi );
+          readerTMVA->AddVariable( "SFPCAL", &PCAL );
+          readerTMVA->AddVariable( "SFECIN", &ECIN );
+          readerTMVA->AddVariable( "SFECOUT", &ECOUT );
+          readerTMVA->AddVariable( "m2PCAL", &m2PCAL );
+          readerTMVA->AddVariable( "m2ECIN", &m2ECIN );
+          readerTMVA->AddVariable( "m2ECOUT", &m2ECOUT );
+      }
+
   void LeptonIDFilter::Start(hipo::banklist& banks)
   {
     //Get configuration

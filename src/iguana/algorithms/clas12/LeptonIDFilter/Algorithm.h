@@ -49,10 +49,13 @@ namespace iguana::clas12 {
       DEFINE_IGUANA_ALGORITHM(LeptonIDFilter, clas12::LeptonIDFilter)
 
     public:
+      // Constructor
 
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      void initializeTMVA();
 
       /// **FindLepton function**: returns the pindex of the lepton
       /// @param particle_bank the particle bank
@@ -78,44 +81,33 @@ namespace iguana::clas12 {
       /// @returns bool, true if score>=cut, false otherwise
       bool Filter(double score) const;
 
-      //Create TMVA reader
-      TMVA::Reader *readerTMVA = new TMVA::Reader();
 
-      ///Set of variables for the reader
-      ///Momentum
-      Float_t P;
-      ///Theta angle
-      Float_t Theta;
-      ///Phi angle
-      Float_t Phi;
-      ///Sampling fraction on the PCAL
-      Float_t PCAL;
-      ///Sampling fraction on the ECIN
-      Float_t ECIN;
-      ///Sampling fraction on the ECOUT
-      Float_t ECOUT;
-      ///Second-momenta of PCAL
-      Float_t m2PCAL;
-      ///Second-momenta of ECIN
-      Float_t m2ECIN;
-      ///Second-momenta of ECOUT
-      Float_t m2ECOUT;
-
-      /// @brief Add variables to the readerTMVA
-      readerTMVA->AddVariable( "P",&P );
-      readerTMVA->AddVariable( "Theta",&Theta);
-      readerTMVA->AddVariable( "Phi",&Phi);
-      readerTMVA->AddVariable( "SFPCAL",&PCAL);
-      readerTMVA->AddVariable( "SFECIN",&ECIN);
-      readerTMVA->AddVariable( "SFECOUT",&ECOUT );
-      readerTMVA->AddVariable( "m2PCAL",&m2PCAL);
-      readerTMVA->AddVariable( "m2ECIN",&m2ECIN);
-      readerTMVA->AddVariable( "m2ECOUT",&m2ECOUT);
-
-      readerTMVA->BookMVA( "BDT", o_weightfile_fullpath );
+      
 
     
     private:
+      std::unique_ptr<TMVA::Reader> readerTMVA; 
+      
+
+      ///Set of variables for the reader
+      ///Momentum
+      mutable Float_t P;
+      ///Theta angle
+      mutable Float_t Theta;
+      ///Phi angle
+      mutable Float_t Phi;
+      ///Sampling fraction on the PCAL
+      mutable Float_t PCAL;
+      ///Sampling fraction on the ECIN
+      mutable Float_t ECIN;
+      ///Sampling fraction on the ECOUT
+      mutable Float_t ECOUT;
+      ///Second-momenta of PCAL
+      mutable Float_t m2PCAL;
+      ///Second-momenta of ECIN
+      mutable Float_t m2ECIN;
+      ///Second-momenta of ECOUT
+      mutable Float_t m2ECOUT;
     
 
       /// `hipo::banklist` 
