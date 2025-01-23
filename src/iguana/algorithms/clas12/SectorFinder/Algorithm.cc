@@ -43,8 +43,7 @@ namespace iguana::clas12 {
     }
 
     // create the output bank
-    // FIXME: generalize the groupid and itemid
-    auto result_schema = CreateBank(banks, b_result, "REC::Particle::Sector", {"sector/I","pindex/S"}, 0xF000, 4);
+    auto result_schema = CreateBank(banks, b_result, "REC::Particle::Sector");
     i_sector = result_schema.getEntryOrder("sector");
     i_pindex = result_schema.getEntryOrder("pindex");
   }
