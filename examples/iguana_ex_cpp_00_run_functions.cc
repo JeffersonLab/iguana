@@ -51,6 +51,10 @@ int main(int argc, char** argv)
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID
   seq.Add("clas12::SectorFinder"); // get the sector for each particle
   seq.Add("clas12::MomentumCorrection"); // momentum corrections
+  // TODO:
+  // - getRowList for filter
+  // - getBanklistIndex for all (replacing the above TODO)
+  // - add a creator algo
 
   // set log levels
   seq.SetOption("clas12::EventBuilderFilter", "log", "debug");

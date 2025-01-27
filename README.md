@@ -1,4 +1,4 @@
-<img src="./doc/logo.png" width=50%/>
+<img src="./doc/gen/logo.png" width=50%/>
 
 ## Iguana: Implementation Guardian of Analysis Algorithms
 
@@ -16,7 +16,6 @@ Iguana is not a framework for _reading_ data, rather it is a set of algorithms t
 ### For Users
 1. [**Iguana User's Guide**](https://jeffersonlab.github.io/iguana/doxygen)
 1. [Setup Guide - how to build and install Iguana](doc/setup.md)
-1. [Configuring the Algorithms](doc/configuration.md)
 1. [Troubleshooting](doc/troubleshooting.md)
 
 #### Language Bindings

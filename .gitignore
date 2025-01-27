@@ -19,7 +19,7 @@ chameleon-tree
 *.png
 
 # overrides
-!doc/logo.png
+!doc/gen/logo.png
 
 # misc. artifacts
 .DS_Store
