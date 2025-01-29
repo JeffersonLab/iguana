@@ -175,8 +175,8 @@ endif
 project_inc       = include_directories('src')
 project_libs      = []
 project_deps      = declare_dependency(dependencies: dep_list) # do NOT include ROOT here
-project_etc       = get_option('sysconfdir') / meson.project_name()
-project_data      = get_option('datadir') / meson.project_name()
+project_etc_dir   = get_option('sysconfdir') / meson.project_name()
+project_data_dir  = get_option('datadir') / meson.project_name()
 project_test_env  = environment()
 project_pkg_vars  = [
   'bindir='            + '${prefix}' / get_option('bindir'),
@@ -209,8 +209,8 @@ project_test_env.set(
 # set preprocessor macros
 add_project_arguments(
   '-DIGUANA_PREFIX="' + get_option('prefix') + '"',
-  '-DIGUANA_ETCDIR="' + project_etc + '"',
-  '-DIGUANA_DATADIR="' + project_data + '"',
+  '-DIGUANA_ETCDIR="' + project_etc_dir + '"',
+  '-DIGUANA_DATADIR="' + project_data_dir + '"',
   language: ['cpp'],
 )
 
@@ -269,7 +269,7 @@ if get_option('z_install_envfile')
       'python': get_option('bind_python') ? 'true' : 'false',
       'libdir': get_option('libdir'),
       'root': ROOT_dep.found() ? 'true' : 'false',
-      'etcdir': project_etc,
+      'etcdir': project_etc_dir,
     },
   )
   foreach shell : [ 'csh', 'tcsh' ]

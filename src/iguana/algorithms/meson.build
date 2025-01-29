@@ -218,7 +218,7 @@ install_headers(algo_headers, subdir: meson.project_name() / 'algorithms', prese
 foreach algo_datum : algo_data
   install_data(
     algo_data,
-    install_dir:   project_data / 'algorithms',
+    install_dir:   project_data_dir / 'algorithms',
     preserve_path: true,
   )
 endforeach
@@ -239,5 +239,5 @@ install_headers(vdor_headers, subdir: meson.project_name() / 'algorithms', prese
 
 # install config files
 foreach algo_config : algo_configs
-  install_data(algo_config, install_dir: project_etc / 'algorithms', preserve_path: true)
+  install_data(algo_config, install_dir: project_etc_dir / 'algorithms', preserve_path: true)
 endforeach
