@@ -8,6 +8,7 @@ project(
     'cpp_std': 'c++17',
     'buildtype': 'release',
     'libdir': 'lib',
+    'datadir': 'share',
     'licensedir': 'share/licenses/iguana',
     'pkgconfig.relocatable': 'true',
     'force_fallback_for': ['rcdb'],
