@@ -104,6 +104,7 @@ algo_dict = [
     'has_c_bindings': false,
     'algorithm_needs_ROOT': true,
     'has_validator': false,
+    'has_action_yaml': false,
     'add_algorithm_data': [
       'weights/9_BDT_positrons_S19.weights.xml',
     ],
