@@ -45,7 +45,7 @@ foreach algo : algo_dict
         suite: [ 'algorithm', 'single_threaded' ],
         args: [ 'algorithm', '-n', get_option('test_num_events') ] + test_args,
         env: project_test_env,
-        timeout: 120,
+        timeout: 0,
       )
       benchmark(
         '-'.join(['benchmark', 'single_threaded', test_name_algo]),

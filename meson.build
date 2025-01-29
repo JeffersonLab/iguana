@@ -174,7 +174,7 @@ endif
 # general project vars
 project_inc       = include_directories('src')
 project_libs      = []
-project_deps      = declare_dependency(dependencies: [ fmt_dep, yamlcpp_dep, hipo_dep ] ) # do NOT include ROOT here
+project_deps      = declare_dependency(dependencies: dep_list) # do NOT include ROOT here
 project_etc       = get_option('sysconfdir') / meson.project_name()
 project_data      = get_option('datadir') / meson.project_name()
 project_test_env  = environment()

@@ -214,7 +214,7 @@ algo_lib = shared_library(
   install: true,
   build_rpath: ROOT_dep_rpath,
 )
-
+install_headers(algo_headers, subdir: meson.project_name() / 'algorithms', preserve_path: true)
 foreach algo_datum : algo_data
   install_data(
     algo_data,
