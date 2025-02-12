@@ -291,7 +291,7 @@ ALIASES += input_banks{1}="<tr><td>**Input Banks**</td><td>`\1`</td></tr>"
 ALIASES += output_banks{1}="<tr><td>**Output Banks**</td><td>`\1`</td></tr>"
 ALIASES += end_doc="</table>"
 # configuration options
-ALIASES += begin_doc_config="\par Configuration Options:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"
+ALIASES += begin_doc_config{1}="\par Configuration Options:^^YAML configuration, which includes the default option values:^^@include \1/Config.yaml ^^Table of options and descriptions:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"
 ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
 # action functions
 ALIASES += action_function{1}="\xrefitem action \"Function Type\" \"List of all Action Functions\" \1 \brief **Action Function:** "
@@ -1012,6 +1012,7 @@ INPUT_FILE_ENCODING    =
 
 FILE_PATTERNS          = *.dox \
                          *.h \
+                         Config.yaml \
                          chameleon_*_bind.cc \
                          iguana_ex_*.cc \
                          iguana_ex_*.py \
@@ -1061,7 +1062,7 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           =
+EXAMPLE_PATH           = @top_srcdir@/src/iguana/algorithms
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and

@@ -11,7 +11,7 @@ namespace iguana::clas12 {
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
-  /// @begin_doc_config
+  /// @begin_doc_config{clas12/FiducialFilter}
   /// @config_param{pass | int | cook type to use for assigning fiducial cuts}
   /// @end_doc
   class FiducialFilter : public Algorithm

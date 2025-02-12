@@ -11,8 +11,9 @@ namespace iguana::clas12 {
   /// @output_banks{%REC::Particle::Sector}
   /// @end_doc
   ///
-  /// @begin_doc_config
-  /// @config_param{bank | string | if not `default`, use this bank for sector finding}
+  /// @begin_doc_config{clas12/SectorFinder}
+  /// @config_param{bank_charged | string | if not `default`, use this bank for sector finding of charged particles}
+  /// @config_param{bank_uncharged | string | if not `default`, use this bank for sector finding of neutral particles}
   /// @end_doc
   class SectorFinder : public Algorithm
   {

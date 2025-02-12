@@ -47,7 +47,7 @@ namespace iguana::physics {
   /// @output_banks{%physics::DihadronKinematics}
   /// @end_doc
   ///
-  /// @begin_doc_config
+  /// @begin_doc_config{physics/DihadronKinematics}
   /// @config_param{hadron_a_list | list[int] | list of "hadron A" PDGs}
   /// @config_param{hadron_b_list | list[int] | list of "hadron B" PDGs}
   /// @config_param{phi_r_method | string | method used to calculate @latex{\phi_R} (see section "phiR calculation methods" below)}

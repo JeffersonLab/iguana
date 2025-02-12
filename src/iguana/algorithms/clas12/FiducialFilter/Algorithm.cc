@@ -14,7 +14,7 @@ namespace iguana::clas12 {
     b_traj     = GetBankIndex(banks, "REC::Traj");
     b_config   = GetBankIndex(banks, "RUN::config");
       
-    o_pass      = GetCachedOption<int>("pass").value_or(1);
+    o_pass      = GetOptionScalar<int>("pass");
     if(o_pass!=1){
         m_log->Warn("FiducialFilter only contains fiducial cuts for pass1...we will default to using those...");
     }
