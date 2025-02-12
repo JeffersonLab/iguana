@@ -1,14 +1,4 @@
 /*!
-@defgroup examples_frontpage Examples
-Iguana usage examples, organized by language and use cases:
-- @ref examples_cpp "C++ examples"
-- @ref examples_python "Python examples"
-- @ref examples_fortran "Fortran examples"
-*/
-
-//////////////////////////////////////////////////////////////////////////////////
-
-/*!
 @defgroup examples_cpp Examples in C++
 Iguana usage examples in C++
 
@@ -23,6 +13,9 @@ they each show how build `iguana_ex_cpp_00_run_functions.cc`, which "consumes" I
 - [**Meson consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_meson)
 - [**CMake consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_cmake)
 - [**Makefile consumer example**](https://github.com/JeffersonLab/iguana/tree/main/examples/build_with_make)
+
+@note To see the actual _source code_ of an example, you'll need to follow the link "Definition in file ....." or
+"Go to the source code of this file" within, since each example link below just takes you to its documentation page.
 */
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -38,6 +31,9 @@ The examples here are analogous to the C++ examples
 - Examples without a number are specific to this language, showing certain use cases
 
 @see @ref examples_cpp "C++ examples"
+
+@note To see the actual _source code_ of an example, you'll need to follow the link "Definition in file ....." or
+"Go to the source code of this file" within, since each example link below just takes you to its documentation page.
 */
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -45,5 +41,9 @@ The examples here are analogous to the C++ examples
 /*!
 @defgroup examples_fortran Examples in Fortran
 Iguana usage examples in Fortran
-@note Before reading the examples, see @ref fortran_usage_guide
+
+@important Before reading the examples, see @ref fortran_usage_guide
+
+@note To see the actual _source code_ of an example, you'll need to follow the link "Definition in file ....." or
+"Go to the source code of this file" within, since each example link below just takes you to its documentation page.
 */

@@ -1,41 +1,113 @@
 # Iguana User's Guide
 <img src="./logo.png" width=25%/>
 
-This documentation shows how to use the Iguana algorithms.
+This documentation shows how to use the Iguana algorithms. For more documentation, see the [**Documentation Front Page**](https://github.com/JeffersonLab/iguana/blob/main/README.md)
 
-For more documentation, see
-- [**Documentation Front Page**](https://github.com/JeffersonLab/iguana/blob/main/README.md)
-
-## Example Analysis Code Using Iguana
-
-To see Iguana algorithms used in the context of analysis code, with **various languages** and **use cases**, see:
-- \ref examples_frontpage "Examples of Analysis Code"
-- See also the \ref fortran_usage_guide
-
-> [!NOTE]
-> If you are not familiar with Iguana, please read the sections below first.
-
-## Algorithms
-
-An Iguana algorithm is a function that maps input HIPO bank data to output data. The available algorithms are:
-
-- \ref algo_namespaces "Algorithms organized by Namespace"
-- \ref algo "Full List of Algorithms"
-
-The algorithm types are defined based on what they do to HIPO bank data:
-
+**Quick Links:**
 <table>
-<tr><td> **Filter** </td><td> Remove rows of a bank based on some `bool` condition </td></tr>
-<tr><td> **Transformer** </td><td> Transform (mutate) elements of a bank </td></tr>
-<tr><td> **Creator** </td><td> Create a new bank </td></tr>
+    <tr>
+        <td>@spacer[List of Algorithms](#algo)@spacer</td>
+        <td>@spacer[Examples of Code](#secExample)@spacer</td>
+    </tr>
+    <tr>
+        <td>@spacer[List of Action Functions](#action)@spacer</td>
+        <td>@spacer[Configuring Algorithms](#secConfiguring)@spacer</td>
+    </tr>
 </table>
 
-## How to Run Algorithms
+<br /><hr /><br />
 
-All algorithms have the following functions, which may be used in analysis code
-that uses [**the HIPO C++ API**](https://github.com/gavalian/hipo); these
-functions act on `hipo::bank` objects. If you do not use this API with
-`hipo::bank` objects, skip to the next section on **Algorithm Action Functions**.
+@section secExample Example Analysis Code Using Iguana
+
+To see Iguana algorithms used in the context of analysis code, with **various languages** and **use cases**, see:
+<table>
+    <tr>
+        <td>@spacer[C++ Examples](#examples_cpp)@spacer</td>
+        <td>
+            <ul>
+                <li>for users of `ROOT`, `clas12root`, _etc_.</li>
+                <li>includes guidance on how to build Iguana with your C++ code</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td>@spacer[Python examples](#examples_python)@spacer</td>
+        <td>
+            <ul>
+                <li>for users of Python tools, such as `PyROOT`</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td>@spacer[Fortran examples](#examples_fortran)@spacer</td>
+        <td>
+            <ul>
+                <li>See also the [Fortran usage guide](#fortran_usage_guide)</li>
+            </ul>
+        </td>
+    </tr>
+</table>
+
+The general way to use an Iguana algorithm is as follows; see examples for more details:
+
+1. Decide [which algorithms](#algo) you want to use
+    - Tip: you may use `iguana::AlgorithmSequence` to help run a _sequence_ of algorithms
+2. Check each algorithm configuration, and [adjust it if you prefer](#secConfiguring)
+3. Start each algorithm, which "locks in" its configuration:
+    - call `Start(banklist)` if you use [**the HIPO C++ API**](https://github.com/gavalian/hipo)
+    - call `Start()` otherwise (_i.e._, if you use Action Functions)
+4. In the event loop, run the algorithm:
+    - call `Run(...)` if you use [**the HIPO C++ API**](https://github.com/gavalian/hipo)
+    - call the action functions otherwise
+5. Proceed with your analysis
+    - if you called `Run(...)`, the banks will be filtered, transformed, and/or created
+    - if you called action functions, you will need to handle their output yourself
+    - in either case, see [guidance on how to run algorithms](#secRunning) for more details
+6. After your event loop, stop each algorithm by calling `Stop()`
+
+Please let the maintainers know if your use case is not covered in any examples or if you need any help.
+
+<br /><hr /><br />
+
+@section secAlgorithms Algorithms
+
+An Iguana algorithm is a function that maps input HIPO bank data to output data. There are a few different types of algorithms, based on how they act on HIPO data:
+
+<table>
+    <tr>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Example</th>
+    </tr>
+    <tr>
+        <td>**Filter**</td>
+        <td>Filters rows of a bank based on a Boolean condition</td>
+        <td>`iguana::clas12::FiducialFilter`: filter particles with fiducial cuts</td>
+    </tr>
+    <tr>
+        <td>**Transformer**</td>
+        <td>Transform (mutate) elements of a bank</td>
+        <td>`iguana::clas12::MomentumCorrection`: correct particle momenta</td>
+    </tr>
+    <tr>
+        <td>**Creator**</td>
+        <td>Create a new bank</td>
+        <td>`iguana::physics::InclusiveKinematics`: calculate inclusive kinematics @latex{x}, @latex{Q^2}, _etc_.</td>
+    </tr>
+</table>
+
+The available algorithms are:
+
+- [Algorithms organized by Namespace](#algo_namespaces)
+- [Full List of Algorithms](#algo)
+
+<br /><hr /><br />
+
+@section secRunning How to Run Algorithms
+
+All algorithms have the following functions, which may be used in analysis code that uses [**the HIPO C++ API**](https://github.com/gavalian/hipo); these functions act on `hipo::bank` objects.
+
+- Note: If you do not use this API with `hipo::bank` objects, skip to the next section on [Algorithm Action Functions](#secActionFunctions).
 
 <table>
 <tr><td> `iguana::Algorithm::Start` </td><td> Run before event processing </td></tr>
@@ -43,13 +115,21 @@ functions act on `hipo::bank` objects. If you do not use this API with
 <tr><td> `iguana::Algorithm::Stop` </td><td> Run after event processing </td></tr>
 </table>
 
+<br />
 ### What to do after calling `iguana::Algorithm::Run`
 
 The `Run` function is called on every event; the general consequence depends on the
 algorithm type.
 
-For **Filter** type algorithms, the `hipo::bank` object(s) will be filtered. To iterate over
-the rows of a bank using a filter, you _must_ use the function `hipo::bank::getRowList`,
+<table>
+    <tr>
+        <th>Type</th>
+        <th>How to handle the results</th>
+    </tr>
+    <tr>
+        <td>**Filter**</td>
+        <td>
+To iterate over _filtered_ bank rows, you _must_ use the function `hipo::bank::getRowList`,
 rather than iterating from `0` up to `hipo::bank::getRows()`; for example, given a
 bank object named `particle_bank`:
 ```cpp
@@ -62,16 +142,29 @@ for(int row = 0; row < particle_bank.getRows(); row++) {
     // loops over ALL rows, regardless of whether they pass the filter
 }
 ```
-
-For **Transformer** type algorithms, the transformed `hipo::bank` will simply have
+        </td>
+    </tr>
+    <tr>
+        <td>**Transformer**</td>
+        <td>
+The transformed `hipo::bank` will simply have
 the relevant bank elements changed. For example, momentum correction algorithms
 typically change the particle momentum components.
-
-**Creator** type algorithms will simply create a new `hipo::bank` object, appending
+        </td>
+    </tr>
+    <tr>
+        <td>**Creator**</td>
+        <td>
+Creator-type algorithms will simply create a new `hipo::bank` object, appending
 it to the end of the input `hipo::banklist`. An initial version is created upon calling
 `iguana::Algorithm::Start`, so that you may begin to reference it; it is helpful to
-use `hipo::getBanklistIndex` (see \ref examples_frontpage "the examples for details").
+use `hipo::getBanklistIndex` (see [the examples for details](#secExample)).
+        </td>
+    </tr>
+</table>
 
+<br />
+@anchor secActionFunctions
 ### Algorithm Action Functions
 
 The action functions do the _real_ work of the algorithm, and are meant to be
@@ -79,7 +172,7 @@ easily callable from _any_ analysis, even if HIPO banks are not directly used.
 These functions are unique to each algorithm, so view the algorithm
 documentation for details, or browse the full list:
 
-- \ref action "List of all Action Functions"
+- [List of all Action Functions](#action)
 
 The action functions have types that correspond to the algorithm types. Filters,
 for example, return `bool` results indicating whether the filter passed or not.
@@ -109,7 +202,9 @@ function that calls it on each element of its input vectors.
 > a particle-filtering action function on every particle. Read the algorithm's documentation carefully
 > before using action functions.
 
-## How to Configure Algorithms
+<br /><hr /><br />
+
+@section secConfiguring How to Configure Algorithms
 
 Most of the algorithms are configurable using a YAML configuration file. If you are using Iguana for your analysis, you likely want to customize the algorithm configurations.
 
@@ -167,3 +262,4 @@ physics::AlgorithmA
 physics::AlgorithmB
   value: 5
 ```
+
