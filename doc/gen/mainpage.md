@@ -184,7 +184,7 @@ Iguana provides a few ways to configure algorithms; in general, you may either:
 
 The default configuration YAML files are installed in the `etc/` subdirectory of the Iguana installation. If you have set the Iguana environment variables using, _e.g._ `source this_iguana.sh`, or if you are using the version of Iguana installed on `ifarm`, you will have the environment variable `$IGUANA_CONFIG_PATH` set to include this `etc/` directory.
 
-There are a few ways to configure the algorithms; see the sections below for the options
+There are a few ways to configure the algorithms with YAML; see the sections below for the options
 
 @important
 While algorithm developers are encouraged _not_ to make breaking changes to their algorithms or configuration, in some cases certain changes cannot be prevented. Thus if you have your own algorithm configurations, keep up-to-date on any changes of the algorithm. We will try to announce all breaking changes in the Iguana release notes.
