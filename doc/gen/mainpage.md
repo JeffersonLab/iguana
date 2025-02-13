@@ -18,22 +18,22 @@ To see Iguana algorithms used in the context of analysis code, with **various la
 
 | @spacer Examples @spacer ||
 | --- | --- |
-| @spacer [C++ Examples](#examples_cpp) @spacer         | for users of `ROOT`, `clas12root`, _etc_.                   |
-| ^                                                     | includes guidance on how to build Iguana with your C++ code |
-| @spacer [Python examples](#examples_python) @spacer   | for users of Python tools, such as `PyROOT`                 |
+| @spacer [C++ Examples](#examples_cpp) @spacer         | For users of `ROOT`, `clas12root`, _etc_.                   |
+| ^                                                     | Includes guidance on how to build Iguana with your C++ code |
+| @spacer [Python examples](#examples_python) @spacer   | For users of Python tools, such as `PyROOT`                 |
 | @spacer [Fortran examples](#examples_fortran) @spacer | See also the [Fortran usage guide](#fortran_usage_guide)    |
 
-The general way to use an Iguana algorithm is as follows; see examples for more details:
+In summary, the general way to use an Iguana algorithm is as follows; see examples and documentation below for more details.
 
 1. Decide [which algorithms](#algo) you want to use
     - Tip: you may use `iguana::AlgorithmSequence` to help run a _sequence_ of algorithms
 2. Check each algorithm configuration, and [adjust it if you prefer](#secConfiguring)
 3. Start each algorithm, which "locks in" its configuration:
-    - call `Start(banklist)` if you use [**the HIPO API**](https://github.com/gavalian/hipo)
-    - call `Start()` otherwise (_i.e._, if you use Action Functions)
+    - call `Start(banklist)` if you use [**the HIPO API**](https://github.com/gavalian/hipo) and [Common Functions](#secCommon)
+    - call `Start()` otherwise, _i.e._, if you use [Action Functions](#secAction)
 4. In the event loop, run the algorithm:
-    - call `Run(...)` if you use [**the HIPO API**](https://github.com/gavalian/hipo)
-    - call the action functions otherwise
+    - call `Run(...)` if you use Common Functions
+    - call the Action Function(s) otherwise
 5. Proceed with your analysis
     - if you called `Run(...)`, the banks will be filtered, transformed, and/or created
     - if you called action functions, you will need to handle their output yourself
@@ -90,7 +90,7 @@ All algorithms have the following **Common Functions**, which may be used in ana
 
 The algorithms are implemented in C++ classes which inherit from the base class `iguana::Algorithm`; these three class methods are overridden in each algorithm.
 
-The `iguana::Algorithm::Run` function should be called on every event; the general consequence depends on the
+The `iguana::Algorithm::Run` function should be called on every event; the general consequence, that is, how the user should handle the algorithm's results, depends on the
 algorithm type:
 
 <table>
@@ -142,9 +142,9 @@ from HIPO bank rows. The return type of an action function depends on the algori
 
 | Algorithm Type | Action Function Output |
 | --- | --- |
-| **Filter** | returns `bool` whether or not the filter passes |
-| **Transformer** | returns the transformed parameters |
-| **Creator** | returns a simple `struct` of parameters (corresponding to a created bank row) |
+| **Filter** | Returns `bool` whether or not the filter passes |
+| **Transformer** | Returns the transformed parameters |
+| **Creator** | Returns a simple `struct` of parameters (corresponding to a created bank row) |
 
 Some algorithms have action functions which require a number from _all_ of the rows of a bank; this distinction
 motivates further classification of action functions:
@@ -156,16 +156,19 @@ motivates further classification of action functions:
 | **Mixed** | Inputs and outputs are scalar or vector quantities. |
 
 To maximize compatibility with user analysis code, these functions are overloaded:
-- for every scalar function, there should be an vector function which calls the scalar function iteratively
-- not every vector function can have a corresponding scalar function, since some action functions need several bank rows' data
+- for every scalar function, there should be a vector function which calls the scalar function iteratively
+- not every vector function can have a corresponding scalar function, since some action functions need data from more than one bank row
 
 Finally, it is important to note _when_ to call action functions in the analysis code. For example, some action functions should be
 called _once_ every event, while others should be called for every particle of the `REC::Particle` bank. Some algorithms
 have _both_ of these types of functions, for example:
-- `PrepareEvent`, which must be called first, at the beginning of an event's analysis
-- `FilterParticle`, which must be called on every particle, using the _output_ of `PrepareEvent`
+- `iguana::clas12::ZVertexFilter::PrepareEvent`, which must be called first, at the beginning of an event's analysis
+- `iguana::clas12::ZVertexFilter::Filter`, which must be called on every particle, using the _output_ of `PrepareEvent` in one of its input parameters
 
 It is highly recommended to read an algorithm's documentation carefully before using it, _especially_ if you use action functions.
+
+@important
+While algorithm developers are encouraged _not_ to make breaking changes to their algorithms' action functions, in some cases certain changes cannot be prevented. Thus if you use an algorithm's action functions, keep up-to-date on any changes of the algorithm. We will try to announce all breaking changes in the Iguana release notes.
 
 <br><hr>
 
@@ -173,26 +176,71 @@ It is highly recommended to read an algorithm's documentation carefully before u
 @anchor secConfiguring
 ## How to Configure Algorithms
 
-Most of the algorithms are configurable using a YAML configuration file. If you are using Iguana for your analysis, you likely want to customize the algorithm configurations.
+Many algorithms are configurable. An algorithm's configuration parameters and their default values are found in the algorithm's documentation.
 
-The default configuration is installed in the `etc/` subdirectory of the Iguana installation. If you have set the Iguana environment variables using, _e.g._ `source this_iguana.sh`, or if you are using the version of Iguana installed on `ifarm`, you will have the environment variable `$IGUANA_CONFIG_PATH` set to include this `etc/` directory.
+Iguana provides a few ways to configure algorithms; in general, you may either:
+- use YAML for configuration that gets applied at runtime, _i.e._, no need to recompile
+- use `iguana::Algorithm::SetOption` to configure an algorithm more directly, which may require recompilation, depending on how you use Iguana algorithms
+
+The default configuration YAML files are installed in the `etc/` subdirectory of the Iguana installation. If you have set the Iguana environment variables using, _e.g._ `source this_iguana.sh`, or if you are using the version of Iguana installed on `ifarm`, you will have the environment variable `$IGUANA_CONFIG_PATH` set to include this `etc/` directory.
 
 There are a few ways to configure the algorithms; see the sections below for the options
 
 @important
-While algorithm developers are encouraged _not_ to make breaking changes to their algorithms or configuration, in some cases certain changes cannot be prevented. Thus if you have your own algorithm configurations, you may want to keep up-to-date on any changes of the algorithm. We will try to announce all breaking changes in the Iguana release notes.
+While algorithm developers are encouraged _not_ to make breaking changes to their algorithms or configuration, in some cases certain changes cannot be prevented. Thus if you have your own algorithm configurations, keep up-to-date on any changes of the algorithm. We will try to announce all breaking changes in the Iguana release notes.
 
-@note
-If the Iguana installation is relocated, the environment variable `$IGUANA_CONFIG_PATH` _must_ be used at runtime.
+### Option 1: Write your own YAML file
 
-### Option 1: Copy the default directory, and modify
+Start your own YAML file by first copying the default YAML configurations from each algorithm that you want to use. See [algorithm documentation](#algo) or the `Config.yaml` files installed in `$IGUANA_CONFIG_PATH` for the algorithms' default YAML configurations.
+- Be mindful of indentation in your YAML file
+  - The top level (no indentation) contains the algorithm names
+  - Under each algorithm name is its configuration (one indentation level)
+  - Further indentation levels or lists of configurations may be used within; see each algorithm's documentation for more information
+- Note that _excluding_ a configuration option in your YAML file means that the default value will be used.
 
-First, copy the default configuration directory to your work area, or to your analysis code source tree; we'll call the copied directory `my_iguana_config`, as an example. If `$IGUANA_CONFIG_PATH` is the default configuration directory (_i.e._ you have not set or modified this variable yourself), you may run:
-```bash
-cp -r $IGUANA_CONFIG_PATH my_iguana_config
+For example, suppose you want to use algorithms which have the following YAML configurations:
+```yaml
+### default configuration file 1
+physics::AlgorithmA
+  cuts: [-1, 1]
+```
+```yaml
+### default configuration file 2
+physics::AlgorithmB
+  valueA: 3
+  valueB: 0.14
+  reptiles:
+    reptileA: gecko
+    reptileB: tuatara
+```
+Custom YAML file, with some changes such as widening `AlgorithmA`'s `cuts`:
+```yaml
+### custom YAML file
+physics::AlgorithmA
+  cuts: [-2, 2]
+
+physics::AlgorithmB
+  valueA: 5
+  valueB: 0.14
+  reptiles:
+    reptileA: alligator
+    reptileB: caiman
 ```
 
-You may then freely modify any configuration file within `my_iguana_config/`. To use this directory in your algorithms, you may do any one of the following:
+Once you have a YAML file, you just need to tell each algorithm to use it:
+- use `iguana::Algorithm::SetConfigFile` on each algorithm
+- if you use `iguana::AlgorithmSequence`, use `iguana::AlgorithmSequence::SetConfigFileForEachAlgorithm` to use this file for each algorithm in the algorithm sequence
+
+### Option 2: Copy the default directory, and modify
+
+First, copy the default configuration directory to your work area, or to your analysis source code; we'll call the copied directory `my_iguana_config`, as an example. If `$IGUANA_CONFIG_PATH` is the default configuration directory (_i.e._ you have not set or modified this variable yourself), you may run:
+```bash
+cp -rv $IGUANA_CONFIG_PATH my_iguana_config
+```
+
+You may then freely modify any configuration file within `my_iguana_config/`.
+
+To use this directory in your algorithms, you may do any one of the following:
 
 1. Since `$IGUANA_CONFIG_PATH` allows multiple paths, delimited by colons (`:`), prepend `my_iguana_config/` to `$IGUANA_CONFIG_PATH`; the safest way is to use an absolute path:
 ```bash
@@ -202,31 +250,4 @@ setenv IGUANA_CONFIG_PATH `pwd`/my_iguana_config:$IGUANA_CONFIG_PATH   # tcsh or
 The algorithms will then search `my_iguana_config` for the configuration before searching the default paths. You may add multiple paths, if needed.
 Paths which appear first in `$IGUANA_CONFIG_PATH` will be prioritized when the algorithm searches for configuration parameters; this behavior is similar to that of `$PATH` or `$LD_LIBRARY_PATH`.
 
-2. Use `Algorithm::SetConfigDirectory` instead of prepending `$IGUANA_CONFIG_PATH`.
-
-### Option 2: Write your own YAML file
-
-Make a new YAML file, containing just the options you want to override; use `Algorithm::SetConfigFile` to use this file for each algorithm.
-See existing algorithms' configuration, and just copy what you need into your own YAML file; be mindful of the indentation, and that the top-level set of YAML nodes are the algorithm names. For example:
-
-Algorithm default configuration files:
-```yaml
-### default configuration file 1
-physics::AlgorithmA
-  cuts: [-1, 1]
-```
-```yaml
-### default configuration file 2
-physics::AlgorithmB
-  value: 3
-```
-Custom YAML file, widening `AlgorithmA`'s `cuts` and increasing `AlgorithmB`'s `value`:
-```yaml
-### custom YAML file
-physics::AlgorithmA
-  cuts: [-2, 2]
-
-physics::AlgorithmB
-  value: 5
-```
-
+2. Use `iguana::Algorithm::SetConfigDirectory` instead of prepending `$IGUANA_CONFIG_PATH` (and if you use an algorithm sequence, use `iguana::AlgorithmSequence::SetConfigDirectoryForEachAlgorithm`)
