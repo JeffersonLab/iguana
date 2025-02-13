@@ -24,7 +24,7 @@ dbms_deps = []
 dbms_dict = {
   'mariadb':  {
     'use': get_option('use_mariadb'),
-    'pkgs': [ 'mariadb', 'mysql', 'mysqlclient' ], # prioritizing mariadb, an open source fork of mysql
+    'pkgs': [ 'mariadb', 'libmariadb', 'mysql', 'mysqlclient' ], # prioritizing mariadb, an open source fork of mysql
   },
   'sqlite': {
     'use': get_option('use_sqlite'),
