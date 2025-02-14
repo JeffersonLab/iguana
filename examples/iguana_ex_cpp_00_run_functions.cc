@@ -35,6 +35,10 @@ int main(int argc, char** argv)
                                           "REC::Track",
                                           "REC::Scintillator"});
 
+  // set the concurrency model to single-threaded, since this example is single-threaded;
+  // not doing this will use the thread-safe model, `"memoize"`
+  iguana::GlobalConcurrencyModel = "single";
+
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID (a filter algorithm)
