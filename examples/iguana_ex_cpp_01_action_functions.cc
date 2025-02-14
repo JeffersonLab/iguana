@@ -56,9 +56,9 @@ int main(int argc, char** argv)
   iguana::GlobalConcurrencyModel = "single";
 
   // create the algorithms
-  iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
-  iguana::clas12::SectorFinder algo_sector_finder;
-  iguana::clas12::MomentumCorrection algo_momentum_correction;
+  iguana::clas12::EventBuilderFilter algo_eventbuilder_filter; // filter by Event Builder PID (a filter algorithm)
+  iguana::clas12::SectorFinder algo_sector_finder; // get the sector for each particle (a creator algorithm)
+  iguana::clas12::MomentumCorrection algo_momentum_correction; // momentum corrections (a transformer algorithm)
 
   // set log levels
   algo_eventbuilder_filter.SetOption("log", "info");
@@ -66,6 +66,7 @@ int main(int argc, char** argv)
   algo_momentum_correction.SetOption("log", "info");
 
   // set algorithm options
+  // NOTE: this can also be done in a config file
   algo_eventbuilder_filter.SetOption<std::vector<int>>("pids", {11, 211, -211});
 
   // start the algorithms

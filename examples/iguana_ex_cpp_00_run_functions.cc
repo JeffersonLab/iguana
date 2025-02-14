@@ -16,15 +16,6 @@
 #include <hipo4/reader.h>
 #include <iguana/algorithms/AlgorithmSequence.h>
 
-/// @brief helper function to show a bank along with a header
-/// @param header the header to print above the bank
-/// @param bank the bank to show
-void prettyPrint(std::string header, hipo::bank& bank)
-{
-  fmt::print("{:=^70}\n", " " + header + " ");
-  bank.show();
-}
-
 /// main function
 int main(int argc, char** argv)
 {
@@ -44,34 +35,64 @@ int main(int argc, char** argv)
                                           "REC::Track",
                                           "REC::Scintillator"});
 
-  // get bank index, for each bank we want to use after Iguana algorithms run
-  auto b_particle = hipo::getBanklistIndex(banks, "REC::Particle");
+  // set the concurrency model to single-threaded, since this example is single-threaded;
+  // not doing this will use the thread-safe model, `"memoize"`
+  iguana::GlobalConcurrencyModel = "single";
 
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
-  seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID
-  seq.Add("clas12::SectorFinder"); // get the sector for each particle
-  seq.Add("clas12::MomentumCorrection"); // momentum corrections
-  // TODO:
-  // - getRowList for filter
-  // - add a creator algo
+  seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID (a filter algorithm)
+  seq.Add("clas12::SectorFinder"); // get the sector for each particle (a creator algorithm)
+  seq.Add("clas12::MomentumCorrection"); // momentum corrections (a transformer algorithm)
 
   // set log levels
-  seq.SetOption("clas12::EventBuilderFilter", "log", "debug");
-  seq.SetOption("clas12::MomentumCorrection", "log", "debug");
+  // NOTE: this can also be done in a config file
+  seq.SetOption("clas12::EventBuilderFilter", "log", "info");
+  seq.SetOption("clas12::SectorFinder", "log", "info");
+  seq.SetOption("clas12::MomentumCorrection", "log", "info");
 
-  // set algorithm options (overrides configuration files)
+  // set algorithm options
+  // NOTE: this can also be done in a config file
   seq.SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", {11, 211, -211});
 
   // start the algorithms
   seq.Start(banks);
 
+  // get bank index, for each bank we want to use after Iguana algorithms run
+  // NOTE: new banks from creator algorithms are initialized by `Start`
+  auto b_particle = hipo::getBanklistIndex(banks, "REC::Particle");
+  auto b_sector   = hipo::getBanklistIndex(banks, "REC::Particle::Sector"); // new created bank
+
   // run the algorithm sequence on each event
   int iEvent = 0;
   while(reader.next(banks) && (numEvents == 0 || iEvent++ < numEvents)) {
-    prettyPrint("BEFORE", banks.at(b_particle));
+
+    // print the particle bank before Iguana algorithms
+    fmt::print("{:=^70}\n", " BEFORE IGUANA ");
+    banks.at(b_particle).show();
+
+    // run the sequence of Iguana algorithms
     seq.Run(banks);
-    prettyPrint("AFTER", banks.at(b_particle));
+
+    // print the banks after Iguana algorithms
+    fmt::print("{:=^70}\n", " AFTER IGUANA ");
+    banks.at(b_particle).show();
+    banks.at(b_sector).show();
+
+    // print
+    fmt::print("Analysis Particles:\n");
+    fmt::print("  {:<20} {:<20} {:<20} {:<20}\n", "row == pindex", "PDG", "|p|", "sector");
+    for(auto const& row : banks.at(b_particle).getRowList()) {
+      auto p = std::hypot(
+          banks.at(b_particle).getFloat("px", row),
+          banks.at(b_particle).getFloat("py", row),
+          banks.at(b_particle).getFloat("pz", row));
+      auto pdg = banks.at(b_particle).getInt("pid", row);
+      auto sector = banks.at(b_sector).getInt("sector", row);
+      fmt::print("  {:<20} {:<20} {:<20.3} {:<20}\n", row, pdg, p, sector);
+    }
+    fmt::print("\n");
+
   }
 
   // stop algorithms
