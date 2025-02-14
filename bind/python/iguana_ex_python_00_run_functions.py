@@ -27,6 +27,7 @@ banks  = reader.getBanks([
     "REC::Calorimeter",
     "REC::Track",
     "REC::Scintillator"])
+b_particle = hipo.getBanklistIndex(banks, "REC::Particle")
 
 seq = iguana.AlgorithmSequence('pyiguana')
 seq.Add('clas12::EventBuilderFilter')
@@ -47,9 +48,9 @@ iEvent = 0
 seq.Start(banks)
 while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     iEvent += 1
-    prettyPrint("BEFORE", banks[1])
+    prettyPrint("BEFORE", banks[b_particle])
     seq.Run(banks)
-    prettyPrint("AFTER", banks[1])
+    prettyPrint("AFTER", banks[b_particle])
 
 seq.Stop()
 

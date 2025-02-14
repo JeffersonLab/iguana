@@ -12,7 +12,7 @@ namespace iguana::clas12 {
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
-  /// @begin_doc_config
+  /// @begin_doc_config{clas12/ZVertexFilter}
   /// @config_param{electron_vz | list[double] | lower and upper electron @f$z@f$-vertex cuts; run-range dependent; cuts are not applied to FT electrons (FD and CD only)}
   /// @end_doc
   class ZVertexFilter : public Algorithm

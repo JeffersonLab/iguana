@@ -27,6 +27,9 @@ numEvents = int(sys.argv[2]) if len(sys.argv)>2 else 3
 reader = hipo.reader(inFile)
 banks  = reader.getBanks(["REC::Particle", "RUN::config"]);
 
+b_particle = hipo.getBanklistIndex(banks, "REC::Particle")
+b_config   = hipo.getBanklistIndex(banks, "RUN::config")
+
 algo_eventbuilder_filter = iguana.clas12.EventBuilderFilter()
 algo_momentum_correction = iguana.clas12.MomentumCorrection()
 
@@ -41,8 +44,8 @@ iEvent = 0
 while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     iEvent += 1
 
-    particleBank = banks[0]
-    configBank   = banks[1]
+    particleBank = banks[b_particle]
+    configBank   = banks[b_config]
     particleBank.show()
 
     for row in particleBank.getRowList():

@@ -11,7 +11,7 @@ namespace iguana::clas12 {
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
-  /// @begin_doc_config
+  /// @begin_doc_config{clas12/EventBuilderFilter}
   /// @config_param{pids | list[int] | list of PDG codes to filter}
   /// @end_doc
   class EventBuilderFilter : public Algorithm

@@ -11,6 +11,10 @@
 ///   NUM_EVENTS  the number of events to analyze;
 ///               set to zero to analyze all events
 /// ```
+///
+/// @note while this example _does_ use `hipo::bank` objects to read HIPO data, it demonstrates
+/// using action functions called with the data _from_ these banks.
+///
 /// @end_doc_example
 #include <hipo4/reader.h>
 #include <iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h>
@@ -28,10 +32,12 @@ int main(int argc, char** argv)
   // read input file
   hipo::reader reader(inFileName,{0});
 
-  // set banks
+  // set list of banks to be read
   hipo::banklist banks = reader.getBanks({"REC::Particle", "RUN::config"});
-  enum banks_enum { b_particle,
-                    b_config }; // TODO: users shouldn't have to do this
+
+  // get bank index, for each bank we want to use after Iguana algorithms run
+  auto b_particle = hipo::getBanklistIndex(banks, "REC::Particle");
+  auto b_config   = hipo::getBanklistIndex(banks, "RUN::config");
 
   // set the concurrency model to single-threaded, since this example is single-threaded;
   // not doing this will use the thread-safe model, `"memoize"`
