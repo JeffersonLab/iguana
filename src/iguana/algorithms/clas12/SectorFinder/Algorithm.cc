@@ -101,7 +101,7 @@ namespace iguana::clas12 {
 
     for(int row = 0; row < particleBank.getRows(); row++) {
 
-      int charge=particleBank.getInt("charge",row);
+      auto charge=particleBank.getInt("charge",row);
       int sect = -1;
 
       // if user-specified bank
@@ -110,8 +110,8 @@ namespace iguana::clas12 {
             charge==0 ? sectors_user_uncharged : sectors_user_charged,
             charge==0 ? pindices_user_uncharged : pindices_user_charged,
             row);
-      else // if not user-specified bank
-        sect = GetSector(
+      else // if not user-specified bank, use the standard method
+        sect = GetStandardSector(
             sectors_track,
             pindices_track,
             sectors_cal,
@@ -134,7 +134,7 @@ namespace iguana::clas12 {
     for(auto const& row : bank.getRowList()) {
       //check that we're only using FD detectors
       //eg have "sectors" in CND which we don't want to add here
-      int det=bank.getByte("detector",row);
+      auto det=bank.getByte("detector",row);
       if (listFDDets.find(det) != listFDDets.end()) {
         sectors.push_back(bank.getInt("sector", row));
         pindices.push_back(bank.getShort("pindex", row));
@@ -152,7 +152,7 @@ namespace iguana::clas12 {
     return -1;
   }
 
-  int SectorFinder::GetSector(
+  int SectorFinder::GetStandardSector(
       std::vector<int> const& sectors_track,
       std::vector<int> const& pindices_track,
       std::vector<int> const& sectors_cal,
@@ -187,7 +187,7 @@ namespace iguana::clas12 {
     return -1;
   }
 
-  std::vector<int> SectorFinder::GetSectors(
+  std::vector<int> SectorFinder::GetStandardSectors(
       std::vector<int> const& sectors_track,
       std::vector<int> const& pindices_track,
       std::vector<int> const& sectors_cal,
@@ -198,7 +198,7 @@ namespace iguana::clas12 {
   {
     std::vector<int> sect_list;
     for(auto const& pindex : pindices_particle)
-      sect_list.push_back(GetSector(
+      sect_list.push_back(GetStandardSector(
       sectors_track,
       pindices_track,
       sectors_cal,

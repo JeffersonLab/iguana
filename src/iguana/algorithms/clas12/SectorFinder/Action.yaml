@@ -1,0 +1,36 @@
+algorithm:
+  name: 'clas12::SectorFinder'
+
+actions:
+  - name: GetSector
+    type: creator
+    inputs:
+      - { name: sectors,         type: std::vector<int> }
+      - { name: pindices,        type: std::vector<int> }
+      - { name: pindex_particle, type: int              }
+    outputs:
+      - type: int
+  - name: GetStandardSector
+    type: creator
+    inputs:
+      - { name: sectors_track,   type: std::vector<int> }
+      - { name: pindices_track,  type: std::vector<int> }
+      - { name: sectors_cal,     type: std::vector<int> }
+      - { name: pindices_cal,    type: std::vector<int> }
+      - { name: sectors_scint,   type: std::vector<int> }
+      - { name: pindices_scint,  type: std::vector<int> }
+      - { name: pindex_particle, type: int              }
+    outputs:
+      - type: int
+  - name: GetStandardSectors
+    type: creator
+    inputs:
+      - { name: sectors_track,     type: std::vector<int> }
+      - { name: pindices_track,    type: std::vector<int> }
+      - { name: sectors_cal,       type: std::vector<int> }
+      - { name: pindices_cal,      type: std::vector<int> }
+      - { name: sectors_scint,     type: std::vector<int> }
+      - { name: pindices_scint,    type: std::vector<int> }
+      - { name: pindices_particle, type: std::vector<int> }
+    outputs:
+      - type: std::vector<int>
