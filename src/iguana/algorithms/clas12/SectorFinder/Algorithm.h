@@ -64,7 +64,10 @@ namespace iguana::clas12 {
       /// @param pindices list of pindices in a detector bank
       /// @param pindex index in `REC::Particle` bank for which to get sector
       /// @returns sector for `pindex` in list, -1 if `pindex` not in inputted list
-      int GetSector(std::vector<int> const& sectors, std::vector<int> const& pindices, int const pindex) const;
+      int GetSector(
+          std::vector<int> const& sectors,
+          std::vector<int> const& pindices,
+          int const pindex) const;
 
       /// fill lists of sectors and pindices present in the input bank
       /// @param bank bank from which to get lists of sectors and pindices

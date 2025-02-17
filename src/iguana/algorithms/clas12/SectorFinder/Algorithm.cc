@@ -54,18 +54,18 @@ namespace iguana::clas12 {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& resultBank   = GetBank(banks, b_result, "REC::Particle::Sector");
 
-    std::vector<int> sectors_uncharged;
-    std::vector<int> pindices_uncharged;
+    std::vector<int> sectors_user_uncharged;
+    std::vector<int> pindices_user_uncharged;
     if(userSpecifiedBank_uncharged){
       auto const& userBank = GetBank(banks, b_user_uncharged);
-      GetListsSectorPindex(userBank,sectors_uncharged,pindices_uncharged);
+      GetListsSectorPindex(userBank,sectors_user_uncharged,pindices_user_uncharged);
     }
 
-    std::vector<int> sectors_charged;
-    std::vector<int> pindices_charged;
+    std::vector<int> sectors_user_charged;
+    std::vector<int> pindices_user_charged;
     if(userSpecifiedBank_charged){
       auto const& userBank = GetBank(banks, b_user_charged);
-      GetListsSectorPindex(userBank,sectors_charged,pindices_charged);
+      GetListsSectorPindex(userBank,sectors_user_charged,pindices_user_charged);
     }
 
     std::vector<int> sectors_track;
@@ -88,8 +88,8 @@ namespace iguana::clas12 {
       auto const& scintBank = GetBank(banks, b_scint);
       GetListsSectorPindex(scintBank,sectors_scint,pindices_scint);
     }
-    
-    
+
+
     // sync new bank with particle bank, and fill it with zeroes
     resultBank.setRows(particleBank.getRows());
     resultBank.getMutableRowList().setList(particleBank.getRowList());
@@ -102,19 +102,19 @@ namespace iguana::clas12 {
     for(int row = 0; row < particleBank.getRows(); row++) {
       int charge=particleBank.getInt("charge",row);
 
-      bool userSp = charge==0 ? userSpecifiedBank_uncharged : userSpecifiedBank_charged;
-      std::vector<int>& sct_us = charge==0 ? sectors_uncharged : sectors_charged;
-      std::vector<int>& pin_us = charge==0 ? pindices_uncharged : pindices_charged;
-
-      
-      
-      if(userSp){
-        int sect=GetSector(sct_us, pin_us,row);
+      // if user-specified bank
+      if(charge==0 ? userSpecifiedBank_uncharged : userSpecifiedBank_charged){
+        auto sect = GetSector(
+            charge==0 ? sectors_user_uncharged : sectors_user_charged,
+            charge==0 ? pindices_user_uncharged : pindices_user_charged,
+            row);
         if (sect!=-1){
           resultBank.putInt(i_sector, row, sect);
           resultBank.putShort(i_pindex, row, static_cast<int16_t>(row));
         }
-      } else {
+      }
+
+      else { // if not user-specified bank
         enum det_enum {kTrack, kScint, kCal, nDet}; // try to get sector from these detectors, in this order
         for(int d = 0; d < nDet; d++) {
           int sect = -1;
