@@ -30,12 +30,13 @@ class Bind_c < Generator
     ftn_name = get_spec @action_spec, 'name'
     ftn_name_fortran = "iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{ftn_name.downcase}"
     ftn_name_c = "#{ftn_name_fortran}_"
+    convertors_array_to_vector = []
     verbose " - bind #{@ftn_type} function #{@algo_name}::#{ftn_name}"
     check_function_type "#{@algo_name}::#{ftn_name}", @ftn_type
 
     # function to generate parameter docstrings
     def gen_docstring_params(key, in_or_out)
-      map_spec_params(@action_spec, key) do |name, type, cast|
+      map_spec_params(@action_spec, key) do |name, type, cast, dimension|
         if name == RESULT_VAR
           "[#{in_or_out}] #{name} the resulting value"
         else
@@ -46,27 +47,40 @@ class Bind_c < Generator
 
     # function to generate C function parameters
     def gen_ftn_params(key)
-      map_spec_params(@action_spec, key) do |name, type, cast|
+      map_spec_params(@action_spec, key) do |name, type, cast, dimension|
         "#{cast.empty? ? type : cast}* #{name}"
       end
     end
 
     # function to generate C++ function arguments
     def gen_call_args(key)
-      map_spec_params(@action_spec, key) do |name, type, cast|
+      map_spec_params(@action_spec, key) do |name, type, cast, dimension|
         return nil if name == RESULT_VAR
-        cast.empty? ? "*#{name}" : "#{type}(*#{name})"
+        case dimension
+        when 0
+          cast.empty? ? "*#{name}" : "#{type}(*#{name})"
+        when 1
+          "#{name}__vector"
+        end
       end
     end
 
     # function to generate result assignments
     def gen_assignments(key)
-      map_spec_params(@action_spec, key) do |name, type, cast|
+      map_spec_params(@action_spec, key) do |name, type, cast, dimension|
+        code_str = []
         out_var = name == RESULT_VAR ?
           'out' :
           "out.#{name.sub /^#{RESULT_VAR}_/, ''}"
-        out_var = "#{cast}(#{out_var})" unless cast.empty?
-        "*#{name} = #{out_var};"
+        case dimension
+        when 0
+          out_var = "#{cast}(#{out_var})" if !cast.empty? and dimension==0
+          code_str << "*#{name} = #{out_var};"
+        when 1
+          code_str << gen_vector_to_array(out_var, type, cast)
+          code_str << "#{name} = #{out_var}__array;"
+        end
+        code_str.join("\n  ")
       end
     end
 
@@ -92,6 +106,13 @@ class Bind_c < Generator
       assignment_list += gen_assignments 'outputs'
     end
 
+    # generate array-to-vector converters
+    map_spec_params(@action_spec, 'inputs') do |name, type, cast, dimension|
+      if dimension == 1
+        convertors_array_to_vector << gen_array_to_vector(name, type, cast)
+      end
+    end
+
     # generate code
     @out.puts <<~END_CODE.gsub(/^/,'  ')
 
@@ -105,8 +126,15 @@ class Bind_c < Generator
       void #{ftn_name_c}(
         #{par_list.join ', '})
       {
+
+        // convert arrays to vectors
+        #{convertors_array_to_vector.join "\n  "}
+
+        // call action function
         auto out = dynamic_cast<iguana::#{@algo_name}*>(iguana_get_algo_(algo_idx))->#{ftn_name}(
           #{call_arg_list.join ', '});
+
+        // handle output
         #{assignment_list.join "\n  "}
       }
     END_CODE

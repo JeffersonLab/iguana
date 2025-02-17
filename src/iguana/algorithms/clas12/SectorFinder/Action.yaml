@@ -5,32 +5,32 @@ actions:
   - name: GetSector
     type: creator
     inputs:
-      - { name: sectors,         type: std::vector<int> }
-      - { name: pindices,        type: std::vector<int> }
+      - { name: sectors,         type: std::vector<int>, dimension: 1 }
+      - { name: pindices,        type: std::vector<int>, dimension: 1 }
       - { name: pindex_particle, type: int              }
     outputs:
       - type: int
   - name: GetStandardSector
     type: creator
     inputs:
-      - { name: sectors_track,   type: std::vector<int> }
-      - { name: pindices_track,  type: std::vector<int> }
-      - { name: sectors_cal,     type: std::vector<int> }
-      - { name: pindices_cal,    type: std::vector<int> }
-      - { name: sectors_scint,   type: std::vector<int> }
-      - { name: pindices_scint,  type: std::vector<int> }
+      - { name: sectors_track,   type: std::vector<int>, dimension: 1 }
+      - { name: pindices_track,  type: std::vector<int>, dimension: 1 }
+      - { name: sectors_cal,     type: std::vector<int>, dimension: 1 }
+      - { name: pindices_cal,    type: std::vector<int>, dimension: 1 }
+      - { name: sectors_scint,   type: std::vector<int>, dimension: 1 }
+      - { name: pindices_scint,  type: std::vector<int>, dimension: 1 }
       - { name: pindex_particle, type: int              }
     outputs:
       - type: int
   - name: GetStandardSectors
     type: creator
     inputs:
-      - { name: sectors_track,     type: std::vector<int> }
-      - { name: pindices_track,    type: std::vector<int> }
-      - { name: sectors_cal,       type: std::vector<int> }
-      - { name: pindices_cal,      type: std::vector<int> }
-      - { name: sectors_scint,     type: std::vector<int> }
-      - { name: pindices_scint,    type: std::vector<int> }
-      - { name: pindices_particle, type: std::vector<int> }
+      - { name: sectors_track,     type: std::vector<int>, dimension: 1 }
+      - { name: pindices_track,    type: std::vector<int>, dimension: 1 }
+      - { name: sectors_cal,       type: std::vector<int>, dimension: 1 }
+      - { name: pindices_cal,      type: std::vector<int>, dimension: 1 }
+      - { name: sectors_scint,     type: std::vector<int>, dimension: 1 }
+      - { name: pindices_scint,    type: std::vector<int>, dimension: 1 }
+      - { name: pindices_particle, type: std::vector<int>, dimension: 1 }
     outputs:
-      - type: std::vector<int>
+      - { type: std::vector<int>, dimension: 1 }

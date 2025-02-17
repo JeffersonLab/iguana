@@ -33,19 +33,32 @@ c     program parameters
 c     HIPO and bank variables
       integer        counter        ! event counter
       integer(c_int) reader_status  ! hipo event loop vars
-      integer(c_int) nrows, nrows_c ! number of rows
       integer(c_int) nr             ! unused
       integer        N_MAX          ! max number of rows we can read
       parameter      (N_MAX=50)
 
 c     REC::Particle columns
+      integer(c_int) nrows_p ! number of rows
+      integer(c_int) pindex(N_MAX)
       integer(c_int) pid(N_MAX)
       real(c_float)  px(N_MAX), py(N_MAX), pz(N_MAX)
       real(c_float)  vz(N_MAX)
       integer(c_int) stat(N_MAX)
       integer(c_int) sector(N_MAX)
+
+c     RUN::config columns
+      integer(c_int) nrows_c ! number of rows
       real(c_float)  torus(N_MAX)
       integer(c_int) runnum(N_MAX)
+
+c     REC::Track, REC::Calorimeter, REC::Scintillator columns
+      integer(c_int) nrows_trk, nrows_cal, nrows_sci
+      integer(c_int) sector_trk(N_MAX) ! sectors from REC::Track
+      integer(c_int) pindex_trk(N_MAX) ! pindices from REC::Track
+      integer(c_int) sector_cal(N_MAX) ! from REC::Calorimeter
+      integer(c_int) pindex_cal(N_MAX)
+      integer(c_int) sector_sci(N_MAX) ! from REC::Scintillator
+      integer(c_int) pindex_sci(N_MAX)
 
 c     iguana algorithm outputs
       logical(c_bool) accept(N_MAX)  ! filter
@@ -57,7 +70,7 @@ c     iguana algorithm outputs
 
 c     iguana algorithm indices
       integer(c_int) algo_eb_filter, algo_vz_filter,
-     &  algo_inc_kin, algo_mom_cor
+     &  algo_inc_kin, algo_sec_finder, algo_mom_cor
 
 c     misc.
       integer i
@@ -138,6 +151,9 @@ c                  `//c_null_char`
      &  algo_inc_kin,
      &  'physics::InclusiveKinematics'//c_null_char)
       call iguana_algo_create(
+     &  algo_sec_finder,
+     &  'clas12::SectorFinder'//c_null_char)
+      call iguana_algo_create(
      &  algo_mom_cor,
      &  'clas12::MomentumCorrection'//c_null_char)
 
@@ -152,6 +168,8 @@ c     set log levels (don't forget `//c_null_char`)
      &  algo_vz_filter, 'debug'//c_null_char)
       call iguana_algo_set_log_level(
      &  algo_inc_kin, 'debug'//c_null_char)
+      call iguana_algo_set_log_level(
+     &  algo_sec_finder, 'debug'//c_null_char)
       call iguana_algo_set_log_level(
      &  algo_mom_cor, 'debug'//c_null_char)
 
@@ -175,8 +193,13 @@ c     ------------------------------------------------------------------
 
 c       read banks
         call hipo_file_next(reader_status)
-        call hipo_read_bank('REC::Particle', nrows)
+c       get number of rows
+        call hipo_read_bank('REC::Particle', nrows_p)
         call hipo_read_bank('RUN::config', nrows_c)
+        call hipo_read_bank('REC::Track', nrows_trk)
+        call hipo_read_bank('REC::Calorimeter', nrows_cal)
+        call hipo_read_bank('REC::Scintillator', nrows_sci)
+c       get bank elements
         call hipo_read_int('REC::Particle', 'pid', nr, pid, N_MAX)
         call hipo_read_float('REC::Particle', 'px', nr, px, N_MAX)
         call hipo_read_float('REC::Particle', 'py', nr, py, N_MAX)
@@ -185,6 +208,22 @@ c       read banks
         call hipo_read_int('REC::Particle', 'status', nr, stat, N_MAX)
         call hipo_read_float('RUN::config', 'torus', nr, torus, N_MAX)
         call hipo_read_int('RUN::config', 'run', nr, runnum, N_MAX)
+        call hipo_read_int('REC::Track', 'sector', nr,
+     &      sector_trk, N_MAX)
+        call hipo_read_int('REC::Track', 'pindex', nr,
+     &      pindex_trk, N_MAX)
+        call hipo_read_int('REC::Calorimeter', 'sector', nr,
+     &      sector_cal, N_MAX)
+        call hipo_read_int('REC::Calorimeter', 'pindex', nr,
+     &      pindex_cal, N_MAX)
+        call hipo_read_int('REC::Scintillator', 'sector', nr,
+     &      sector_sci, N_MAX)
+        call hipo_read_int('REC::Scintillator', 'pindex', nr,
+     &      pindex_sci, N_MAX)
+c       simple list of pindices in REC::Particle
+        do i=1, nrows_p
+          pindex(i) = i
+        enddo
 
 c       before using the Z-vertext filter, we must "prepare" the
 c       algorithm's configuration for this event; the resulting
@@ -203,7 +242,7 @@ c       - the event builder filter trivial: by default it accepts only
 c         `REC::Particle::pid == 11 or -211` (simple example algorithm)
 c       - the AND with the z-vertex filter is the final filter, `accept`
         print *, '===> filter particles with iguana:'
-        do i=1, nrows
+        do i=1, nrows_p
           accept(i) = .true.
           call iguana_clas12_eventbuilderfilter_filter(
      &      algo_eb_filter, pid(i), accept(i))
@@ -215,12 +254,13 @@ c       - the AND with the z-vertex filter is the final filter, `accept`
         enddo
 
 c       get sector number
-c       FIXME: we have the algorithm `iguana::clas12::SectorFinder`,
-c       but it is not yet compatible with Fortran bindings; until
-c       then, assume the sector number is 1
-        do i=1, nrows
-          sector(i) = 1 ! FIXME
-        enddo
+        call iguana_clas12_sectorfinder_getstandardsectors(
+     &    algo_sec_finder,
+     &    sector_trk, pindex_trk,
+     &    sector_cal, pindex_cal,
+     &    sector_sci, pindex_sci,
+     &    pindex,
+     &    sector)
 
 c       momentum corrections
         if(nrows_c.lt.1) then
@@ -228,7 +268,7 @@ c       momentum corrections
      &      'apply momentum corrections'
         else
           print *, '===> momentum corrections:'
-          do i=1, nrows
+          do i=1, nrows_p
             if(accept(i)) then
               print *, '  i = ', i
               print *, '  before: p = (', px(i), py(i), pz(i), ')'
@@ -246,7 +286,7 @@ c       simple electron finder: trigger and highest |p|
         p_ele = 0
         found_ele = .false.
         print *, '===> finding electron...'
-        do i=1, nrows
+        do i=1, nrows_p
           if(accept(i)) then
             print *, '  i = ', i, '     status = ', stat(i)
             if(pid(i).eq.11 .and. stat(i).lt.0) then
