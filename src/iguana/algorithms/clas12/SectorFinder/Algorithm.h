@@ -26,7 +26,7 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// @action_function{vector creator} for a given particle with index `pindex`, get its sector from
+      /// @action_function{vector creator} for a given particle with index `pindex_particle`, get its sector from
       /// a detector bank's list of `sectors` and `pindices` (both must be ordered in the same way)
       ///
       /// @note this is done instead of finding the `pindex` in the bank directly, to have an action function
@@ -63,17 +63,18 @@ namespace iguana::clas12 {
       /// ```
       ///
       /// @see GetSector(std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, int const&) const
+      /// @see GetSectors(std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&) const
       ///
       /// @param sectors list of sectors in a detector bank
       /// @param pindices list of pindices in a detector bank
-      /// @param pindex index in `REC::Particle` bank for which to get sector
-      /// @returns sector for `pindex` in list, -1 if `pindex` not in inputted list
+      /// @param pindex_particle index in `REC::Particle` bank for which to get sector
+      /// @returns sector for `pindex_particle` in list, -1 if `pindex_particle` not in inputted list
       int GetSector(
           std::vector<int> const& sectors,
           std::vector<int> const& pindices,
-          int const& pindex) const;
+          int const& pindex_particle) const;
 
-      /// @action_function{vector creator} for a given particle with index `pindex`, get its sector from
+      /// @action_function{vector creator} for a given particle with index `pindex_particle`, get its sector from
       /// one of the specified detector's list of `sectors` and `pindices`
       ///
       /// The following detectors' banks will be searched in order, and once the sector is found for any detector, it is returned:
@@ -83,6 +84,7 @@ namespace iguana::clas12 {
       /// - `REC::Scintillator`, using `sectors_scint` and `pindices_scint`
       ///
       /// @see GetSector(std::vector<int> const&, std::vector<int> const&, int const&) const
+      /// @see GetSectors(std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&) const
       ///
       /// @param sectors_track list of sectors in `REC::Track`
       /// @param pindices_track list of pindices in `REC::Track`
@@ -90,8 +92,8 @@ namespace iguana::clas12 {
       /// @param pindices_cal list of pindices in `REC::Calorimeter`
       /// @param sectors_scint list of sectors in `REC::Scintillator`
       /// @param pindices_scint list of pindices in `REC::Scintillator`
-      /// @param pindex index in `REC::Particle` bank for which to get sector
-      /// @returns sector for `pindex` in lists, -1 if `pindex` not any of the inputted lists
+      /// @param pindex_particle index in `REC::Particle` bank for which to get sector
+      /// @returns sector for `pindex_particle` in lists, -1 if `pindex_particle` not any of the inputted lists
       int GetSector(
           std::vector<int> const& sectors_track,
           std::vector<int> const& pindices_track,
@@ -99,7 +101,33 @@ namespace iguana::clas12 {
           std::vector<int> const& pindices_cal,
           std::vector<int> const& sectors_scint,
           std::vector<int> const& pindices_scint,
-          int const& pindex) const;
+          int const& pindex_particle) const;
+
+      /// @action_function{vector creator} get sectors for all particles, using
+      /// one of the specified detector's list of `sectors` and `pindices`
+      ///
+      /// This returns a _list_ of sectors, using
+      /// GetSector(std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, int const&) const
+      ///
+      /// @see GetSector(std::vector<int> const&, std::vector<int> const&, int const&) const
+      /// @see GetSector(std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, int const&) const
+      ///
+      /// @param sectors_track list of sectors in `REC::Track`
+      /// @param pindices_track list of pindices in `REC::Track`
+      /// @param sectors_cal list of sectors in `REC::Calorimeter`
+      /// @param pindices_cal list of pindices in `REC::Calorimeter`
+      /// @param sectors_scint list of sectors in `REC::Scintillator`
+      /// @param pindices_scint list of pindices in `REC::Scintillator`
+      /// @param pindices_particle the `REC::Particle` list of `pindices`
+      /// @returns list of sectors for each particle with `pindex` in `pindices_particle`
+      std::vector<int> GetSectors(
+          std::vector<int> const& sectors_track,
+          std::vector<int> const& pindices_track,
+          std::vector<int> const& sectors_cal,
+          std::vector<int> const& pindices_cal,
+          std::vector<int> const& sectors_scint,
+          std::vector<int> const& pindices_scint,
+          std::vector<int> const& pindices_particle) const;
 
       /// fill lists of sectors and pindices present in the input bank
       ///
