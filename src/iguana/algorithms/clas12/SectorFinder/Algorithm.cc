@@ -158,8 +158,8 @@ namespace iguana::clas12 {
       }
     }
   }
-  
-  int SectorFinder::GetSector(std::vector<int> const& sectors, std::vector<int> const& pindices, int const pindex) const
+
+  int SectorFinder::GetSector(std::vector<int> const& sectors, std::vector<int> const& pindices, int const& pindex) const
   {
     for(std::size_t i=0;i<sectors.size();i++){
       if (pindices.at(i)==pindex){

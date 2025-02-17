@@ -26,13 +26,15 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// @action_function{vector creator} for a given particle with index `pindex`, get its sector from a detector bank's list of `sectors` and `pindices` (both must be ordered in the same way);
-      /// _nb_: this is done instead of finding the `pindex` in the bank directly, to have an action function
-      /// 
-      /// **Example:**
+      /// @action_function{vector creator} for a given particle with index `pindex`, get its sector from
+      /// a detector bank's list of `sectors` and `pindices` (both must be ordered in the same way)
+      ///
+      /// @note this is done instead of finding the `pindex` in the bank directly, to have an action function
+      ///
+      /// @par Example
       /// ```cpp
       ///
-      /// //... Initialise algorithms & banks ... 
+      /// //... Initialise algorithms & banks ...
       ///
       /// //For each event, do:
       ///
@@ -60,6 +62,8 @@ namespace iguana::clas12 {
       /// }
       /// ```
       ///
+      /// @see GetSector(std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, std::vector<int> const&, int const&) const
+      ///
       /// @param sectors list of sectors in a detector bank
       /// @param pindices list of pindices in a detector bank
       /// @param pindex index in `REC::Particle` bank for which to get sector
@@ -67,9 +71,40 @@ namespace iguana::clas12 {
       int GetSector(
           std::vector<int> const& sectors,
           std::vector<int> const& pindices,
-          int const pindex) const;
+          int const& pindex) const;
+
+      /// @action_function{vector creator} for a given particle with index `pindex`, get its sector from
+      /// one of the specified detector's list of `sectors` and `pindices`
+      ///
+      /// The following detectors' banks will be searched in order, and once the sector is found for any detector, it is returned:
+      ///
+      /// - `REC::Track`, using `sectors_track` and `pindices_track`
+      /// - `REC::Calorimeter`, using `sectors_cal` and `pindices_cal`
+      /// - `REC::Scintillator`, using `sectors_scint` and `pindices_scint`
+      ///
+      /// @see GetSector(std::vector<int> const&, std::vector<int> const&, int const&) const
+      ///
+      /// @param sectors_track list of sectors in `REC::Track`
+      /// @param pindices_track list of pindices in `REC::Track`
+      /// @param sectors_cal list of sectors in `REC::Calorimeter`
+      /// @param pindices_cal list of pindices in `REC::Calorimeter`
+      /// @param sectors_scint list of sectors in `REC::Scintillator`
+      /// @param pindices_scint list of pindices in `REC::Scintillator`
+      /// @param pindex index in `REC::Particle` bank for which to get sector
+      /// @returns sector for `pindex` in lists, -1 if `pindex` not any of the inputted lists
+      int GetSector(
+          std::vector<int> const& sectors_track,
+          std::vector<int> const& pindices_track,
+          std::vector<int> const& sectors_cal,
+          std::vector<int> const& pindices_cal,
+          std::vector<int> const& sectors_scint,
+          std::vector<int> const& pindices_scint,
+          int const& pindex) const;
 
       /// fill lists of sectors and pindices present in the input bank
+      ///
+      /// @note this is not an action function, but here for convenience
+      ///
       /// @param bank bank from which to get lists of sectors and pindices
       /// @param sectors list to fill with sectors in the bank
       /// @param pindices list to fill with pindices in the bank
