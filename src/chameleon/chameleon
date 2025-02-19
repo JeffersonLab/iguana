@@ -13,6 +13,7 @@ require_relative 'src/bind_c.rb'
 @args.out_dir     = ''
 @args.out_prefix  = ''
 @args.verbose     = false
+@args.debug       = false
 @args.quiet       = false
 
 # parse arguments
@@ -26,13 +27,15 @@ OptionParser.new do |o|
   o.on('-p', '--prefix [PREFIX]', 'if specified, each generated filename will start with [PREFIX]') {|a| @args.out_prefix = a}
   o.separator ''
   o.on('-v', '--verbose', 'print more output') {|a| @args.verbose = true}
+  o.on('-d', '--debug', 'enable debugging printouts in the bindings') {|a| @args.debug = true}
   o.on('-q', '--quiet', 'print no output (unless --verbose)') {|a| @args.quiet = true}
   o.on_tail('-h', '--help', 'show this message') do
     puts o
     exit
   end
 end.parse! ARGV
-VERBOSE = @args.verbose
+VERBOSE     = @args.verbose
+DEBUG       = @args.debug
 ACTION_YAML = @args.action_yaml
 
 # start main generator

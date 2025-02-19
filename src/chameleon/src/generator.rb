@@ -80,35 +80,6 @@ class Generator
     type.split('<').last.split('>').first
   end
 
-  # function for generating C++ code to convert a C-array to C++ `std::vector`
-  def gen_array_to_vector(name_array, type, cast)
-    type_in     = type
-    type_out    = cast.empty? ? type_in : cast
-    name_vector = "#{name_array}__vector"
-    elem        = "#{name_array}[i]"
-    vector_type = type_out=='bool' ? 'std::deque' : 'std::vector' # use `deque<bool>` insead of forbidden `vector<bool>`
-    result = <<~END_CODE
-      #{vector_type}<#{type_out}> #{name_vector};
-        for(std::size_t i = 0; i < std::extent_v<decltype(#{name_array})>; i++)
-          #{name_vector}.push_back(#{cast.empty? ? elem : "#{cast}(#{elem})"});
-      END_CODE
-    result.chomp
-  end
-
-  # function for generating C++ code to convert a C++ `std::vector` to a C array
-  def gen_vector_to_array(name_vector, type, cast)
-    type_in    = cast.empty? ? type : cast
-    type_out   = type
-    name_array = "#{name_vector}__array"
-    elem       = "#{name_vector}.at(i)"
-    result = <<~END_CODE
-      #{type_out} *#{name_array} = new #{type_out}[#{name_vector}.size()];
-        for(decltype(#{name_vector})::size_type i = 0; i < #{name_vector}.size(); i++)
-          #{name_array}[i] = #{cast.empty? ? elem : "#{type_out}(#{elem})"};
-      END_CODE
-    result
-  end
-
   # deter developers from editting the generated files
   def deterrence_banner(lang)
     case lang

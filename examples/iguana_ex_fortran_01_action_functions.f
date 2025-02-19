@@ -44,7 +44,6 @@ c     REC::Particle columns
       real(c_float)  px(N_MAX), py(N_MAX), pz(N_MAX)
       real(c_float)  vz(N_MAX)
       integer(c_int) stat(N_MAX)
-      integer(c_int) sector(N_MAX)
 
 c     RUN::config columns
       integer(c_int) nrows_c ! number of rows
@@ -67,13 +66,15 @@ c     iguana algorithm outputs
       real(c_double) beamPz, targetM ! beam and target
       integer(c_int) key_vz_filter   ! key for Z-vertex filter
       integer(c_int) key_inc_kin     ! key for inclusive kinematics
+      integer(c_int) sector(N_MAX)   ! sectors
+      integer(c_int) nrows_sec       ! size of `sector`
 
 c     iguana algorithm indices
       integer(c_int) algo_eb_filter, algo_vz_filter,
      &  algo_inc_kin, algo_sec_finder, algo_mom_cor
 
 c     misc.
-      integer i
+      integer i, j
       real    p, p_ele
       integer i_ele
       logical found_ele
@@ -254,13 +255,25 @@ c       - the AND with the z-vertex filter is the final filter, `accept`
         enddo
 
 c       get sector number
+        print *, '>>> debug'
+        write(*,*) '  sector_trk', (sector_trk(j),j=1,nrows_trk)
+        write(*,*) '  pindex_trk', (pindex_trk(j),j=1,nrows_trk)
+        write(*,*) '  sector_cal', (sector_cal(j),j=1,nrows_cal)
+        write(*,*) '  pindex_cal', (pindex_cal(j),j=1,nrows_cal)
+        write(*,*) '  sector_sci', (sector_sci(j),j=1,nrows_sci)
+        write(*,*) '  pindex_sci', (pindex_sci(j),j=1,nrows_sci)
+        print *, '<<<'
         call iguana_clas12_sectorfinder_getstandardsectors(
      &    algo_sec_finder,
-     &    sector_trk, pindex_trk,
-     &    sector_cal, pindex_cal,
-     &    sector_sci, pindex_sci,
-     &    pindex,
-     &    sector)
+     &    sector_trk, nrows_trk, pindex_trk, nrows_trk,
+     &    sector_cal, nrows_cal, pindex_cal, nrows_cal,
+     &    sector_sci, nrows_sci, pindex_sci, nrows_sci,
+     &    pindex, nrows_p,
+     &    sector, nrows_sec)
+        print *, '>>> debug'
+        write(*,*) '  nrows_sec: ', nrows_sec
+        write(*,*) '  sector', (sector(j),j=1,nrows_sec)
+        print *, '<<<'
 
 c       momentum corrections
         if(nrows_c.lt.1) then

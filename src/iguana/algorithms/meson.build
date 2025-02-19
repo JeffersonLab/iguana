@@ -159,7 +159,8 @@ foreach algo : algo_dict
           '--input', '@INPUT0@',
           '--output', '@OUTDIR@',
           '--prefix', target_name,
-          '--quiet'
+          '--quiet',
+          # '--debug',
         ],
       )
       algo_bind_c_sources += tgt[0]
