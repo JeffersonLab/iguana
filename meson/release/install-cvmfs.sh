@@ -28,8 +28,6 @@ CMAKE_PREFIX_PATH:
 }
 
 sourceDir=$(realpath $(dirname ${BASH_SOURCE[0]:-$0})/../..)
-version=$($sourceDir/meson/detect-version.sh $sourceDir)
-msg "Detected version $version"
 
 if [ $# -ne 3 ]; then
   echo """

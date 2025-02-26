@@ -1,6 +1,7 @@
 project(
   'iguana',
   'cpp',
+  version: '0.8.0',
   license: [ 'LGPLv3' ],
   license_files: [ 'LICENSE' ],
   meson_version: '>=1.2',
@@ -12,11 +13,6 @@ project(
     'pkgconfig.relocatable': 'true',
     'force_fallback_for': ['rcdb'],
   },
-  version: run_command(
-    meson.project_source_root() / 'meson' / 'detect-version.sh',
-    meson.project_source_root(),
-    check: true,
-  ).stdout().strip(),
 )
 project_description = 'Implementation Guardian of Analysis Algorithms'
 
