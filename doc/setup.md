@@ -1,10 +1,11 @@
 # Setup Guide
 
-| **Table of Contents**                           |
-| ---                                             |
-| 🟠 [**Dependencies**](#dependencies)            |
-| 🟠 [**Building and Installing**](#building)     |
-| 🟠 [**Environment Variables** (optional)](#env) |
+| **Table of Contents**                                      |
+| ---                                                        |
+| 🟠 [**Dependencies**](#dependencies)                       |
+| 🟠 [**Building and Installing**](#building)                |
+| 🟠 [**Environment Variables** (optional)](#env)            |
+| 🟠 [**Connect to a C++ Analysis (consuming)**](#consuming) |
 
 <a name="dependencies"></a>
 ## 🟠 Dependencies
@@ -209,5 +210,23 @@ The following environment variables are set or modified; not all of them are nee
 | `LD_LIBRARY_PATH` (Linux) or `DYLD_LIBRARY_PATH` (macOS) | adds paths to dependency and Iguana libraries                                                                                             |
 | `PYTHONPATH`                                             | adds paths to dependency and Iguana Python packages, if Python bindings are installed                                                     |
 | `ROOT_INCLUDE_PATH`                                      | adds paths to dependency and Iguana header files, for usage in ROOT                                                                       |
-| `IGUANA_CONFIG_PATH`                                     | path to iguana algorithm configuration files (`.yaml`); users may override this with their own path; multiple paths may be specified, delimited by colons (`:`), where paths listed first will override paths listed later (similar behavior as `$PATH`); this variable is _only_ necessary if the Iguana installation has been relocated |
-| `IGUANA`                                                 | the path to the Iguana installation prefix, equivalent to `pkg-config iguana --variable prefix`; this is only for consumers that do not use `pkg-config` or the other standard environment variables, however usage of this variable is _discouraged_ since the installation layout may vary |
+| `IGUANA_CONFIG_PATH`                                     | path to iguana algorithm configuration files (`.yaml`); users may override this with their own path; multiple paths may be specified, delimited by colons (`:`), where paths listed first will override paths listed later (similar behavior as `$PATH`) |
+| `IGUANA`                                                 | the path to the Iguana installation prefix |
+
+> [!IMPORTANT]
+> If the Iguana installation is _relocated_, the following environment variables become _necessary_:
+> - `IGUANA`
+> - `IGUANA_CONFIG_PATH`
+
+> [!WARNING]
+> Avoid using the `$IGUANA` environment variable for locating Iguana libraries, headers, _etc._, since the installation
+> tree may vary. Instead, use `pkg-config`, following the [consuming section](#consuming).
+
+<a name="consuming"></a>
+## 🟠 Connect to a C++ Analysis (consuming)
+
+To integrate Iguana with your own C++ analysis code, _i.e._ to "consume" Iguana as a dependency, follow
+one of the examples, depending on your build tool:
+- [CMake](../examples/build_with_cmake)
+- [Meson](../examples/build_with_meson)
+- [Makefile](../examples/build_with_make)
