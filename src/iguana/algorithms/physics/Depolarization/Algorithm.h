@@ -46,8 +46,9 @@ namespace iguana::physics {
       /// @param Q2 @latex{Q^2}, from `iguana::physics::InclusiveKinematics`
       /// @param x Bjorken-@latex{x}, from `iguana::physics::InclusiveKinematics`
       /// @param y @latex{y}, from `iguana::physics::InclusiveKinematics`
+      /// @param targetM the target mass (likely the proton mass)
       /// @returns the depolarization factors in a `iguana::physics::DepolarizationVars` instance
-      DepolarizationVars Compute(double const Q2, double const x, double const y) const;
+      DepolarizationVars Compute(double const Q2, double const x, double const y, double const targetM) const;
 
     private:
 

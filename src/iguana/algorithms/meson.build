@@ -94,7 +94,7 @@ algo_dict = [
   },
   {
     'name': 'physics::Depolarization',
-    'has_validator': false, # FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
+    'has_config': false,
     'test_args': {
       'banks': [ ],
       'prerequisites': [ 'physics::InclusiveKinematics' ],

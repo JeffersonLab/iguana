@@ -46,7 +46,8 @@ namespace iguana::physics {
         auto result_vars = Compute(
             inc_kin_bank.getDouble("Q2", row),
             inc_kin_bank.getDouble("x", row),
-            inc_kin_bank.getDouble("y", row));
+            inc_kin_bank.getDouble("y", row),
+            inc_kin_bank.getDouble("targetM", row));
         result_bank.putDouble(i_epsilon, row, result_vars.epsilon);
         result_bank.putDouble(i_A, row, result_vars.A);
         result_bank.putDouble(i_B, row, result_vars.B);
@@ -69,16 +70,49 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  DepolarizationVars Depolarization::Compute(double const Q2, double const x, double const y) const
+  DepolarizationVars Depolarization::Compute(double const Q2, double const x, double const y, double const targetM) const
   {
-    DepolarizationVars result;
-    result.epsilon = 0;
-    result.A = 1;
-    result.B = 1;
-    result.C = 1;
-    result.V = 1;
-    result.W = 1;
-    return result;
+    DepolarizationVars result{
+      .epsilon = 0,
+      .A = 0,
+      .B = 0,
+      .C = 0,
+      .V = 0,
+      .W = 0
+    };
+
+    // calculate gamma
+    if(Q2 <= 0) {
+      m_log->Warn("Q2 = {} <= 0", Q2);
+      return result;
+    }
+    auto gamma = 2 * targetM * x / std::sqrt(Q2);
+
+    // calculate epsilon
+    auto epsilon_denom = 1 - y + y*y/2 + std::pow(gamma*y,2) / 4;
+    if(!(std::abs(epsilon_denom) > 0)) {
+      m_log->Warn("epsilon denominator is zero");
+      return result;
+    }
+    auto epsilon = ( 1 - y - std::pow(gamma*y,2)/4 ) / epsilon_denom;
+
+    // calculate A
+    auto A_denom = 2 - 2*epsilon;
+    if(!(std::abs(A_denom) > 0)) {
+      m_log->Warn("depol. factor A denominator is zero");
+      return result;
+    }
+    auto A = y*y / A_denom;
+
+    // calculate B,C,V,W
+    return {
+      .epsilon = epsilon,
+      .A = A,
+      .B = A * epsilon,
+      .C = A * std::sqrt(1-epsilon*epsilon),
+      .V = A * std::sqrt(2*epsilon*(1+epsilon)),
+      .W = A * std::sqrt(2*epsilon*(1-epsilon))
+    };
   }
 
   ///////////////////////////////////////////////////////////////////////////////
