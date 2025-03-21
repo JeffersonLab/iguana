@@ -1,0 +1,90 @@
+#include "Algorithm.h"
+
+namespace iguana::physics {
+
+  REGISTER_IGUANA_ALGORITHM(Depolarization, "physics::Depolarization");
+
+  void Depolarization::Start(hipo::banklist& banks)
+  {
+    b_inc_kin = GetBankIndex(banks, "physics::InclusiveKinematics");
+
+    // create the output bank
+    // FIXME: generalize the groupid and itemid
+    auto result_schema = CreateBank(
+        banks,
+        b_result,
+        GetClassName(),
+        {"epsilon/D", "A/D", "B/D", "C/D", "V/D", "W/D"},
+        0xF000,
+        1);
+    i_epsilon = result_schema.getEntryOrder("epsilon");
+    i_A       = result_schema.getEntryOrder("A");
+    i_B       = result_schema.getEntryOrder("B");
+    i_C       = result_schema.getEntryOrder("C");
+    i_V       = result_schema.getEntryOrder("V");
+    i_W       = result_schema.getEntryOrder("W");
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void Depolarization::Run(hipo::banklist& banks) const
+  {
+    auto& inc_kin_bank = GetBank(banks, b_inc_kin, "physics::InclusiveKinematics");
+    auto& result_bank  = GetBank(banks, b_result, GetClassName());
+
+    ShowBank(inc_kin_bank, Logger::Header("INPUT INCLUSIVE KINEMATICS"));
+
+    // set `result_bank` rows and rowlist to match those of `inc_kin_bank`
+    auto const& inc_kin_bank_rowlist = inc_kin_bank.getRowList();
+    result_bank.setRows(inc_kin_bank.getRows());
+    result_bank.getMutableRowList().setList(inc_kin_bank_rowlist);
+
+    // loop over ALL `inc_kin_bank`'s rows; calculate depolarization for only the rows
+    // that are in its current rowlist, and zero the rest
+    for(int row = 0; row < inc_kin_bank.getRows(); row++) {
+      if(std::find(inc_kin_bank_rowlist.begin(), inc_kin_bank_rowlist.end(), row) != inc_kin_bank_rowlist.end()) {
+        auto result_vars = Compute(
+            inc_kin_bank.getDouble("Q2", row),
+            inc_kin_bank.getDouble("x", row),
+            inc_kin_bank.getDouble("y", row));
+        result_bank.putDouble(i_epsilon, row, result_vars.epsilon);
+        result_bank.putDouble(i_A, row, result_vars.A);
+        result_bank.putDouble(i_B, row, result_vars.B);
+        result_bank.putDouble(i_C, row, result_vars.C);
+        result_bank.putDouble(i_V, row, result_vars.V);
+        result_bank.putDouble(i_W, row, result_vars.W);
+      }
+      else {
+        result_bank.putDouble(i_epsilon, row, 0);
+        result_bank.putDouble(i_A, row, 0);
+        result_bank.putDouble(i_B, row, 0);
+        result_bank.putDouble(i_C, row, 0);
+        result_bank.putDouble(i_V, row, 0);
+        result_bank.putDouble(i_W, row, 0);
+      }
+    }
+
+    ShowBank(result_bank, Logger::Header("CREATED BANK"));
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  DepolarizationVars Depolarization::Compute(double const Q2, double const x, double const y) const
+  {
+    DepolarizationVars result;
+    result.epsilon = 0;
+    result.A = 1;
+    result.B = 1;
+    result.C = 1;
+    result.V = 1;
+    result.W = 1;
+    return result;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void Depolarization::Stop()
+  {
+  }
+
+}

@@ -93,6 +93,14 @@ algo_dict = [
     },
   },
   {
+    'name': 'physics::Depolarization',
+    'has_validator': false, # FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
+    'test_args': {
+      'banks': [ ],
+      'prerequisites': [ 'physics::InclusiveKinematics' ],
+    },
+  },
+  {
     'name': 'clas12::PhotonGBTFilter',
     'algorithm_needs_ROOT': true,
     'has_action_yaml': false,
