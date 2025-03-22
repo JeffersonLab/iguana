@@ -72,7 +72,7 @@ namespace iguana::physics {
 
   DepolarizationVars Depolarization::Compute(double const Q2, double const x, double const y, double const targetM) const
   {
-    DepolarizationVars result{
+    DepolarizationVars const zero_result{
       .epsilon = 0,
       .A = 0,
       .B = 0,
@@ -84,7 +84,7 @@ namespace iguana::physics {
     // calculate gamma
     if(Q2 <= 0) {
       m_log->Warn("Q2 = {} <= 0", Q2);
-      return result;
+      return zero_result;
     }
     auto gamma = 2 * targetM * x / std::sqrt(Q2);
 
@@ -92,7 +92,7 @@ namespace iguana::physics {
     auto epsilon_denom = 1 - y + y*y/2 + std::pow(gamma*y,2) / 4;
     if(!(std::abs(epsilon_denom) > 0)) {
       m_log->Warn("epsilon denominator is zero");
-      return result;
+      return zero_result;
     }
     auto epsilon = ( 1 - y - std::pow(gamma*y,2)/4 ) / epsilon_denom;
 
@@ -100,7 +100,7 @@ namespace iguana::physics {
     auto A_denom = 2 - 2*epsilon;
     if(!(std::abs(A_denom) > 0)) {
       m_log->Warn("depol. factor A denominator is zero");
-      return result;
+      return zero_result;
     }
     auto A = y*y / A_denom;
 
