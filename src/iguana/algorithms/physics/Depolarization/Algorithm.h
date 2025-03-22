@@ -6,17 +6,17 @@ namespace iguana::physics {
 
   /// Set of depolarization variables
   struct DepolarizationVars {
-    /// @brief @latex{\epsilon(Q^2,x,y)}, the ratio of transverse and longitudinal photon flux
+    /// @brief @latex{\varepsilon(Q^2,x,y)}, the ratio of transverse and longitudinal photon flux
     double epsilon;
-    /// @brief depolarization factor @latex{A(\epsilon,y)}
+    /// @brief depolarization factor @latex{A(\varepsilon,y)}
     double A;
-    /// @brief depolarization factor @latex{B(\epsilon,y)}
+    /// @brief depolarization factor @latex{B(\varepsilon,y)}
     double B;
-    /// @brief depolarization factor @latex{C(\epsilon,y)}
+    /// @brief depolarization factor @latex{C(\varepsilon,y)}
     double C;
-    /// @brief depolarization factor @latex{V(\epsilon,y)}
+    /// @brief depolarization factor @latex{V(\varepsilon,y)}
     double V;
-    /// @brief depolarization factor @latex{W(\epsilon,y)}
+    /// @brief depolarization factor @latex{W(\varepsilon,y)}
     double W;
   };
 

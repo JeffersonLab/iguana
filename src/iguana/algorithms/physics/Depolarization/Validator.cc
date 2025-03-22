@@ -25,49 +25,73 @@ namespace iguana::physics {
       m_output_file          = new TFile(m_output_file_basename + ".root", "RECREATE");
     }
 
-    // define plots
+    // plot binning
     gStyle->SetOptStat(0);
     int const n_bins = 100;
-
-    double const depol_range[2] = {-2, 2};
-    double const Q2_range[2]    = {0, 10};
-    double const x_range[2]     = {0, 1};
-    double const y_range[2]     = {0, 1};
-
-    auto access_epsilon = [](auto const& b, auto const r) { return b.getDouble("epsilon", r); };
-    auto access_A       = [](auto const& b, auto const r) { return b.getDouble("A", r); };
-    auto access_B       = [](auto const& b, auto const r) { return b.getDouble("B", r); };
-    auto access_C       = [](auto const& b, auto const r) { return b.getDouble("C", r); };
-    auto access_V       = [](auto const& b, auto const r) { return b.getDouble("V", r); };
-    auto access_W       = [](auto const& b, auto const r) { return b.getDouble("W", r); };
-
-    plots_vs_Q2 = {
-      { new TH2D("epsilon_vs_Q2", "#epsilon vs. Q^{2}", n_bins, Q2_range[0], Q2_range[1], n_bins, depol_range[0], depol_range[1]), access_epsilon },
-      { new TH2D("A_vs_Q2", "A vs. Q^{2}", n_bins, Q2_range[0], Q2_range[1], n_bins, depol_range[0], depol_range[1]), access_A },
-      { new TH2D("B_vs_Q2", "B vs. Q^{2}", n_bins, Q2_range[0], Q2_range[1], n_bins, depol_range[0], depol_range[1]), access_B },
-      { new TH2D("C_vs_Q2", "C vs. Q^{2}", n_bins, Q2_range[0], Q2_range[1], n_bins, depol_range[0], depol_range[1]), access_C },
-      { new TH2D("V_vs_Q2", "V vs. Q^{2}", n_bins, Q2_range[0], Q2_range[1], n_bins, depol_range[0], depol_range[1]), access_V },
-      { new TH2D("W_vs_Q2", "W vs. Q^{2}", n_bins, Q2_range[0], Q2_range[1], n_bins, depol_range[0], depol_range[1]), access_W },
+    std::pair<double,double> const depol_range = {-0.5, 2.5};
+    std::map<TString, std::pair<double,double>> const kin_range = {
+      {"Q2", {0, 10}},
+      {"x", {0, 1}},
+      {"y", {0, 1}}
     };
 
-    plots_vs_x = {
-      { new TH2D("epsilon_vs_x", "#epsilon vs. x", n_bins, x_range[0], x_range[1], n_bins, depol_range[0], depol_range[1]), access_epsilon },
-      { new TH2D("A_vs_x", "A vs. x", n_bins, x_range[0], x_range[1], n_bins, depol_range[0], depol_range[1]), access_A },
-      { new TH2D("B_vs_x", "B vs. x", n_bins, x_range[0], x_range[1], n_bins, depol_range[0], depol_range[1]), access_B },
-      { new TH2D("C_vs_x", "C vs. x", n_bins, x_range[0], x_range[1], n_bins, depol_range[0], depol_range[1]), access_C },
-      { new TH2D("V_vs_x", "V vs. x", n_bins, x_range[0], x_range[1], n_bins, depol_range[0], depol_range[1]), access_V },
-      { new TH2D("W_vs_x", "W vs. x", n_bins, x_range[0], x_range[1], n_bins, depol_range[0], depol_range[1]), access_W },
+    // plot names, in preferred order for the canvas
+    std::vector<TString> const depol_names = {
+      "A",
+      "B",
+      "C",
+      "V",
+      "W",
+      "epsilon",
+      "BA",
+      "CA",
+      "VA",
+      "WA"
     };
 
-    plots_vs_y = {
-      { new TH2D("epsilon_vs_y", "#epsilon vs. y", n_bins, y_range[0], y_range[1], n_bins, depol_range[0], depol_range[1]), access_epsilon },
-      { new TH2D("A_vs_y", "A vs. y", n_bins, y_range[0], y_range[1], n_bins, depol_range[0], depol_range[1]), access_A },
-      { new TH2D("B_vs_y", "B vs. y", n_bins, y_range[0], y_range[1], n_bins, depol_range[0], depol_range[1]), access_B },
-      { new TH2D("C_vs_y", "C vs. y", n_bins, y_range[0], y_range[1], n_bins, depol_range[0], depol_range[1]), access_C },
-      { new TH2D("V_vs_y", "V vs. y", n_bins, y_range[0], y_range[1], n_bins, depol_range[0], depol_range[1]), access_V },
-      { new TH2D("W_vs_y", "W vs. y", n_bins, y_range[0], y_range[1], n_bins, depol_range[0], depol_range[1]), access_W },
+    // plot titles
+    std::map<TString,TString> const depol_titles = {
+      {"epsilon", "#varepsilon"},
+      {"A", "A"},
+      {"B", "B"},
+      {"C", "C"},
+      {"V", "V"},
+      {"W", "W"},
+      {"BA", "B/A"},
+      {"CA", "C/A"},
+      {"VA", "V/A"},
+      {"WA", "W/A"}
     };
 
+    // bank accessors
+    std::map<TString, std::function<double(hipo::bank const&, int const)>> const accessors = {
+      {"epsilon", [](auto const& b, auto const r) { return b.getDouble("epsilon", r); }},
+      {"A", [](auto const& b, auto const r) { return b.getDouble("A", r); }},
+      {"B", [](auto const& b, auto const r) { return b.getDouble("B", r); }},
+      {"C", [](auto const& b, auto const r) { return b.getDouble("C", r); }},
+      {"V", [](auto const& b, auto const r) { return b.getDouble("V", r); }},
+      {"W", [](auto const& b, auto const r) { return b.getDouble("W", r); }},
+      {"BA", [](auto const& b, auto const r) { return b.getDouble("B", r) / b.getDouble("A", r); }},
+      {"CA", [](auto const& b, auto const r) { return b.getDouble("C", r) / b.getDouble("A", r); }},
+      {"VA", [](auto const& b, auto const r) { return b.getDouble("V", r) / b.getDouble("A", r); }},
+      {"WA", [](auto const& b, auto const r) { return b.getDouble("W", r) / b.getDouble("A", r); }}
+    };
+
+    // construct plots
+    for(auto const& name : depol_names) {
+      plots_vs_Q2.push_back({
+          new TH2D(name + "_vs_Q2", depol_titles.at(name) + " vs. Q^{2}", n_bins, kin_range.at("Q2").first, kin_range.at("Q2").second, n_bins, depol_range.first, depol_range.second),
+          accessors.at(name)
+          });
+      plots_vs_x.push_back({
+          new TH2D(name + "_vs_x", depol_titles.at(name) + " vs. x", n_bins, kin_range.at("x").first, kin_range.at("x").second, n_bins, depol_range.first, depol_range.second),
+          accessors.at(name)
+          });
+      plots_vs_y.push_back({
+          new TH2D(name + "_vs_y", depol_titles.at(name) + " vs. y", n_bins, kin_range.at("y").first, kin_range.at("y").second, n_bins, depol_range.first, depol_range.second),
+          accessors.at(name)
+          });
+    }
   }
 
 
@@ -100,25 +124,29 @@ namespace iguana::physics {
   void DepolarizationValidator::Stop()
   {
     if(GetOutputDirectory()) {
-      std::vector<TCanvas*> canv_list;
-      for(auto const& [name, plot_list] : std::map<TString,std::vector<Plot2D>>{{"Q2",plots_vs_Q2}, {"x",plots_vs_x}, {"y",plots_vs_y}}) {
-        int const n_cols = 4;
+
+      auto make_plots = [this](TString const& name, std::vector<Plot2D> const& plot_list) {
+        int const n_cols = 5;
         int const n_rows = (plot_list.size() - 1) / n_cols + 1;
-        canv_list.push_back(new TCanvas("canv_" + name, name, n_cols * 800, n_rows * 600));
-        canv_list.back()->Divide(n_cols, n_rows);
+        auto canv = new TCanvas("canv_" + name, name, n_cols * 800, n_rows * 1000);
+        canv->Divide(n_cols, n_rows);
         int pad_num = 0;
         for(auto& plot : plot_list) {
-          auto pad = canv_list.back()->GetPad(++pad_num);
+          auto pad = canv->GetPad(++pad_num);
           pad->cd();
           pad->SetGrid(1, 1);
           pad->SetLeftMargin(0.12);
-          pad->SetRightMargin(0.12);
+          pad->SetRightMargin(0.15);
           pad->SetBottomMargin(0.12);
           plot.hist->Draw("colz");
         }
-      }
-      for(auto const& canv : canv_list)
-        canv->SaveAs(m_output_file_basename + canv->GetTitle() + ".png");
+        canv->SaveAs(m_output_file_basename + "_" + canv->GetTitle() + ".png");
+      };
+
+      make_plots("Q2", plots_vs_Q2);
+      make_plots("x", plots_vs_x);
+      make_plots("y", plots_vs_y);
+
       m_output_file->Write();
       m_log->Info("Wrote output file {}", m_output_file->GetName());
       m_output_file->Close();
