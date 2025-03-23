@@ -101,13 +101,6 @@ namespace iguana::clas12 {
       /// @returns a ROOT::Math::XYZVector with the coordinates of the particle in the calorimeter
       ROOT::Math::XYZVector GetParticleCaloVector(PhotonGBTFilter::calo_row_data calo_row) const;
       
-      
-      /// Gets the mass of a particle given its PID
-      /// @param pid the particle ID to get the mass for
-      /// @returns the mass of the particle in GeV; returns -1.0 if the PID is not recognized
-      double GetMass(int pid) const;
-      
-      
       /// Gets the model function for the run number
       /// @param runnum the run of the associated event
       /// @returns GBT function for the run period
