@@ -37,20 +37,24 @@ int main(int argc, char** argv)
   // read input file
   hipo::reader reader(inFileName,{0});
 
-  // set banks
+  // set list of banks to be read
   hipo::banklist banks = reader.getBanks({"RUN::config",
                                           "REC::Particle",
                                           "REC::Calorimeter",
                                           "REC::Track",
                                           "REC::Scintillator"});
-  enum banks_enum { b_config,
-                    b_particle }; // TODO: users shouldn't have to do this
+
+  // get bank index, for each bank we want to use after Iguana algorithms run
+  auto b_particle = hipo::getBanklistIndex(banks, "REC::Particle");
 
   // iguana algorithm sequence
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID
   seq.Add("clas12::SectorFinder"); // get the sector for each particle
   seq.Add("clas12::MomentumCorrection"); // momentum corrections
+  // TODO:
+  // - getRowList for filter
+  // - add a creator algo
 
   // set log levels
   seq.SetOption("clas12::EventBuilderFilter", "log", "debug");

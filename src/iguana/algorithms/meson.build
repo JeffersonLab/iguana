@@ -8,7 +8,7 @@
 #     'has_config':          bool        # assumes Config.yaml exists (default=true)
 #     'has_validator':       bool        # assumes Validator{cc,h} exist (default=true)
 #     'has_action_yaml':     bool        # assumes Action.yaml exists (default=true)
-#     'algorithm_needs_ROOT': bool       # whether this algorithm needs ROOT or not (default=false)
+#     'algorithm_needs_ROOT': bool       # whether this algorithm (or its prerequisites) needs ROOT or not (default=false)
 #     'validator_needs_ROOT': bool       # whether this validator needs ROOT or not (default=true)
 #     'add_algorithm_sources': list[str] # list of additional algorithm source files (default=[])
 #     'add_algorithm_headers': list[str] # list of additional algorithm header files (default=[])
@@ -89,6 +89,15 @@ algo_dict = [
     'has_action_yaml': false, # FIXME: needs a vector action function
     'test_args': {
       'banks': [ 'REC::Particle', 'RUN::config' ],
+      'prerequisites': [ 'physics::InclusiveKinematics' ],
+    },
+  },
+  {
+    'name': 'physics::Depolarization',
+    'algorithm_needs_ROOT': true, # since `physics::InclusiveKinematics` needs ROOT
+    'has_config': false,
+    'test_args': {
+      'banks': [ ],
       'prerequisites': [ 'physics::InclusiveKinematics' ],
     },
   },

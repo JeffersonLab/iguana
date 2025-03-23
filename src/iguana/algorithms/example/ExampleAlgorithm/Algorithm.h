@@ -35,7 +35,7 @@ namespace iguana::example {
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
-  /// @begin_doc_config
+  /// @begin_doc_config{example/ExampleAlgorithm}
   /// @config_param{exampleInt | int | an example `integer` configuration parameter}
   /// @config_param{exampleDouble | double | an example `double` configuration parameter}
   /// @end_doc
