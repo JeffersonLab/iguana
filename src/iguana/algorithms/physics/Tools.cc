@@ -53,5 +53,25 @@ namespace iguana::physics::tools {
     return std::nullopt;
   }
 
+  template <typename MOMENTUM_TYPE, typename AXIS_TYPE>
+  std::optional<double> ParticleRapidity(
+      MOMENTUM_TYPE const& momentum_vec,
+      AXIS_TYPE const& axis_vec)
+  {
+    auto norm = axis_vec.R();
+    if(std::abs(norm) > 0) {
+      auto pz = momentum_vec.Vect().Dot(axis_vec) / norm;
+      auto e  = momentum_vec.E();
+      return 0.5 * std::log((e + pz) / (e - pz));
+    }
+    return std::nullopt;
+  }
+  template std::optional<double> ParticleRapidity(
+      ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> const& momentum_vec,
+      ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> const& axis_vec);
+  template std::optional<double> ParticleRapidity(
+      ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>> const& momentum_vec,
+      ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> const& axis_vec);
+
 }
 

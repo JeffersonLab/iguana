@@ -4,7 +4,7 @@
 
 namespace iguana {
 
-  /// @brief User-level class for running a sequence of algorithms
+  /// @brief An algorithm that can run a sequence of algorithms
   ///
   /// The `Start`, `Run`, and `Stop` methods will sequentially call the corresponding algorithms' methods,
   /// in the order the algorithms were added to the sequence by `AlgorithmSequence::Add`.

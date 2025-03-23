@@ -23,7 +23,7 @@ namespace iguana::clas12 {
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
-  /// @begin_doc_config
+  /// @begin_doc_config{clas12/PhotonGBTFilter}
   /// @config_param{pass | int | cook type}
   /// @config_param{threshold | double | minimum value to qualify a photon as "true"}
   /// @end_doc

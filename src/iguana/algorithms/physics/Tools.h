@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <Math/Vector3D.h>
+#include <Math/Vector4D.h>
 
 namespace iguana::physics::tools {
 
@@ -46,4 +47,16 @@ namespace iguana::physics::tools {
       ROOT::Math::XYZVector const v_a,
       ROOT::Math::XYZVector const v_b);
 
+  /// @brief calculate the rapidity of a particle, relative to an axis
+  ///
+  /// Given a particle momentum, this method calculates the rapidity
+  /// of the boost along an axis which takes an observer to
+  /// the frame in which the particle is moving perpendicular to the axis
+  /// @param momentum_vec the particle 4-momentum
+  /// @param axis_vec the axis 3-vector
+  /// @returns the rapidity
+  template <typename MOMENTUM_TYPE, typename AXIS_TYPE>
+  std::optional<double> ParticleRapidity(
+      MOMENTUM_TYPE const& momentum_vec,
+      AXIS_TYPE const& axis_vec);
 }

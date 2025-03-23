@@ -44,7 +44,7 @@ namespace iguana::physics {
     o_beam_PxPyPzM   = ConcurrentParamFactory::Create<std::vector<double>>();
 
     // get reconstruction method configuration
-    auto method_reconstruction_str = GetOptionScalar<std::string>("method_reconstruction", {"method", "reconstruction"});
+    auto method_reconstruction_str = GetOptionScalar<std::string>("reconstruction", {"method", "reconstruction"});
     if(method_reconstruction_str == "scattered_lepton") {
       o_method_reconstruction = method_reconstruction::scattered_lepton;
     }
@@ -54,7 +54,7 @@ namespace iguana::physics {
     }
 
     // get scattered lepton finder configuration
-    auto method_lepton_finder_str = GetOptionScalar<std::string>("method_lepton_finder", {"method", "lepton_finder"});
+    auto method_lepton_finder_str = GetOptionScalar<std::string>("lepton_finder", {"method", "lepton_finder"});
     if(method_lepton_finder_str == "highest_energy_FD_trigger") {
       o_method_lepton_finder = method_lepton_finder::highest_energy_FD_trigger;
     }
@@ -65,7 +65,7 @@ namespace iguana::physics {
 
     // get beam PDG and mass
     o_beam_pdg = 0;
-    auto beam_particle = GetOptionScalar<std::string>("beam_pdg", {"method", "beam_particle"});
+    auto beam_particle = GetOptionScalar<std::string>("beam_particle", {"method", "beam_particle"});
     for(auto const& [pdg, name] : particle::name) {
       if(name == beam_particle) {
         o_beam_pdg  = pdg;
@@ -77,6 +77,8 @@ namespace iguana::physics {
       m_log->Error("Unknown beam particle {:?}", beam_particle);
       throw std::runtime_error("Start failed");
     }
+
+    m_log->Warn("the kinematic calculations in this algorithm need to be cross checked; use this algorithm at your own risk!");
   }
 
   ///////////////////////////////////////////////////////////////////////////////
