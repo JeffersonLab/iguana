@@ -102,7 +102,7 @@ namespace iguana::physics {
     auto& inc_kin_bank = GetBank(banks, b_inc_kin, "physics::InclusiveKinematics");
     auto& depol_bank   = GetBank(banks, b_depol, "physics::Depolarization");
 
-    // skip events with no hadrons
+    // skip events with empty bank(s)
     if(inc_kin_bank.getRowList().size() == 0 || depol_bank.getRowList().size() == 0) {
       m_log->Debug("skip this event, since it has no kinematics results");
       return;
