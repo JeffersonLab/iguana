@@ -20,7 +20,7 @@ namespace iguana::physics {
     double W;
   };
 
-  /// @brief_algo Calculate depolarization factors defined in `iguana::physics::DeoloarizationVars`
+  /// @brief_algo Calculate depolarization factors defined in `iguana::physics::DepolarizationVars`
   ///
   /// @begin_doc_algo{physics::Depolarization | Creator}
   /// @input_banks{%physics::InclusiveKinematics}
