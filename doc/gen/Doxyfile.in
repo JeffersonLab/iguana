@@ -61,7 +61,7 @@ PROJECT_BRIEF          = "Implementation Guardian of Analysis Algorithms"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           =
+PROJECT_LOGO           = @top_srcdir@/doc/gen/logo_small.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -291,7 +291,7 @@ ALIASES += input_banks{1}="<tr><td>**Input Banks**</td><td>`\1`</td></tr>"
 ALIASES += output_banks{1}="<tr><td>**Output Banks**</td><td>`\1`</td></tr>"
 ALIASES += end_doc="</table>"
 # configuration options
-ALIASES += begin_doc_config="\par Configuration Options:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"
+ALIASES += begin_doc_config{1}="\par Configuration Options:^^YAML configuration, which includes the default option values:^^@include \1/Config.yaml ^^Table of options and descriptions:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"
 ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
 # action functions
 ALIASES += action_function{1}="\xrefitem action \"Function Type\" \"List of all Action Functions\" \1 \brief **Action Function:** "
@@ -304,6 +304,8 @@ ALIASES += doxygen_off="@cond NO_DOC"
 ALIASES += doxygen_on="@endcond"
 # latex
 ALIASES += latex{1}="@f$\1@f$"
+# misc
+ALIASES += spacer="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
@@ -1010,6 +1012,7 @@ INPUT_FILE_ENCODING    =
 
 FILE_PATTERNS          = *.dox \
                          *.h \
+                         Config.yaml \
                          chameleon_*_bind.cc \
                          iguana_ex_*.cc \
                          iguana_ex_*.py \
@@ -1059,7 +1062,7 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           =
+EXAMPLE_PATH           = @top_srcdir@/src/iguana/algorithms
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -1079,7 +1082,7 @@ EXAMPLE_RECURSIVE      = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             =
+IMAGE_PATH             = @top_srcdir@/doc/gen/logo.png
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -1362,7 +1365,7 @@ HTML_EXTRA_FILES       =
 # The default value is: AUTO_LIGHT.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE        = AUTO_LIGHT
+HTML_COLORSTYLE        = TOGGLE
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. Doxygen
 # will adjust the colors in the style sheet and background images according to
@@ -1373,7 +1376,7 @@ HTML_COLORSTYLE        = AUTO_LIGHT
 # Minimum value: 0, maximum value: 359, default value: 220.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_HUE    = 220
+HTML_COLORSTYLE_HUE    = 120
 
 # The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of the colors
 # in the HTML output. For a value of 0 the output will use gray-scales only. A
@@ -1392,7 +1395,7 @@ HTML_COLORSTYLE_SAT    = 100
 # Minimum value: 40, maximum value: 240, default value: 80.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_GAMMA  = 80
+HTML_COLORSTYLE_GAMMA  = 100
 
 # If the HTML_DYNAMIC_MENUS tag is set to YES then the generated HTML
 # documentation will contain a main index with vertical navigation menus that
@@ -1670,7 +1673,7 @@ DISABLE_INDEX          = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-GENERATE_TREEVIEW      = NO
+GENERATE_TREEVIEW      = YES
 
 # When both GENERATE_TREEVIEW and DISABLE_INDEX are set to YES, then the
 # FULL_SIDEBAR option determines if the side bar is limited to only the treeview

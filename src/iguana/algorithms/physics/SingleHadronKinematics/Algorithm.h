@@ -16,10 +16,12 @@ namespace iguana::physics {
     double z;
     /// @brief @latex{P_h^\perp}: transverse momentum of the hadron in the @latex{\perp}-frame (transverse to @latex{\vec{q}})
     double PhPerp;
-    /// @brief @latex{M_X(ehX)}: Missing mass of the hadron
-    double MX;
+    /// @brief @latex{M_X(ehX)^2}: Missing mass squared of the hadron
+    double MX2;
     /// @brief @latex{x_F}: Feynman-x of the hadron
     double xF;
+    /// @brief @latex{y_{h,B}}: Breit frame rapidity of the hadron
+    double yB;
     /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
     /// if the value is `tools::UNDEF`, the calculation failed
     double phiH;
@@ -34,8 +36,8 @@ namespace iguana::physics {
   /// @output_banks{%physics::SingleHadronKinematics}
   /// @end_doc
   ///
-  /// @begin_doc_config
-  /// @config_param{hadron_list | list[int] | list of hadron PDGs}
+  /// @begin_doc_config{physics/SingleHadronKinematics}
+  /// @config_param{hadron_list | list[int] | calculate kinematics for these hadron PDGs}
   /// @end_doc
   ///
   /// The output bank `%physics::SingleHadronKinematics` will have the same number of rows as the input particle bank `REC::Particle`
@@ -69,8 +71,9 @@ namespace iguana::physics {
       int i_pdg;
       int i_z;
       int i_PhPerp;
-      int i_MX;
+      int i_MX2;
       int i_xF;
+      int i_yB;
       int i_phiH;
       int i_xi;
 
