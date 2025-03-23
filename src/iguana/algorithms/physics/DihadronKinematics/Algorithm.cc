@@ -68,6 +68,7 @@ namespace iguana::physics {
     else
       throw std::runtime_error(fmt::format("unknown theta_method: {:?}", o_theta_method));
 
+    m_log->Warn("the kinematic calculations in this algorithm need to be cross checked; use this algorithm at your own risk!");
   }
 
   ///////////////////////////////////////////////////////////////////////////////

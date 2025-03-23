@@ -46,6 +46,7 @@ namespace iguana::physics {
     ParseYAMLConfig();
     o_hadron_pdgs = GetOptionSet<int>("hadron_list");
 
+    m_log->Warn("the kinematic calculations in this algorithm need to be cross checked; use this algorithm at your own risk!");
   }
 
   ///////////////////////////////////////////////////////////////////////////////
