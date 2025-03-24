@@ -15,6 +15,8 @@ namespace iguana::clas12 {
   /// @config_param{bank_charged | string | if not `default`, use this bank for sector finding of charged particles}
   /// @config_param{bank_uncharged | string | if not `default`, use this bank for sector finding of neutral particles}
   /// @end_doc
+  ///
+  /// @creator_note
   class SectorFinder : public Algorithm
   {
 

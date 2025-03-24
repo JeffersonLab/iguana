@@ -4,33 +4,18 @@
 
 namespace iguana::physics {
 
-  /// Set of depolarization variables
-  struct DepolarizationVars {
-    /// @brief @latex{\varepsilon(Q^2,x,y)}, the ratio of transverse and longitudinal photon flux
-    double epsilon;
-    /// @brief depolarization factor @latex{A(\varepsilon,y)}
-    double A;
-    /// @brief depolarization factor @latex{B(\varepsilon,y)}
-    double B;
-    /// @brief depolarization factor @latex{C(\varepsilon,y)}
-    double C;
-    /// @brief depolarization factor @latex{V(\varepsilon,y)}
-    double V;
-    /// @brief depolarization factor @latex{W(\varepsilon,y)}
-    double W;
-  };
-
-  /// @brief_algo Calculate depolarization factors defined in `iguana::physics::DepolarizationVars`
+  /// @brief_algo Calculate depolarization factors
+  ///
+  /// @par References
+  /// - https://arxiv.org/pdf/hep-ph/0611265
+  /// - https://arxiv.org/pdf/1408.5721
   ///
   /// @begin_doc_algo{physics::Depolarization | Creator}
   /// @input_banks{%physics::InclusiveKinematics}
   /// @output_banks{%physics::Depolarization}
   /// @end_doc
   ///
-  /// References:
-  ///
-  /// - https://arxiv.org/pdf/hep-ph/0611265
-  /// - https://arxiv.org/pdf/1408.5721
+  /// @creator_note
   class Depolarization : public Algorithm
   {
 

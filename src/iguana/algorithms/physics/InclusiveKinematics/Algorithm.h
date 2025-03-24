@@ -7,35 +7,7 @@
 
 namespace iguana::physics {
 
-  /// Set of inclusive kinematics variables
-  struct InclusiveKinematicsVars {
-      /// @brief `REC::Particle` row (`pindex`) of the scattered electron
-      int pindex;
-      /// @brief @latex{x}-component of virtual photon momentum @latex{q}
-      vector_element_t qx;
-      /// @brief @latex{y}-component of virtual photon momentum @latex{q}
-      vector_element_t qy;
-      /// @brief @latex{z}-component of virtual photon momentum @latex{q}
-      vector_element_t qz;
-      /// @brief @latex{E}-component of virtual photon momentum @latex{q}
-      vector_element_t qE;
-      /// @brief @latex{Q^2} (GeV@latex{^2})
-      double Q2;
-      /// @brief @latex{x_B}
-      double x;
-      /// @brief @latex{y}
-      double y;
-      /// @brief @latex{W} (GeV)
-      double W;
-      /// @brief @latex{\nu}
-      double nu;
-      /// @brief beam momentum @latex{z}-component (GeV)
-      double beamPz;
-      /// @brief target mass (GeV)
-      double targetM;
-  };
-
-  /// @brief_algo Calculate inclusive kinematics quantities defined in `iguana::physics::InclusiveKinematicsVars`
+  /// @brief_algo Calculate inclusive kinematics quantities
   ///
   /// @begin_doc_algo{physics::InclusiveKinematics | Creator}
   /// @input_banks{REC::Particle, RUN::config}
@@ -49,6 +21,8 @@ namespace iguana::physics {
   /// @config_param{reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available at this time}
   /// @config_param{lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available at this time}
   /// @end_doc
+  ///
+  /// @creator_note
   class InclusiveKinematics : public Algorithm
   {
 

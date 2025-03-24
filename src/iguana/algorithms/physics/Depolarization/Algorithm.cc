@@ -10,13 +10,7 @@ namespace iguana::physics {
 
     // create the output bank
     // FIXME: generalize the groupid and itemid
-    auto result_schema = CreateBank(
-        banks,
-        b_result,
-        GetClassName(),
-        {"epsilon/D", "A/D", "B/D", "C/D", "V/D", "W/D"},
-        0xF000,
-        1);
+    auto result_schema = CreateBank(banks, b_result, GetClassName());
     i_epsilon = result_schema.getEntryOrder("epsilon");
     i_A       = result_schema.getEntryOrder("A");
     i_B       = result_schema.getEntryOrder("B");
