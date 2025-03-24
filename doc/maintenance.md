@@ -4,14 +4,7 @@ Notes for `iguana` maintainers
 
 ## Iguana version
 
-The `iguana` version is dynamically determined from the most recent `git` tag in the commit graph:
-
-- [`meson/detect-version.sh`](/meson/detect-version.sh)
-
-This will _only_ work if the source tree includes `.git/`, with tags and history including the most recent tag.
-If the source code was obtained from a release tarball from GitHub, the `.git/` directory will be absent and version detection will fail.
-
-Because of the fragility of version detection, we try to keep at least the _major_ version correct in the fallback version number of the version detection implementation.
+Please remember to bump to the version number in [`meson.build`](/meson.build) prior to tagging a new release.
 
 ## Python Binding Dependencies
 

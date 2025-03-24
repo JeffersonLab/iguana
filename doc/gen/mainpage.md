@@ -5,13 +5,13 @@ This documentation shows how to use the Iguana algorithms. For more documentatio
 
 | Quick Links ||
 | --- | --- |
-| @spacer [List of Algorithms](#algo) @spacer | @spacer [Examples of Code](#secExample) @spacer |
-| @spacer [List of Action Functions](#action) @spacer | @spacer [Configuring Algorithms](#secConfiguring) @spacer |
+| @spacer [List of Algorithms](#algo) @spacer | @spacer [Examples of Code](#mainpageExample) @spacer |
+| @spacer [List of Action Functions](#action) @spacer | @spacer [Configuring Algorithms](#mainpageConfiguring) @spacer |
 
 <br><hr>
 
 <br>
-@anchor secExample
+@anchor mainpageExample
 ## Example Analysis Code Using Iguana
 
 To see Iguana algorithms used in the context of analysis code, with **various languages** and **use cases**, see:
@@ -27,17 +27,17 @@ In summary, the general way to use an Iguana algorithm is as follows; see exampl
 
 1. Decide [which algorithms](#algo) you want to use
     - Tip: you may use `iguana::AlgorithmSequence` to help run a _sequence_ of algorithms
-2. Check each algorithm configuration, and [adjust it if you prefer](#secConfiguring)
+2. Check each algorithm configuration, and [adjust it if you prefer](#mainpageConfiguring)
 3. Start each algorithm, which "locks in" its configuration:
-    - call iguana::Algorithm::Start(hipo::banklist&) if you use [**the HIPO API**](https://github.com/gavalian/hipo) and [Common Functions](#secCommon)
-    - call iguana::Algorithm::Start() otherwise, _i.e._, if you use [Action Functions](#secAction)
+    - call iguana::Algorithm::Start(hipo::banklist&) if you use [**the HIPO API**](https://github.com/gavalian/hipo) and [Common Functions](#mainpageCommon)
+    - call iguana::Algorithm::Start() otherwise, _i.e._, if you use [Action Functions](#mainpageAction)
 4. In the event loop, run the algorithm:
     - call iguana::Algorithm::Run(hipo::banklist&) const if you use Common Functions
     - call the Action Function(s) otherwise
 5. Proceed with your analysis
     - if you called iguana::Algorithm::Run(hipo::banklist&) const, the banks will be filtered, transformed, and/or created
     - if you called action functions, you will need to handle their output yourself
-    - in either case, see [guidance on how to run algorithms](#secRunning) for more details
+    - in either case, see [guidance on how to run algorithms](#mainpageRunning) for more details
 6. After your event loop, stop each algorithm by calling iguana::Algorithm::Stop()
 
 Please let the maintainers know if your use case is not covered in any examples or if you need any help.
@@ -45,7 +45,7 @@ Please let the maintainers know if your use case is not covered in any examples 
 <br><hr>
 
 <br>
-@anchor secAlgorithms
+@anchor mainpageAlgorithms
 ## Algorithms
 
 An Iguana algorithm is a function that maps input HIPO bank data to output data. There are a few different types of algorithms, based on how they act on HIPO data:
@@ -61,23 +61,61 @@ The available algorithms are:
 - [Algorithms organized by Namespace](#algo_namespaces)
 - [Full List of Algorithms](#algo)
 
+@anchor mainpageCreatedBanks
+### New Banks from Iguana Creator Algorithms
+
+The definitions of the new banks that are created by **Creator** algorithms are found in:
+- @link src/iguana/bankdefs/iguana.json **Iguana Bank Definitions:** `iguana.json` @endlink
+
+This JSON file follows a similar format as the bank definitions in `coatjava`, where we have:
+
+| Key | Description |
+| --- | --- |
+| name | the name of the new bank |
+| algorithm | the algorithm that creates this bank |
+| group | unique ID numbers for this bank |
+| item | ^ |
+| entries | the list of variables in this bank |
+
+Often the bank name matches the algorithm name, but not always; see the JSON keys \"name\" and \"algorithm\" to be sure.
+
+For each variable in "entries", we have:
+
+| Key | Description |
+| --- | --- |
+| name | the variable name |
+| type | the variable type (see below) |
+| info | the description of this variable |
+
+The variable types and their corresponding accessor methods from `hipo::bank` are:
+
+| Type Specification | `hipo::bank` accessor |
+| --- | --- |
+| B | `getByte` |
+| S | `getShort` |
+| I | `getInt` |
+| L | `getLong` |
+| F | `getFloat` |
+| D | `getDouble` |
+
+
 <br><hr>
 
 <br>
-@anchor secRunning
+@anchor mainpageRunning
 ## How to Run Algorithms
 
 Algorithms may be run using either:
 
-- [Common Functions](#secCommon): for users of the [**the HIPO API**](https://github.com/gavalian/hipo), which is likely the case if you are using C++, _e.g._, via `clas12root`
-- [Action Functions](#secAction): for all other users
+- [Common Functions](#mainpageCommon): for users of the [**the HIPO API**](https://github.com/gavalian/hipo), which is likely the case if you are using C++, _e.g._, via `clas12root`
+- [Action Functions](#mainpageAction): for all other users
 
 The next sections describe each of these.
 
 @important It is highly recommended to read an algorithm's documentation carefully before using it.
 
 <br>
-@anchor secCommon
+@anchor mainpageCommon
 ### Common Functions
 
 All algorithms have the following **Common Functions**, which may be used in analysis code that uses [**the HIPO API**](https://github.com/gavalian/hipo). These functions act on `hipo::bank` objects, and are designed to be called at certain points in an analysis of HIPO data:
@@ -120,14 +158,14 @@ typically change the particle momentum components.
 Creator-type algorithms will simply create a new `hipo::bank` object, appending
 it to the end of the input `hipo::banklist`. An initial version is created upon calling
 iguana::Algorithm::Start(hipo::banklist&), so that you may begin to reference it; it is helpful to
-use `hipo::getBanklistIndex` (see [the examples for details](#secExample)).
+use `hipo::getBanklistIndex` (see [the examples for details](#mainpageExample)).
 </td> </tr>
 </table>
 
 Internally, iguana::Algorithm::Run(hipo::banklist&) const calls Action Functions, which are described in the next section.
 
 <br>
-@anchor secAction
+@anchor mainpageAction
 ### Action Functions
 
 The action functions do the _real_ work of the algorithm, and are meant to be
@@ -177,7 +215,7 @@ While algorithm developers are encouraged _not_ to make breaking changes to thei
 <br><hr>
 
 <br>
-@anchor secConfiguring
+@anchor mainpageConfiguring
 ## How to Configure Algorithms
 
 Many algorithms are configurable. An algorithm's configuration parameters and their default values are found in the algorithm's documentation.

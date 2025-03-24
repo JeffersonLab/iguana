@@ -6,30 +6,7 @@
 
 namespace iguana::physics {
 
-  /// Set of hadron kinematics variables
-  struct SingleHadronKinematicsVars {
-    /// @brief `REC::Particle` row (`pindex`) of the hadron
-    int pindex;
-    /// @brief PDG code of the hadron
-    int pdg;
-    /// @brief @latex{z}: Momentum fraction of the fragmenting parton carried by the hadron
-    double z;
-    /// @brief @latex{P_h^\perp}: transverse momentum of the hadron in the @latex{\perp}-frame (transverse to @latex{\vec{q}})
-    double PhPerp;
-    /// @brief @latex{M_X(ehX)^2}: Missing mass squared of the hadron
-    double MX2;
-    /// @brief @latex{x_F}: Feynman-x of the hadron
-    double xF;
-    /// @brief @latex{y_{h,B}}: Breit frame rapidity of the hadron
-    double yB;
-    /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
-    /// if the value is `tools::UNDEF`, the calculation failed
-    double phiH;
-    /// @brief @latex{\xi_h}: Longitudinal momentum fraction of the nucleon carried by the hadron
-    double xi;
-  };
-
-  /// @brief_algo Calculate semi-inclusive hadron kinematic quantities defined in `iguana::physics::SingleHadronKinematicsVars`
+  /// @brief_algo Calculate semi-inclusive hadron kinematic quantities
   ///
   /// @begin_doc_algo{physics::SingleHadronKinematics | Creator}
   /// @input_banks{REC::Particle, %physics::InclusiveKinematics}
@@ -48,6 +25,8 @@ namespace iguana::physics {
   ///   corresponding row in the output bank will be zeroed, since no calculations are performed for
   ///   those particles
   /// - particles which are not listed in the configuration parameter `hadron_list` will also be filtered out and zeroed
+  ///
+  /// @creator_note
   class SingleHadronKinematics : public Algorithm
   {
 

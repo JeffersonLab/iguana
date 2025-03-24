@@ -13,28 +13,7 @@ namespace iguana::physics {
     b_inc_kin  = GetBankIndex(banks, "physics::InclusiveKinematics");
 
     // create the output bank
-    // FIXME: generalize the groupid and itemid
-    auto result_schema = CreateBank(
-        banks,
-        b_result,
-        GetClassName(),
-        {
-          "pindex_a/S",
-          "pindex_b/S",
-          "pdg_a/I",
-          "pdg_b/I",
-          "Mh/D",
-          "z/D",
-          "PhPerp/D",
-          "MX2/D",
-          "xF/D",
-          "yB/D",
-          "phiH/D",
-          "phiR/D",
-          "theta/D"
-        },
-        0xF000,
-        5);
+    auto result_schema = CreateBank(banks, b_result, GetClassName());
     i_pindex_a = result_schema.getEntryOrder("pindex_a");
     i_pindex_b = result_schema.getEntryOrder("pindex_b");
     i_pdg_a    = result_schema.getEntryOrder("pdg_a");
@@ -68,6 +47,7 @@ namespace iguana::physics {
     else
       throw std::runtime_error(fmt::format("unknown theta_method: {:?}", o_theta_method));
 
+    m_log->Warn("the kinematic calculations in this algorithm need to be cross checked; use this algorithm at your own risk!");
   }
 
   ///////////////////////////////////////////////////////////////////////////////

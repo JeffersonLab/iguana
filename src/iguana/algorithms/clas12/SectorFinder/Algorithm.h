@@ -26,6 +26,8 @@ namespace iguana::clas12 {
   ///
   /// The action functions ::GetStandardSector and ::GetStandardSectors identify the sector(s) using these banks in a priority order, whereas
   /// the action function ::GetSector uses a single bank's data.
+  ///
+  /// @creator_note
   class SectorFinder : public Algorithm
   {
 

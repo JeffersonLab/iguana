@@ -6,8 +6,8 @@
 
 #include <hipo4/bank.h>
 
-
-#include "iguana/algorithms/AlgorithmBoilerplate.h"
+#include "AlgorithmBoilerplate.h"
+#include "iguana/bankdefs/BankDefs.h"
 #include "iguana/services/YAMLReader.h"
 #include <iguana/services/GlobalParam.h>
 
@@ -153,21 +153,15 @@ namespace iguana {
       /// returns the `hipo::banklist` index of the bank
       hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
 
-      /// Create a new bank and push it to the bank list
+      /// Create a new bank and push it to the bank list. The bank must be defined in `src/iguana/bankdefs/iguana.json`.
       /// @param [out] banks the `hipo::banklist` onto which the new bank will be pushed
       /// @param [out] bank_idx will be set to the `hipo::banklist` index of the new bank
       /// @param [in] bank_name the new bank name
-      /// @param [in] schema_def a list of variables for the schema
-      /// @param [in] group_id the group ID for the schema
-      /// @param [in] item_id the item ID for the schema
       /// @returns the bank's schema
       hipo::schema CreateBank(
           hipo::banklist& banks,
           hipo::banklist::size_type& bank_idx,
-          std::string const& bank_name,
-          std::vector<std::string> schema_def,
-          int group_id, // FIXME: generalize group_id and item_id setting
-          int item_id) const noexcept(false);
+          std::string const& bank_name) const noexcept(false);
 
       /// Dump all banks in a `hipo::banklist`
       /// @param banks the banks to show
