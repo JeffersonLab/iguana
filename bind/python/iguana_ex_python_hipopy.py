@@ -51,6 +51,9 @@ for iBatch, batch in enumerate(hp.iterate([inFile],banks=banks,step=step)):
             pid = batch['REC::Particle_pid'][iEvent][row]
         
             if(algo_eventbuilder_filter.Filter(pid)):
+                #
+                # FIXME: this PR needs to fix this!
+                #
                 sector = 1 # FIXME: get the sector number. The algorithm `clas12::SectorFinder` can do this, however
                         # it requires reading full `hipo::bank` objects, whereas this example is meant to demonstrate
                         # `iguana` usage operating _only_ on bank row elements

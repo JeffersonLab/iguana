@@ -9,7 +9,6 @@ namespace iguana::physics {
     b_inc_kin = GetBankIndex(banks, "physics::InclusiveKinematics");
 
     // create the output bank
-    // FIXME: generalize the groupid and itemid
     auto result_schema = CreateBank(banks, b_result, GetClassName());
     i_epsilon = result_schema.getEntryOrder("epsilon");
     i_A       = result_schema.getEntryOrder("A");

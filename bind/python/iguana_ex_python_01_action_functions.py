@@ -53,6 +53,9 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
         pid = particleBank.getInt('pid', row)
         if(algo_eventbuilder_filter.Filter(pid)):
 
+            #
+            # FIXME: this PR needs to fix this!
+            #
             sector = 1 # FIXME: get the sector number. The algorithm `clas12::SectorFinder` can do this, however
                        # it requires reading full `hipo::bank` objects, whereas this example is meant to demonstrate
                        # `iguana` usage operating _only_ on bank row elements
