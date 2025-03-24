@@ -36,6 +36,8 @@ namespace iguana::physics {
   ///
   /// @par theta calculation methods
   /// - `"hadron_a"`: use hadron A's "decay angle" in the dihadron rest frame
+  ///
+  /// @creator_note
   class DihadronKinematics : public Algorithm
   {
 

@@ -56,13 +56,48 @@ An Iguana algorithm is a function that maps input HIPO bank data to output data.
 | **Transformer** | Transform (mutate) elements of a bank | `iguana::clas12::MomentumCorrection`: correct particle momenta |
 | **Creator** | Create a new bank | `iguana::physics::InclusiveKinematics`: calculate inclusive kinematics @latex{x}, @latex{Q^2}, _etc_. |
 
-The definitions of the new banks that are created by **Creator** algorithms are found in:
-- @link src/iguana/bankdefs/iguana.json **Iguana Bank Definitions:** `iguana.json` @endlink
-
 The available algorithms are:
 
 - [Algorithms organized by Namespace](#algo_namespaces)
 - [Full List of Algorithms](#algo)
+
+@anchor secCreatedBanks
+### New Banks from Iguana Creator Algorithms
+
+The definitions of the new banks that are created by **Creator** algorithms are found in:
+- @link src/iguana/bankdefs/iguana.json **Iguana Bank Definitions:** `iguana.json` @endlink
+
+This JSON file follows a similar format as the bank definitions in `coatjava`, where we have:
+
+| Key | Description |
+| --- | --- |
+| name | the name of the new bank |
+| algorithm | the algorithm that creates this bank |
+| group | unique ID numbers for this bank |
+| item | ^ |
+| entries | the list of variables in this bank |
+
+Often the bank name matches the algorithm name, but not always; see the JSON keys \"name\" and \"algorithm\" to be sure.
+
+For each variable in "entries", we have:
+
+| Key | Description |
+| --- | --- |
+| name | the variable name |
+| type | the variable type (see below) |
+| info | the description of this variable |
+
+The variable types and their corresponding accessor methods from `hipo::bank` are:
+
+| Type Specification | `hipo::bank` accessor |
+| --- | --- |
+| B | `getByte` |
+| S | `getShort` |
+| I | `getInt` |
+| L | `getLong` |
+| F | `getFloat` |
+| D | `getDouble` |
+
 
 <br><hr>
 

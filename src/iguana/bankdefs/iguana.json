@@ -1,21 +1,21 @@
 [
   {
-    "name": "REC::Particle::Sector",
-    "group": 30000,
-    "item": 1,
-    "info": "",
+    "name":      "REC::Particle::Sector",
     "algorithm": "clas12::SectorFinder",
+    "group":     30000,
+    "item":      1,
+    "info":      "",
     "entries": [
       { "name": "pindex", "type": "S", "info": "row number in the particle bank" },
       { "name": "sector", "type": "I", "info": "sector for this particle" }
     ]
   },
   {
-    "name": "physics::InclusiveKinematics",
-    "group": 30000,
-    "item": 2,
-    "info": "",
+    "name":      "physics::InclusiveKinematics",
     "algorithm": "physics::InclusiveKinematics",
+    "group":     30000,
+    "item":      2,
+    "info":      "",
     "entries": [
       { "name": "pindex",  "type": "S", "info": "`REC::Particle` row (`pindex`) of the scattered electron" },
       { "name": "Q2",      "type": "D", "info": "@latex{Q^2} (GeV@latex{^2})" },
@@ -32,11 +32,11 @@
     ]
   },
   {
-    "name": "physics::SingleHadronKinematics",
-    "group": 30000,
-    "item": 3,
-    "info": "",
+    "name":      "physics::SingleHadronKinematics",
     "algorithm": "physics::SingleHadronKinematics",
+    "group":     30000,
+    "item":      3,
+    "info":      "",
     "entries": [
       { "name": "pindex", "type": "S", "info": "`REC::Particle` row (`pindex`) of the hadron" },
       { "name": "pdg",    "type": "I", "info": "PDG code of the hadron" },
@@ -50,11 +50,11 @@
     ]
   },
   {
-    "name": "physics::DihadronKinematics",
-    "group": 30000,
-    "item": 4,
-    "info": "",
+    "name":      "physics::DihadronKinematics",
     "algorithm": "physics::DihadronKinematics",
+    "group":     30000,
+    "item":      4,
+    "info":      "",
     "entries": [
       { "name": "pindex_a", "type": "S", "info": "`REC::Particle` row (`pindex`) of hadron A" },
       { "name": "pindex_b", "type": "S", "info": "`REC::Particle` row (`pindex`) of hadron B" },
@@ -69,6 +69,21 @@
       { "name": "phiH",     "type": "D", "info": "@latex{\\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\\vec{q}\\times\\vec{P}_h} plane; if the value is `tools::UNDEF`, the calculation failed" },
       { "name": "phiR",     "type": "D", "info": "@latex{\\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane; if the value is `tools::UNDEF`, the calculation failed" },
       { "name": "theta",    "type": "D", "info": "@latex{\\theta}: The 'decay' angle of hadron A in the dihadron rest frame, with respect; to the dihadron momentum direction" }
+    ]
+  },
+  {
+    "name":      "physics::Depolarization",
+    "algorithm": "physics::Depolarization",
+    "group":     30000,
+    "item":      5,
+    "info":      "",
+    "entries": [
+      { "name": "epsilon", "type": "D", "info": "@latex{\\varepsilon(Q^2, x, y)}, the ratio of transverse and longitudinal photon flux" },
+      { "name": "A",       "type": "D", "info": "depolarization factor @latex{A(\\varepsilon, y)}" },
+      { "name": "B",       "type": "D", "info": "depolarization factor @latex{B(\\varepsilon, y)}" },
+      { "name": "C",       "type": "D", "info": "depolarization factor @latex{C(\\varepsilon, y)}" },
+      { "name": "V",       "type": "D", "info": "depolarization factor @latex{V(\\varepsilon, y)}" },
+      { "name": "W",       "type": "D", "info": "depolarization factor @latex{W(\\varepsilon, y)}" }
     ]
   }
 ]
