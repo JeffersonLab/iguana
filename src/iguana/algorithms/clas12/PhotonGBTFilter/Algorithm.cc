@@ -1,11 +1,38 @@
 #include "Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
+#include "models/RGA_inbending_pass1.cpp"
+#include "models/RGA_outbending_pass1.cpp"
+#include "models/RGA_inbending_pass2.cpp"
+#include "models/RGA_outbending_pass2.cpp"
+#include "models/RGC_Summer2022_pass1.cpp"
 
 namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(PhotonGBTFilter);
 
+  // Map for the GBT Models to use depending on pass and run number
+  std::map<std::tuple<int, int, int>, std::function<double(std::vector<float> const &)>> const PhotonGBTFilter::modelMap = {
+    {{5032, 5332, 1}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Fall2018 RGA Inbending
+    {{5032, 5332, 2}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Fall2018 RGA Inbending
+    {{5333, 5666, 1}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_outbending_pass1(data); }}, // Fall2018 RGA Outbending
+    {{5333, 5666, 2}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_outbending_pass2(data); }}, // Fall2018 RGA Outbending
+    {{6616, 6783, 1}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Spring2019 RGA Inbending
+    {{6616, 6783, 2}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Spring2019 RGA Inbending
+    {{6156, 6603, 1}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Spring2019 RGB Inbending
+    {{6156, 6603, 2}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Spring2019 RGB Inbending
+    {{11093, 11283, 1}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_outbending_pass1(data); }}, // Fall2019 RGB Outbending
+    {{11093, 11283, 2}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_outbending_pass2(data); }}, // Fall2019 RGB Outbending
+    {{11284, 11300, 1}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Fall2019 RGB BAND Inbending
+    {{11284, 11300, 2}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Fall2019 RGB BAND Inbending
+    {{11323, 11571, 1}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass1(data); }}, // Spring2020 RGB Inbending
+    {{11323, 11571, 2}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGA_inbending_pass2(data); }}, // Spring2020 RGB Inbending
+    {{16042, 16772, 1}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGC_Summer2022_pass1(data); }}, // Summer2022 RGC Inbending
+    {{16042, 16772, 2}, [](std::vector<float> const &data) { return ApplyCatboostModel_RGC_Summer2022_pass1(data); }} // Summer2022 RGC Inbending (no pass2 currently)
+  };
+
   void PhotonGBTFilter::Start(hipo::banklist& banks)
   {
+
     ParseYAMLConfig();
       
     b_particle = GetBankIndex(banks, "REC::Particle");
@@ -160,15 +187,15 @@ namespace iguana::clas12 {
           auto calo_PART = calo_map.at(inner_row);
           
           auto pid = particleBank.getInt("pid",inner_row);
-          auto mass = GetMass(pid);
+          auto mass = particle::get(particle::mass, pid);
           
           // Skip over particle if its mass was undefined
-          if (mass == -1.0) continue;
+          if (!mass.has_value()) continue;
           auto px = particleBank.getFloat("px",inner_row);
           auto py = particleBank.getFloat("py",inner_row);
           auto pz = particleBank.getFloat("pz",inner_row);
           auto p  = sqrt(px*px+py*py+pz*pz);
-          auto E  = sqrt(p*p+mass*mass);
+          auto E  = sqrt(p*p+mass.value()*mass.value());
           auto th = acos(pz/p);
           // Skip over particle if it is not in the forward detector (necessary for model compatibility)
           if (ForwardDetectorFilter(th)==false) continue;
@@ -367,15 +394,6 @@ namespace iguana::clas12 {
       return v;
   }
 
-  double PhotonGBTFilter::GetMass(int pid) const {
-      auto it = particle::mass.find(static_cast<particle::PDG>(pid));
-      if (it != particle::mass.end()) {
-        return it->second;
-      } else {
-        return -1.0; // Default mass if pid not found
-      }
-  }
-    
   std::function<double(std::vector<float> const &)> PhotonGBTFilter::getModelFunction(int runnum) const {
 
     for (const auto &entry : modelMap) {
