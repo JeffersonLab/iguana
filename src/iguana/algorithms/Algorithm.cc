@@ -224,6 +224,7 @@ namespace iguana {
       std::string const& bank_name) const noexcept(false)
   {
     // loop over bank definitions
+    // NOTE: `BANK_DEFS` is generated at build-time using `src/iguana/bankdefs/iguana.json`
     for(auto const& bank_def : BANK_DEFS) {
       if(bank_def.name == bank_name) {
         // make sure the new bank is in REGISTER_IGUANA_ALGORITHM
