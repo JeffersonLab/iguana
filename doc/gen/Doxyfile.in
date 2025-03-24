@@ -968,7 +968,6 @@ WARN_LOGFILE           =
 
 INPUT                  = @top_srcdir@/src/ \
                          @top_builddir@/src/iguana/algorithms \
-                         @top_builddir@/src/iguana/bankdefs \
                          @top_srcdir@/bind/ \
                          @top_srcdir@/doc/gen/ \
                          @top_srcdir@/doc/gen/mainpage.md \
