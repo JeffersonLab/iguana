@@ -245,7 +245,7 @@ namespace iguana {
         return bank_schema;
       }
     }
-    throw std::runtime_error(fmt::format("bank {:?} not found in 'BankDefs.h'", bank_name));
+    throw std::runtime_error(fmt::format("bank {:?} not found in 'BankDefs.h'; is this bank defined in src/iguana/bankdefs/iguana.json ?", bank_name));
   }
 
   ///////////////////////////////////////////////////////////////////////////////
