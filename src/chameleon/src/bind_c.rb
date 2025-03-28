@@ -30,45 +30,84 @@ class Bind_c < Generator
     ftn_name = get_spec @action_spec, 'name'
     ftn_name_fortran = "iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{ftn_name.downcase}"
     ftn_name_c = "#{ftn_name_fortran}_"
+    convertors_array_to_vector = []
     verbose " - bind #{@ftn_type} function #{@algo_name}::#{ftn_name}"
     check_function_type "#{@algo_name}::#{ftn_name}", @ftn_type
 
     # function to generate parameter docstrings
     def gen_docstring_params(key, in_or_out)
-      map_spec_params(@action_spec, key) do |name, type, cast|
+      map_spec_params(@action_spec, key) do |name, type, cast, dimension|
+        code_str_list = []
         if name == RESULT_VAR
-          "[#{in_or_out}] #{name} the resulting value"
+          code_str_list << "[#{in_or_out}] #{name} the resulting value"
         else
-          "[#{in_or_out}] #{name}"
+          code_str_list << "[#{in_or_out}] #{name}"
         end
-      end
+        if dimension == 1
+          code_str_list << "[#{in_or_out}] #{name}__size the size of `#{name}`"
+        end
+        code_str_list
+      end.flatten
     end
 
     # function to generate C function parameters
     def gen_ftn_params(key)
-      map_spec_params(@action_spec, key) do |name, type, cast|
-        "#{cast.empty? ? type : cast}* #{name}"
-      end
+      map_spec_params(@action_spec, key) do |name, type, cast, dimension|
+        case dimension
+        when 0
+          [ "#{cast.empty? ? type : cast}* #{name}" ]
+        when 1
+          [
+            "#{cast.empty? ? type : cast}* #{name}",
+            "int* #{name}__size",
+          ]
+        end
+      end.flatten
     end
 
     # function to generate C++ function arguments
     def gen_call_args(key)
-      map_spec_params(@action_spec, key) do |name, type, cast|
+      map_spec_params(@action_spec, key) do |name, type, cast, dimension|
         return nil if name == RESULT_VAR
-        cast.empty? ? "*#{name}" : "#{type}(*#{name})"
+        case dimension
+        when 0
+          cast.empty? ? "*#{name}" : "#{type}(*#{name})"
+        when 1
+          "#{name}__vector"
+        end
       end
     end
 
     # function to generate result assignments
     def gen_assignments(key)
-      map_spec_params(@action_spec, key) do |name, type, cast|
+      map_spec_params(@action_spec, key) do |name, type, cast, dimension|
+        code_str_list = []
         out_var = name == RESULT_VAR ?
           'out' :
           "out.#{name.sub /^#{RESULT_VAR}_/, ''}"
-        out_var = "#{cast}(#{out_var})" unless cast.empty?
-        "*#{name} = #{out_var};"
+        case dimension
+        when 0
+          out_var = "#{cast}(#{out_var})" if !cast.empty? and dimension==0
+          code_str_list << "*#{name} = #{out_var};"
+        when 1
+          type_in     = cast.empty? ? type : cast
+          type_out    = type
+          name_array  = name
+          name_vector = out_var
+          elem        = "#{name_vector}.at(i)"
+          if DEBUG
+            code_str_list << "fmt::print(\"[C] #{name_array} = [{}]\\n\", fmt::join(#{name_vector}, \", \"));"
+          end
+          code_str_list += [
+            "*#{name_array}__size = #{name_vector}.size();",
+            "std::move(#{name_vector}.begin(), #{name_vector}.end(), #{name_array});",
+          ]
+        end
+        code_str_list.join("\n  ")
       end
     end
+
+    # -----------------------------------------
 
     # generate parts lists
     docstring_param_list = ['[in] algo_idx the algorithm index']
@@ -92,6 +131,25 @@ class Bind_c < Generator
       assignment_list += gen_assignments 'outputs'
     end
 
+    # generate array-to-vector converters
+    map_spec_params(@action_spec, 'inputs') do |name, type, cast, dimension|
+      if dimension == 1
+        type_in     = type
+        type_out    = cast.empty? ? type_in : cast
+        name_array  = name
+        name_vector = "#{name_array}__vector"
+        elem        = "#{name_array}[i]"
+        vector_type = type_out=='bool' ? 'std::deque' : 'std::vector' # use `deque<bool>` insead of forbidden `vector<bool>`
+        code_str_list = [
+          "#{vector_type}<#{type_out}> #{name_vector}(#{name_array}, #{name_array} + *#{name_array}__size);"
+        ]
+        if DEBUG
+          code_str_list << "fmt::print(\"[C] #{name_array} = [{}]\\n\", fmt::join(#{name_vector}, \", \"));"
+        end
+        convertors_array_to_vector << code_str_list.join("\n  ")
+      end
+    end
+
     # generate code
     @out.puts <<~END_CODE.gsub(/^/,'  ')
 
@@ -103,10 +161,17 @@ class Bind_c < Generator
       /// - `iguana::#{@algo_name}::#{ftn_name}`
       #{docstring_param_list.map{|s|"/// @param #{s}"}.join "\n"}
       void #{ftn_name_c}(
-        #{par_list.join ', '})
+        #{par_list.join ",\n  "})
       {
+        #{DEBUG ? "fmt::print(\"[C] CALL #{ftn_name_c}\\n\");" : ''}
+        // convert arrays to vectors
+        #{convertors_array_to_vector.join "\n  "}
+
+        // call action function
         auto out = dynamic_cast<iguana::#{@algo_name}*>(iguana_get_algo_(algo_idx))->#{ftn_name}(
-          #{call_arg_list.join ', '});
+          #{call_arg_list.join ",\n    "});
+
+        // handle output
         #{assignment_list.join "\n  "}
       }
     END_CODE

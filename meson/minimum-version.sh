@@ -52,7 +52,7 @@ case $dep in
     not_used 'ALA'
     ;;
   ruby)
-    result_ver='2.7.2'
+    result_ver='3.0.0'
     not_used 'ALA'
     not_used 'tag'
     not_used 'tag_latest'
