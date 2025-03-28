@@ -18,6 +18,7 @@
 /// @end_doc_example
 #include <hipo4/reader.h>
 #include <iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h>
+#include <iguana/algorithms/clas12/SectorFinder/Algorithm.h>
 #include <iguana/algorithms/clas12/MomentumCorrection/Algorithm.h>
 
 /// main function
@@ -33,11 +34,20 @@ int main(int argc, char** argv)
   hipo::reader reader(inFileName,{0});
 
   // set list of banks to be read
-  hipo::banklist banks = reader.getBanks({"REC::Particle", "RUN::config"});
+  hipo::banklist banks = reader.getBanks({
+      "REC::Particle",
+      "RUN::config",
+      "REC::Track",
+      "REC::Calorimeter",
+      "REC::Scintillator"
+      });
 
   // get bank index, for each bank we want to use after Iguana algorithms run
-  auto b_particle = hipo::getBanklistIndex(banks, "REC::Particle");
-  auto b_config   = hipo::getBanklistIndex(banks, "RUN::config");
+  auto b_particle     = hipo::getBanklistIndex(banks, "REC::Particle");
+  auto b_config       = hipo::getBanklistIndex(banks, "RUN::config");
+  auto b_track        = hipo::getBanklistIndex(banks, "REC::Track");
+  auto b_calorimeter  = hipo::getBanklistIndex(banks, "REC::Calorimeter");
+  auto b_scintillator = hipo::getBanklistIndex(banks, "REC::Scintillator");
 
   // set the concurrency model to single-threaded, since this example is single-threaded;
   // not doing this will use the thread-safe model, `"memoize"`
@@ -45,10 +55,12 @@ int main(int argc, char** argv)
 
   // create the algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
+  iguana::clas12::SectorFinder algo_sector_finder;
   iguana::clas12::MomentumCorrection algo_momentum_correction;
 
   // set log levels
   algo_eventbuilder_filter.SetOption("log", "debug");
+  algo_sector_finder.SetOption("log", "debug");
   algo_momentum_correction.SetOption("log", "debug");
 
   // set algorithm options
@@ -56,15 +68,32 @@ int main(int argc, char** argv)
 
   // start the algorithms
   algo_eventbuilder_filter.Start();
+  algo_sector_finder.Start();
   algo_momentum_correction.Start();
 
-  // run the algorithm sequence on each event
+  // run the algorithms on each event
   int iEvent = 0;
   while(reader.next(banks) && (numEvents == 0 || iEvent++ < numEvents)) {
 
+    // get the banks for this event
+    auto& particleBank     = banks.at(b_particle);
+    auto& configBank       = banks.at(b_config);
+    auto& trackBank        = banks.at(b_track);
+    auto& calorimeterBank  = banks.at(b_calorimeter);
+    auto& scintillatorBank = banks.at(b_scintillator);
+
+    // we'll need information from all the rows of REC::Track,Calorimeter,Scintilator,
+    // in order to get the sector information for each particle
+    // NOTE: not giving a row number argument to these `get*` functions means they will return `std::vector` objects of all rows' values
+    // FIXME: these are not the right integer-type accessors (need `getShort` and `getByte`); see https://github.com/gavalian/hipo/issues/72
+    auto trackBank_sectors         = trackBank.getInt("pindex");
+    auto trackBank_pindices        = trackBank.getInt("sector");
+    auto calorimeterBank_sectors   = calorimeterBank.getInt("pindex");
+    auto calorimeterBank_pindices  = calorimeterBank.getInt("sector");
+    auto scintillatorBank_sectors  = scintillatorBank.getInt("pindex");
+    auto scintillatorBank_pindices = scintillatorBank.getInt("sector");
+
     // show the particle bank
-    auto& particleBank = banks.at(b_particle);
-    auto& configBank   = banks.at(b_config);
     particleBank.show();
 
     // loop over bank rows
@@ -74,14 +103,18 @@ int main(int argc, char** argv)
       auto pid = particleBank.getInt("pid", row);
       if(algo_eventbuilder_filter.Filter(pid)) {
 
-        //
-        // FIXME: this PR needs to fix this!
-        //
-        int sector = 1; // FIXME: get the sector number. The algorithm `clas12::SectorFinder` can do this, however
-                        // it requires reading full `hipo::bank` objects, whereas this example is meant to demonstrate
-                        // `iguana` usage operating _only_ on bank row elements
+        // get the sector for this particle; this is using a vector action function, so
+        // many of its arguments are of type `std::vector`
+        auto sector = algo_sector_finder.GetStandardSector(
+            trackBank_sectors,
+            trackBank_pindices,
+            calorimeterBank_sectors,
+            calorimeterBank_pindices,
+            scintillatorBank_sectors,
+            scintillatorBank_pindices,
+            row);
 
-        // if accepted PID, correct its momentum
+        // correct the particle momentum
         auto [px, py, pz] = algo_momentum_correction.Transform(
             particleBank.getFloat("px", row),
             particleBank.getFloat("py", row),
