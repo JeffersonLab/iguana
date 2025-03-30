@@ -9,7 +9,8 @@
 #include "AlgorithmBoilerplate.h"
 #include "iguana/bankdefs/BankDefs.h"
 #include "iguana/services/YAMLReader.h"
-#include <iguana/services/GlobalParam.h>
+#include "iguana/services/GlobalParam.h"
+#include "iguana/services/DataFileReader.h"
 
 namespace iguana {
 
@@ -135,6 +136,11 @@ namespace iguana {
       /// @param name the directory name
       void SetConfigDirectory(std::string const& name);
 
+      /// Get the full path to a data file, such as a machine-learning model
+      /// @param name the name of the file; if found in the user's current working directory (`./`), that will be the file that is used;
+      /// otherwise the _installed_ file (in `$IGUANA/share/`) will be used by default
+      std::string GetDataFile(std::string const& name);
+
     protected: // methods
 
       /// Parse YAML configuration files. Sets `m_yaml_config`.
@@ -225,7 +231,8 @@ namespace iguana {
 
       /// Data structure to hold configuration options set by `Algorithm::SetOption`
       std::unordered_map<std::string, option_t> m_option_cache;
-
+      /// Data file reader
+      std::unique_ptr<DataFileReader> m_datafile_reader;
   };
 
   //////////////////////////////////////////////////////////////////////////////
