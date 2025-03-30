@@ -107,6 +107,11 @@ algo_dict = [
     'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle', 'REC::Calorimeter', 'RUN::config' ]},
   },
+  {
+    'name': 'clas12::QADB',
+    'has_validator': false,
+    'test_args': {'banks': [ 'RUN::config' ]},
+  },
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT

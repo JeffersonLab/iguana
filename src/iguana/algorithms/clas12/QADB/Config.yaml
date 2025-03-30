@@ -1,0 +1,14 @@
+clas12::QADB
+
+  # choose which datasets to include; see QADB documentation
+  # for the full list
+  datasets:
+    - latest/rga_fa18_inbending
+    - latest/rga_fa18_outbending
+    - latest/rga_sp19
+
+  # location of QADB; if set to 'env', uses `$QADB`
+  qadb_dir: env
+
+  # whether or not to create a bank with QADB results
+  create_bank: false
