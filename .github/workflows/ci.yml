@@ -28,8 +28,7 @@ jobs:
   download_test_data:
     name: Download test data
     runs-on: ubuntu-latest
-    container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
+    # NOTE: using Ubuntu runner, since problems with accessing the cache
     steps:
       - uses: actions/cache@v4
         id: cache
@@ -37,6 +36,12 @@ jobs:
           key: test_data # fixed key will always hit; clear cache to trigger cache miss
           path: test_data.hipo
           lookup-only: true
+      - name: install xrootd-client
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt -y update
+          sudo apt -y upgrade
+          sudo apt -y install xrootd-client
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
