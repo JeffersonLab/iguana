@@ -27,7 +27,8 @@ if host_machine.system() == 'darwin'
   It looks like you are using macOS.
   - Tests on macOS have been removed as of Iguana v0.9.0, in favor of testing
     in a Linux container.
-  - Please report any problems on macOS, or use the Linux container instead.
+  - For consistency and better support, using the Linux container is preferred.
+  - Otherwise, please report any problems on macOS, if you choose to continue.
   ==================================================================================
   ''')
 endif

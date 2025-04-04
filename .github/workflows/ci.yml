@@ -56,36 +56,40 @@ jobs:
     name: Iguana
     needs:
       - download_test_data
-    runs-on: ubuntu-latest
-    container:
-      image: codecr.jlab.org/hallb/clas12/container-forge/base_root:latest # FIXME handle noROOT
     strategy:
       fail-fast: false
       matrix:
-      # FIXME: `b_sanitize=memory` is not used because `libc++` needs to be re-compiled with `-fsanitize=memory`, otherwise
-      #         we are bothered by false positives (e.g., from `std::map` insertion)
         id:
           - cpp
-          - coverage
-          - documentation
+          - python
+          - fortran
           - address-sanitizer
           - thread-sanitizer
           - undefined-sanitizer
           - leak-sanitizer
+          - coverage
+          - documentation
           - noROOT
-          - python
-          - fortran
         include:
-          - { id: cpp,                 CC: gcc,   CXX: g++,     opts: -Dbuildtype=release -Dz_require_root=true   -Dtest_validator_all_stats=true  }
-          - { id: coverage,            CC: gcc,   CXX: g++,     opts: -Dbuildtype=release -Dz_require_root=true   -Db_coverage=true  -Dz_test_multithreading=false }
-          - { id: documentation,       CC: gcc,   CXX: g++,     opts: -Dbuildtype=release -Dz_require_root=true   -Dinstall_documentation=true }
-          - { id: address-sanitizer,   CC: clang, CXX: clang++, opts: -Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=address   -Db_lundef=false -Db_pie=true }
-          - { id: thread-sanitizer,    CC: clang, CXX: clang++, opts: -Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=thread    -Db_lundef=false -Db_pie=true }
-          - { id: undefined-sanitizer, CC: clang, CXX: clang++, opts: -Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=undefined -Db_lundef=false -Db_pie=true }
-          - { id: leak-sanitizer,      CC: clang, CXX: clang++, opts: -Dbuildtype=debug   -Dz_require_root=true   -Db_sanitize=leak      -Db_lundef=false -Db_pie=true }
-          - { id: noROOT,              CC: gcc,   CXX: g++,     opts: -Dbuildtype=release -Dz_require_root=false }
-          - { id: python,              CC: gcc,   CXX: g++,     opts: -Dbuildtype=release -Dz_require_root=true   -Dbind_python=true    }
-          - { id: fortran,             CC: gcc,   CXX: g++,     opts: -Dbuildtype=release -Dz_require_root=true   -Dbind_fortran=true   }
+          # main C++ test
+          - { id: cpp, image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true -Dtest_validator_all_stats=true }
+          # bindings
+          - { id: python,  image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true -Dbind_python=true  }
+          - { id: fortran, image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true -Dbind_fortran=true }
+          # sanitizers
+          # FIXME: `b_sanitize=memory` is not used because `libc++` needs to be re-compiled with `-fsanitize=memory`; otherwise
+          #         we are bothered by false positives (e.g. from `std::map` insertion)
+          - { id: address-sanitizer,   image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=address   -Db_lundef=false -Db_pie=true }
+          - { id: thread-sanitizer,    image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=thread    -Db_lundef=false -Db_pie=true }
+          - { id: undefined-sanitizer, image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=undefined -Db_lundef=false -Db_pie=true }
+          - { id: leak-sanitizer,      image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=leak      -Db_lundef=false -Db_pie=true }
+          # misc.
+          - { id: coverage,      image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true  -Db_coverage=true  -Dz_test_multithreading=false }
+          - { id: documentation, image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true  -Dinstall_documentation=true }
+          - { id: noROOT,        image: base,      CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=false }
+    runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/${{ matrix.image }}:latest
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
@@ -102,7 +106,7 @@ jobs:
           path: test_data.hipo
       ### dependencies
       ###### for coverage
-      - name: install packages for coverage tests #FIXME probably will fail
+      - name: install packages for coverage tests
         if: ${{ matrix.id == 'coverage' }}
         run: |
           pacman -Syu --noconfirm
@@ -116,7 +120,7 @@ jobs:
           echo PATH=$PATH >> $GITHUB_ENV
           python -m pip install -r iguana_src/bind/python/requirements.txt
       ###### for doxygen
-      - name: install doxygen #FIXME probably will fail
+      - name: install doxygen
         if: ${{ matrix.id == 'documentation' }}
         run: |
           pacman -Syu --noconfirm
