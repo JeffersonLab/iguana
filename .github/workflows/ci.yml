@@ -94,6 +94,8 @@ jobs:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
     steps:
+      - run: whoami
+      - run: container_info
       ### setup
       - uses: actions/checkout@v4
         with:
