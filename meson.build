@@ -20,6 +20,18 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 add_languages('fortran', native: false, required: get_option('bind_fortran'))
 use_chameleon = get_option('bind_fortran')
 
+# warn that macOS is no longer tested
+if host_machine.system() == 'darwin'
+  warning('''host machine system is darwin:
+  ==================================================================================
+  It looks like you are using macOS.
+  - Tests on macOS have been removed as of Iguana v0.9.0, in favor of testing
+    in a Linux container.
+  - Please report any problems on macOS, or use the Linux container instead.
+  ==================================================================================
+  ''')
+endif
+
 # meson modules
 pkg = import('pkgconfig')
 fs = import('fs')
@@ -28,32 +40,30 @@ fs = import('fs')
 rcdb_subproj = subproject('rcdb', required: get_option('z_require_rcdb'))
 
 # resolve dependencies
-prog_minver = find_program('meson' / 'minimum-version.sh')
-# NOTE: those that are typically installed by package managers should use `meson/minimum-version.sh`
 fmt_dep = dependency(
   'fmt',
+  version: '>=9.1.0',
   method: 'pkg-config',
-  version: '>=' + run_command(prog_minver, 'fmt', check: true).stdout().strip(),
 )
 yamlcpp_dep = dependency(
   'yaml-cpp',
+  version: '>=0.7.0',
   method: 'pkg-config',
-  version: '>=' + run_command(prog_minver, 'yaml-cpp', check: true).stdout().strip(),
 )
 hipo_dep = dependency(
   'hipo4',
+  version: '>=4.2.0',
   method: 'pkg-config',
-  version: '>=4.1.0'
 )
 ROOT_dep = dependency(
   'ROOT',
-  required: get_option('z_require_root'),
+  version: '>=6.28.10',
   method: 'cmake',
-  version: '>=' + run_command(prog_minver, 'ROOT', check: true).stdout().strip(),
+  required: get_option('z_require_root'),
 )
 prog_ruby = find_program(
   'ruby',
-  version: '>=' + run_command(prog_minver, 'ruby', check: true).stdout().strip(),
+  version: '>=3.0.0',
   required: use_chameleon,
 )
 rcdb_dep = dependency(
