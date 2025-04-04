@@ -30,16 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base:latest
-    outputs:
-      key: ${{ steps.key.outputs.key }}
     steps:
-      - name: key # fixed key will always hit; clear cache to trigger cache miss
-        id: key
-        run: echo key=test_data >> $GITHUB_OUTPUT
       - uses: actions/cache@v4
         id: cache
         with:
-          key: ${{ steps.key.outputs.key }}
+          key: test_data # fixed key will always hit; clear cache to trigger cache miss
           path: test_data.hipo
           lookup-only: true
       - name: download
@@ -102,7 +97,7 @@ jobs:
       - name: get test data
         uses: actions/cache/restore@v4
         with:
-          key: ${{ needs.download_test_data.outputs.key }}
+          key: test_data
           path: test_data.hipo
       ### dependencies
       ###### for coverage
