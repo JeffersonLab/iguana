@@ -105,12 +105,28 @@ jobs:
           key: test_data
           path: test_data.hipo
       ### dependencies
+      ###### for iguana
+      - name: install packages for iguana
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm \
+            fmt \
+            yaml-cpp
       ###### for coverage
       - name: install packages for coverage tests
         if: ${{ matrix.id == 'coverage' }}
         run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm python-colorlog python-pygments gcovr
+          pacman -S --noconfirm \
+            python-colorlog \
+            python-pygments \
+            gcovr
+      ###### for doxygen
+      - name: install doxygen
+        if: ${{ matrix.id == 'documentation' }}
+        run: |
+          pacman -S --noconfirm \
+            doxygen \
+            graphviz
       ###### for python bindings
       - name: install python bindings dependencies
         if: ${{ matrix.id == 'python' }}
@@ -119,12 +135,6 @@ jobs:
           source .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
           python -m pip install -r iguana_src/bind/python/requirements.txt
-      ###### for doxygen
-      - name: install doxygen
-        if: ${{ matrix.id == 'documentation' }}
-        run: |
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm doxygen graphviz
       ### build
       - name: meson setup
         run: |
