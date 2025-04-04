@@ -90,6 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/${{ matrix.image }}:latest
+      options: --user root
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
