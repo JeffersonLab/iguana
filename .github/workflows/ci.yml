@@ -1,30 +1,10 @@
 name: CI
 
 on:
-  workflow_call:
-    inputs:
-      id:
-        description: 'ID'
-        required: true
-        type: string
-      runner:
-        description: 'GitHub runner'
-        required: true
-        type: string
-      container:
-        description: 'Docker container'
-        required: false
-        type: string
-        default: ''
-      verset:
-        description: 'Dependency version set'
-        required: false
-        type: string
-        default: 'latest'
-      matrix:
-        description: 'Iguana job matrix'
-        required: true
-        type: string
+  pull_request:
+  push:
+    branches: [ main ]
+    tags: [ '*' ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -35,8 +15,6 @@ defaults:
     shell: bash
 
 env:
-  hipo_fork: gavalian/hipo
-  hipo_ref: 4.2.0
   # test options
   num_events: 1000
   num_threads: 0 # use 0 for "all" available cores
@@ -49,17 +27,13 @@ jobs:
 
   download_test_data:
     name: Download test data
-    runs-on: ubuntu-latest # no need to run this job on other runners
-    outputs:
-      key: ${{ steps.key.outputs.key }}
+    runs-on: ubuntu-latest
+    # NOTE: using Ubuntu runner, rather than a `container-forge` image, since there were problems accessing the cache
     steps:
-      - name: key # unique for ${{ inputs.id }}, to avoid cache collisions
-        id: key
-        run: echo key=test_data---${{ inputs.id }}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
       - uses: actions/cache@v4
         id: cache
         with:
-          key: ${{ steps.key.outputs.key }}
+          key: test_data # fixed key will always hit; clear cache to trigger cache miss
           path: test_data.hipo
           lookup-only: true
       - name: install xrootd-client
@@ -70,184 +44,10 @@ jobs:
           sudo apt -y install xrootd-client
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: xrdcp xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/dst/validation_files.tar.zst ./
-      - name: rename
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
+          xrdcp xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/dst/validation_files.tar.zst ./
           tar xvf validation_files.tar.zst
           mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
-
-  # dependencies
-  #########################################################
-
-  build_root:
-    name: Build ROOT
-    runs-on: ${{ inputs.runner }}
-    container:
-      image: ${{ inputs.container }}
-    outputs:
-      key: ${{ steps.key.outputs.key }}
-    steps:
-      ### define key
-      - name: checkout iguana
-        uses: actions/checkout@v4
-        with:
-          path: iguana_src
-      - name: key
-        id: key
-        # FIXME: this builds the source code URL; using the GitHub REST API
-        # (via `curl --request`) is preferred to get the source code URL, but
-        # needs a PAT to mitigate API rate limits; for now just assume the URL
-        # - see https://github.com/JeffersonLab/iguana/pull/276
-        run: |
-          [ "${{ inputs.verset }}" = "minver" ] && \
-            root_version=$(iguana_src/meson/minimum-version.sh root tag) || \
-            root_version=$(iguana_src/meson/minimum-version.sh root tag_latest)
-          echo root_url=https://api.github.com/repos/root-project/root/tarball/refs/tags/${root_version} >> $GITHUB_OUTPUT
-          echo key=root---${{ inputs.id }}---${root_version}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
-      ### cache restore
-      - uses: actions/cache/restore@v4
-        id: cache
-        with:
-          key: ${{ steps.key.outputs.key }}
-          path: root.tar.zst
-          lookup-only: true
-      ### download and build
-      - name: install dependencies
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      - name: download ROOT source code
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          wget -nv --no-check-certificate --output-document root.tar.gz ${{ steps.key.outputs.root_url }}
-          tar xf root.tar.gz
-          ls -t
-          mv -v $(ls -td root-* | head -n1) root_src
-      - name: build ROOT
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          cmake -S root_src -B build -G Ninja --install-prefix $GITHUB_WORKSPACE/root -DCMAKE_CXX_STANDARD=17
-          cmake --build build
-          cmake --install build
-          tar caf root{.tar.zst,}
-      ### cache save
-      - uses: actions/cache/save@v4
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        id: cache_save
-        with:
-          key: ${{ steps.key.outputs.key }}
-          path: root.tar.zst
-
-  build_hipo:
-    name: Build HIPO
-    needs:
-      - build_root # for dataframe support
-    runs-on: ${{ inputs.runner }}
-    container:
-      image: ${{ inputs.container }}
-    strategy:
-      fail-fast: true
-      matrix:
-        root_dep:
-          - noROOT # exclude dataframe lib, which depends on ROOT
-          - withROOT
-    outputs:
-      key: ${{ steps.key.outputs.key }}
-    steps:
-      ### get ROOT
-      - name: get ROOT build
-        if: ${{ matrix.root_dep == 'withROOT' }}
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_root.outputs.key }}
-          path: root.tar.zst
-      - name: untar ROOT build
-        if: ${{ matrix.root_dep == 'withROOT' }}
-        run: ls *.tar.zst | xargs -I{} tar xvf {}
-      ### define key
-      - name: key
-        id: key
-        run: echo key=hipo---${{ inputs.id }}---${{ env.hipo_ref }}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
-      ### cache restore
-      - uses: actions/cache/restore@v4
-        id: cache
-        with:
-          key: ${{ steps.key.outputs.key }}---${{ matrix.root_dep }}
-          path: hipo.tar.zst
-          lookup-only: true
-      ### build
-      - name: checkout iguana for dependency installation script
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/checkout@v4
-        with:
-          path: iguana_src
-      - name: checkout hipo
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.hipo_fork }}
-          ref: ${{ env.hipo_ref }}
-          path: hipo_src
-      - name: build
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-          [ "${{ matrix.root_dep }}" = "withROOT" ] && source root/bin/thisroot.sh
-          meson setup build hipo_src --prefix=$GITHUB_WORKSPACE/hipo -Dbuildtype=debug -Db_pie=true # using PIE build, for sanitizer readibility
-          meson install -C build
-          tar cavf hipo{.tar.zst,}
-      ### cache save
-      - uses: actions/cache/save@v4
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        id: cache_save
-        with:
-          key: ${{ steps.key.outputs.key }}---${{ matrix.root_dep }}
-          path: hipo.tar.zst
-
-  build_ruby_minver:
-    name: Build Minver Ruby
-    runs-on: ${{ inputs.runner }}
-    container:
-      image: ${{ inputs.container }}
-    outputs:
-      key: ${{ steps.key.outputs.key }}
-    steps:
-      - name: checkout iguana
-        if: ${{ inputs.verset == 'minver' }}
-        uses: actions/checkout@v4
-        with:
-          path: iguana_src
-      - name: key
-        if: ${{ inputs.verset == 'minver' }}
-        id: key
-        run: |
-          ver=$(iguana_src/meson/minimum-version.sh ruby)
-          echo ver=$ver >> $GITHUB_OUTPUT
-          echo key=ruby---${{ inputs.id }}---${ver}---$(date +%Y-week%U) >> $GITHUB_OUTPUT
-      - uses: actions/cache/restore@v4
-        if: ${{ inputs.verset == 'minver' }}
-        id: cache
-        with:
-          key: ${{ steps.key.outputs.key }}
-          path: ruby.tar.zst
-          lookup-only: true
-      - name: build ruby
-        if: ${{ steps.cache.outputs.cache-hit != 'true' && inputs.verset == 'minver' }}
-        run: |
-          iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-          export RBENV_ROOT=$GITHUB_WORKSPACE/.rbenv
-          git clone https://github.com/rbenv/rbenv.git $RBENV_ROOT
-          eval "$($RBENV_ROOT/bin/rbenv init - bash)"
-          git clone https://github.com/rbenv/ruby-build.git $(rbenv root)/plugins/ruby-build
-          rbenv install ${{ steps.key.outputs.ver }}
-          rbenv global ${{ steps.key.outputs.ver }}
-          tar cavf ruby.tar.zst .rbenv
-      - uses: actions/cache/save@v4
-        if: ${{ steps.cache.outputs.cache-hit != 'true' && inputs.verset == 'minver' }}
-        id: cache_save
-        with:
-          key: ${{ steps.key.outputs.key }}
-          path: ruby.tar.zst
 
   # build and test Iguana
   #########################################################
@@ -256,57 +56,81 @@ jobs:
     name: Iguana
     needs:
       - download_test_data
-      - build_hipo
-      - build_root
-      - build_ruby_minver
-    runs-on: ${{ inputs.runner }}
-    container:
-      image: ${{ inputs.container }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(inputs.matrix) }}
+      matrix:
+        id:
+          - cpp
+          - python
+          - fortran
+          - address-sanitizer
+          - thread-sanitizer
+          - undefined-sanitizer
+          - leak-sanitizer
+          - coverage
+          - documentation
+          - noROOT
+        include:
+          # main C++ test
+          - { id: cpp, image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true -Dtest_validator_all_stats=true }
+          # bindings
+          - { id: python,  image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true -Dbind_python=true  }
+          - { id: fortran, image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true -Dbind_fortran=true }
+          # sanitizers
+          # FIXME: `b_sanitize=memory` is not used because `libc++` needs to be re-compiled with `-fsanitize=memory`; otherwise
+          #         we are bothered by false positives (e.g. from `std::map` insertion)
+          - { id: address-sanitizer,   image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=address   -Db_lundef=false -Db_pie=true }
+          - { id: thread-sanitizer,    image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=thread    -Db_lundef=false -Db_pie=true }
+          - { id: undefined-sanitizer, image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=undefined -Db_lundef=false -Db_pie=true }
+          - { id: leak-sanitizer,      image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=leak      -Db_lundef=false -Db_pie=true }
+          # misc.
+          - { id: coverage,      image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true  -Db_coverage=true  -Dz_test_multithreading=false }
+          - { id: documentation, image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true  -Dinstall_documentation=true }
+          - { id: noROOT,        image: base,      CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=false }
+    runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/${{ matrix.image }}:latest
+      options: --user root
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
     steps:
+      - run: whoami
+      - run: container_info
       ### setup
       - uses: actions/checkout@v4
-        with: # settings needed for version number detection
-          clean: false
-          fetch-tags: true
-          fetch-depth: 0
+        with:
           path: iguana_src
       ### get test data
       - name: get test data
         uses: actions/cache/restore@v4
         with:
-          key: ${{ needs.download_test_data.outputs.key }}
+          key: test_data
           path: test_data.hipo
       ### dependencies
-      ###### system
-      - name: install dependency packages
-        run: iguana_src/.github/install-dependency-packages.sh ${{ inputs.runner }} ${{ inputs.verset }}
-      ###### ruby
-      - name: install ruby from linux package manager
-        if: ${{ inputs.id != 'macOS' && inputs.verset != 'minver' }}
-        run: pacman -S --noconfirm ruby
-      - name: install ruby from cached minver build
-        if: ${{ inputs.id != 'macOS' && inputs.verset == 'minver' }}
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_ruby_minver.outputs.key }}
-          path: ruby.tar.zst
-      - name: source ruby from cached minver build
-        if: ${{ inputs.id != 'macOS' && inputs.verset == 'minver' }}
+      ###### for iguana
+      - name: install packages for iguana
         run: |
-          tar xf ruby.tar.zst
-          export RBENV_ROOT=$GITHUB_WORKSPACE/.rbenv
-          echo RBENV_ROOT=$RBENV_ROOT >> $GITHUB_ENV
-          eval "$($RBENV_ROOT/bin/rbenv init - bash)"
-          echo "ruby --version:"
-          ruby --version
-          echo PATH=$PATH >> $GITHUB_ENV
-      ###### python bindings
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm \
+            fmt \
+            yaml-cpp
+      ###### for coverage
+      - name: install packages for coverage tests
+        if: ${{ matrix.id == 'coverage' }}
+        run: |
+          pacman -S --noconfirm \
+            python-colorlog \
+            python-pygments \
+            gcovr
+      ###### for doxygen
+      - name: install doxygen
+        if: ${{ matrix.id == 'documentation' }}
+        run: |
+          pacman -S --noconfirm \
+            doxygen \
+            graphviz
+      ###### for python bindings
       - name: install python bindings dependencies
         if: ${{ matrix.id == 'python' }}
         run: |
@@ -314,75 +138,12 @@ jobs:
           source .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
           python -m pip install -r iguana_src/bind/python/requirements.txt
-      ###### install doxygen
-      - name: install doxygen
-        if: ${{ matrix.id == 'documentation' }}
-        run: |
-          pacman -S --noconfirm doxygen graphviz
-          echo "INSTALLED VERSIONS:"
-          echo "doxygen: $(doxygen --version)"
-          echo "$(dot --version)"
-      ###### hipo
-      - name: get `hipo-withROOT` build
-        if: ${{ matrix.id != 'noROOT' }}
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_hipo.outputs.key }}---withROOT
-          path: hipo.tar.zst
-      - name: get `hipo-noROOT` build
-        if: ${{ matrix.id == 'noROOT' }}
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{  needs.build_hipo.outputs.key }}---noROOT
-          path: hipo.tar.zst
-      - name: untar hipo build
-        run: tar xf hipo.tar.zst
-      - run: tree hipo
-      ###### ROOT
-      - name: get `ROOT` build
-        if: ${{ matrix.id != 'noROOT' }}
-        uses: actions/cache/restore@v4
-        with:
-          key: ${{ needs.build_root.outputs.key }}
-          path: root.tar.zst
-      - name: untar ROOT build
-        if: ${{ matrix.id != 'noROOT' }}
-        run: tar xf root.tar.zst
-      - name: set ROOT environment
-        if: ${{ matrix.id != 'noROOT' }}
-        run: iguana_src/.github/source-ROOT.sh root
-      ###### RCDB
-      - name: get RCDB
-        uses: actions/checkout@v4
-        with:
-          repository: JeffersonLab/rcdb
-          ref: main
-          path: rcdb_src
-      - name: set RCDB CI vars
-        id: rcdb
-        working-directory: rcdb_src
-        run: |
-          echo prefix=$(pwd) >> $GITHUB_OUTPUT
-          echo ver=$(git rev-parse HEAD) >> $GITHUB_OUTPUT
-      ###### summarize dependencies
-      - name: summarize dependencies
-        if: ${{ matrix.id == 'cpp' }}
-        run: |
-          echo '### Dependencies' >> $GITHUB_STEP_SUMMARY
-          echo '| Dependency | Version |' >> $GITHUB_STEP_SUMMARY
-          echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
-          echo "| \`hipo\` | \`${{ env.hipo_ref }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`rcdb\` | \`${{ steps.rcdb.outputs.ver }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`root\` | $(root --version 2>&1 | head -n1) |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`ruby\` | $(ruby --version) |" >> $GITHUB_STEP_SUMMARY
-          cat pkg_summary.md >> $GITHUB_STEP_SUMMARY
       ### build
       - name: meson setup
         run: |
           meson setup iguana_build iguana_src                      \
             --prefix=$GITHUB_WORKSPACE/iguana                      \
-            --pkg-config-path=$GITHUB_WORKSPACE/hipo/lib/pkgconfig \
-            -Drcdb:home=${{ steps.rcdb.outputs.prefix }}           \
+            -Drcdb:home=$RCDB_HOME                                 \
             -Dz_require_rcdb=true                                  \
             -Dwerror=true                                          \
             -Dinstall_examples=true                                \
@@ -417,14 +178,13 @@ jobs:
         working-directory: iguana_build
         run: |
           if [ "${{ env.verbose_test }}" = "true" ]; then
-            [ ${{ inputs.runner }} = "macos-latest" ] && stdbuf_cmd=gstdbuf || stdbuf_cmd=stdbuf
-            $stdbuf_cmd -o0 meson test --print-errorlogs --verbose --no-stdsplit
+            stdbuf -o0 meson test --print-errorlogs --verbose --no-stdsplit
           else
             meson test --print-errorlogs
           fi
       ### run benchmarks
       - name: benchmark algorithms
-        if: ${{ matrix.id == 'cpp' && inputs.id == 'linux-latest' }}
+        if: ${{ matrix.id == 'cpp' }}
         run: |
           for suite in single_threaded memoize; do
             meson test --benchmark --suite $suite -C iguana_build | tee benchmark_$suite.txt
@@ -436,8 +196,7 @@ jobs:
         working-directory: iguana_src
         run: |
           meson reprotest -- \
-            --pkg-config-path=$GITHUB_WORKSPACE/hipo/lib/pkgconfig \
-            -Drcdb:home=${{ steps.rcdb.outputs.prefix }}
+            -Drcdb:home=$RCDB_HOME
       ### coverage
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
@@ -546,11 +305,11 @@ jobs:
   #########################################################
 
   collect_webpages:
-    if: ${{ github.ref == 'refs/heads/main' && inputs.id == 'linux-latest' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     name: Collect webpages
     needs:
       - iguana
-    runs-on: ${{ inputs.runner }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -579,7 +338,7 @@ jobs:
           path: pages/
 
   deploy_webpages:
-    if: ${{ github.ref == 'refs/heads/main' && inputs.id == 'linux-latest' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     name: Deploy webpages
     needs: collect_webpages
     permissions:
@@ -588,7 +347,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ${{ inputs.runner }}
+    runs-on: ubuntu-latest
     steps:
       - name: deployment
         id: deployment
@@ -601,6 +360,6 @@ jobs:
     name: Final
     needs:
       - iguana
-    runs-on: ${{ inputs.runner }}
+    runs-on: ubuntu-latest
     steps:
       - run: exit 0
