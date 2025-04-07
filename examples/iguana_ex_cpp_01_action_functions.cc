@@ -13,7 +13,9 @@
 /// ```
 ///
 /// @note while this example _does_ use `hipo::bank` objects to read HIPO data, it demonstrates
-/// using action functions called with the data _from_ these banks.
+/// using action functions called with the data _from_ these banks. We only use `hipo::bank` to
+/// _obtain_ these data, since it is convenient that we don't have to use another HIPO reader,
+/// which would introduce another build dependency to this program.
 ///
 /// @end_doc_example
 #include <hipo4/reader.h>
