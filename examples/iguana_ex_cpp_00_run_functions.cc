@@ -16,7 +16,7 @@
 #include <hipo4/reader.h>
 #include <iguana/algorithms/AlgorithmSequence.h>
 
-/// @brief show a bank along with a header
+/// @brief helper function to show a bank along with a header
 /// @param header the header to print above the bank
 /// @param bank the bank to show
 void prettyPrint(std::string header, hipo::bank& bank)
