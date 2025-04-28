@@ -28,7 +28,7 @@ jobs:
   download_test_data:
     name: Download test data
     runs-on: ubuntu-latest
-    # NOTE: using Ubuntu runner, rather than a `container-forge` image, since there were problems accessing the cache
+    # NOTE: using Ubuntu runner, rather than a `container-forge` image, since it's much faster for cache hits
     steps:
       - uses: actions/cache@v4
         id: cache
