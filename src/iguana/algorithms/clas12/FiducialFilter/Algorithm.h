@@ -1,18 +1,22 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include "LegacyECALcuts.h"
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` bank by applying DC (drift chamber) fiducial cuts
+  /// @brief_algo Filter the `REC::Particle` bank by applying DC (drift chamber) and ECAL (electromagnetic calorimeter) fiducial cuts
+  ///
+  /// Currently these are the "legacy" Pass 1 fiducial cuts tuned for Run Group A.
   ///
   /// @begin_doc_algo{clas12::FiducialFilter | Filter}
-  /// @input_banks{REC::Particle, REC::Traj, RUN::config}
+  /// @input_banks{REC::Particle, REC::Traj, REC::Calorimeter, RUN::config}
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
   /// @begin_doc_config{clas12/FiducialFilter}
   /// @config_param{pass | int | cook type to use for assigning fiducial cuts}
+  /// @config_param{ecal_cut_level | string | cut level for ECAL cuts, one of: loose, medium, tight}
   /// @end_doc
   class FiducialFilter : public Algorithm
   {
@@ -55,6 +59,9 @@ namespace iguana::clas12 {
 
     private:
 
+      /// Legacy ECAL cuts
+      std::unique_ptr<LegacyECALcuts> m_legacy_ecal_cuts;
+
       /// **Method**: checks if the particle passes fiducial cuts
       /// @param traj_row data struct of the particle in REC::Traj
       /// @param torus toroidal magnetic field sign
@@ -81,11 +88,14 @@ namespace iguana::clas12 {
       /// `hipo::banklist` 
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_traj;
+      hipo::banklist::size_type b_cal;
       hipo::banklist::size_type b_config;
       
       /// Pass Reconstruction
       int o_pass = 1;
-      
+
+      /// ECAL cut level
+      std::string o_ecal_cut_level;
   };
 
 }

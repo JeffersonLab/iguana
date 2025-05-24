@@ -12,28 +12,34 @@ namespace iguana::clas12 {
     ParseYAMLConfig();
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_traj     = GetBankIndex(banks, "REC::Traj");
+    b_cal      = GetBankIndex(banks, "REC::Calorimeter");
     b_config   = GetBankIndex(banks, "RUN::config");
-      
-    o_pass      = GetOptionScalar<int>("pass");
+
+    o_pass           = GetOptionScalar<int>("pass");
+    o_ecal_cut_level = GetOptionScalar<std::string>("ecal_cut_level");
     if(o_pass!=1){
         m_log->Warn("FiducialFilter only contains fiducial cuts for pass1...we will default to using those...");
     }
-      
+
+    if(o_pass == 1) {
+      m_legacy_ecal_cuts = std::make_unique<LegacyECALcuts>(o_ecal_cut_level);
+    }
   }
 
 void FiducialFilter::Run(hipo::banklist& banks) const {
     // get the banks
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& trajBank     = GetBank(banks, b_traj, "REC::Traj");
+    auto& calBank      = GetBank(banks, b_cal, "REC::Calorimeter");
     auto& configBank   = GetBank(banks, b_config, "RUN::config");
-    auto torus  = configBank.getFloat("torus", 0);    
-    
+    auto torus  = configBank.getFloat("torus", 0);
+
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // get a pindex'd map of the REC::Traj data
     auto traj_map = GetTrajMap(trajBank);
-    
+
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this, &traj_map, torus](hipo::bank& bank, int row) {
         // Check if this particle has a REC::Traj component
@@ -58,21 +64,21 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
         m_log->Warn("torus={}...value must be either -1 or 1, otherwise fiducial cuts are not defined...filtering out all particles...",torus);
         return false;
     }
-    
+
     if(pid==11) return DC_fiducial_cut_XY_pass1(traj_row, torus, pid);
     else if(pid==211 || pid==-211 || pid==2212){
         if(torus<0) return DC_fiducial_cut_theta_phi_pass1(traj_row, torus, pid);
         else if(torus>0) return DC_fiducial_cut_XY_pass1(traj_row, torus, pid);
-        else return false; 
+        else return false;
     }
     return true;
   }
 
-    
+
 
   bool FiducialFilter::DC_fiducial_cut_XY_pass1(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const
   {
-    
+
       const auto minparams = ((torus<0) ? minparams_in_XY_pass1 : minparams_out_XY_pass1);
       const auto maxparams = ((torus<0) ? maxparams_in_XY_pass1 : maxparams_out_XY_pass1);
       double X=0;
@@ -137,26 +143,26 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
 
         switch (pid)
           {
-          case 11: 
-        this_pid = 0; 
+          case 11:
+        this_pid = 0;
         break;
-          case 2212: 
-        this_pid = 1; 
+          case 2212:
+        this_pid = 1;
         break;
-          case 211: 
-        this_pid = 2; 
+          case 211:
+        this_pid = 2;
         break;
-          case -211: 
-        this_pid = 3; 
+          case -211:
+        this_pid = 3;
         break;
-          case 321: 
-        this_pid = 4; 
+          case 321:
+        this_pid = 4;
         break;
-          case -321: 
-        this_pid = 5; 
+          case -321:
+        this_pid = 5;
         break;
-          default: 
-        return false; 
+          default:
+        return false;
         break;
           }
         double calc_min = minparams[this_pid][sector - 1][r][0] + minparams[this_pid][sector - 1][r][1] * X;
@@ -165,10 +171,10 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
         if((Y<calc_min) || (Y>calc_max)) {  return false;}
       }
       return true;
-    }    
-    
+    }
+
   bool FiducialFilter::DC_fiducial_cut_theta_phi_pass1(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const{
-      
+
       const auto minparams = ((torus<0) ? minparams_in_theta_phi_pass1 : minparams_out_theta_phi_pass1);
       const auto maxparams = ((torus<0) ? maxparams_in_theta_phi_pass1 : maxparams_out_theta_phi_pass1);
       double theta_DCr = 5000;
@@ -176,7 +182,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
       double x=0;
       double y=0;
       double z=0;
-      for(int r = 0; r<3; r++){  
+      for(int r = 0; r<3; r++){
         x=0;y=0;z=0;
         switch(r){
         case 0:
@@ -198,7 +204,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
         int sector = traj_row.sector;
 
         theta_DCr = 180 / M_PI * acos(z / sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
-        phi_DCr_raw = 180 / M_PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)), 
+        phi_DCr_raw = 180 / M_PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)),
                        x /sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
 
         double phi_DCr = 5000;
@@ -226,7 +232,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
 
 
 
-        double calc_phi_min = minparams[this_pid][sector - 1][r][0] + minparams[this_pid][sector - 1][r][1] * std::log(theta_DCr) 
+        double calc_phi_min = minparams[this_pid][sector - 1][r][0] + minparams[this_pid][sector - 1][r][1] * std::log(theta_DCr)
           + minparams[this_pid][sector - 1][r][2] * theta_DCr + minparams[this_pid][sector - 1][r][3] * theta_DCr * theta_DCr;
 
         double calc_phi_max = maxparams[this_pid][sector - 1][r][0] + maxparams[this_pid][sector - 1][r][1] * std::log(theta_DCr)
@@ -240,19 +246,19 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
   std::map<int, FiducialFilter::traj_row_data> FiducialFilter::GetTrajMap(hipo::bank const &bank)
   {
       std::map<int, FiducialFilter::traj_row_data> traj_map;
-      
+
       for(auto const& row : bank.getRowList()){
           auto pindex = bank.getShort("pindex",row);
           auto x      = bank.getFloat("x",row);
           auto y      = bank.getFloat("y",row);
           auto z      = bank.getFloat("z",row);
           auto layer  = bank.getInt("layer",row);
-          
+
           // Ensure an entry exists in the map for the given pindex
           if (traj_map.find(pindex) == traj_map.end()) {
             traj_map[pindex] = FiducialFilter::traj_row_data();
           }
-          
+
           switch(layer){
               case 6: // first DC
                 traj_map[pindex].x1 = x;
@@ -273,12 +279,12 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
                 break;
           }
       }
-      
-      
-      
-      return traj_map;      
+
+
+
+      return traj_map;
   }
-      
+
   int FiducialFilter::determineSectorDC(float x, float y, float z)
   {
       float phi = 180 / M_PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)),
@@ -293,7 +299,7 @@ void FiducialFilter::Run(hipo::banklist& banks) const {
       return -1;
 
   }
-    
+
   void FiducialFilter::Stop()
   {
   }
