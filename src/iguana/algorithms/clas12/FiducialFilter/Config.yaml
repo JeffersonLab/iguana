@@ -1,2 +1,3 @@
 clas12::FiducialFilter:
-    pass: 1
+  pass: 1
+  ecal_cut_level: loose # 'loose', 'medium', or 'tight'
