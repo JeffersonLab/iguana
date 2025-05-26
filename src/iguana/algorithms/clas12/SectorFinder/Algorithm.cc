@@ -98,7 +98,7 @@ namespace iguana::clas12 {
     }
 
 
-    for(int row = 0; row < particleBank.getRows(); row++) {
+    for(auto const& row : particleBank.getRowList()) {
       int charge=particleBank.getInt("charge",row);
 
       bool userSp = charge==0 ? userSpecifiedBank_uncharged : userSpecifiedBank_charged;
