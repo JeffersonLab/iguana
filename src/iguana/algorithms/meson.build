@@ -36,19 +36,38 @@ algo_dict = [
     'name': 'clas12::ZVertexFilter',
     'test_args': {'banks': [ 'REC::Particle', 'RUN::config' ]},
   },
-  {
-    'name': 'clas12::FiducialFilter',
-    'add_algorithm_headers': [ 'RgaPass1Ecal.h' ],
-    'add_algorithm_sources': [ 'RgaPass1Ecal.cc' ],
-    'has_action_yaml': false,
-    'test_args': {'banks': [ 'REC::Particle', 'REC::Traj', 'RUN::config' ]},
-  },
+  # {
+  #   'name': 'clas12::FiducialFilter',
+  #   'add_algorithm_headers': [ 'RgaPass1Ecal.h' ],
+  #   'add_algorithm_sources': [ 'RgaPass1Ecal.cc' ],
+  #   'has_action_yaml': false,
+  #   'test_args': {'banks': [ 'REC::Particle', 'REC::Particle::Calorimeter', 'REC::Particle::Traj', 'RUN::config' ]},
+  #   'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
+  # },
   {
     'name': 'clas12::SectorFinder',
     'has_validator': true,
     'has_action_yaml': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator' ],
+    },
+  },
+  {
+    'name': 'clas12::CalorimeterLinker',
+    'has_config': false,
+    'has_validator': false,
+    'has_action_yaml': false,
+    'test_args': {
+      'banks': [ 'REC::Particle', 'REC::Calorimeter' ],
+    },
+  },
+  {
+    'name': 'clas12::TrajLinker',
+    'has_config': false,
+    'has_validator': false,
+    'has_action_yaml': false,
+    'test_args': {
+      'banks': [ 'REC::Particle', 'REC::Traj' ],
     },
   },
   {
