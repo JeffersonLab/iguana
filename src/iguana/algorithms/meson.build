@@ -38,7 +38,6 @@ algo_dict = [
   },
   {
     'name': 'clas12::FiducialFilter',
-    'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle', 'REC::Particle::Calorimeter', 'REC::Particle::Traj', 'RUN::config' ]},
     'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
   },

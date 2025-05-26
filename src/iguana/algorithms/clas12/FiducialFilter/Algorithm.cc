@@ -46,10 +46,22 @@ namespace iguana::clas12 {
     if(o_pass == 1) {
       auto& trajBank = GetBank(banks, b_traj, "REC::Particle::Traj");
       auto& calBank  = GetBank(banks, b_cal, "REC::Particle::Calorimeter");
-      particleBank.getMutableRowList().filter([this, torus, &trajBank](hipo::bank& bank, int row) {
+      particleBank.getMutableRowList().filter([this, torus, &trajBank, &calBank](hipo::bank& bank, int row) {
           auto pid = bank.getInt("pid", row);
           return FilterRgaPass1(
-              trajBank.getFloat("sector", row),
+              calBank.getInt("pcal_sector", row),
+              calBank.getFloat("pcal_lu", row),
+              calBank.getFloat("pcal_lv", row),
+              calBank.getFloat("pcal_lw", row),
+              calBank.getInt("ecin_sector", row),
+              calBank.getFloat("ecin_lu", row),
+              calBank.getFloat("ecin_lv", row),
+              calBank.getFloat("ecin_lw", row),
+              calBank.getInt("ecout_sector", row),
+              calBank.getFloat("ecout_lu", row),
+              calBank.getFloat("ecout_lv", row),
+              calBank.getFloat("ecout_lw", row),
+              trajBank.getInt("sector", row),
               trajBank.getFloat("r1x", row),
               trajBank.getFloat("r1y", row),
               trajBank.getFloat("r1z", row),
@@ -78,6 +90,18 @@ namespace iguana::clas12 {
   //////////////////////////////////////////////////////////////////////////////////
 
   bool FiducialFilter::FilterRgaPass1(
+      int const pcal_sector,
+      float const pcal_lu,
+      float const pcal_lv,
+      float const pcal_lw,
+      int const ecin_sector,
+      float const ecin_lu,
+      float const ecin_lv,
+      float const ecin_lw,
+      int const ecout_sector,
+      float const ecout_lu,
+      float const ecout_lv,
+      float const ecout_lw,
       int const dc_sector,
       float const dc_r1x,
       float const dc_r1y,
@@ -97,19 +121,20 @@ namespace iguana::clas12 {
       return false;
     }
     // DC cuts
+    bool dc_cut = false;
     if(dc_sector==-1)
       return false;
     if(pid == 11)
-      return FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
+      dc_cut = FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
     else if(pid==211 || pid==-211 || pid==2212) {
       if(torus<0)
-        return FilterDcThetaPhi(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
+        dc_cut = FilterDcThetaPhi(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
       else if(torus>0)
-        return FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
+        dc_cut = FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
       else
         return false;
     }
-    return true;
+    return dc_cut;
   }
 
   //////////////////////////////////////////////////////////////////////////////////

@@ -40,6 +40,18 @@ namespace iguana::clas12 {
       void Stop() override;
 
       /// @action_function{scalar filter} top-level fiducial cut for RG-A Pass 1
+      /// @param pcal_sector PCAL sector
+      /// @param pcal_lu PCAL lu
+      /// @param pcal_lv PCAL lv
+      /// @param pcal_lw PCAL lw
+      /// @param ecin_sector ECIN sector
+      /// @param ecin_lu ECIN lu
+      /// @param ecin_lv ECIN lv
+      /// @param ecin_lw ECIN lw
+      /// @param ecout_sector ECOUT sector
+      /// @param ecout_lu ECOUT lu
+      /// @param ecout_lv ECOUT lv
+      /// @param ecout_lw ECOUT lw
       /// @param dc_sector DC sector
       /// @param dc_r1x DC region 1 x
       /// @param dc_r1y DC region 1 y
@@ -54,6 +66,18 @@ namespace iguana::clas12 {
       /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
       bool FilterRgaPass1(
+          int const pcal_sector,
+          float const pcal_lu,
+          float const pcal_lv,
+          float const pcal_lw,
+          int const ecin_sector,
+          float const ecin_lu,
+          float const ecin_lv,
+          float const ecin_lw,
+          int const ecout_sector,
+          float const ecout_lu,
+          float const ecout_lv,
+          float const ecout_lw,
           int const dc_sector,
           float const dc_r1x,
           float const dc_r1y,

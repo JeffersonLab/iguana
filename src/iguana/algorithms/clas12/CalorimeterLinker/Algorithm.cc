@@ -11,18 +11,18 @@ namespace iguana::clas12 {
     b_calorimeter      = GetBankIndex(banks,"REC::Calorimeter");
     auto result_schema = CreateBank(banks, b_result,"REC::Particle::Calorimeter");
     i_pindex           = result_schema.getEntryOrder("pindex");
+    i_pcal_sector      = result_schema.getEntryOrder("pcal_sector");
     i_pcal_lu          = result_schema.getEntryOrder("pcal_lu");
     i_pcal_lv          = result_schema.getEntryOrder("pcal_lv");
     i_pcal_lw          = result_schema.getEntryOrder("pcal_lw");
-    i_pcal_sector      = result_schema.getEntryOrder("pcal_sector");
+    i_ecin_sector      = result_schema.getEntryOrder("ecin_sector");
     i_ecin_lu          = result_schema.getEntryOrder("ecin_lu");
     i_ecin_lv          = result_schema.getEntryOrder("ecin_lv");
     i_ecin_lw          = result_schema.getEntryOrder("ecin_lw");
-    i_ecin_sector      = result_schema.getEntryOrder("ecin_sector");
+    i_ecout_sector     = result_schema.getEntryOrder("ecout_sector");
     i_ecout_lu         = result_schema.getEntryOrder("ecout_lu");
     i_ecout_lv         = result_schema.getEntryOrder("ecout_lv");
     i_ecout_lw         = result_schema.getEntryOrder("ecout_lw");
-    i_ecout_sector     = result_schema.getEntryOrder("ecout_sector");
   }
 
   void CalorimeterLinker::Run(hipo::banklist& banks) const
@@ -37,18 +37,18 @@ namespace iguana::clas12 {
     for(int row = 0; row < bank_result.getRows(); row++){
       for(int ent = 0; ent < bank_result.getSchema().getEntries(); ent++) {
         bank_result.putShort(i_pindex, row, static_cast<int16_t>(row));
+        bank_result.putInt(i_pcal_sector, row, 0);
         bank_result.putFloat(i_pcal_lu, row, 0);
         bank_result.putFloat(i_pcal_lv, row, 0);
         bank_result.putFloat(i_pcal_lw, row, 0);
-        bank_result.putInt(i_pcal_sector, row, 0);
+        bank_result.putInt(i_ecin_sector, row, 0);
         bank_result.putFloat(i_ecin_lu, row, 0);
         bank_result.putFloat(i_ecin_lv, row, 0);
         bank_result.putFloat(i_ecin_lw, row, 0);
-        bank_result.putInt(i_ecin_sector, row, 0);
+        bank_result.putInt(i_ecout_sector, row, 0);
         bank_result.putFloat(i_ecout_lu, row, 0);
         bank_result.putFloat(i_ecout_lv, row, 0);
         bank_result.putFloat(i_ecout_lw, row, 0);
-        bank_result.putInt(i_ecout_sector, row, 0);
       }
     }
 
@@ -63,46 +63,46 @@ namespace iguana::clas12 {
       // loop over `REC::Calorimeter` rows, setting elements of linked `CalorimeterLinkerVars`
       for(auto const& row_calorimeter : bank_calorimeter.getRowList()) {
         if(pindex == bank_calorimeter.getShort("pindex", row_calorimeter)) {
+          auto sector = bank_calorimeter.getByte("sector", row_calorimeter);
           auto lu     = bank_calorimeter.getFloat("lu", row_calorimeter);
           auto lv     = bank_calorimeter.getFloat("lv", row_calorimeter);
           auto lw     = bank_calorimeter.getFloat("lw", row_calorimeter);
-          auto sector = bank_calorimeter.getByte("sector", row_calorimeter);
           auto layer  = bank_calorimeter.getByte("layer", row_calorimeter);
           switch(layer){
             case 1:
+              link_particle.pcal_sector = sector;
               link_particle.pcal_lu     = lu;
               link_particle.pcal_lv     = lv;
               link_particle.pcal_lw     = lw;
-              link_particle.pcal_sector = sector;
               break;
             case 4:
+              link_particle.ecin_sector = sector;
               link_particle.ecin_lu     = lu;
               link_particle.ecin_lv     = lv;
               link_particle.ecin_lw     = lw;
-              link_particle.ecin_sector = sector;
               break;
             case 7:
+              link_particle.ecout_sector = sector;
               link_particle.ecout_lu     = lu;
               link_particle.ecout_lv     = lv;
               link_particle.ecout_lw     = lw;
-              link_particle.ecout_sector = sector;
               break;
           }
         }
       }
       // fill output bank
+      bank_result.putInt(i_pcal_sector, row_particle, link_particle.pcal_sector);
       bank_result.putFloat(i_pcal_lu, row_particle, link_particle.pcal_lu);
       bank_result.putFloat(i_pcal_lv, row_particle, link_particle.pcal_lv);
       bank_result.putFloat(i_pcal_lw, row_particle, link_particle.pcal_lw);
-      bank_result.putInt(i_pcal_sector, row_particle, link_particle.pcal_sector);
+      bank_result.putInt(i_ecin_sector, row_particle, link_particle.ecin_sector);
       bank_result.putFloat(i_ecin_lu, row_particle, link_particle.ecin_lu);
       bank_result.putFloat(i_ecin_lv, row_particle, link_particle.ecin_lv);
       bank_result.putFloat(i_ecin_lw, row_particle, link_particle.ecin_lw);
-      bank_result.putInt(i_ecin_sector, row_particle, link_particle.ecin_sector);
+      bank_result.putInt(i_ecout_sector, row_particle, link_particle.ecout_sector);
       bank_result.putFloat(i_ecout_lu, row_particle, link_particle.ecout_lu);
       bank_result.putFloat(i_ecout_lv, row_particle, link_particle.ecout_lv);
       bank_result.putFloat(i_ecout_lw, row_particle, link_particle.ecout_lw);
-      bank_result.putInt(i_ecout_sector, row_particle, link_particle.ecout_sector);
     }
     ShowBank(bank_result, Logger::Header("CREATED BANK"));
   }

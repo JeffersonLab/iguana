@@ -94,18 +94,18 @@
     "info":      "",
     "entries": [
       { "name": "pindex",       "type": "S", "info": "row number in the particle bank" },
+      { "name": "pcal_sector",  "type": "I", "info": "PCAL sector" },
       { "name": "pcal_lu",      "type": "F", "info": "PCAL distance on U-side" },
       { "name": "pcal_lv",      "type": "F", "info": "PCAL distance on V-side" },
       { "name": "pcal_lw",      "type": "F", "info": "PCAL distance on W-side" },
-      { "name": "pcal_sector",  "type": "I", "info": "PCAL sector" },
+      { "name": "ecin_sector",  "type": "I", "info": "ECIN sector" },
       { "name": "ecin_lu",      "type": "F", "info": "ECIN distance on U-side" },
       { "name": "ecin_lv",      "type": "F", "info": "ECIN distance on V-side" },
       { "name": "ecin_lw",      "type": "F", "info": "ECIN distance on W-side" },
-      { "name": "ecin_sector",  "type": "I", "info": "ECIN sector" },
+      { "name": "ecout_sector", "type": "I", "info": "ECOUT sector" },
       { "name": "ecout_lu",     "type": "F", "info": "ECOUT distance on U-side" },
       { "name": "ecout_lv",     "type": "F", "info": "ECOUT distance on V-side" },
-      { "name": "ecout_lw",     "type": "F", "info": "ECOUT distance on W-side" },
-      { "name": "ecout_sector", "type": "I", "info": "ECOUT sector" }
+      { "name": "ecout_lw",     "type": "F", "info": "ECOUT distance on W-side" }
     ]
   },
   {
