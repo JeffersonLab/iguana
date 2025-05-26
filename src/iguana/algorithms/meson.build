@@ -38,8 +38,8 @@ algo_dict = [
   },
   {
     'name': 'clas12::FiducialFilter',
-    'add_algorithm_headers': [ 'LegacyECALcuts.h' ],
-    'add_algorithm_sources': [ 'LegacyECALcuts.cc' ],
+    'add_algorithm_headers': [ 'RgaPass1Ecal.h' ],
+    'add_algorithm_sources': [ 'RgaPass1Ecal.cc' ],
     'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle', 'REC::Traj', 'RUN::config' ]},
   },

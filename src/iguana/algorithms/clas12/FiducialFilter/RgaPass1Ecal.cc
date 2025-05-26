@@ -1,9 +1,9 @@
-#include "LegacyECALcuts.h"
+#include "RgaPass1Ecal.h"
 #include <stdexcept>
 
 namespace iguana::clas12 {
 
-  LegacyECALcuts::LegacyECALcuts(std::string const& level)
+  RgaPass1Ecal::RgaPass1Ecal(std::string const& level)
   {
     if(level == "loose")
       m_cut_level = loose;
@@ -15,9 +15,9 @@ namespace iguana::clas12 {
       throw std::runtime_error(std::string("unknown cut level") + level);
   }
 
-  std::map<int, LegacyECALcuts::CalData> LegacyECALcuts::GetTrajMap(hipo::bank const& bank) const
+  std::map<int, RgaPass1Ecal::CalData> RgaPass1Ecal::GetTrajMap(hipo::bank const& bank) const
   {
-    std::map<int, LegacyECALcuts::CalData> result;
+    std::map<int, RgaPass1Ecal::CalData> result;
     for(auto const& row : bank.getRowList()){
       auto pindex = bank.getShort("pindex", row);
       auto lu     = bank.getFloat("lu", row);

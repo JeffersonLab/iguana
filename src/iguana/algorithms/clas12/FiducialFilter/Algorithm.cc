@@ -22,7 +22,7 @@ namespace iguana::clas12 {
     }
 
     if(o_pass == 1) {
-      m_legacy_ecal_cuts = std::make_unique<LegacyECALcuts>(o_ecal_cut_level);
+      m_legacy_ecal_cuts = std::make_unique<RgaPass1Ecal>(o_ecal_cut_level);
     }
   }
 

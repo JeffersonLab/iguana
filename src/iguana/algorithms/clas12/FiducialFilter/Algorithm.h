@@ -1,7 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
-#include "LegacyECALcuts.h"
+#include "RgaPass1Ecal.h"
 
 namespace iguana::clas12 {
 
@@ -59,8 +59,8 @@ namespace iguana::clas12 {
 
     private:
 
-      /// Legacy ECAL cuts
-      std::unique_ptr<LegacyECALcuts> m_legacy_ecal_cuts;
+      /// RG-A Pass 1 ECAL cuts
+      std::unique_ptr<RgaPass1Ecal> m_legacy_ecal_cuts;
 
       /// **Method**: checks if the particle passes fiducial cuts
       /// @param traj_row data struct of the particle in REC::Traj

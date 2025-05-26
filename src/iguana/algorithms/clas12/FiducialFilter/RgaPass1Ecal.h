@@ -5,7 +5,7 @@
 #include <map>
 
 namespace iguana::clas12 {
-  class LegacyECALcuts {
+  class RgaPass1Ecal {
 
     public:
 
@@ -33,7 +33,7 @@ namespace iguana::clas12 {
         /// @doxygen_on
       };
 
-      LegacyECALcuts(std::string const& level);
+      RgaPass1Ecal(std::string const& level);
 
       /// @brief Gets calorimeter data for particles in the event
       /// @param bank the bank to get data from
