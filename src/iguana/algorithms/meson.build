@@ -36,14 +36,12 @@ algo_dict = [
     'name': 'clas12::ZVertexFilter',
     'test_args': {'banks': [ 'REC::Particle', 'RUN::config' ]},
   },
-  # {
-  #   'name': 'clas12::FiducialFilter',
-  #   'add_algorithm_headers': [ 'RgaPass1Ecal.h' ],
-  #   'add_algorithm_sources': [ 'RgaPass1Ecal.cc' ],
-  #   'has_action_yaml': false,
-  #   'test_args': {'banks': [ 'REC::Particle', 'REC::Particle::Calorimeter', 'REC::Particle::Traj', 'RUN::config' ]},
-  #   'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
-  # },
+  {
+    'name': 'clas12::FiducialFilter',
+    'has_action_yaml': false,
+    'test_args': {'banks': [ 'REC::Particle', 'REC::Particle::Calorimeter', 'REC::Particle::Traj', 'RUN::config' ]},
+    'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
+  },
   {
     'name': 'clas12::SectorFinder',
     'has_validator': true,
