@@ -16,7 +16,7 @@ namespace iguana::clas12 {
   /// @config_param{bank_uncharged | string | if not `default`, use this bank for sector finding of neutral particles}
   /// @end_doc
   ///
-  /// Rows that have been filtered out of `REC::Particle` will be zeroed in `REC::Particle::Sector`.
+  /// Rows that have been filtered out of `REC::Particle` will still have their sectors determined.
   ///
   /// @creator_note
   class SectorFinder : public Algorithm

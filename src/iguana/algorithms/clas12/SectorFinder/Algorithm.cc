@@ -98,7 +98,9 @@ namespace iguana::clas12 {
     }
 
 
-    for(auto const& row : particleBank.getRowList()) {
+    // some downstream algorithms may still need sector info, so obtain sector for _all_ particles,
+    // not just the ones that were filtered out (use `.getRows()` rather than `.getRowList()`)
+    for(int row = 0; row < particleBank.getRows(); row++) {
       int charge=particleBank.getInt("charge",row);
 
       bool userSp = charge==0 ? userSpecifiedBank_uncharged : userSpecifiedBank_charged;
