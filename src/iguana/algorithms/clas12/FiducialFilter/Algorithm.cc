@@ -235,8 +235,8 @@ namespace iguana::clas12 {
   {
     if(sector == -1)
       return false;
-    const auto minparams = ((torus<0) ? fiducial_pass1::minparams_in_XY_pass1 : fiducial_pass1::minparams_out_XY_pass1);
-    const auto maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_XY_pass1 : fiducial_pass1::maxparams_out_XY_pass1);
+    const auto& minparams = ((torus<0) ? fiducial_pass1::minparams_in_XY_pass1 : fiducial_pass1::minparams_out_XY_pass1);
+    const auto& maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_XY_pass1 : fiducial_pass1::maxparams_out_XY_pass1);
     double X=0;
     double Y=0;
     for(int r = 0 ; r < 3; r++){
@@ -337,8 +337,8 @@ namespace iguana::clas12 {
   {
     if(sector == -1)
       return false;
-    const auto minparams = ((torus<0) ? fiducial_pass1::minparams_in_theta_phi_pass1 : fiducial_pass1::minparams_out_theta_phi_pass1);
-    const auto maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_theta_phi_pass1 : fiducial_pass1::maxparams_out_theta_phi_pass1);
+    const auto& minparams = ((torus<0) ? fiducial_pass1::minparams_in_theta_phi_pass1 : fiducial_pass1::minparams_out_theta_phi_pass1);
+    const auto& maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_theta_phi_pass1 : fiducial_pass1::maxparams_out_theta_phi_pass1);
     double theta_DCr = 5000;
     double phi_DCr_raw = 5000;
     double x=0;
