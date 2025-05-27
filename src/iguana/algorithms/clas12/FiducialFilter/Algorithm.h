@@ -9,7 +9,6 @@ namespace iguana::clas12 {
   /// Currently these are the "legacy" Pass 1 fiducial cuts tuned for Run Group A.
   ///
   /// @begin_doc_algo{clas12::FiducialFilter | Filter}
-  /// Pass 1 Filter:
   /// @input_banks{REC::Particle, REC::Particle::Traj, REC::Particle::Calorimeter, RUN::config}
   /// @output_banks{REC::Particle}
   /// @end_doc
@@ -29,6 +28,7 @@ namespace iguana::clas12 {
 
     public:
 
+      /// cut levels, currently only used for PCAL cuts
       enum CutLevel {
         loose,
         medium,

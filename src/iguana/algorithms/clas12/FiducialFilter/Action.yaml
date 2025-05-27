@@ -44,7 +44,7 @@ actions:
       - { name: r3z, type: float }
       - { name: torus, type: float }
       - { name: pid, type: int }
-  - name: FilterThetaPhi
+  - name: FilterDcThetaPhi
     type: filter
     inputs:
       - { name: sector, type: int }

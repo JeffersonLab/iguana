@@ -1,5 +1,4 @@
 #include "Validator.h"
-#include "Algorithm.h"
 
 #include <TProfile.h>
 #include <TStyle.h>
@@ -10,16 +9,17 @@ namespace iguana::clas12 {
 
   void FiducialFilterValidator::Start(hipo::banklist& banks)
   {
-    // define the algorithm sequence
-    m_algo_seq = std::make_unique<AlgorithmSequence>();
-    m_algo_seq->Add("clas12::EventBuilderFilter");
-    m_algo_seq->Add("clas12::FiducialFilter");
-    m_algo_seq->SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", u_pdg_list);
-    m_algo_seq->Start(banks);
+    // set algorithm options
+    m_algo_eb.SetOption<std::vector<int>>("pids", u_pdg_list);
+
+    // start algorithms
+    m_algo_eb.Start(banks);
+    m_algo_traj.Start(banks);
+    m_algo_fidu.Start(banks);
 
     // get bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
-    b_traj = GetBankIndex(banks, "REC::Traj"); 
+    b_traj     = GetBankIndex(banks, "REC::Particle::Traj");
       
     // set an output file
     auto output_dir = GetOutputDirectory();
@@ -85,39 +85,32 @@ namespace iguana::clas12 {
 
   void FiducialFilterValidator::Run(hipo::banklist& banks) const
   {
-    // get the momenta before
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
-    auto& trajBank      = GetBank(banks, b_traj, "REC::Traj");
-    // get a pindex'd map of the REC::Traj data
-    auto traj_map = FiducialFilter::GetTrajMap(trajBank);
-    
+    auto& traj_bank     = GetBank(banks, b_traj, "REC::Particle::Traj");
+
+    // run the EB filter and TrajLinker
+    m_algo_eb.Run(banks);
+    m_algo_traj.Run(banks);
+
+    // fill "before" histograms
     for(auto const& row : particle_bank.getRowList()){
-        auto pid = particle_bank.getInt("pid", row);
-        if(pid!=11&&pid!=211&&pid!=-211&&pid!=2212) continue;
-        if (traj_map.find(row) == traj_map.end()) {
-            continue;
-        }
-        auto traj_row = traj_map.at(row); 
-        u_DC1_before.at(pid)->Fill(traj_row.x1,traj_row.y1);
-        u_DC2_before.at(pid)->Fill(traj_row.x2,traj_row.y2);
-        u_DC3_before.at(pid)->Fill(traj_row.x3,traj_row.y3);
+      auto pid = particle_bank.getInt("pid", row);
+      if(pid!=11&&pid!=211&&pid!=-211&&pid!=2212) continue;
+      u_DC1_before.at(pid)->Fill(traj_bank.getFloat("r1x", row), traj_bank.getFloat("r1y", row));
+      u_DC2_before.at(pid)->Fill(traj_bank.getFloat("r2x", row), traj_bank.getFloat("r2y", row));
+      u_DC3_before.at(pid)->Fill(traj_bank.getFloat("r3x", row), traj_bank.getFloat("r3y", row));
     }
 
-    // run the fiducial cuts
-    m_algo_seq->Run(banks);
+    // apply the fiducial cuts
+    m_algo_fidu.Run(banks);
 
-    // fill the plots
+    // fill "after" histograms (`particle_bank` is now filtered)
     for(auto const& row : particle_bank.getRowList()) {
-
-        auto pid = particle_bank.getInt("pid", row);
-        if(pid!=11&&pid!=211&&pid!=-211&&pid!=2212) continue;
-        if (traj_map.find(row) == traj_map.end()) {
-            continue;
-        }
-        auto traj_row = traj_map.at(row); 
-        u_DC1_after.at(pid)->Fill(traj_row.x1,traj_row.y1);
-        u_DC2_after.at(pid)->Fill(traj_row.x2,traj_row.y2);
-        u_DC3_after.at(pid)->Fill(traj_row.x3,traj_row.y3);
+      auto pid = particle_bank.getInt("pid", row);
+      if(pid!=11&&pid!=211&&pid!=-211&&pid!=2212) continue;
+      u_DC1_after.at(pid)->Fill(traj_bank.getFloat("r1x", row), traj_bank.getFloat("r1y", row));
+      u_DC2_after.at(pid)->Fill(traj_bank.getFloat("r2x", row), traj_bank.getFloat("r2y", row));
+      u_DC3_after.at(pid)->Fill(traj_bank.getFloat("r3x", row), traj_bank.getFloat("r3y", row));
     }
   }
 

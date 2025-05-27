@@ -28,10 +28,10 @@ namespace iguana::clas12 {
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      // @returns the DC sector given (x,y,z), or `-1` if failed
-      // @param x x-position
-      // @param y y-position
-      // @param z z-position
+      /// @returns the DC sector given (x,y,z), or `-1` if failed
+      /// @param x x-position
+      /// @param y y-position
+      /// @param z z-position
       int GetSector(float const& x, float const& y, float const& z) const;
 
     private:
