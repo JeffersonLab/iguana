@@ -57,12 +57,11 @@ namespace iguana::clas12 {
 
     // loop over particle rows
     for(auto const& row_particle : bank_particle.getRowList()) {
-      // create new `CalorimeterLinkerVars` object for this `pindex`
-      auto pindex         = bank_particle.getShort("pindex", row_particle);
-      auto& link_particle = link_map[pindex];
+      // create new `CalorimeterLinkerVars` object for this particle
+      auto& link_particle = link_map[row_particle];
       // loop over `REC::Calorimeter` rows, setting elements of linked `CalorimeterLinkerVars`
       for(auto const& row_calorimeter : bank_calorimeter.getRowList()) {
-        if(pindex == bank_calorimeter.getShort("pindex", row_calorimeter)) {
+        if(row_particle == bank_calorimeter.getShort("pindex", row_calorimeter)) {
           auto sector = bank_calorimeter.getByte("sector", row_calorimeter);
           auto lu     = bank_calorimeter.getFloat("lu", row_calorimeter);
           auto lv     = bank_calorimeter.getFloat("lv", row_calorimeter);

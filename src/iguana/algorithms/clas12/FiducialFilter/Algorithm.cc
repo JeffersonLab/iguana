@@ -7,22 +7,21 @@ namespace iguana::clas12 {
 
   void FiducialFilter::Start(hipo::banklist& banks)
   {
-
-    b_particle = GetBankIndex(banks, "REC::Particle");
-    b_traj     = GetBankIndex(banks, "REC::Traj");
-    b_cal      = GetBankIndex(banks, "REC::Calorimeter");
-    b_config   = GetBankIndex(banks, "RUN::config");
-
     ParseYAMLConfig();
-
     o_pass = GetOptionScalar<int>("pass");
     if(o_pass!=1){
       m_log->Warn("FiducialFilter only contains fiducial cuts for pass1...we will default to using those...");
       o_pass = 1;
     }
-
     o_pcal_electron_cut_level = ParseCutLevel(GetOptionScalar<std::string>("pcal_electron_cut_level"));
     o_pcal_photon_cut_level   = ParseCutLevel(GetOptionScalar<std::string>("pcal_photon_cut_level"));
+
+    b_particle = GetBankIndex(banks, "REC::Particle");
+    b_config   = GetBankIndex(banks, "RUN::config");
+    if(o_pass == 1) {
+      b_traj = GetBankIndex(banks, "REC::Particle::Traj");
+      b_cal  = GetBankIndex(banks, "REC::Particle::Calorimeter");
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////

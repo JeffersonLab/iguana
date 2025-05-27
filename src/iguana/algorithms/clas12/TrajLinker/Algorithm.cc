@@ -52,12 +52,11 @@ namespace iguana::clas12 {
 
     // loop over particle rows
     for(auto const& row_particle : bank_particle.getRowList()) {
-      // create new `TrajLinkerVars` object for this `pindex`
-      auto pindex         = bank_particle.getShort("pindex", row_particle);
-      auto& link_particle = link_map[pindex];
+      // create new `TrajLinkerVars` object for this particle
+      auto& link_particle = link_map[row_particle];
       // loop over `REC::Traj` rows, setting elements of linked `TrajLinkerVars`
       for(auto const& row_traj : bank_traj.getRowList()) {
-        if(pindex == bank_traj.getShort("pindex", row_traj)) {
+        if(row_particle == bank_traj.getShort("pindex", row_traj)) {
           auto x     = bank_traj.getFloat("x", row_traj);
           auto y     = bank_traj.getFloat("y", row_traj);
           auto z     = bank_traj.getFloat("z", row_traj);

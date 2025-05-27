@@ -15,11 +15,13 @@ namespace iguana::clas12 {
     // start algorithms
     m_algo_eb.Start(banks);
     m_algo_traj.Start(banks);
+    m_algo_cal.Start(banks);
     m_algo_fidu.Start(banks);
 
     // get bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_traj     = GetBankIndex(banks, "REC::Particle::Traj");
+    b_cal     = GetBankIndex(banks, "REC::Particle::Calorimeter");
       
     // set an output file
     auto output_dir = GetOutputDirectory();

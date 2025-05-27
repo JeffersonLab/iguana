@@ -5,6 +5,7 @@
 #include "Algorithm.h"
 #include "iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h"
 #include "iguana/algorithms/clas12/TrajLinker/Algorithm.h"
+#include "iguana/algorithms/clas12/CalorimeterLinker/Algorithm.h"
 
 #include <TCanvas.h>
 #include <TFile.h>
@@ -28,10 +29,12 @@ namespace iguana::clas12 {
 
       iguana::clas12::EventBuilderFilter m_algo_eb;
       iguana::clas12::TrajLinker m_algo_traj;
+      iguana::clas12::CalorimeterLinker m_algo_cal;
       iguana::clas12::FiducialFilter m_algo_fidu;
       
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_traj;
+      hipo::banklist::size_type b_cal;
       
       double const DC1xleft   = -200;
       double const DC1xright  = 200;

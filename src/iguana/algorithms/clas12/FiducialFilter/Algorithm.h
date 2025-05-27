@@ -9,13 +9,14 @@ namespace iguana::clas12 {
   /// Currently these are the "legacy" Pass 1 fiducial cuts tuned for Run Group A.
   ///
   /// @begin_doc_algo{clas12::FiducialFilter | Filter}
-  /// @input_banks{REC::Particle, REC::Particle::Traj, REC::Particle::Calorimeter, RUN::config}
+  /// @input_banks{REC::Particle, RUN::config, and others (see below)}
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
-  /// The banks `REC::Particle::Traj` and `REC::Particle::Calorimeter` are created by
-  /// `iguana::clas12::TrajLinker` and `iguana::clas12::CalorimeterLinker`, respectively,
-  /// for getting values from `REC::Calorimeter` and `REC::Traj` for each particle.
+  /// The following **additional banks** are needed:
+  /// - if configuration option `pass` is `1`:
+  ///   - `REC::Particle::Traj`, created by algorithm `iguana::clas12::TrajLinker`
+  ///   - `REC::Particle::Calorimeter`, created by algorithm `iguana::clas12::CalorimeterLinker`
   ///
   /// @begin_doc_config{clas12/FiducialFilter}
   /// @config_param{pass | int | cook type to use for assigning fiducial cuts}
