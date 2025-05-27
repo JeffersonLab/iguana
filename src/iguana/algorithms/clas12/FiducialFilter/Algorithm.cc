@@ -21,16 +21,8 @@ namespace iguana::clas12 {
       o_pass = 1;
     }
 
-    auto level = GetOptionScalar<std::string>("ecal_cut_level");
-    if(level == "loose")
-      o_ecal_cut_level = loose;
-    else if(level == "medium")
-      o_ecal_cut_level = medium;
-    else if(level == "tight")
-      o_ecal_cut_level = tight;
-    else
-      throw std::runtime_error(std::string("unknown ECAL cut level") + level);
-
+    o_pcal_electron_cut_level = ParseCutLevel(GetOptionScalar<std::string>("pcal_electron_cut_level"));
+    o_pcal_photon_cut_level   = ParseCutLevel(GetOptionScalar<std::string>("pcal_photon_cut_level"));
   }
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -50,17 +42,8 @@ namespace iguana::clas12 {
           auto pid = bank.getInt("pid", row);
           return FilterRgaPass1(
               calBank.getInt("pcal_sector", row),
-              calBank.getFloat("pcal_lu", row),
               calBank.getFloat("pcal_lv", row),
               calBank.getFloat("pcal_lw", row),
-              calBank.getInt("ecin_sector", row),
-              calBank.getFloat("ecin_lu", row),
-              calBank.getFloat("ecin_lv", row),
-              calBank.getFloat("ecin_lw", row),
-              calBank.getInt("ecout_sector", row),
-              calBank.getFloat("ecout_lu", row),
-              calBank.getFloat("ecout_lv", row),
-              calBank.getFloat("ecout_lw", row),
               trajBank.getInt("sector", row),
               trajBank.getFloat("r1x", row),
               trajBank.getFloat("r1y", row),
@@ -86,22 +69,27 @@ namespace iguana::clas12 {
   }
 
   //////////////////////////////////////////////////////////////////////////////////
+
+  FiducialFilter::CutLevel FiducialFilter::ParseCutLevel(std::string const& level) const
+  {
+    if(level == "loose")
+      return loose;
+    else if(level == "medium")
+      return medium;
+    else if(level == "tight")
+      return tight;
+    else
+      throw std::runtime_error(std::string("unknown PCAL cut level ") + level);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////
 
   bool FiducialFilter::FilterRgaPass1(
       int const pcal_sector,
-      float const pcal_lu,
       float const pcal_lv,
       float const pcal_lw,
-      int const ecin_sector,
-      float const ecin_lu,
-      float const ecin_lv,
-      float const ecin_lw,
-      int const ecout_sector,
-      float const ecout_lu,
-      float const ecout_lv,
-      float const ecout_lw,
       int const dc_sector,
       float const dc_r1x,
       float const dc_r1y,
@@ -115,30 +103,121 @@ namespace iguana::clas12 {
       float const torus,
       int const pid) const
   {
+
     // reject if torus is not +/-1
     if(std::abs(torus)!=1) {
       m_log->Warn("torus={}...value must be either -1 or 1, otherwise fiducial cuts are not defined...filtering out all particles...",torus);
       return false;
     }
-    // DC cuts
-    bool dc_cut = false;
-    if(dc_sector==-1)
-      return false;
-    if(pid == 11)
-      dc_cut = FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
-    else if(pid==211 || pid==-211 || pid==2212) {
-      if(torus<0)
-        dc_cut = FilterDcThetaPhi(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
-      else if(torus>0)
-        dc_cut = FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
-      else
-        return false;
+    // apply cuts
+    bool result = true;
+    switch(pid) {
+      case 11: // electrons
+      case -11: // positrons
+        result &= FilterPcalHomogeneous(pcal_sector, pcal_lv, pcal_lw, torus, pid);
+        result &= FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
+        break;
+      case 22: // photons
+        result &= FilterPcalHomogeneous(pcal_sector, pcal_lv, pcal_lw, torus, pid);
+      case 211: // pi+
+      case -211: // pi-
+      case 2212: // protons
+        {
+          if(torus<0) // inbending
+            result &= FilterDcThetaPhi(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
+          else if(torus>0) // outbending
+            result &= FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
+          else
+            result = false;
+          break;
+        }
+      default:
+        result = true; // cut not applied, do not filter
     }
-    return dc_cut;
+    return result;
   }
 
   //////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////
+
+  bool FiducialFilter::FilterPcalHomogeneous(
+      int const sector,
+      float const lv,
+      float const lw,
+      float const torus,
+      int const pid) const
+  {
+    // set cut level from PDG
+    CutLevel cut_level;
+    switch(pid) {
+      case 11:
+      case -11:
+        cut_level = o_pcal_electron_cut_level;
+        break;
+      case 22:
+        cut_level = o_pcal_photon_cut_level;
+        break;
+      default:
+        m_log->Error("called FilterPcalHomogeneous with unknown PDG {}", pid);
+        return false;
+    }
+    // NOTE: lv + lw is going from the side to the back end of the PCAL, lu is going from side to side
+    // 1 scintillator bar is 4.5 cm wide. In the outer regions (back) double bars are used.
+    // A cut is only applied on lv and lw
+    double min_v = 0;
+    double max_v = 0;
+    double min_w = 0;
+    double max_w = 0;
+    for(int k = 0; k < 6; k++){
+      if(sector-1 == k && torus < 0){ // inbending
+        switch(cut_level) {
+          case tight:
+            min_v = fiducial_pass1::min_lv_tight_inb[k];
+            max_v = fiducial_pass1::max_lv_tight_inb[k];
+            min_w = fiducial_pass1::min_lw_tight_inb[k];
+            max_w = fiducial_pass1::max_lw_tight_inb[k];
+            break;
+          case medium:
+            min_v = fiducial_pass1::min_lv_med_inb[k];
+            max_v = fiducial_pass1::max_lv_med_inb[k];
+            min_w = fiducial_pass1::min_lw_med_inb[k];
+            max_w = fiducial_pass1::max_lw_med_inb[k];
+            break;
+          case loose:
+            min_v = fiducial_pass1::min_lv_loose_inb[k];
+            max_v = fiducial_pass1::max_lv_loose_inb[k];
+            min_w = fiducial_pass1::min_lw_loose_inb[k];
+            max_w = fiducial_pass1::max_lw_loose_inb[k];
+            break;
+        }
+      }
+      else if(sector-1 == k && torus > 0){ // outbending
+        switch(cut_level) {
+          case tight:
+            min_v = fiducial_pass1::min_lv_tight_out[k];
+            max_v = fiducial_pass1::max_lv_tight_out[k];
+            min_w = fiducial_pass1::min_lw_tight_out[k];
+            max_w = fiducial_pass1::max_lw_tight_out[k];
+            break;
+          case medium:
+            min_v = fiducial_pass1::min_lv_med_out[k];
+            max_v = fiducial_pass1::max_lv_med_out[k];
+            min_w = fiducial_pass1::min_lw_med_out[k];
+            max_w = fiducial_pass1::max_lw_med_out[k];
+            break;
+          case loose:
+            min_v = fiducial_pass1::min_lv_loose_out[k];
+            max_v = fiducial_pass1::max_lv_loose_out[k];
+            min_w = fiducial_pass1::min_lw_loose_out[k];
+            max_w = fiducial_pass1::max_lw_loose_out[k];
+            break;
+        }
+      }
+    }
+    return lv > min_v && lv < max_v && lw > min_w && lw < max_w;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////
 
   bool FiducialFilter::FilterDcXY(
@@ -155,8 +234,10 @@ namespace iguana::clas12 {
       float const torus,
       int const pid) const
   {
-    const auto minparams = ((torus<0) ? minparams_in_XY_pass1 : minparams_out_XY_pass1);
-    const auto maxparams = ((torus<0) ? maxparams_in_XY_pass1 : maxparams_out_XY_pass1);
+    if(sector == -1)
+      return false;
+    const auto minparams = ((torus<0) ? fiducial_pass1::minparams_in_XY_pass1 : fiducial_pass1::minparams_out_XY_pass1);
+    const auto maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_XY_pass1 : fiducial_pass1::maxparams_out_XY_pass1);
     double X=0;
     double Y=0;
     for(int r = 0 ; r < 3; r++){
@@ -255,8 +336,10 @@ namespace iguana::clas12 {
       float const torus,
       int const pid) const
   {
-    const auto minparams = ((torus<0) ? minparams_in_theta_phi_pass1 : minparams_out_theta_phi_pass1);
-    const auto maxparams = ((torus<0) ? maxparams_in_theta_phi_pass1 : maxparams_out_theta_phi_pass1);
+    if(sector == -1)
+      return false;
+    const auto minparams = ((torus<0) ? fiducial_pass1::minparams_in_theta_phi_pass1 : fiducial_pass1::minparams_out_theta_phi_pass1);
+    const auto maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_theta_phi_pass1 : fiducial_pass1::maxparams_out_theta_phi_pass1);
     double theta_DCr = 5000;
     double phi_DCr_raw = 5000;
     double x=0;

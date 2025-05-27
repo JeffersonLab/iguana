@@ -6,18 +6,9 @@ actions:
     type: filter
     inputs:
       - { name: pcal_sector, type: int }
-      - { name: pcal_lu, type: float }
       - { name: pcal_lv, type: float }
       - { name: pcal_lw, type: float }
-      - { name: ecin_sector, type: int }
-      - { name: ecin_lu, type: float }
-      - { name: ecin_lv, type: float }
-      - { name: ecin_lw, type: float }
-      - { name: ecout_sector, type: int }
-      - { name: ecout_lu, type: float }
-      - { name: ecout_lv, type: float }
-      - { name: ecout_lw, type: float }
-      - { name: sector, type: int }
+      - { name: dc_sector, type: int }
       - { name: dc_r1x, type: float }
       - { name: dc_r1y, type: float }
       - { name: dc_r1z, type: float }
@@ -27,6 +18,14 @@ actions:
       - { name: dc_r3x, type: float }
       - { name: dc_r3y, type: float }
       - { name: dc_r3z, type: float }
+      - { name: torus, type: float }
+      - { name: pid, type: int }
+  - name: FilterPcalHomogeneous
+    type: filter
+    inputs:
+      - { name: sector, type: int }
+      - { name: lv, type: float }
+      - { name: lw, type: float }
       - { name: torus, type: float }
       - { name: pid, type: int }
   - name: FilterDcXY
