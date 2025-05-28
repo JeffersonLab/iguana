@@ -44,15 +44,18 @@ namespace iguana::clas12 {
       // `b_result` bank item indices
       int i_pindex;
       int i_sector;
-      int i_r1x;
-      int i_r1y;
-      int i_r1z;
-      int i_r2x;
-      int i_r2y;
-      int i_r2z;
-      int i_r3x;
-      int i_r3y;
-      int i_r3z;
+      int i_r1_found;
+      int i_r1_x;
+      int i_r1_y;
+      int i_r1_z;
+      int i_r2_found;
+      int i_r2_x;
+      int i_r2_y;
+      int i_r2_z;
+      int i_r3_found;
+      int i_r3_x;
+      int i_r3_y;
+      int i_r3_z;
   };
 
 }

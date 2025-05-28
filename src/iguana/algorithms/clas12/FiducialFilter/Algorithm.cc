@@ -49,15 +49,15 @@ namespace iguana::clas12 {
                 calBank.getFloat("pcal_lv", row),
                 calBank.getFloat("pcal_lw", row),
                 trajBank.getInt("sector", row),
-                trajBank.getFloat("r1x", row),
-                trajBank.getFloat("r1y", row),
-                trajBank.getFloat("r1z", row),
-                trajBank.getFloat("r2x", row),
-                trajBank.getFloat("r2y", row),
-                trajBank.getFloat("r2z", row),
-                trajBank.getFloat("r3x", row),
-                trajBank.getFloat("r3y", row),
-                trajBank.getFloat("r3z", row),
+                trajBank.getFloat("r1_x", row),
+                trajBank.getFloat("r1_y", row),
+                trajBank.getFloat("r1_z", row),
+                trajBank.getFloat("r2_x", row),
+                trajBank.getFloat("r2_y", row),
+                trajBank.getFloat("r2_z", row),
+                trajBank.getFloat("r3_x", row),
+                trajBank.getFloat("r3_y", row),
+                trajBank.getFloat("r3_z", row),
                 torus,
                 pid);
           }
@@ -98,15 +98,15 @@ namespace iguana::clas12 {
       float const pcal_lv,
       float const pcal_lw,
       int const dc_sector,
-      float const dc_r1x,
-      float const dc_r1y,
-      float const dc_r1z,
-      float const dc_r2x,
-      float const dc_r2y,
-      float const dc_r2z,
-      float const dc_r3x,
-      float const dc_r3y,
-      float const dc_r3z,
+      float const dc_r1_x,
+      float const dc_r1_y,
+      float const dc_r1_z,
+      float const dc_r2_x,
+      float const dc_r2_y,
+      float const dc_r2_z,
+      float const dc_r3_x,
+      float const dc_r3_y,
+      float const dc_r3_z,
       float const torus,
       int const pid) const
   {
@@ -122,7 +122,7 @@ namespace iguana::clas12 {
       case 11: // electrons
       case -11: // positrons
         result &= FilterPcalHomogeneous(pcal_sector, pcal_lv, pcal_lw, torus, pid);
-        result &= FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
+        result &= FilterDcXY(dc_sector, dc_r1_x, dc_r1_y, dc_r1_z, dc_r2_x, dc_r2_y, dc_r2_z, dc_r3_x, dc_r3_y, dc_r3_z, torus, pid);
         break;
       case 22: // photons
         result &= FilterPcalHomogeneous(pcal_sector, pcal_lv, pcal_lw, torus, pid);
@@ -131,9 +131,9 @@ namespace iguana::clas12 {
       case 2212: // protons
         {
           if(torus<0) // inbending
-            result &= FilterDcThetaPhi(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
+            result &= FilterDcThetaPhi(dc_sector, dc_r1_x, dc_r1_y, dc_r1_z, dc_r2_x, dc_r2_y, dc_r2_z, dc_r3_x, dc_r3_y, dc_r3_z, torus, pid);
           else if(torus>0) // outbending
-            result &= FilterDcXY(dc_sector, dc_r1x, dc_r1y, dc_r1z, dc_r2x, dc_r2y, dc_r2z, dc_r3x, dc_r3y, dc_r3z, torus, pid);
+            result &= FilterDcXY(dc_sector, dc_r1_x, dc_r1_y, dc_r1_z, dc_r2_x, dc_r2_y, dc_r2_z, dc_r3_x, dc_r3_y, dc_r3_z, torus, pid);
           else
             result = false;
           break;
@@ -250,15 +250,15 @@ namespace iguana::clas12 {
 
   bool FiducialFilter::FilterDcXY(
       int const sector,
-      float const r1x,
-      float const r1y,
-      float const r1z,
-      float const r2x,
-      float const r2y,
-      float const r2z,
-      float const r3x,
-      float const r3y,
-      float const r3z,
+      float const r1_x,
+      float const r1_y,
+      float const r1_z,
+      float const r2_x,
+      float const r2_y,
+      float const r2_z,
+      float const r3_x,
+      float const r3_y,
+      float const r3_z,
       float const torus,
       int const pid) const
   {
@@ -273,16 +273,16 @@ namespace iguana::clas12 {
       Y=0;
       switch(region){
         case 0:
-          X = r1x;
-          Y = r1y;
+          X = r1_x;
+          Y = r1_y;
           break;
         case 1:
-          X = r2x;
-          Y = r2y;
+          X = r2_x;
+          Y = r2_y;
           break;
         case 2:
-          X = r3x;
-          Y = r3y;
+          X = r3_x;
+          Y = r3_y;
           break;
       }
       if(sector == 2)
@@ -352,15 +352,15 @@ namespace iguana::clas12 {
 
   bool FiducialFilter::FilterDcThetaPhi(
       int const sector,
-      float const r1x,
-      float const r1y,
-      float const r1z,
-      float const r2x,
-      float const r2y,
-      float const r2z,
-      float const r3x,
-      float const r3y,
-      float const r3z,
+      float const r1_x,
+      float const r1_y,
+      float const r1_z,
+      float const r2_x,
+      float const r2_y,
+      float const r2_z,
+      float const r3_x,
+      float const r3_y,
+      float const r3_z,
       float const torus,
       int const pid) const
   {
@@ -377,19 +377,19 @@ namespace iguana::clas12 {
       x=0;y=0;z=0;
       switch(region){
         case 0:
-          x=r1x;
-          y=r1y;
-          z=r1z;
+          x=r1_x;
+          y=r1_y;
+          z=r1_z;
           break;
         case 1:
-          x=r2x;
-          y=r2y;
-          z=r2z;
+          x=r2_x;
+          y=r2_y;
+          z=r2_z;
           break;
         case 2:
-          x=r3x;
-          y=r3y;
-          z=r3z;
+          x=r3_x;
+          y=r3_y;
+          z=r3_z;
           break;
       }
       theta_DCr = 180 / M_PI * acos(z / sqrt(pow(x,2) + pow(y,2) + pow(z,2)));

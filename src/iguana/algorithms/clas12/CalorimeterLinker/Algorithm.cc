@@ -6,19 +6,21 @@ namespace iguana::clas12 {
 
   void CalorimeterLinker::Start(hipo::banklist& banks)
   {
-
     b_particle         = GetBankIndex(banks,"REC::Particle");
     b_calorimeter      = GetBankIndex(banks,"REC::Calorimeter");
     auto result_schema = CreateBank(banks, b_result,"REC::Particle::Calorimeter");
     i_pindex           = result_schema.getEntryOrder("pindex");
+    i_pcal_found       = result_schema.getEntryOrder("pcal_found");
     i_pcal_sector      = result_schema.getEntryOrder("pcal_sector");
     i_pcal_lu          = result_schema.getEntryOrder("pcal_lu");
     i_pcal_lv          = result_schema.getEntryOrder("pcal_lv");
     i_pcal_lw          = result_schema.getEntryOrder("pcal_lw");
+    i_ecin_found       = result_schema.getEntryOrder("ecin_found");
     i_ecin_sector      = result_schema.getEntryOrder("ecin_sector");
     i_ecin_lu          = result_schema.getEntryOrder("ecin_lu");
     i_ecin_lv          = result_schema.getEntryOrder("ecin_lv");
     i_ecin_lw          = result_schema.getEntryOrder("ecin_lw");
+    i_ecout_found      = result_schema.getEntryOrder("ecout_found");
     i_ecout_sector     = result_schema.getEntryOrder("ecout_sector");
     i_ecout_lu         = result_schema.getEntryOrder("ecout_lu");
     i_ecout_lv         = result_schema.getEntryOrder("ecout_lv");
@@ -37,14 +39,17 @@ namespace iguana::clas12 {
     for(int row = 0; row < bank_result.getRows(); row++){
       for(int ent = 0; ent < bank_result.getSchema().getEntries(); ent++) {
         bank_result.putShort(i_pindex, row, static_cast<int16_t>(row));
+        bank_result.putInt(i_pcal_found, row, 0);
         bank_result.putInt(i_pcal_sector, row, 0);
         bank_result.putFloat(i_pcal_lu, row, 0);
         bank_result.putFloat(i_pcal_lv, row, 0);
         bank_result.putFloat(i_pcal_lw, row, 0);
+        bank_result.putInt(i_ecin_found, row, 0);
         bank_result.putInt(i_ecin_sector, row, 0);
         bank_result.putFloat(i_ecin_lu, row, 0);
         bank_result.putFloat(i_ecin_lv, row, 0);
         bank_result.putFloat(i_ecin_lw, row, 0);
+        bank_result.putInt(i_ecout_found, row, 0);
         bank_result.putInt(i_ecout_sector, row, 0);
         bank_result.putFloat(i_ecout_lu, row, 0);
         bank_result.putFloat(i_ecout_lv, row, 0);
@@ -69,18 +74,21 @@ namespace iguana::clas12 {
           auto layer  = bank_calorimeter.getByte("layer", row_calorimeter);
           switch(layer){
             case 1:
+              link_particle.pcal_found  = 1;
               link_particle.pcal_sector = sector;
               link_particle.pcal_lu     = lu;
               link_particle.pcal_lv     = lv;
               link_particle.pcal_lw     = lw;
               break;
             case 4:
+              link_particle.ecin_found  = 1;
               link_particle.ecin_sector = sector;
               link_particle.ecin_lu     = lu;
               link_particle.ecin_lv     = lv;
               link_particle.ecin_lw     = lw;
               break;
             case 7:
+              link_particle.ecout_found  = 1;
               link_particle.ecout_sector = sector;
               link_particle.ecout_lu     = lu;
               link_particle.ecout_lv     = lv;
@@ -90,14 +98,17 @@ namespace iguana::clas12 {
         }
       }
       // fill output bank
+      bank_result.putInt(i_pcal_found, row_particle, link_particle.pcal_found);
       bank_result.putInt(i_pcal_sector, row_particle, link_particle.pcal_sector);
       bank_result.putFloat(i_pcal_lu, row_particle, link_particle.pcal_lu);
       bank_result.putFloat(i_pcal_lv, row_particle, link_particle.pcal_lv);
       bank_result.putFloat(i_pcal_lw, row_particle, link_particle.pcal_lw);
+      bank_result.putInt(i_ecin_found, row_particle, link_particle.ecin_found);
       bank_result.putInt(i_ecin_sector, row_particle, link_particle.ecin_sector);
       bank_result.putFloat(i_ecin_lu, row_particle, link_particle.ecin_lu);
       bank_result.putFloat(i_ecin_lv, row_particle, link_particle.ecin_lv);
       bank_result.putFloat(i_ecin_lw, row_particle, link_particle.ecin_lw);
+      bank_result.putInt(i_ecout_found, row_particle, link_particle.ecout_found);
       bank_result.putInt(i_ecout_sector, row_particle, link_particle.ecout_sector);
       bank_result.putFloat(i_ecout_lu, row_particle, link_particle.ecout_lu);
       bank_result.putFloat(i_ecout_lv, row_particle, link_particle.ecout_lv);

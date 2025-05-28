@@ -46,15 +46,15 @@ namespace iguana::clas12 {
       /// @param pcal_lv PCAL lv
       /// @param pcal_lw PCAL lw
       /// @param dc_sector DC sector
-      /// @param dc_r1x DC region 1 x
-      /// @param dc_r1y DC region 1 y
-      /// @param dc_r1z DC region 1 z
-      /// @param dc_r2x DC region 2 x
-      /// @param dc_r2y DC region 2 y
-      /// @param dc_r2z DC region 2 z
-      /// @param dc_r3x DC region 3 x
-      /// @param dc_r3y DC region 3 y
-      /// @param dc_r3z DC region 3 z
+      /// @param dc_r1_x DC region 1 x
+      /// @param dc_r1_y DC region 1 y
+      /// @param dc_r1_z DC region 1 z
+      /// @param dc_r2_x DC region 2 x
+      /// @param dc_r2_y DC region 2 y
+      /// @param dc_r2_z DC region 2 z
+      /// @param dc_r3_x DC region 3 x
+      /// @param dc_r3_y DC region 3 y
+      /// @param dc_r3_z DC region 3 z
       /// @param torus the torus magnetic field sign
       /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
@@ -63,15 +63,15 @@ namespace iguana::clas12 {
           float const pcal_lv,
           float const pcal_lw,
           int const dc_sector,
-          float const dc_r1x,
-          float const dc_r1y,
-          float const dc_r1z,
-          float const dc_r2x,
-          float const dc_r2y,
-          float const dc_r2z,
-          float const dc_r3x,
-          float const dc_r3y,
-          float const dc_r3z,
+          float const dc_r1_x,
+          float const dc_r1_y,
+          float const dc_r1_z,
+          float const dc_r2_x,
+          float const dc_r2_y,
+          float const dc_r2_z,
+          float const dc_r3_x,
+          float const dc_r3_y,
+          float const dc_r3_z,
           float const torus,
           int const pid) const;
 
@@ -90,57 +90,57 @@ namespace iguana::clas12 {
 
       /// @action_function{scalar filter} filter using DC XY fiducial cut
       /// @param sector DC sector
-      /// @param r1x DC region 1 x
-      /// @param r1y DC region 1 y
-      /// @param r1z DC region 1 z
-      /// @param r2x DC region 2 x
-      /// @param r2y DC region 2 y
-      /// @param r2z DC region 2 z
-      /// @param r3x DC region 3 x
-      /// @param r3y DC region 3 y
-      /// @param r3z DC region 3 z
+      /// @param r1_x DC region 1 x
+      /// @param r1_y DC region 1 y
+      /// @param r1_z DC region 1 z
+      /// @param r2_x DC region 2 x
+      /// @param r2_y DC region 2 y
+      /// @param r2_z DC region 2 z
+      /// @param r3_x DC region 3 x
+      /// @param r3_y DC region 3 y
+      /// @param r3_z DC region 3 z
       /// @param torus the torus magnetic field sign
       /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
       bool FilterDcXY(
           int const sector,
-          float const r1x,
-          float const r1y,
-          float const r1z,
-          float const r2x,
-          float const r2y,
-          float const r2z,
-          float const r3x,
-          float const r3y,
-          float const r3z,
+          float const r1_x,
+          float const r1_y,
+          float const r1_z,
+          float const r2_x,
+          float const r2_y,
+          float const r2_z,
+          float const r3_x,
+          float const r3_y,
+          float const r3_z,
           float const torus,
           int const pid) const;
 
       /// @action_function{scalar filter} filter using DC theta-phi fiducial cut
       /// @param sector DC sector
-      /// @param r1x DC region 1 x
-      /// @param r1y DC region 1 y
-      /// @param r1z DC region 1 z
-      /// @param r2x DC region 2 x
-      /// @param r2y DC region 2 y
-      /// @param r2z DC region 2 z
-      /// @param r3x DC region 3 x
-      /// @param r3y DC region 3 y
-      /// @param r3z DC region 3 z
+      /// @param r1_x DC region 1 x
+      /// @param r1_y DC region 1 y
+      /// @param r1_z DC region 1 z
+      /// @param r2_x DC region 2 x
+      /// @param r2_y DC region 2 y
+      /// @param r2_z DC region 2 z
+      /// @param r3_x DC region 3 x
+      /// @param r3_y DC region 3 y
+      /// @param r3_z DC region 3 z
       /// @param torus the torus magnetic field sign
       /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
       bool FilterDcThetaPhi(
           int const sector,
-          float const r1x,
-          float const r1y,
-          float const r1z,
-          float const r2x,
-          float const r2y,
-          float const r2z,
-          float const r3x,
-          float const r3y,
-          float const r3z,
+          float const r1_x,
+          float const r1_y,
+          float const r1_z,
+          float const r2_x,
+          float const r2_y,
+          float const r2_z,
+          float const r3_x,
+          float const r3_y,
+          float const r3_z,
           float const torus,
           int const pid) const;
 

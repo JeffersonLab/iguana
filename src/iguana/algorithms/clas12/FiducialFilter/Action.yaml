@@ -9,15 +9,15 @@ actions:
       - { name: pcal_lv, type: float }
       - { name: pcal_lw, type: float }
       - { name: dc_sector, type: int }
-      - { name: dc_r1x, type: float }
-      - { name: dc_r1y, type: float }
-      - { name: dc_r1z, type: float }
-      - { name: dc_r2x, type: float }
-      - { name: dc_r2y, type: float }
-      - { name: dc_r2z, type: float }
-      - { name: dc_r3x, type: float }
-      - { name: dc_r3y, type: float }
-      - { name: dc_r3z, type: float }
+      - { name: dc_r1_x, type: float }
+      - { name: dc_r1_y, type: float }
+      - { name: dc_r1_z, type: float }
+      - { name: dc_r2_x, type: float }
+      - { name: dc_r2_y, type: float }
+      - { name: dc_r2_z, type: float }
+      - { name: dc_r3_x, type: float }
+      - { name: dc_r3_y, type: float }
+      - { name: dc_r3_z, type: float }
       - { name: torus, type: float }
       - { name: pid, type: int }
   - name: FilterPcalHomogeneous
@@ -32,29 +32,29 @@ actions:
     type: filter
     inputs:
       - { name: sector, type: int }
-      - { name: r1x, type: float }
-      - { name: r1y, type: float }
-      - { name: r1z, type: float }
-      - { name: r2x, type: float }
-      - { name: r2y, type: float }
-      - { name: r2z, type: float }
-      - { name: r3x, type: float }
-      - { name: r3y, type: float }
-      - { name: r3z, type: float }
+      - { name: r1_x, type: float }
+      - { name: r1_y, type: float }
+      - { name: r1_z, type: float }
+      - { name: r2_x, type: float }
+      - { name: r2_y, type: float }
+      - { name: r2_z, type: float }
+      - { name: r3_x, type: float }
+      - { name: r3_y, type: float }
+      - { name: r3_z, type: float }
       - { name: torus, type: float }
       - { name: pid, type: int }
   - name: FilterDcThetaPhi
     type: filter
     inputs:
       - { name: sector, type: int }
-      - { name: r1x, type: float }
-      - { name: r1y, type: float }
-      - { name: r1z, type: float }
-      - { name: r2x, type: float }
-      - { name: r2y, type: float }
-      - { name: r2z, type: float }
-      - { name: r3x, type: float }
-      - { name: r3y, type: float }
-      - { name: r3z, type: float }
+      - { name: r1_x, type: float }
+      - { name: r1_y, type: float }
+      - { name: r1_z, type: float }
+      - { name: r2_x, type: float }
+      - { name: r2_y, type: float }
+      - { name: r2_z, type: float }
+      - { name: r3_x, type: float }
+      - { name: r3_y, type: float }
+      - { name: r3_z, type: float }
       - { name: torus, type: float }
       - { name: pid, type: int }

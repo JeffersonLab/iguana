@@ -11,15 +11,18 @@ namespace iguana::clas12 {
     auto result_schema = CreateBank(banks, b_result,"REC::Particle::Traj");
     i_pindex           = result_schema.getEntryOrder("pindex");
     i_sector           = result_schema.getEntryOrder("sector");
-    i_r1x              = result_schema.getEntryOrder("r1x");
-    i_r1y              = result_schema.getEntryOrder("r1y");
-    i_r1z              = result_schema.getEntryOrder("r1z");
-    i_r2x              = result_schema.getEntryOrder("r2x");
-    i_r2y              = result_schema.getEntryOrder("r2y");
-    i_r2z              = result_schema.getEntryOrder("r2z");
-    i_r3x              = result_schema.getEntryOrder("r3x");
-    i_r3y              = result_schema.getEntryOrder("r3y");
-    i_r3z              = result_schema.getEntryOrder("r3z");
+    i_r1_found         = result_schema.getEntryOrder("r1_found");
+    i_r1_x             = result_schema.getEntryOrder("r1_x");
+    i_r1_y             = result_schema.getEntryOrder("r1_y");
+    i_r1_z             = result_schema.getEntryOrder("r1_z");
+    i_r2_found         = result_schema.getEntryOrder("r2_found");
+    i_r2_x             = result_schema.getEntryOrder("r2_x");
+    i_r2_y             = result_schema.getEntryOrder("r2_y");
+    i_r2_z             = result_schema.getEntryOrder("r2_z");
+    i_r3_found         = result_schema.getEntryOrder("r3_found");
+    i_r3_x             = result_schema.getEntryOrder("r3_x");
+    i_r3_y             = result_schema.getEntryOrder("r3_y");
+    i_r3_z             = result_schema.getEntryOrder("r3_z");
   }
 
   void TrajLinker::Run(hipo::banklist& banks) const
@@ -35,15 +38,18 @@ namespace iguana::clas12 {
       for(int ent = 0; ent < bank_result.getSchema().getEntries(); ent++) {
         bank_result.putShort(i_pindex, row, static_cast<int16_t>(row));
         bank_result.putInt(i_sector, row, 0);
-        bank_result.putFloat(i_r1x, row, 0);
-        bank_result.putFloat(i_r1y, row, 0);
-        bank_result.putFloat(i_r1z, row, 0);
-        bank_result.putFloat(i_r2x, row, 0);
-        bank_result.putFloat(i_r2y, row, 0);
-        bank_result.putFloat(i_r2z, row, 0);
-        bank_result.putFloat(i_r3x, row, 0);
-        bank_result.putFloat(i_r3y, row, 0);
-        bank_result.putFloat(i_r3z, row, 0);
+        bank_result.putFloat(i_r1_found, row, 0);
+        bank_result.putFloat(i_r1_x, row, 0);
+        bank_result.putFloat(i_r1_y, row, 0);
+        bank_result.putFloat(i_r1_z, row, 0);
+        bank_result.putFloat(i_r2_found, row, 0);
+        bank_result.putFloat(i_r2_x, row, 0);
+        bank_result.putFloat(i_r2_y, row, 0);
+        bank_result.putFloat(i_r2_z, row, 0);
+        bank_result.putFloat(i_r3_found, row, 0);
+        bank_result.putFloat(i_r3_x, row, 0);
+        bank_result.putFloat(i_r3_y, row, 0);
+        bank_result.putFloat(i_r3_z, row, 0);
       }
     }
 
@@ -63,36 +69,42 @@ namespace iguana::clas12 {
           auto layer = bank_traj.getInt("layer", row_traj);
           switch(layer){
             case 6: // region 1
-              link_particle.r1x = x;
-              link_particle.r1y = y;
-              link_particle.r1z = z;
+              link_particle.r1_found = 1;
+              link_particle.r1_x = x;
+              link_particle.r1_y = y;
+              link_particle.r1_z = z;
               break;
             case 18: // region 2
-              link_particle.r2x = x;
-              link_particle.r2y = y;
-              link_particle.r2z = z;
+              link_particle.r2_found = 1;
+              link_particle.r2_x = x;
+              link_particle.r2_y = y;
+              link_particle.r2_z = z;
               // Determine Sector from the center of the DC
-              link_particle.sector = GetSector(link_particle.r2x, link_particle.r2y, link_particle.r2z);
+              link_particle.sector = GetSector(link_particle.r2_x, link_particle.r2_y, link_particle.r2_z);
               break;
             case 36: // region 3
-              link_particle.r3x = x;
-              link_particle.r3y = y;
-              link_particle.r3z = z;
+              link_particle.r3_found = 1;
+              link_particle.r3_x = x;
+              link_particle.r3_y = y;
+              link_particle.r3_z = z;
               break;
           }
         }
       }
       // fill output bank
       bank_result.putInt(i_sector, row_particle, link_particle.sector);
-      bank_result.putFloat(i_r1x, row_particle, link_particle.r1x);
-      bank_result.putFloat(i_r1y, row_particle, link_particle.r1y);
-      bank_result.putFloat(i_r1z, row_particle, link_particle.r1z);
-      bank_result.putFloat(i_r2x, row_particle, link_particle.r2x);
-      bank_result.putFloat(i_r2y, row_particle, link_particle.r2y);
-      bank_result.putFloat(i_r2z, row_particle, link_particle.r2z);
-      bank_result.putFloat(i_r3x, row_particle, link_particle.r3x);
-      bank_result.putFloat(i_r3y, row_particle, link_particle.r3y);
-      bank_result.putFloat(i_r3z, row_particle, link_particle.r3z);
+      bank_result.putFloat(i_r1_found, row_particle, link_particle.r1_found);
+      bank_result.putFloat(i_r1_x, row_particle, link_particle.r1_x);
+      bank_result.putFloat(i_r1_y, row_particle, link_particle.r1_y);
+      bank_result.putFloat(i_r1_z, row_particle, link_particle.r1_z);
+      bank_result.putFloat(i_r2_found, row_particle, link_particle.r2_found);
+      bank_result.putFloat(i_r2_x, row_particle, link_particle.r2_x);
+      bank_result.putFloat(i_r2_y, row_particle, link_particle.r2_y);
+      bank_result.putFloat(i_r2_z, row_particle, link_particle.r2_z);
+      bank_result.putFloat(i_r3_found, row_particle, link_particle.r3_found);
+      bank_result.putFloat(i_r3_x, row_particle, link_particle.r3_x);
+      bank_result.putFloat(i_r3_y, row_particle, link_particle.r3_y);
+      bank_result.putFloat(i_r3_z, row_particle, link_particle.r3_z);
     }
     ShowBank(bank_result, Logger::Header("CREATED BANK"));
   }

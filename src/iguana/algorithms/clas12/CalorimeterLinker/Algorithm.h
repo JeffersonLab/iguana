@@ -37,14 +37,17 @@ namespace iguana::clas12 {
 
       // `b_result` bank item indices
       int i_pindex;
+      int i_pcal_found;
       int i_pcal_sector;
       int i_pcal_lu;
       int i_pcal_lv;
       int i_pcal_lw;
+      int i_ecin_found;
       int i_ecin_sector;
       int i_ecin_lu;
       int i_ecin_lv;
       int i_ecin_lw;
+      int i_ecout_found;
       int i_ecout_sector;
       int i_ecout_lu;
       int i_ecout_lv;
