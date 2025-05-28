@@ -57,7 +57,8 @@ namespace iguana::clas12 {
                 torus,
                 pid);
           }
-          else return false;
+          else
+            throw std::runtime_error(fmt::format("FiducialFilter filter encountered bad row number {}", row));
           });
     }
 
