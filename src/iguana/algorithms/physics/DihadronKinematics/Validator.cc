@@ -30,7 +30,6 @@ namespace iguana::physics {
     }
 
     // define plots
-    gStyle->SetOptStat(0);
     const int n_bins = 100;
     plot_list = {
       {

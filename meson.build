@@ -167,6 +167,8 @@ if ROOT_dep.found()
     '-lGpad',
   ]
   ROOT_dep_rpath = ROOT_libdir
+  # preprocessor macro for turning on/off ROOT-dependent parts of the code
+  add_project_arguments('-DIGUANA_ROOT_FOUND', language: [ 'cpp' ])
 endif
 
 # general project vars

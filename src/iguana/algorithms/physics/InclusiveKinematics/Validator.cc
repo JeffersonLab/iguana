@@ -28,7 +28,6 @@ namespace iguana::physics {
 
     // define plots
     // clang-format off
-    gStyle->SetOptStat(0);
     const int n_bins = 100;
     lepton_p_dist     = new TH1D("lepton_p_dist",     "lepton p;p [GeV]",                    n_bins, 0,    12);
     lepton_theta_dist = new TH1D("lepton_theta_dist", "lepton #theta;#theta [deg]",          n_bins, 0,    60);

@@ -29,7 +29,6 @@ namespace iguana::clas12 {
     }
 
     // define plots
-    gStyle->SetOptStat(0);
     for(auto const& pdg : u_pdg_list) {
       TString particle_name  = particle::name.at(particle::PDG(pdg));
       TString particle_title = particle::title.at(particle::PDG(pdg));

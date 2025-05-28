@@ -31,7 +31,6 @@ namespace iguana::clas12 {
     }
 
     // define plots
-    gStyle->SetOptStat(0);
     for(auto const& pdg : u_pdg_list) {
       std::vector<TH2D*> YvsX;
       TString particle_name  = particle::name.at(particle::PDG(pdg));
