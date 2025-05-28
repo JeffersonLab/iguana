@@ -93,6 +93,7 @@ namespace iguana::clas12 {
     // run the EB filter and TrajLinker
     m_algo_eb.Run(banks);
     m_algo_traj.Run(banks);
+    m_algo_cal.Run(banks);
 
     // fill "before" histograms
     for(auto const& row : particle_bank.getRowList()){
@@ -119,6 +120,10 @@ namespace iguana::clas12 {
 
   void FiducialFilterValidator::Stop()
   {
+    m_algo_eb.Stop();
+    m_algo_traj.Stop();
+    m_algo_cal.Stop();
+    m_algo_fidu.Stop();
     if(GetOutputDirectory()) {
       int n_cols = 2;
       int n_rows = 2;

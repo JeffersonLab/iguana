@@ -37,6 +37,10 @@ namespace iguana::clas12 {
     if(o_pass == 1) {
       auto& trajBank = GetBank(banks, b_traj, "REC::Particle::Traj");
       auto& calBank  = GetBank(banks, b_cal, "REC::Particle::Calorimeter");
+      if(auto num_rows{particleBank.getRows()}; num_rows != trajBank.getRows() || num_rows != calBank.getRows()) {
+        m_log->Error("number of particle bank rows differs from 'REC::Particle::Traj' and/or 'REC::Particle::Calorimeter' rows; are you sure these input banks are being filled?");
+        throw std::runtime_error("cannot proceed");
+      }
       particleBank.getMutableRowList().filter([this, torus, &trajBank, &calBank](hipo::bank& bank, int row) {
           auto pid = bank.getInt("pid", row);
           if(row >= 0 && row < calBank.getRows() && row < trajBank.getRows()) {
