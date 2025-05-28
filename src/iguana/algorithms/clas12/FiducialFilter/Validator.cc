@@ -99,9 +99,12 @@ namespace iguana::clas12 {
     for(auto const& row : particle_bank.getRowList()){
       auto pid = particle_bank.getInt("pid", row);
       if(pid!=11&&pid!=211&&pid!=-211&&pid!=2212) continue;
-      u_DC1_before.at(pid)->Fill(traj_bank.getFloat("r1_x", row), traj_bank.getFloat("r1_y", row));
-      u_DC2_before.at(pid)->Fill(traj_bank.getFloat("r2_x", row), traj_bank.getFloat("r2_y", row));
-      u_DC3_before.at(pid)->Fill(traj_bank.getFloat("r3_x", row), traj_bank.getFloat("r3_y", row));
+      if(traj_bank.getByte("r1_found", row) == 1)
+        u_DC1_before.at(pid)->Fill(traj_bank.getFloat("r1_x", row), traj_bank.getFloat("r1_y", row));
+      if(traj_bank.getByte("r2_found", row) == 1)
+        u_DC2_before.at(pid)->Fill(traj_bank.getFloat("r2_x", row), traj_bank.getFloat("r2_y", row));
+      if(traj_bank.getByte("r3_found", row) == 1)
+        u_DC3_before.at(pid)->Fill(traj_bank.getFloat("r3_x", row), traj_bank.getFloat("r3_y", row));
     }
 
     // apply the fiducial cuts
@@ -111,9 +114,12 @@ namespace iguana::clas12 {
     for(auto const& row : particle_bank.getRowList()) {
       auto pid = particle_bank.getInt("pid", row);
       if(pid!=11&&pid!=211&&pid!=-211&&pid!=2212) continue;
-      u_DC1_after.at(pid)->Fill(traj_bank.getFloat("r1_x", row), traj_bank.getFloat("r1_y", row));
-      u_DC2_after.at(pid)->Fill(traj_bank.getFloat("r2_x", row), traj_bank.getFloat("r2_y", row));
-      u_DC3_after.at(pid)->Fill(traj_bank.getFloat("r3_x", row), traj_bank.getFloat("r3_y", row));
+      if(traj_bank.getByte("r1_found", row) == 1)
+        u_DC1_after.at(pid)->Fill(traj_bank.getFloat("r1_x", row), traj_bank.getFloat("r1_y", row));
+      if(traj_bank.getByte("r2_found", row) == 1)
+        u_DC2_after.at(pid)->Fill(traj_bank.getFloat("r2_x", row), traj_bank.getFloat("r2_y", row));
+      if(traj_bank.getByte("r3_found", row) == 1)
+        u_DC3_after.at(pid)->Fill(traj_bank.getFloat("r3_x", row), traj_bank.getFloat("r3_y", row));
     }
   }
 
