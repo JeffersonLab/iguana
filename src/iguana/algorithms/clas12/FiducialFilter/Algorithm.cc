@@ -233,16 +233,16 @@ namespace iguana::clas12 {
       float const torus,
       int const pid) const
   {
-    if(sector == -1)
+    if(!(sector >= 1 && sector <= 6))
       return false;
     const auto& minparams = ((torus<0) ? fiducial_pass1::minparams_in_XY_pass1 : fiducial_pass1::minparams_out_XY_pass1);
     const auto& maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_XY_pass1 : fiducial_pass1::maxparams_out_XY_pass1);
     double X=0;
     double Y=0;
-    for(int r = 0 ; r < 3; r++){
+    for(int region = 0 ; region < 3; region++){
       X=0;
       Y=0;
-      switch(r){
+      switch(region){
         case 0:
           X = r1x;
           Y = r1y;
@@ -311,8 +311,8 @@ namespace iguana::clas12 {
           return false;
           break;
       }
-      double calc_min = minparams[this_pid][sector - 1][r][0] + minparams[this_pid][sector - 1][r][1] * X;
-      double calc_max = maxparams[this_pid][sector - 1][r][0] + maxparams[this_pid][sector - 1][r][1] * X;
+      double calc_min = minparams[this_pid][sector - 1][region][0] + minparams[this_pid][sector - 1][region][1] * X;
+      double calc_max = maxparams[this_pid][sector - 1][region][0] + maxparams[this_pid][sector - 1][region][1] * X;
       if(std::isnan(calc_min)||std::isnan(calc_max)) return false;
       if((Y<calc_min) || (Y>calc_max)) {  return false;}
     }
@@ -335,7 +335,7 @@ namespace iguana::clas12 {
       float const torus,
       int const pid) const
   {
-    if(sector == -1)
+    if(!(sector >= 1 && sector <= 6))
       return false;
     const auto& minparams = ((torus<0) ? fiducial_pass1::minparams_in_theta_phi_pass1 : fiducial_pass1::minparams_out_theta_phi_pass1);
     const auto& maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_theta_phi_pass1 : fiducial_pass1::maxparams_out_theta_phi_pass1);
@@ -344,9 +344,9 @@ namespace iguana::clas12 {
     double x=0;
     double y=0;
     double z=0;
-    for(int r = 0; r<3; r++){
+    for(int region = 0; region<3; region++){
       x=0;y=0;z=0;
-      switch(r){
+      switch(region){
         case 0:
           x=r1x;
           y=r1y;
@@ -385,10 +385,10 @@ namespace iguana::clas12 {
         case -321: this_pid = 5; break;
         default: return false; break;
       }
-      double calc_phi_min = minparams[this_pid][sector - 1][r][0] + minparams[this_pid][sector - 1][r][1] * std::log(theta_DCr)
-        + minparams[this_pid][sector - 1][r][2] * theta_DCr + minparams[this_pid][sector - 1][r][3] * theta_DCr * theta_DCr;
-      double calc_phi_max = maxparams[this_pid][sector - 1][r][0] + maxparams[this_pid][sector - 1][r][1] * std::log(theta_DCr)
-        + maxparams[this_pid][sector - 1][r][2] * theta_DCr + maxparams[this_pid][sector - 1][r][3] * theta_DCr * theta_DCr;
+      double calc_phi_min = minparams[this_pid][sector - 1][region][0] + minparams[this_pid][sector - 1][region][1] * std::log(theta_DCr)
+        + minparams[this_pid][sector - 1][region][2] * theta_DCr + minparams[this_pid][sector - 1][region][3] * theta_DCr * theta_DCr;
+      double calc_phi_max = maxparams[this_pid][sector - 1][region][0] + maxparams[this_pid][sector - 1][region][1] * std::log(theta_DCr)
+        + maxparams[this_pid][sector - 1][region][2] * theta_DCr + maxparams[this_pid][sector - 1][region][3] * theta_DCr * theta_DCr;
       if(std::isnan(calc_phi_min)||std::isnan(calc_phi_max)) return false;
       if((phi_DCr < calc_phi_min) || (phi_DCr > calc_phi_max)) return false;
     }
