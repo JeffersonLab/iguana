@@ -39,22 +39,25 @@ namespace iguana::clas12 {
       auto& calBank  = GetBank(banks, b_cal, "REC::Particle::Calorimeter");
       particleBank.getMutableRowList().filter([this, torus, &trajBank, &calBank](hipo::bank& bank, int row) {
           auto pid = bank.getInt("pid", row);
-          return FilterRgaPass1(
-              calBank.getInt("pcal_sector", row),
-              calBank.getFloat("pcal_lv", row),
-              calBank.getFloat("pcal_lw", row),
-              trajBank.getInt("sector", row),
-              trajBank.getFloat("r1x", row),
-              trajBank.getFloat("r1y", row),
-              trajBank.getFloat("r1z", row),
-              trajBank.getFloat("r2x", row),
-              trajBank.getFloat("r2y", row),
-              trajBank.getFloat("r2z", row),
-              trajBank.getFloat("r3x", row),
-              trajBank.getFloat("r3y", row),
-              trajBank.getFloat("r3z", row),
-              torus,
-              pid);
+          if(row >= 0 && row < calBank.getRows() && row < trajBank.getRows()) {
+            return FilterRgaPass1(
+                calBank.getInt("pcal_sector", row),
+                calBank.getFloat("pcal_lv", row),
+                calBank.getFloat("pcal_lw", row),
+                trajBank.getInt("sector", row),
+                trajBank.getFloat("r1x", row),
+                trajBank.getFloat("r1y", row),
+                trajBank.getFloat("r1z", row),
+                trajBank.getFloat("r2x", row),
+                trajBank.getFloat("r2y", row),
+                trajBank.getFloat("r2z", row),
+                trajBank.getFloat("r3x", row),
+                trajBank.getFloat("r3y", row),
+                trajBank.getFloat("r3z", row),
+                torus,
+                pid);
+          }
+          else return false;
           });
     }
 

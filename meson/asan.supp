@@ -1,11 +1,2 @@
 # RCDB's SQLite header
 odr_violation:SQLite::*
-
-# HIPO
-heap-buffer-overflow:hipo::structure::getIntAt
-heap-buffer-overflow:hipo::structure::getShortAt
-heap-buffer-overflow:hipo::structure::getByteAt
-heap-buffer-overflow:hipo::structure::getFloatAt
-heap-buffer-overflow:hipo::structure::getDoubleAt
-heap-buffer-overflow:hipo::structure::getLongAt
-heap-buffer-overflow:hipo::structure::getStringAt
