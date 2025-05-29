@@ -5,7 +5,6 @@
 #include <TH1F.h>
 #include <TFile.h>
 #include <TCanvas.h>
-#include <TStyle.h>
 #include <Math/Vector4D.h>
 #include <map>
 

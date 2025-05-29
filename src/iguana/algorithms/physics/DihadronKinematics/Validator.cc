@@ -2,7 +2,6 @@
 #include "TypeDefs.h"
 
 #include <Math/Vector3D.h>
-#include <TStyle.h>
 
 namespace iguana::physics {
 

@@ -2,7 +2,6 @@
 #include "Algorithm.h"
 
 #include <TProfile.h>
-#include <TStyle.h>
 
 namespace iguana::clas12 {
 

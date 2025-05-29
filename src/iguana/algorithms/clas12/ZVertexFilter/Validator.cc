@@ -1,6 +1,5 @@
 #include "Validator.h"
 
-#include <TStyle.h>
 #include <TCanvas.h>
 #include <TLegend.h>
 

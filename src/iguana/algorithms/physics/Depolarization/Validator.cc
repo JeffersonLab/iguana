@@ -1,5 +1,4 @@
 #include "Validator.h"
-#include <TStyle.h>
 
 namespace iguana::physics {
 
