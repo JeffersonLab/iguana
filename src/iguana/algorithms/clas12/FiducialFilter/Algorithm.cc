@@ -169,27 +169,6 @@ namespace iguana::clas12 {
         m_log->Error("called FilterPcalHomogeneous with unknown PDG {}", pid);
         return false;
     }
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    return true;
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
-    // TEST
     // NOTE: lv + lw is going from the side to the back end of the PCAL, lu is going from side to side
     // 1 scintillator bar is 4.5 cm wide. In the outer regions (back) double bars are used.
     // A cut is only applied on lv and lw
