@@ -29,6 +29,7 @@ namespace iguana {
           , m_output_dir("")
       {
 #ifdef IGUANA_ROOT_FOUND
+        // set styles for all validators' ROOT plots
         gStyle->SetOptStat(0);
         gStyle->SetPalette(55);
 #endif

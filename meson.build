@@ -167,7 +167,7 @@ if ROOT_dep.found()
     '-lGpad',
   ]
   ROOT_dep_rpath = ROOT_libdir
-  # preprocessor macro for turning on/off ROOT-dependent parts of the code
+  # preprocessor macro for turning on/off ROOT-dependent parts of the code; currently only used for Validator plot styles
   add_project_arguments('-DIGUANA_ROOT_FOUND', language: [ 'cpp' ])
 endif
 
