@@ -38,15 +38,15 @@ namespace iguana::clas12 {
       for(int ent = 0; ent < bank_result.getSchema().getEntries(); ent++) {
         bank_result.putShort(i_pindex, row, static_cast<int16_t>(row));
         bank_result.putInt(i_sector, row, 0);
-        bank_result.putFloat(i_r1_found, row, 0);
+        bank_result.putByte(i_r1_found, row, 0);
         bank_result.putFloat(i_r1_x, row, 0);
         bank_result.putFloat(i_r1_y, row, 0);
         bank_result.putFloat(i_r1_z, row, 0);
-        bank_result.putFloat(i_r2_found, row, 0);
+        bank_result.putByte(i_r2_found, row, 0);
         bank_result.putFloat(i_r2_x, row, 0);
         bank_result.putFloat(i_r2_y, row, 0);
         bank_result.putFloat(i_r2_z, row, 0);
-        bank_result.putFloat(i_r3_found, row, 0);
+        bank_result.putByte(i_r3_found, row, 0);
         bank_result.putFloat(i_r3_x, row, 0);
         bank_result.putFloat(i_r3_y, row, 0);
         bank_result.putFloat(i_r3_z, row, 0);
@@ -93,15 +93,15 @@ namespace iguana::clas12 {
       }
       // fill output bank
       bank_result.putInt(i_sector, row_particle, link_particle.sector);
-      bank_result.putFloat(i_r1_found, row_particle, link_particle.r1_found);
+      bank_result.putByte(i_r1_found, row_particle, link_particle.r1_found);
       bank_result.putFloat(i_r1_x, row_particle, link_particle.r1_x);
       bank_result.putFloat(i_r1_y, row_particle, link_particle.r1_y);
       bank_result.putFloat(i_r1_z, row_particle, link_particle.r1_z);
-      bank_result.putFloat(i_r2_found, row_particle, link_particle.r2_found);
+      bank_result.putByte(i_r2_found, row_particle, link_particle.r2_found);
       bank_result.putFloat(i_r2_x, row_particle, link_particle.r2_x);
       bank_result.putFloat(i_r2_y, row_particle, link_particle.r2_y);
       bank_result.putFloat(i_r2_z, row_particle, link_particle.r2_z);
-      bank_result.putFloat(i_r3_found, row_particle, link_particle.r3_found);
+      bank_result.putByte(i_r3_found, row_particle, link_particle.r3_found);
       bank_result.putFloat(i_r3_x, row_particle, link_particle.r3_x);
       bank_result.putFloat(i_r3_y, row_particle, link_particle.r3_y);
       bank_result.putFloat(i_r3_z, row_particle, link_particle.r3_z);
