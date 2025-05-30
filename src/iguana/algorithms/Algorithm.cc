@@ -28,6 +28,7 @@ namespace iguana {
   }
   template int Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
   template double Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template bool Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
   template std::string Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -168,6 +169,11 @@ namespace iguana {
     m_log->Print(level, "{}: {:>20} = {} [double]", prefix, key, val);
   }
 
+  void Algorithm::PrintOptionValue(std::string const& key, bool const& val, Logger::Level const level, std::string_view prefix) const
+  {
+    m_log->Print(level, "{}: {:>20} = {} [bool]", prefix, key, val);
+  }
+
   void Algorithm::PrintOptionValue(std::string const& key, std::string const& val, Logger::Level const level, std::string_view prefix) const
   {
     m_log->Print(level, "{}: {:>20} = {:?} [string]", prefix, key, val);
@@ -297,6 +303,7 @@ namespace iguana {
   }
   template std::optional<int> Algorithm::GetCachedOption(std::string const& key) const;
   template std::optional<double> Algorithm::GetCachedOption(std::string const& key) const;
+  template std::optional<bool> Algorithm::GetCachedOption(std::string const& key) const;
   template std::optional<std::string> Algorithm::GetCachedOption(std::string const& key) const;
   template std::optional<std::vector<int>> Algorithm::GetCachedOption(std::string const& key) const;
   template std::optional<std::vector<double>> Algorithm::GetCachedOption(std::string const& key) const;
