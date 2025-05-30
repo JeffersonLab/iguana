@@ -2,7 +2,6 @@
 #include "TypeDefs.h"
 
 #include <Math/Vector3D.h>
-#include <TStyle.h>
 
 namespace iguana::physics {
 
@@ -30,7 +29,6 @@ namespace iguana::physics {
     }
 
     // define plots
-    gStyle->SetOptStat(0);
     const int n_bins = 100;
     plot_list = {
       {

@@ -5,7 +5,7 @@ test_exe_links = project_libs + [ vdor_lib ]
 test_exe = executable(
   test_exe_name,
   test_exe_name + '.cc',
-  include_directories: [ test_exe_inc, project_inc ],
+  include_directories: [ test_exe_inc, project_inc ] + ROOT_dep_inc_dirs,
   dependencies: [ project_deps, thread_dep ],
   link_with: test_exe_links,
   link_args: ROOT_dep_link_args,

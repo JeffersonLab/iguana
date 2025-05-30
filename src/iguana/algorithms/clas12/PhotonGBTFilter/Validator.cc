@@ -116,7 +116,6 @@ namespace iguana::clas12 {
           int n_cols = 2;
           auto canv = new TCanvas("c","c",n_cols*800,n_rows*800);
           canv->Divide(n_cols,n_rows);
-          gStyle->SetOptStat(0);
           for(int pad_num = 0; pad_num < 4; pad_num++){
               auto pad = canv->GetPad(pad_num+1);
               pad->cd();

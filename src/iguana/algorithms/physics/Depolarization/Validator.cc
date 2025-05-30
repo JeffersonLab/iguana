@@ -1,5 +1,4 @@
 #include "Validator.h"
-#include <TStyle.h>
 
 namespace iguana::physics {
 
@@ -26,7 +25,6 @@ namespace iguana::physics {
     }
 
     // plot binning
-    gStyle->SetOptStat(0);
     int const n_bins = 100;
     std::pair<double,double> const depol_range = {-0.5, 2.5};
     std::map<TString, std::pair<double,double>> const kin_range = {
