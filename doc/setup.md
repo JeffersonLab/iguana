@@ -145,7 +145,12 @@ If you will _install_ `iguana` (recommended), set an installation prefix:
 meson configure --prefix=/path/to/iguana-installation  # must be an ABSOLUTE path
 ```
 
-The following table shows the most commonly used build options:
+Aside from `--prefix`, most other build options are set with `-D`
+```bash
+meson configure -D<option>=<value>       # syntax
+meson configure -Dinstall_examples=true  # sets option 'install_examples' to 'true'
+```
+The following table includes commonly-used build options; they are not required, since they have default values:
 
 | Option             | Type    | Description                                                                       |
 | ---                | ---     | ---                                                                               |
@@ -154,10 +159,9 @@ The following table shows the most commonly used build options:
 | `bind_python`      | boolean | Install Python bindings                                                           |
 | `install_examples` | boolean | Install examples                                                                  |
 
-All build options, their current values, and their descriptions may be found by running one of
+The current value of all options, and their descriptions, may be found by running:
 ```bash
-meson configure              # outputs in a pager (`less`); you may scroll, or press 'q' to quit
-meson configure --no-pager   # do not use a pager
+meson configure   # you may scroll, or press 'q' to quit
 ```
 **but that's a _lot_ of text!** The _most important_ build options are under the **"Project options"**
 sections: the first such section is for `iguana`, and the rest are for subprojects (_e.g._, `rcdb`).
@@ -166,12 +170,6 @@ To see _just_ the project options, run the following (which requires [`jq`](http
 ```bash
 /path/to/iguana-source/meson/dump-build-options.sh .
 ```
-
-To set any build option, _e.g._ `install_examples` to `true`, run:
-```bash
-meson configure -Dinstall_examples=true
-```
-You can add as many `-D<option>=<value>` arguments as you need.
 
 > [!NOTE]
 > To set a subproject's option, you must prefix the subproject name. For example, for `rcdb`, to set option `home` to `/opt/rcdb`:
