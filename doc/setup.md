@@ -145,10 +145,10 @@ If you will _install_ `iguana` (recommended), set an installation prefix:
 meson configure --prefix=/path/to/iguana-installation  # must be an ABSOLUTE path
 ```
 
-Aside from `--prefix`, most other build options are set with `-D`
+Aside from `--prefix`, most other build options are set with `-D`:
 ```bash
-meson configure -D<option>=<value>       # syntax
-meson configure -Dinstall_examples=true  # sets option 'install_examples' to 'true'
+meson configure -D<option>=<value>  # syntax
+meson configure -Dbind_python=true  # example, which sets option 'bind_python' to 'true'
 ```
 The following table includes commonly-used build options; they are not required since they have default values,
 but you may prefer to change them:
@@ -170,7 +170,7 @@ Scroll down to the **"Project options"** sections, which are near the bottom, fo
 > The first **"Project options"** section is for Iguana, while the subsequent **"Project options"** sections are for subprojects.
 > To set a subproject option, you must prefix the subproject name; for example, for subproject `rcdb`, to set option `home` to `/opt/rcdb`:
 > ```bash
-> -Drcdb:home=/opt/rcdb
+> meson configure -Drcdb:home=/opt/rcdb
 > ```
 <!--`-->
 
