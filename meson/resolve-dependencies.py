@@ -71,7 +71,7 @@ def use_env_var(dep, build_var_name, user_val, env_var_name):
             print(f'{dep}: you did not specify where {dep} is found, and the fallback environment variable "${env_var_name}" is not set; {dep} will be ignored', file=sys.stderr)
     else:
         print_verbose(f'{dep}: using user value "{user_val}" for build variable "{build_var_name}"')
-        extra_args.append([build_var_name, user_val])
+        extra_args.append([build_var_name, os.path.realpath(user_val)])
 
 # resolve dependencies #########################
 use_pkg_config('hipo', 'hipo4.pc',    args.hipo)
