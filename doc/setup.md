@@ -145,6 +145,15 @@ If you will _install_ `iguana` (recommended), set an installation prefix:
 meson configure --prefix=/path/to/iguana-installation  # must be an ABSOLUTE path
 ```
 
+The following table shows the most commonly used build options:
+
+| Option             | Type    | Description                                                                       |
+| ---                | ---     | ---                                                                               |
+| `rcdb:home`        | string  | Location of RCDB installation; if empty, RCDB-dependent code will not be included |
+| `bind_fortran`     | boolean | Install Fortran bindings                                                          |
+| `bind_python`      | boolean | Install Python bindings                                                           |
+| `install_examples` | boolean | Install examples                                                                  |
+
 All build options, their current values, and their descriptions may be found by running one of
 ```bash
 meson configure              # outputs in a pager (`less`); you may scroll, or press 'q' to quit
@@ -165,10 +174,11 @@ meson configure -Dinstall_examples=true
 You can add as many `-D<option>=<value>` arguments as you need.
 
 > [!NOTE]
-> To enable RCDB support, if RCDB is installed at `$RCDB_HOME`, use option `-Drcdb:home=$RCDB_HOME`.
-
-> [!NOTE]
-> To set a subproject's option, you must prefix the subproject name. For example, for `rcdb`, use `-Drcdb:<option>=<value>`.
+> To set a subproject's option, you must prefix the subproject name. For example, for `rcdb`, to set option `home` to `/opt/rcdb`:
+> ```bash
+> -Drcdb:home=/opt/rcdb
+> ```
+<!--`-->
 
 ### 🟩 Step 4: Compile and Install
 Now compile and install Iguana:
