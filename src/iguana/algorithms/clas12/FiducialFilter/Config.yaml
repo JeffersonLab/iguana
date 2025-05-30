@@ -4,3 +4,7 @@ clas12::FiducialFilter:
   # cut levels for PCAL homogeneous cuts; one of 'loose', 'medium', or 'tight'
   pcal_electron_cut_level: loose # for electrons and positrons
   pcal_photon_cut_level: medium # for photons
+
+  # enable/disable certain cuts for more fine-grained control
+  enable_pcal_cuts: true
+  enable_dc_cuts: true

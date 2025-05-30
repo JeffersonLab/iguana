@@ -15,6 +15,8 @@ namespace iguana::clas12 {
     }
     o_pcal_electron_cut_level = ParseCutLevel(GetOptionScalar<std::string>("pcal_electron_cut_level"));
     o_pcal_photon_cut_level   = ParseCutLevel(GetOptionScalar<std::string>("pcal_photon_cut_level"));
+    o_enable_pcal_cuts        = GetOptionScalar<bool>("enable_pcal_cuts");
+    o_enable_dc_cuts          = GetOptionScalar<bool>("enable_dc_cuts");
 
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
@@ -155,6 +157,8 @@ namespace iguana::clas12 {
       float const torus,
       int const pid) const
   {
+    if(!o_enable_pcal_cuts)
+      return true;
     // set cut level from PDG
     CutLevel cut_level;
     switch(pid) {
@@ -241,6 +245,8 @@ namespace iguana::clas12 {
       float const torus,
       int const pid) const
   {
+    if(!o_enable_dc_cuts)
+      return true;
     if(!(sector >= 1 && sector <= 6))
       return false;
     const auto& minparams = ((torus<0) ? fiducial_pass1::minparams_in_XY_pass1 : fiducial_pass1::minparams_out_XY_pass1);
@@ -343,6 +349,8 @@ namespace iguana::clas12 {
       float const torus,
       int const pid) const
   {
+    if(!o_enable_dc_cuts)
+      return true;
     if(!(sector >= 1 && sector <= 6))
       return false;
     const auto& minparams = ((torus<0) ? fiducial_pass1::minparams_in_theta_phi_pass1 : fiducial_pass1::minparams_out_theta_phi_pass1);
