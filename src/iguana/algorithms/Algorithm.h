@@ -19,6 +19,7 @@ namespace iguana {
    * - [ ] Template specializations in this class
    * - [ ] Template specializations in `YAMLReader` or `ConfigFileReader`, and `ConcurrentParam`
    * - [ ] Add new tests, if you added new types
+   * - see <https://github.com/JeffersonLab/iguana/pull/346> for an example of adding `bool` type
    */
   using option_t = std::variant<
       int,
