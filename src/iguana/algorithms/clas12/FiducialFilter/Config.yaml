@@ -6,5 +6,5 @@ clas12::FiducialFilter:
   pcal_photon_cut_level: medium # for photons
 
   # enable/disable certain cuts for more fine-grained control
-  enable_pcal_cuts: true
-  enable_dc_cuts: true
+  enable_pcal_cuts: 1
+  enable_dc_cuts: 1
