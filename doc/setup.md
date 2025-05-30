@@ -150,31 +150,34 @@ Aside from `--prefix`, most other build options are set with `-D`
 meson configure -D<option>=<value>       # syntax
 meson configure -Dinstall_examples=true  # sets option 'install_examples' to 'true'
 ```
-The following table includes commonly-used build options; they are not required, since they have default values:
+The following table includes commonly-used build options; they are not required since they have default values,
+but you may prefer to change them:
 
 | Option             | Type    | Description                                                                       |
 | ---                | ---     | ---                                                                               |
-| `rcdb:home`        | string  | Location of RCDB installation; if empty, RCDB-dependent code will not be included |
 | `bind_fortran`     | boolean | Install Fortran bindings                                                          |
 | `bind_python`      | boolean | Install Python bindings                                                           |
 | `install_examples` | boolean | Install examples                                                                  |
+| `rcdb:home`        | string  | Location of RCDB installation; if empty, RCDB-dependent code will not be included |
 
 The current value of all options, and their descriptions, may be found by running:
 ```bash
 meson configure   # you may scroll, or press 'q' to quit
 ```
-**but that's a _lot_ of text!** The _most important_ build options are under the **"Project options"**
-sections: the first such section is for `iguana`, and the rest are for subprojects (_e.g._, `rcdb`).
-
-To see _just_ the project options, run the following (which requires [`jq`](https://jqlang.github.io/jq/)):
-```bash
-/path/to/iguana-source/meson/dump-build-options.sh .
-```
+Scroll down to the **"Project options"** sections, which are near the bottom, for Iguana specific options.
 
 > [!NOTE]
-> To set a subproject's option, you must prefix the subproject name. For example, for `rcdb`, to set option `home` to `/opt/rcdb`:
+> The first **"Project options"** section is for Iguana, while the subsequent **"Project options"** sections are for subprojects.
+> To set a subproject option, you must prefix the subproject name; for example, for subproject `rcdb`, to set option `home` to `/opt/rcdb`:
 > ```bash
 > -Drcdb:home=/opt/rcdb
+> ```
+<!--`-->
+
+> [!TIP]
+> To see _just_ the project options, run the following (which requires [`jq`](https://jqlang.github.io/jq/)):
+> ```bash
+> /path/to/iguana-source/meson/dump-build-options.sh .
 > ```
 <!--`-->
 
