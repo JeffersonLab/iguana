@@ -101,7 +101,6 @@ namespace iguana {
 
   template class ConcurrentParam<int>;
   template class ConcurrentParam<double>;
-  template class ConcurrentParam<bool>;
   template class ConcurrentParam<std::string>;
   template class ConcurrentParam<std::vector<int>>;
   template class ConcurrentParam<std::vector<double>>;
@@ -109,7 +108,6 @@ namespace iguana {
 
   template class SingleThreadParam<int>;
   template class SingleThreadParam<double>;
-  template class SingleThreadParam<bool>;
   template class SingleThreadParam<std::string>;
   template class SingleThreadParam<std::vector<int>>;
   template class SingleThreadParam<std::vector<double>>;
@@ -117,7 +115,6 @@ namespace iguana {
 
   template class MemoizedParam<int>;
   template class MemoizedParam<double>;
-  template class MemoizedParam<bool>;
   template class MemoizedParam<std::string>;
   template class MemoizedParam<std::vector<int>>;
   template class MemoizedParam<std::vector<double>>;

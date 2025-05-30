@@ -39,7 +39,6 @@ namespace iguana {
   }
   template std::optional<int> YAMLReader::GetScalar(YAML::Node node);
   template std::optional<double> YAMLReader::GetScalar(YAML::Node node);
-  template std::optional<bool> YAMLReader::GetScalar(YAML::Node node);
   template std::optional<std::string> YAMLReader::GetScalar(YAML::Node node);
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -56,7 +55,6 @@ namespace iguana {
   }
   template std::optional<int> YAMLReader::GetScalar(node_path_t node_path);
   template std::optional<double> YAMLReader::GetScalar(node_path_t node_path);
-  template std::optional<bool> YAMLReader::GetScalar(node_path_t node_path);
   template std::optional<std::string> YAMLReader::GetScalar(node_path_t node_path);
 
   ///////////////////////////////////////////////////////////////////////////////

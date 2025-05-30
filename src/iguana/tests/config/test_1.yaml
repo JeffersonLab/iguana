@@ -3,7 +3,6 @@ example::ExampleAlgorithm:
   # test scalar access
   scalar_int: 1
   scalar_double: 2.5
-  scalar_bool: true
   scalar_string: lizard
 
   # test vector access

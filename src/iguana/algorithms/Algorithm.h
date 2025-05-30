@@ -23,7 +23,6 @@ namespace iguana {
   using option_t = std::variant<
       int,
       double,
-      bool,
       std::string,
       std::vector<int>,
       std::vector<double>,
@@ -192,7 +191,6 @@ namespace iguana {
       // PrintOptionValue: overloaded for different value types
       void PrintOptionValue(std::string const& key, int const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
       void PrintOptionValue(std::string const& key, double const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
-      void PrintOptionValue(std::string const& key, bool const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
       void PrintOptionValue(std::string const& key, std::string const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
       void PrintOptionValue(std::string const& key, std::vector<int> const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
       void PrintOptionValue(std::string const& key, std::vector<double> const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;
