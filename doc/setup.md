@@ -165,6 +165,9 @@ meson configure -Dinstall_examples=true
 You can add as many `-D<option>=<value>` arguments as you need.
 
 > [!NOTE]
+> To enable RCDB support, if RCDB is installed at `$RCDB_HOME`, use option `-Drcdb:home=$RCDB_HOME`.
+
+> [!NOTE]
 > To set a subproject's option, you must prefix the subproject name. For example, for `rcdb`, use `-Drcdb:<option>=<value>`.
 
 ### 🟩 Step 4: Compile and Install
