@@ -46,6 +46,12 @@ namespace iguana::clas12 {
       particleBank.getMutableRowList().filter([this, torus, &trajBank, &calBank](hipo::bank& bank, int row) {
           auto pid = bank.getInt("pid", row);
           if(row >= 0 && row < calBank.getRows() && row < trajBank.getRows()) {
+            // if we don't have the required info, return false
+            if(o_enable_pcal_cuts && calBank.getByte("pcal_found", row) == 0)
+              return false;
+            if(o_enable_dc_cuts && (trajBank.getByte("r1_found", row) == 0 || trajBank.getByte("r2_found", row) == 0 || trajBank.getByte("r3_found", row) == 0))
+              return false;
+            // call the action function
             return FilterRgaPass1(
                 calBank.getInt("pcal_sector", row),
                 calBank.getFloat("pcal_lv", row),
