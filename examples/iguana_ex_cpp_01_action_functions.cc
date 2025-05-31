@@ -18,6 +18,7 @@
 /// @end_doc_example
 #include <hipo4/reader.h>
 #include <iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h>
+#include <iguana/algorithms/clas12/SectorFinder/Algorithm.h>
 #include <iguana/algorithms/clas12/MomentumCorrection/Algorithm.h>
 
 /// main function
@@ -35,28 +36,33 @@ int main(int argc, char** argv)
   // set list of banks to be read
   hipo::banklist banks = reader.getBanks({"REC::Particle", "RUN::config"});
 
-  // get bank index, for each bank we want to use after Iguana algorithms run
-  auto b_particle = hipo::getBanklistIndex(banks, "REC::Particle");
-  auto b_config   = hipo::getBanklistIndex(banks, "RUN::config");
-
   // set the concurrency model to single-threaded, since this example is single-threaded;
   // not doing this will use the thread-safe model, `"memoize"`
   iguana::GlobalConcurrencyModel = "single";
 
   // create the algorithms
-  iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
-  iguana::clas12::MomentumCorrection algo_momentum_correction;
+  iguana::clas12::EventBuilderFilter algo_eventbuilder_filter; // filter by Event Builder PID (a filter algorithm)
+  iguana::clas12::SectorFinder algo_sector_finder; // get the sector for each particle (a creator algorithm)
+  iguana::clas12::MomentumCorrection algo_momentum_correction; // momentum corrections (a transformer algorithm)
 
   // set log levels
-  algo_eventbuilder_filter.SetOption("log", "debug");
-  algo_momentum_correction.SetOption("log", "debug");
+  // set algorithm options
+  // NOTE: this can also be done in a config file
+  algo_eventbuilder_filter.SetOption("log", "info");
+  algo_sector_finder.SetOption("log", "info");
+  algo_momentum_correction.SetOption("log", "info");
 
   // set algorithm options
+  // NOTE: this can also be done in a config file
   algo_eventbuilder_filter.SetOption<std::vector<int>>("pids", {11, 211, -211});
 
   // start the algorithms
   algo_eventbuilder_filter.Start();
   algo_momentum_correction.Start();
+
+  // get bank index, for each bank we want to use after Iguana algorithms run
+  auto b_particle = hipo::getBanklistIndex(banks, "REC::Particle");
+  auto b_config   = hipo::getBanklistIndex(banks, "RUN::config");
 
   // run the algorithm sequence on each event
   int iEvent = 0;
@@ -74,9 +80,17 @@ int main(int argc, char** argv)
       auto pid = particleBank.getInt("pid", row);
       if(algo_eventbuilder_filter.Filter(pid)) {
 
-        int sector = 1; // FIXME: get the sector number. The algorithm `clas12::SectorFinder` can do this, however
-                        // it requires reading full `hipo::bank` objects, whereas this example is meant to demonstrate
-                        // `iguana` usage operating _only_ on bank row elements
+        int sector = 1; // FIXME: get the sector number from `clas12::SectorFinder`
+          /* needs additional general vector action function, such as:
+             int GetSector(
+               std::vector<int> const& calorimeter_sectors,
+               std::vector<int> const& calorimeter_pindices,
+               std::vector<int> const& track_sectors,
+               std::vector<int> const& track_pindices,
+               std::vector<int> const& scintillator_sectors,
+               std::vector<int> const& scintillator_pindices,
+               int const pindex) const;
+               */
 
         // if accepted PID, correct its momentum
         auto [px, py, pz] = algo_momentum_correction.Transform(
