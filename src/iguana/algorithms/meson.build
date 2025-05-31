@@ -15,7 +15,7 @@
 #     'add_validator_sources': list[str] # list of additional validator source files (default=[])
 #     'add_validator_headers': list[str] # list of additional validator header files (default=[])
 #     'test_args': {    dict[str],       # if excluded, tests won't run for this algorithm
-#       'banks':          list[str]      # list of banks that are needed to test this algorithm
+#       'banks':          list[str]      # list of banks that are needed to test this algorithm; exclude banks produced by 'prerequisites' algorithms
 #       'prerequisites':  list[str]      # list of algorithms that that are required to `Run` before this one
 #     },
 #   }
@@ -38,8 +38,10 @@ algo_dict = [
   },
   {
     'name': 'clas12::FiducialFilter',
-    'has_action_yaml': false,
-    'test_args': {'banks': [ 'REC::Particle', 'REC::Traj', 'RUN::config' ]},
+    'test_args': {
+      'banks': [ 'REC::Particle', 'RUN::config', 'REC::Traj', 'REC::Calorimeter' ],
+      'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
+    },
   },
   {
     'name': 'clas12::SectorFinder',
@@ -47,6 +49,24 @@ algo_dict = [
     'has_action_yaml': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator' ],
+    },
+  },
+  {
+    'name': 'clas12::CalorimeterLinker',
+    'has_config': false,
+    'has_validator': false,
+    'has_action_yaml': false,
+    'test_args': {
+      'banks': [ 'REC::Particle', 'REC::Calorimeter' ],
+    },
+  },
+  {
+    'name': 'clas12::TrajLinker',
+    'has_config': false,
+    'has_validator': false,
+    'has_action_yaml': false,
+    'test_args': {
+      'banks': [ 'REC::Particle', 'REC::Traj' ],
     },
   },
   {
