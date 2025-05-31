@@ -46,6 +46,14 @@ fmt_dep = dependency(
   version: '>=9.1.0',
   method: 'pkg-config',
 )
+spdlog_dep = dependency(
+  'spdlog',
+  method: 'pkg-config',
+  version: '>=1.15',
+  default_options: {
+    'compile_library': 'true',  ### FIXME: library libspdlog is not being installed, only the headers are
+  },
+)
 yamlcpp_dep = dependency(
   'yaml-cpp',
   version: '>=0.7.0',
@@ -83,7 +91,7 @@ thread_dep = dependency(
 # themselves are listed last (see FIXME in meson/this_iguana.sh.in)
 # NOTE: omit ROOT (handled differently, and most ROOT users already have it in their environment)
 dep_list = []
-foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, rcdb_dep ]
+foreach dep : [ hipo_dep, fmt_dep, spdlog_dep, yamlcpp_dep, rcdb_dep ]
   if dep.found()
     dep_list += dep
   endif
@@ -105,14 +113,16 @@ foreach dep : dep_list
       libdirs += run_command('dirname', lib, check: true).stdout().strip()
     endforeach
     incdirs = ROOT_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
-  else
+  elif dep.type_name() == 'internal'
     name = dep.get_variable(internal: 'name', default_value: dep.name())
     if name == 'rcdb'
       incdirs = [ dep.get_variable(internal: 'includedir') ]
     else
-      warning(f'Unknown dependency "@name@"')
+      # warning(f'Unknown internal dependency "@name@"')
       continue
     endif
+  else
+    error('Dependency type "' + dep.type_name() + '" is unknown')
   endif
 
   # append to `dep_*_dirs` arrays, uniquely
@@ -251,7 +261,7 @@ pkg.generate(
   name: meson.project_name(),
   description: project_description,
   libraries: project_libs,
-  requires: [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
+  requires: [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only # FIXME # FIXME # FIXME
   variables: project_pkg_vars_nonempty,
 )
 

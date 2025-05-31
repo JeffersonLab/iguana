@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Logger.h"
+#include <spdlog/spdlog.h>
 
 namespace iguana {
 
@@ -50,5 +51,6 @@ namespace iguana {
 
       /// `Logger` instance for this object
       std::unique_ptr<Logger> m_log;
+      std::shared_ptr<spdlog::logger> m_spdlog;
   };
 }
