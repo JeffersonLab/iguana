@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
-# `source` this file to set environment variables relevant for this `iguana` installation
+##################################################################################
+# `source` this file to set run-time environment variables such as `$@ld_path@`
+# - you only need to `source` this file if you are not installing `iguana` to a
+#   common prefix; alternatively, set your own run-time environment variables
+# - run `source this_iguana.sh --help` for more options
+##################################################################################
 
 # parse arguments
-arg_verbose=false
-arg_allow_deps=true
-arg_githubCI=false
+declare -A args
+args['verbose']=false
+args['allow_deps']=true
+args['githubCI']=false
 for arg in "$@"; do
   case $arg in
-    --verbose) arg_verbose=true ;;
-    --no-deps) arg_allow_deps=false ;;
-    --githubCI) arg_githubCI=true ;;
+    --verbose) args['verbose']=true ;;
+    --no-deps) args['allow_deps']=false ;;
+    --githubCI) args['githubCI']=true ;;
     --help|-h)
       echo "USAGE: source ${BASH_SOURCE[0]:-$0} [OPTIONS]..." >&2
       echo """
@@ -19,25 +25,55 @@ for arg in "$@"; do
         --no-deps     do not include dependencies in path-type variables
         --githubCI    set environment for GitHub CI
       """ >&2
-      unset arg
-      unset arg_verbose
-      unset arg_allow_deps
-      unset arg_githubCI
+      unset arg args
       return 2
       ;;
     source*|.*) # handle callers which cause `$1` to be 'source this_iguana.sh' or '. this_iguana.sh'
       ;;
     *)
       echo "ERROR: unknown option '$arg'" >&2
-      unset arg
-      unset arg_verbose
-      unset arg_allow_deps
-      unset arg_githubCI
+      unset arg args
       return 1
       ;;
   esac
 done
 unset arg
+
+##################################################################################
+
+# print environment
+print_environ() {
+  print_path() { echo "$@" | sed 's/:/\n  /g'; }
+  echo """---
+IGUANA: $IGUANA
+PKG_CONFIG_PATH: (
+  $(print_path ${PKG_CONFIG_PATH-})
+)
+PATH: (
+  $(print_path ${PATH-})
+)
+@ld_path@: (
+  $(print_path ${@ld_path@-})
+)
+ROOT_INCLUDE_PATH: (
+  $(print_path ${ROOT_INCLUDE_PATH-})
+)
+PYTHONPATH: (
+  $(print_path ${PYTHONPATH-})
+)
+IGUANA_CONFIG_PATH: (
+  $(print_path ${IGUANA_CONFIG_PATH-})
+)
+---"""
+  unset -f print_path
+}
+
+if ${args['verbose']}; then
+  echo 'Environment before `source`:'
+  print_environ
+fi
+
+##################################################################################
 
 # set IGUANA prefix; use `cd && pwd` to support older macOS versions
 export IGUANA=$(cd $(dirname ${BASH_SOURCE[0]:-$0})/.. && pwd -P)
@@ -48,7 +84,7 @@ export IGUANA=$(cd $(dirname ${BASH_SOURCE[0]:-$0})/.. && pwd -P)
 ## elsewhere, e.g., `/tmp/lib`; if `/opt/lib` is listed before `/tmp/lib` in
 ## `$LD_LIBRARY_PATH`, the `/opt/lib` library will be used at runtime rather
 ## than the one at `/tmp/lib` (cf. FIXME in ../meson.build)
-if $arg_allow_deps; then
+if ${args['allow_deps']}; then
   export PKG_CONFIG_PATH=@dep_pkgconfigdirs@${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
   export @ld_path@=@dep_libdirs@${@ld_path@:+:${@ld_path@}}
   if @root@; then
@@ -60,51 +96,44 @@ fi
 export PKG_CONFIG_PATH=$IGUANA/@libdir@/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 export PATH=$IGUANA/@bindir@${PATH:+:${PATH}}
 export @ld_path@=$IGUANA/@libdir@${@ld_path@:+:${@ld_path@}}
-if @python@; then
-  export PYTHONPATH=$IGUANA/@pythondir@${PYTHONPATH:+:${PYTHONPATH}}
-fi
 if @root@; then
   export ROOT_INCLUDE_PATH=$IGUANA/@includedir@${ROOT_INCLUDE_PATH:+:${ROOT_INCLUDE_PATH}}
+fi
+if @python@; then
+  export PYTHONPATH=$IGUANA/@pythondir@${PYTHONPATH:+:${PYTHONPATH}}
 fi
 
 # set config file path
 export IGUANA_CONFIG_PATH=$IGUANA/@etcdir@
 
+##################################################################################
+
+# enforce uniqueness in path-type variables
+uniq_path() {
+  echo $(awk -v RS=':' '!a[$1]++' <<< "$1" | paste -sd: | sed 's;^:;;' | sed 's;:$;;')
+}
+export PKG_CONFIG_PATH=$(uniq_path $PKG_CONFIG_PATH)
+export PATH=$(uniq_path $PATH)
+export @ld_path@=$(uniq_path $@ld_path@)
+if @root@; then
+  export ROOT_INCLUDE_PATH=$(uniq_path $ROOT_INCLUDE_PATH)
+fi
+if @python@; then
+  export PYTHONPATH=$(uniq_path $PYTHONPATH)
+fi
+export IGUANA_CONFIG_PATH=$(uniq_path $IGUANA_CONFIG_PATH)
+unset -f uniq_path
+
+##################################################################################
+
 # print environment variables
-if $arg_verbose; then
-  print_var() { echo "$@" | sed 's/:/\n  /g'; }
-  echo """
-Iguana Environment Variables
-----------------------------
-
-IGUANA -- SET
-  $IGUANA
-
-PKG_CONFIG_PATH -- ADDED iguana and dependency pkg-config paths:
-  $(print_var ${PKG_CONFIG_PATH-})
-
-PATH -- ADDED iguana executables:
-  $(print_var ${PATH-})
-
-@ld_path@ -- ADDED iguana and dependency library paths:
-  $(print_var ${@ld_path@-})
-
-ROOT_INCLUDE_PATH -- $(if @root@; then echo 'ADDED iguana and dependency include paths:'; else echo 'has NOT been changed, since not built with ROOT support'; fi)
-  $(print_var ${ROOT_INCLUDE_PATH-})
-
-PYTHONPATH -- $(if @python@; then echo 'ADDED iguana python bindings:'; else echo 'has NOT been changed, since not built with Python support'; fi)
-  $(print_var ${PYTHONPATH-})
-
-IGUANA_CONFIG_PATH -- SET to iguana algorithms' default configuration directory
-  $(print_var ${IGUANA_CONFIG_PATH-})
-
-----------------------------
-"""
-  unset -f print_var
+if ${args['verbose']}; then
+  echo 'Environment after `source`:'
+  print_environ
 fi
 
 # export variables for GitHub CI environment
-if $arg_githubCI; then
+if ${args['githubCI']}; then
   echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH >> $GITHUB_ENV
   echo PATH=$PATH >> $GITHUB_ENV
   echo @ld_path@=$@ld_path@ >> $GITHUB_ENV
@@ -118,6 +147,5 @@ if $arg_githubCI; then
 fi
 
 # cleanup
-unset arg_verbose
-unset arg_allow_deps
-unset arg_githubCI
+unset -v args
+unset -f print_environ
