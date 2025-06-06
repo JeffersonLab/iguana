@@ -226,5 +226,5 @@ install_headers(vdor_headers, subdir: meson.project_name() / 'algorithms', prese
 
 # install config files
 foreach algo_config : algo_configs
-  install_data(algo_config, install_dir: project_etc / 'algorithms', preserve_path: true)
+  install_data(algo_config, install_dir: project_etcdir / 'algorithms', preserve_path: true)
 endforeach
