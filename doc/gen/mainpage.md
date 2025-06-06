@@ -286,6 +286,6 @@ export IGUANA_CONFIG_PATH=`pwd`/my_iguana_config:$IGUANA_CONFIG_PATH   # bash or
 setenv IGUANA_CONFIG_PATH `pwd`/my_iguana_config:$IGUANA_CONFIG_PATH   # tcsh or csh
 ```
 The algorithms will then search `my_iguana_config` for the configuration before searching the default paths. You may add multiple paths, if needed.
-Paths which appear first in `$IGUANA_CONFIG_PATH` will be prioritized when the algorithm searches for configuration parameters; this behavior is similar to that of `$PATH` or `$LD_LIBRARY_PATH`.
+Paths which appear first in `$IGUANA_CONFIG_PATH` will be prioritized when the algorithm searches for configuration parameters; this behavior is similar to that of `$PATH` or `$LD_LIBRARY_PATH`. Note that `source this_iguana.sh` will _overwrite_ `$IGUANA_CONFIG_PATH`.
 
 2. Use `iguana::Algorithm::SetConfigDirectory` instead of prepending `$IGUANA_CONFIG_PATH` (and if you use an algorithm sequence, use `iguana::AlgorithmSequence::SetConfigDirectoryForEachAlgorithm`)

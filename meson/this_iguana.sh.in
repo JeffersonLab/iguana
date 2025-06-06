@@ -3,10 +3,12 @@
 
 # parse arguments
 arg_verbose=false
+arg_allow_deps=true
 arg_githubCI=false
 for arg in "$@"; do
   case $arg in
     --verbose) arg_verbose=true ;;
+    --no-deps) arg_allow_deps=false ;;
     --githubCI) arg_githubCI=true ;;
     --help|-h)
       echo "USAGE: source ${BASH_SOURCE[0]:-$0} [OPTIONS]..." >&2
@@ -14,11 +16,12 @@ for arg in "$@"; do
       OPTIONS:
 
         --verbose     print what variables are set
-
+        --no-deps     do not include dependencies in path-type variables
         --githubCI    set environment for GitHub CI
       """ >&2
       unset arg
       unset arg_verbose
+      unset arg_allow_deps
       unset arg_githubCI
       return 2
       ;;
@@ -28,6 +31,7 @@ for arg in "$@"; do
       echo "ERROR: unknown option '$arg'" >&2
       unset arg
       unset arg_verbose
+      unset arg_allow_deps
       unset arg_githubCI
       return 1
       ;;
@@ -35,57 +39,36 @@ for arg in "$@"; do
 done
 unset arg
 
-# workaround older versions of macOS not having `realpath`
-get_realpath() {
-  echo $(cd $1 && pwd -P)
-}
+# set IGUANA prefix; use `cd && pwd` to support older macOS versions
+export IGUANA=$(cd $(dirname ${BASH_SOURCE[0]:-$0})/.. && pwd -P)
 
-# set IGUANA prefix
-export IGUANA=$(get_realpath $(dirname ${BASH_SOURCE[0]:-$0})/..)
+# if allowing dependencies in the environment, prepend their paths
+## FIXME: this won't work well if a user already has all dependency libraries
+## in, for example, `/opt/lib`, but has custom built and installed one
+## elsewhere, e.g., `/tmp/lib`; if `/opt/lib` is listed before `/tmp/lib` in
+## `$LD_LIBRARY_PATH`, the `/opt/lib` library will be used at runtime rather
+## than the one at `/tmp/lib` (cf. FIXME in ../meson.build)
+if $arg_allow_deps; then
+  export PKG_CONFIG_PATH=@dep_pkgconfigdirs@${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+  export @ld_path@=@dep_libdirs@${@ld_path@:+:${@ld_path@}}
+  if @root@; then
+    export ROOT_INCLUDE_PATH=@dep_includedirs@${ROOT_INCLUDE_PATH:+:${ROOT_INCLUDE_PATH}}
+  fi
+fi
 
-# prepend to PKG_CONFIG_PATH
+# prepend paths with iguana
 export PKG_CONFIG_PATH=$IGUANA/@libdir@/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
-dep_pkgconfigdirs=$(pkg-config --variable dep_pkgconfigdirs iguana)
-[ -n "${dep_pkgconfigdirs-}" ] && export PKG_CONFIG_PATH=$dep_pkgconfigdirs${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
-unset dep_pkgconfigdirs
-
-# prepend to PATH
-iguana_path=$(pkg-config --variable bindir iguana)
-[ -n "${iguana_path-}" ] && export PATH=$(get_realpath $iguana_path)${PATH:+:${PATH}}
-unset iguana_path
-
-# prepend to PYTHONPATH
+export PATH=$IGUANA/@bindir@${PATH:+:${PATH}}
+export @ld_path@=$IGUANA/@libdir@${@ld_path@:+:${@ld_path@}}
 if @python@; then
-  iguana_pythonpath=$(pkg-config --variable pythonpath iguana)
-  [ -n "${iguana_pythonpath-}" ] && export PYTHONPATH=$iguana_pythonpath${PYTHONPATH:+:${PYTHONPATH}}
-  unset iguana_pythonpath
+  export PYTHONPATH=$IGUANA/@pythondir@${PYTHONPATH:+:${PYTHONPATH}}
 fi
-
-# prepend to LD_LIBRARY_PATH or DYLD_LIBRARY_PATH
-# FIXME: this won't work well if a user already has all dependency libraries
-# in, for example, `/opt/lib`, but has custom built and installed one
-# elsewhere, e.g., `/tmp/lib`; if `/opt/lib` is listed before `/tmp/lib` in
-# `$LD_LIBRARY_PATH`, the `/opt/lib` library will be used at runtime rather
-# than the one at `/tmp/lib` (cf. FIXME in ../meson.build)
-for var in dep_libdirs libdir; do
-  dir=$(pkg-config --variable $var iguana)
-  [ -n "${dir-}" ] && export @ld_path@=$dir${@ld_path@:+:${@ld_path@}}
-  unset dir
-done
-unset var
-
-# prepend to ROOT_INCLUDE_PATH
 if @root@; then
-  for var in dep_includedirs includedir; do
-    dir=$(pkg-config --variable $var iguana)
-    [ -n "${dir-}" ] && export ROOT_INCLUDE_PATH=$dir${ROOT_INCLUDE_PATH:+:${ROOT_INCLUDE_PATH}}
-    unset dir
-  done
-  unset var
+  export ROOT_INCLUDE_PATH=$IGUANA/@includedir@${ROOT_INCLUDE_PATH:+:${ROOT_INCLUDE_PATH}}
 fi
 
-# set config file path; append, rather than prepend, in case the user already has their own
-export IGUANA_CONFIG_PATH=${IGUANA_CONFIG_PATH:+${IGUANA_CONFIG_PATH}:}$IGUANA/@etcdir@
+# set config file path
+export IGUANA_CONFIG_PATH=$IGUANA/@etcdir@
 
 # print environment variables
 if $arg_verbose; then
@@ -106,13 +89,13 @@ PATH -- ADDED iguana executables:
 @ld_path@ -- ADDED iguana and dependency library paths:
   $(print_var ${@ld_path@-})
 
-ROOT_INCLUDE_PATH -- $(if @root@; then echo 'ADDED iguana and dependency include paths:'; else echo 'has NOT been changed'; fi)
+ROOT_INCLUDE_PATH -- $(if @root@; then echo 'ADDED iguana and dependency include paths:'; else echo 'has NOT been changed, since not built with ROOT support'; fi)
   $(print_var ${ROOT_INCLUDE_PATH-})
 
-PYTHONPATH -- $(if @python@; then echo 'ADDED iguana python bindings:'; else echo 'has NOT been changed'; fi)
+PYTHONPATH -- $(if @python@; then echo 'ADDED iguana python bindings:'; else echo 'has NOT been changed, since not built with Python support'; fi)
   $(print_var ${PYTHONPATH-})
 
-IGUANA_CONFIG_PATH -- ADDED iguana algorithms' default configuration directory
+IGUANA_CONFIG_PATH -- SET to iguana algorithms' default configuration directory
   $(print_var ${IGUANA_CONFIG_PATH-})
 
 ----------------------------
@@ -136,5 +119,5 @@ fi
 
 # cleanup
 unset arg_verbose
+unset arg_allow_deps
 unset arg_githubCI
-unset -f get_realpath

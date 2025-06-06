@@ -175,14 +175,9 @@ endif
 project_inc = include_directories('src')
 project_libs = []
 project_deps = declare_dependency(dependencies: dep_list) # do NOT include ROOT here
-project_etc = get_option('sysconfdir') / meson.project_name()
+project_etcdir = get_option('sysconfdir') / meson.project_name()
 project_test_env = environment()
-project_pkg_vars = [
-  'bindir='            + '${prefix}' / get_option('bindir'),
-  'dep_pkgconfigdirs=' + ':'.join(dep_pkgconfig_dirs),
-  'dep_libdirs='       + ':'.join(dep_lib_dirs),
-  'dep_includedirs='   + ':'.join(dep_include_dirs),
-]
+project_pythondir = 'python'
 
 # sanitizer settings
 project_test_env.set(
@@ -207,7 +202,7 @@ project_test_env.set(
 
 # set preprocessor macros
 add_project_arguments(
-  '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etc + '"',
+  '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etcdir + '"',
   language: [ 'cpp' ],
 )
 
@@ -241,18 +236,11 @@ if get_option('install_documentation')
 endif
 
 # generate pkg-config file
-project_pkg_vars_nonempty = []
-foreach var : project_pkg_vars
-  if not var.endswith('=') # remove empty variable values
-    project_pkg_vars_nonempty += var
-  endif
-endforeach
 pkg.generate(
   name: meson.project_name(),
   description: project_description,
   libraries: project_libs,
   requires: [ fmt_dep, yamlcpp_dep, hipo_dep ], # pkg-config dependencies only
-  variables: project_pkg_vars_nonempty,
 )
 
 # install environment setup files
@@ -263,11 +251,17 @@ if get_option('z_install_envfile')
     install: true,
     install_dir: get_option('bindir'),
     configuration: {
-      'ld_path': host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
-      'python': get_option('bind_python') ? 'true' : 'false',
-      'libdir': get_option('libdir'),
-      'root': ROOT_dep.found() ? 'true' : 'false',
-      'etcdir': project_etc,
+      'ld_path':           host_machine.system() != 'darwin' ? 'LD_LIBRARY_PATH' : 'DYLD_LIBRARY_PATH',
+      'python':            get_option('bind_python') ? 'true' : 'false',
+      'root':              ROOT_dep.found() ? 'true' : 'false',
+      'libdir':            get_option('libdir'),
+      'includedir':        get_option('includedir'),
+      'bindir':            get_option('bindir'),
+      'etcdir':            project_etcdir,
+      'pythondir':         project_pythondir,
+      'dep_pkgconfigdirs': ':'.join(dep_pkgconfig_dirs),
+      'dep_libdirs':       ':'.join(dep_lib_dirs),
+      'dep_includedirs':   ':'.join(dep_include_dirs),
     },
   )
   foreach shell : [ 'csh', 'tcsh' ]
