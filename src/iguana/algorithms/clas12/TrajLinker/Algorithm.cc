@@ -31,6 +31,9 @@ namespace iguana::clas12 {
     auto& bank_traj     = GetBank(banks, b_traj, "REC::Traj");
     auto& bank_result   = GetBank(banks, b_result, "REC::Particle::Traj");
 
+    ShowBank(bank_particle, Logger::Header("INPUT PARTICLE BANK"));
+    ShowBank(bank_traj, Logger::Header("INPUT TRAJECTORY BANK"));
+
     // sync new bank with particle bank, and fill it with zeroes
     bank_result.setRows(bank_particle.getRows());
     bank_result.getMutableRowList().setList(bank_particle.getRowList());
@@ -108,6 +111,7 @@ namespace iguana::clas12 {
     }
     ShowBank(bank_result, Logger::Header("CREATED BANK"));
   }
+
   void TrajLinker::Stop()
   {
   }

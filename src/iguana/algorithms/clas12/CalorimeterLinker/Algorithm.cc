@@ -33,6 +33,9 @@ namespace iguana::clas12 {
     auto& bank_calorimeter = GetBank(banks, b_calorimeter, "REC::Calorimeter");
     auto& bank_result      = GetBank(banks, b_result, "REC::Particle::Calorimeter");
 
+    ShowBank(bank_particle, Logger::Header("INPUT PARTICLE BANK"));
+    ShowBank(bank_calorimeter, Logger::Header("INPUT CALORIMETER BANK"));
+
     // sync new bank with particle bank, and fill it with zeroes
     bank_result.setRows(bank_particle.getRows());
     bank_result.getMutableRowList().setList(bank_particle.getRowList());
