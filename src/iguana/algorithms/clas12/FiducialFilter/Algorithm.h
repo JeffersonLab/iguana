@@ -47,16 +47,20 @@ namespace iguana::clas12 {
       /// @param pcal_sector PCAL sector
       /// @param pcal_lv PCAL lv
       /// @param pcal_lw PCAL lw
+      /// @param pcal_found if PCAL info exists for this particle, this should be true
       /// @param dc_sector DC sector
       /// @param dc_r1_x DC region 1 x
       /// @param dc_r1_y DC region 1 y
       /// @param dc_r1_z DC region 1 z
+      /// @param dc_r1_found if DC region 1 info exists for this particle, this should be true
       /// @param dc_r2_x DC region 2 x
       /// @param dc_r2_y DC region 2 y
       /// @param dc_r2_z DC region 2 z
+      /// @param dc_r2_found if DC region 2 info exists for this particle, this should be true
       /// @param dc_r3_x DC region 3 x
       /// @param dc_r3_y DC region 3 y
       /// @param dc_r3_z DC region 3 z
+      /// @param dc_r3_found if DC region 3 info exists for this particle, this should be true
       /// @param torus the torus magnetic field sign
       /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
@@ -64,16 +68,20 @@ namespace iguana::clas12 {
           int const pcal_sector,
           float const pcal_lv,
           float const pcal_lw,
+          bool const pcal_found,
           int const dc_sector,
           float const dc_r1_x,
           float const dc_r1_y,
           float const dc_r1_z,
+          bool const dc_r1_found,
           float const dc_r2_x,
           float const dc_r2_y,
           float const dc_r2_z,
+          bool const dc_r2_found,
           float const dc_r3_x,
           float const dc_r3_y,
           float const dc_r3_z,
+          bool const dc_r3_found,
           float const torus,
           int const pid) const;
 

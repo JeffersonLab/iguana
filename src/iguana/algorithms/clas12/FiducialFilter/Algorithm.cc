@@ -46,26 +46,25 @@ namespace iguana::clas12 {
       particleBank.getMutableRowList().filter([this, torus, &trajBank, &calBank](hipo::bank& bank, int row) {
           auto pid = bank.getInt("pid", row);
           if(row >= 0 && row < calBank.getRows() && row < trajBank.getRows()) {
-            // if we don't have the required info, return false
-            if(o_enable_pcal_cuts && calBank.getByte("pcal_found", row) == 0)
-              return false;
-            if(o_enable_dc_cuts && (trajBank.getByte("r1_found", row) == 0 || trajBank.getByte("r2_found", row) == 0 || trajBank.getByte("r3_found", row) == 0))
-              return false;
             // call the action function
             return FilterRgaPass1(
                 calBank.getInt("pcal_sector", row),
                 calBank.getFloat("pcal_lv", row),
                 calBank.getFloat("pcal_lw", row),
+                calBank.getByte("pcal_found", row) == 1,
                 trajBank.getInt("sector", row),
                 trajBank.getFloat("r1_x", row),
                 trajBank.getFloat("r1_y", row),
                 trajBank.getFloat("r1_z", row),
+                trajBank.getByte("r1_found", row) == 1,
                 trajBank.getFloat("r2_x", row),
                 trajBank.getFloat("r2_y", row),
                 trajBank.getFloat("r2_z", row),
+                trajBank.getByte("r2_found", row) == 1,
                 trajBank.getFloat("r3_x", row),
                 trajBank.getFloat("r3_y", row),
                 trajBank.getFloat("r3_z", row),
+                trajBank.getByte("r3_found", row) == 1,
                 torus,
                 pid);
           }
@@ -105,16 +104,20 @@ namespace iguana::clas12 {
       int const pcal_sector,
       float const pcal_lv,
       float const pcal_lw,
+      bool const pcal_found,
       int const dc_sector,
       float const dc_r1_x,
       float const dc_r1_y,
       float const dc_r1_z,
+      bool const dc_r1_found,
       float const dc_r2_x,
       float const dc_r2_y,
       float const dc_r2_z,
+      bool const dc_r2_found,
       float const dc_r3_x,
       float const dc_r3_y,
       float const dc_r3_z,
+      bool const dc_r3_found,
       float const torus,
       int const pid) const
   {
@@ -126,24 +129,34 @@ namespace iguana::clas12 {
     }
     // apply cuts
     bool result = true;
+    bool dc_found = dc_r1_found && dc_r2_found && dc_r3_found;
     switch(pid) {
       case 11: // electrons
       case -11: // positrons
-        result &= FilterPcalHomogeneous(pcal_sector, pcal_lv, pcal_lw, torus, pid);
-        result &= FilterDcXY(dc_sector, dc_r1_x, dc_r1_y, dc_r1_z, dc_r2_x, dc_r2_y, dc_r2_z, dc_r3_x, dc_r3_y, dc_r3_z, torus, pid);
-        break;
+        {
+          if(o_enable_pcal_cuts)
+            result &= pcal_found && FilterPcalHomogeneous(pcal_sector, pcal_lv, pcal_lw, torus, pid);
+          if(o_enable_dc_cuts)
+            result &= dc_found && FilterDcXY(dc_sector, dc_r1_x, dc_r1_y, dc_r1_z, dc_r2_x, dc_r2_y, dc_r2_z, dc_r3_x, dc_r3_y, dc_r3_z, torus, pid);
+          break;
+        }
       case 22: // photons
-        result &= FilterPcalHomogeneous(pcal_sector, pcal_lv, pcal_lw, torus, pid);
+        {
+          if(o_enable_pcal_cuts)
+            result &= pcal_found && FilterPcalHomogeneous(pcal_sector, pcal_lv, pcal_lw, torus, pid);
+        }
       case 211: // pi+
       case -211: // pi-
       case 2212: // protons
         {
-          if(torus<0) // inbending
-            result &= FilterDcThetaPhi(dc_sector, dc_r1_x, dc_r1_y, dc_r1_z, dc_r2_x, dc_r2_y, dc_r2_z, dc_r3_x, dc_r3_y, dc_r3_z, torus, pid);
-          else if(torus>0) // outbending
-            result &= FilterDcXY(dc_sector, dc_r1_x, dc_r1_y, dc_r1_z, dc_r2_x, dc_r2_y, dc_r2_z, dc_r3_x, dc_r3_y, dc_r3_z, torus, pid);
-          else
-            result = false;
+          if(o_enable_dc_cuts) {
+            if(torus<0) // inbending
+              result &= dc_found && FilterDcThetaPhi(dc_sector, dc_r1_x, dc_r1_y, dc_r1_z, dc_r2_x, dc_r2_y, dc_r2_z, dc_r3_x, dc_r3_y, dc_r3_z, torus, pid);
+            else if(torus>0) // outbending
+              result &= dc_found && FilterDcXY(dc_sector, dc_r1_x, dc_r1_y, dc_r1_z, dc_r2_x, dc_r2_y, dc_r2_z, dc_r3_x, dc_r3_y, dc_r3_z, torus, pid);
+            else
+              result = false;
+          }
           break;
         }
       default:

@@ -6,20 +6,24 @@ actions:
     type: filter
     inputs:
       - { name: pcal_sector, type: int }
-      - { name: pcal_lv, type: float }
-      - { name: pcal_lw, type: float }
-      - { name: dc_sector, type: int }
-      - { name: dc_r1_x, type: float }
-      - { name: dc_r1_y, type: float }
-      - { name: dc_r1_z, type: float }
-      - { name: dc_r2_x, type: float }
-      - { name: dc_r2_y, type: float }
-      - { name: dc_r2_z, type: float }
-      - { name: dc_r3_x, type: float }
-      - { name: dc_r3_y, type: float }
-      - { name: dc_r3_z, type: float }
-      - { name: torus, type: float }
-      - { name: pid, type: int }
+      - { name: pcal_lv,     type: float }
+      - { name: pcal_lw,     type: float }
+      - { name: pcal_found,  type: bool }
+      - { name: dc_sector,   type: int }
+      - { name: dc_r1_x,     type: float }
+      - { name: dc_r1_y,     type: float }
+      - { name: dc_r1_z,     type: float }
+      - { name: dc_r1_found, type: bool }
+      - { name: dc_r2_x,     type: float }
+      - { name: dc_r2_y,     type: float }
+      - { name: dc_r2_z,     type: float }
+      - { name: dc_r2_found, type: bool }
+      - { name: dc_r3_x,     type: float }
+      - { name: dc_r3_y,     type: float }
+      - { name: dc_r3_z,     type: float }
+      - { name: dc_r3_found, type: bool }
+      - { name: torus,       type: float }
+      - { name: pid,         type: int }
   - name: FilterPcalHomogeneous
     type: filter
     inputs:
