@@ -78,20 +78,20 @@ namespace iguana::clas12 {
           int const pid) const;
 
       /// @action_function{scalar filter} EC hit position homogeneous cut on lv and lw
-      /// @param sector PCAL sector
+      /// @param pcal_sector PCAL sector
       /// @param lv PCAL lv
       /// @param lw PCAL lw
       /// @param torus the torus magnetic field sign
       /// @param pid the PDG of the particle
       bool FilterPcalHomogeneous(
-          int const sector,
+          int const pcal_sector,
           float const lv,
           float const lw,
           float const torus,
           int const pid) const;
 
       /// @action_function{scalar filter} filter using DC XY fiducial cut
-      /// @param sector DC sector
+      /// @param dc_sector DC sector
       /// @param r1_x DC region 1 x
       /// @param r1_y DC region 1 y
       /// @param r1_z DC region 1 z
@@ -105,7 +105,7 @@ namespace iguana::clas12 {
       /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
       bool FilterDcXY(
-          int const sector,
+          int const dc_sector,
           float const r1_x,
           float const r1_y,
           float const r1_z,
@@ -119,7 +119,7 @@ namespace iguana::clas12 {
           int const pid) const;
 
       /// @action_function{scalar filter} filter using DC theta-phi fiducial cut
-      /// @param sector DC sector
+      /// @param dc_sector DC sector
       /// @param r1_x DC region 1 x
       /// @param r1_y DC region 1 y
       /// @param r1_z DC region 1 z
@@ -133,7 +133,7 @@ namespace iguana::clas12 {
       /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
       bool FilterDcThetaPhi(
-          int const sector,
+          int const dc_sector,
           float const r1_x,
           float const r1_y,
           float const r1_z,

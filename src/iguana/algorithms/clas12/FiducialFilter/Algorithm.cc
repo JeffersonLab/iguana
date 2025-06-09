@@ -157,7 +157,7 @@ namespace iguana::clas12 {
   //////////////////////////////////////////////////////////////////////////////////
 
   bool FiducialFilter::FilterPcalHomogeneous(
-      int const sector,
+      int const pcal_sector,
       float const lv,
       float const lw,
       float const torus,
@@ -187,7 +187,7 @@ namespace iguana::clas12 {
     double min_w = 0;
     double max_w = 0;
     for(int k = 0; k < 6; k++){
-      if(sector-1 == k && torus < 0){ // inbending
+      if(pcal_sector-1 == k && torus < 0){ // inbending
         switch(cut_level) {
           case tight:
             min_v = fiducial_pass1::min_lv_tight_inb[k];
@@ -209,7 +209,7 @@ namespace iguana::clas12 {
             break;
         }
       }
-      else if(sector-1 == k && torus > 0){ // outbending
+      else if(pcal_sector-1 == k && torus > 0){ // outbending
         switch(cut_level) {
           case tight:
             min_v = fiducial_pass1::min_lv_tight_out[k];
@@ -238,7 +238,7 @@ namespace iguana::clas12 {
   //////////////////////////////////////////////////////////////////////////////////
 
   bool FiducialFilter::FilterDcXY(
-      int const sector,
+      int const dc_sector,
       float const r1_x,
       float const r1_y,
       float const r1_z,
@@ -253,7 +253,7 @@ namespace iguana::clas12 {
   {
     if(!o_enable_dc_cuts)
       return true;
-    if(!(sector >= 1 && sector <= 6))
+    if(!(dc_sector >= 1 && dc_sector <= 6))
       return false;
     const auto& minparams = ((torus<0) ? fiducial_pass1::minparams_in_XY_pass1 : fiducial_pass1::minparams_out_XY_pass1);
     const auto& maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_XY_pass1 : fiducial_pass1::maxparams_out_XY_pass1);
@@ -276,31 +276,31 @@ namespace iguana::clas12 {
           Y = r3_y;
           break;
       }
-      if(sector == 2)
+      if(dc_sector == 2)
       {
         const double X_new = X * std::cos(-60 * M_PI / 180) - Y * std::sin(-60 * M_PI / 180);
         Y = X * std::sin(-60 * M_PI / 180) + Y * std::cos(-60 * M_PI / 180);
         X = X_new;
       }
-      if(sector == 3)
+      if(dc_sector == 3)
       {
         const double X_new = X * std::cos(-120 * M_PI / 180) - Y * std::sin(-120 * M_PI / 180);
         Y = X * std::sin(-120 * M_PI / 180) + Y * std::cos(-120 * M_PI / 180);
         X = X_new;
       }
-      if(sector == 4)
+      if(dc_sector == 4)
       {
         const double X_new = X * std::cos(-180 * M_PI / 180) - Y * std::sin(-180 * M_PI / 180);
         Y = X * std::sin(-180 * M_PI / 180) + Y * std::cos(-180 * M_PI / 180);
         X = X_new;
       }
-      if(sector == 5)
+      if(dc_sector == 5)
       {
         const double X_new = X * std::cos(120 * M_PI / 180) - Y * std::sin(120 * M_PI / 180);
         Y = X * std::sin(120 * M_PI / 180) + Y * std::cos(120 * M_PI / 180);
         X = X_new;
       }
-      if(sector == 6)
+      if(dc_sector == 6)
       {
         const double X_new = X * std::cos(60 * M_PI / 180) - Y * std::sin(60 * M_PI / 180);
         Y = X * std::sin(60 * M_PI / 180) + Y * std::cos(60 * M_PI / 180);
@@ -331,8 +331,8 @@ namespace iguana::clas12 {
           return false;
           break;
       }
-      double calc_min = minparams[this_pid][sector - 1][region][0] + minparams[this_pid][sector - 1][region][1] * X;
-      double calc_max = maxparams[this_pid][sector - 1][region][0] + maxparams[this_pid][sector - 1][region][1] * X;
+      double calc_min = minparams[this_pid][dc_sector - 1][region][0] + minparams[this_pid][dc_sector - 1][region][1] * X;
+      double calc_max = maxparams[this_pid][dc_sector - 1][region][0] + maxparams[this_pid][dc_sector - 1][region][1] * X;
       if(std::isnan(calc_min)||std::isnan(calc_max)) return false;
       if((Y<calc_min) || (Y>calc_max)) {  return false;}
     }
@@ -342,7 +342,7 @@ namespace iguana::clas12 {
   //////////////////////////////////////////////////////////////////////////////////
 
   bool FiducialFilter::FilterDcThetaPhi(
-      int const sector,
+      int const dc_sector,
       float const r1_x,
       float const r1_y,
       float const r1_z,
@@ -357,7 +357,7 @@ namespace iguana::clas12 {
   {
     if(!o_enable_dc_cuts)
       return true;
-    if(!(sector >= 1 && sector <= 6))
+    if(!(dc_sector >= 1 && dc_sector <= 6))
       return false;
     const auto& minparams = ((torus<0) ? fiducial_pass1::minparams_in_theta_phi_pass1 : fiducial_pass1::minparams_out_theta_phi_pass1);
     const auto& maxparams = ((torus<0) ? fiducial_pass1::maxparams_in_theta_phi_pass1 : fiducial_pass1::maxparams_out_theta_phi_pass1);
@@ -389,13 +389,13 @@ namespace iguana::clas12 {
       phi_DCr_raw = 180 / M_PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)),
           x /sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
       double phi_DCr = 5000;
-      if (sector == 1) phi_DCr = phi_DCr_raw;
-      if (sector == 2) phi_DCr = phi_DCr_raw - 60;
-      if (sector == 3) phi_DCr = phi_DCr_raw - 120;
-      if (sector == 4 && phi_DCr_raw > 0) phi_DCr = phi_DCr_raw - 180;
-      if (sector == 4 && phi_DCr_raw < 0) phi_DCr = phi_DCr_raw + 180;
-      if (sector == 5) phi_DCr = phi_DCr_raw + 120;
-      if (sector == 6) phi_DCr = phi_DCr_raw + 60;
+      if (dc_sector == 1) phi_DCr = phi_DCr_raw;
+      if (dc_sector == 2) phi_DCr = phi_DCr_raw - 60;
+      if (dc_sector == 3) phi_DCr = phi_DCr_raw - 120;
+      if (dc_sector == 4 && phi_DCr_raw > 0) phi_DCr = phi_DCr_raw - 180;
+      if (dc_sector == 4 && phi_DCr_raw < 0) phi_DCr = phi_DCr_raw + 180;
+      if (dc_sector == 5) phi_DCr = phi_DCr_raw + 120;
+      if (dc_sector == 6) phi_DCr = phi_DCr_raw + 60;
       int this_pid = 0;
       switch (pid)
       {
@@ -407,10 +407,10 @@ namespace iguana::clas12 {
         case -321: this_pid = 5; break;
         default: return false; break;
       }
-      double calc_phi_min = minparams[this_pid][sector - 1][region][0] + minparams[this_pid][sector - 1][region][1] * std::log(theta_DCr)
-        + minparams[this_pid][sector - 1][region][2] * theta_DCr + minparams[this_pid][sector - 1][region][3] * theta_DCr * theta_DCr;
-      double calc_phi_max = maxparams[this_pid][sector - 1][region][0] + maxparams[this_pid][sector - 1][region][1] * std::log(theta_DCr)
-        + maxparams[this_pid][sector - 1][region][2] * theta_DCr + maxparams[this_pid][sector - 1][region][3] * theta_DCr * theta_DCr;
+      double calc_phi_min = minparams[this_pid][dc_sector - 1][region][0] + minparams[this_pid][dc_sector - 1][region][1] * std::log(theta_DCr)
+        + minparams[this_pid][dc_sector - 1][region][2] * theta_DCr + minparams[this_pid][dc_sector - 1][region][3] * theta_DCr * theta_DCr;
+      double calc_phi_max = maxparams[this_pid][dc_sector - 1][region][0] + maxparams[this_pid][dc_sector - 1][region][1] * std::log(theta_DCr)
+        + maxparams[this_pid][dc_sector - 1][region][2] * theta_DCr + maxparams[this_pid][dc_sector - 1][region][3] * theta_DCr * theta_DCr;
       if(std::isnan(calc_phi_min)||std::isnan(calc_phi_max)) return false;
       if((phi_DCr < calc_phi_min) || (phi_DCr > calc_phi_max)) return false;
     }

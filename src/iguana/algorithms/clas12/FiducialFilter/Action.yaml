@@ -23,7 +23,7 @@ actions:
   - name: FilterPcalHomogeneous
     type: filter
     inputs:
-      - { name: sector, type: int }
+      - { name: pcal_sector, type: int }
       - { name: lv, type: float }
       - { name: lw, type: float }
       - { name: torus, type: float }
@@ -31,7 +31,7 @@ actions:
   - name: FilterDcXY
     type: filter
     inputs:
-      - { name: sector, type: int }
+      - { name: dc_sector, type: int }
       - { name: r1_x, type: float }
       - { name: r1_y, type: float }
       - { name: r1_z, type: float }
@@ -46,7 +46,7 @@ actions:
   - name: FilterDcThetaPhi
     type: filter
     inputs:
-      - { name: sector, type: int }
+      - { name: dc_sector, type: int }
       - { name: r1_x, type: float }
       - { name: r1_y, type: float }
       - { name: r1_z, type: float }
