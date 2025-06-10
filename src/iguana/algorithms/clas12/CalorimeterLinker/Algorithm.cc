@@ -39,25 +39,23 @@ namespace iguana::clas12 {
     // sync new bank with particle bank, and fill it with zeroes
     bank_result.setRows(bank_particle.getRows());
     bank_result.getMutableRowList().setList(bank_particle.getRowList());
-    for(int row = 0; row < bank_result.getRows(); row++){
-      for(int ent = 0; ent < bank_result.getSchema().getEntries(); ent++) {
-        bank_result.putShort(i_pindex, row, static_cast<int16_t>(row));
-        bank_result.putByte(i_pcal_found, row, 0);
-        bank_result.putInt(i_pcal_sector, row, 0);
-        bank_result.putFloat(i_pcal_lu, row, 0);
-        bank_result.putFloat(i_pcal_lv, row, 0);
-        bank_result.putFloat(i_pcal_lw, row, 0);
-        bank_result.putByte(i_ecin_found, row, 0);
-        bank_result.putInt(i_ecin_sector, row, 0);
-        bank_result.putFloat(i_ecin_lu, row, 0);
-        bank_result.putFloat(i_ecin_lv, row, 0);
-        bank_result.putFloat(i_ecin_lw, row, 0);
-        bank_result.putByte(i_ecout_found, row, 0);
-        bank_result.putInt(i_ecout_sector, row, 0);
-        bank_result.putFloat(i_ecout_lu, row, 0);
-        bank_result.putFloat(i_ecout_lv, row, 0);
-        bank_result.putFloat(i_ecout_lw, row, 0);
-      }
+    for(int row = 0; row < bank_result.getRows(); row++) {
+      bank_result.putShort(i_pindex, row, static_cast<int16_t>(row));
+      bank_result.putByte(i_pcal_found, row, 0);
+      bank_result.putInt(i_pcal_sector, row, 0);
+      bank_result.putFloat(i_pcal_lu, row, 0);
+      bank_result.putFloat(i_pcal_lv, row, 0);
+      bank_result.putFloat(i_pcal_lw, row, 0);
+      bank_result.putByte(i_ecin_found, row, 0);
+      bank_result.putInt(i_ecin_sector, row, 0);
+      bank_result.putFloat(i_ecin_lu, row, 0);
+      bank_result.putFloat(i_ecin_lv, row, 0);
+      bank_result.putFloat(i_ecin_lw, row, 0);
+      bank_result.putByte(i_ecout_found, row, 0);
+      bank_result.putInt(i_ecout_sector, row, 0);
+      bank_result.putFloat(i_ecout_lu, row, 0);
+      bank_result.putFloat(i_ecout_lv, row, 0);
+      bank_result.putFloat(i_ecout_lw, row, 0);
     }
 
     // map particle `pindex` -> `CalorimeterLinkerVars` object
@@ -101,21 +99,21 @@ namespace iguana::clas12 {
         }
       }
       // fill output bank
-      bank_result.putByte(i_pcal_found, row_particle, link_particle.pcal_found);
-      bank_result.putInt(i_pcal_sector, row_particle, link_particle.pcal_sector);
-      bank_result.putFloat(i_pcal_lu, row_particle, link_particle.pcal_lu);
-      bank_result.putFloat(i_pcal_lv, row_particle, link_particle.pcal_lv);
-      bank_result.putFloat(i_pcal_lw, row_particle, link_particle.pcal_lw);
-      bank_result.putByte(i_ecin_found, row_particle, link_particle.ecin_found);
-      bank_result.putInt(i_ecin_sector, row_particle, link_particle.ecin_sector);
-      bank_result.putFloat(i_ecin_lu, row_particle, link_particle.ecin_lu);
-      bank_result.putFloat(i_ecin_lv, row_particle, link_particle.ecin_lv);
-      bank_result.putFloat(i_ecin_lw, row_particle, link_particle.ecin_lw);
+      bank_result.putByte(i_pcal_found,  row_particle, link_particle.pcal_found);
+      bank_result.putInt(i_pcal_sector,  row_particle, link_particle.pcal_sector);
+      bank_result.putFloat(i_pcal_lu,    row_particle, link_particle.pcal_lu);
+      bank_result.putFloat(i_pcal_lv,    row_particle, link_particle.pcal_lv);
+      bank_result.putFloat(i_pcal_lw,    row_particle, link_particle.pcal_lw);
+      bank_result.putByte(i_ecin_found,  row_particle, link_particle.ecin_found);
+      bank_result.putInt(i_ecin_sector,  row_particle, link_particle.ecin_sector);
+      bank_result.putFloat(i_ecin_lu,    row_particle, link_particle.ecin_lu);
+      bank_result.putFloat(i_ecin_lv,    row_particle, link_particle.ecin_lv);
+      bank_result.putFloat(i_ecin_lw,    row_particle, link_particle.ecin_lw);
       bank_result.putByte(i_ecout_found, row_particle, link_particle.ecout_found);
       bank_result.putInt(i_ecout_sector, row_particle, link_particle.ecout_sector);
-      bank_result.putFloat(i_ecout_lu, row_particle, link_particle.ecout_lu);
-      bank_result.putFloat(i_ecout_lv, row_particle, link_particle.ecout_lv);
-      bank_result.putFloat(i_ecout_lw, row_particle, link_particle.ecout_lw);
+      bank_result.putFloat(i_ecout_lu,   row_particle, link_particle.ecout_lu);
+      bank_result.putFloat(i_ecout_lv,   row_particle, link_particle.ecout_lv);
+      bank_result.putFloat(i_ecout_lw,   row_particle, link_particle.ecout_lw);
     }
     ShowBank(bank_result, Logger::Header("CREATED BANK"));
   }
