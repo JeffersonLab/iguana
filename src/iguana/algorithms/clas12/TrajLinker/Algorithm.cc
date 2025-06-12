@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
 
@@ -64,31 +65,29 @@ namespace iguana::clas12 {
       // loop over `REC::Traj` rows, setting elements of linked `TrajLinkerVars`
       for(auto const& row_traj : bank_traj.getRowList()) {
         if(row_particle == bank_traj.getShort("pindex", row_traj)) {
-          auto x     = bank_traj.getFloat("x", row_traj);
-          auto y     = bank_traj.getFloat("y", row_traj);
-          auto z     = bank_traj.getFloat("z", row_traj);
-          auto layer = bank_traj.getInt("layer", row_traj);
-          switch(layer){
-            case 6: // region 1
-              link_particle.r1_found = 1;
-              link_particle.r1_x = x;
-              link_particle.r1_y = y;
-              link_particle.r1_z = z;
-              break;
-            case 18: // region 2
-              link_particle.r2_found = 1;
-              link_particle.r2_x = x;
-              link_particle.r2_y = y;
-              link_particle.r2_z = z;
-              // Determine Sector from the center of the DC
-              link_particle.sector = GetSector(link_particle.r2_x, link_particle.r2_y, link_particle.r2_z);
-              break;
-            case 36: // region 3
-              link_particle.r3_found = 1;
-              link_particle.r3_x = x;
-              link_particle.r3_y = y;
-              link_particle.r3_z = z;
-              break;
+          if(bank_traj.getByte("detector", row_traj) == DetectorType::DC) { // only apply to DC
+            switch(bank_traj.getInt("layer", row_traj)) {
+              case 6: // region 1
+                link_particle.r1_found = 1;
+                link_particle.r1_x = bank_traj.getFloat("x", row_traj);
+                link_particle.r1_y = bank_traj.getFloat("y", row_traj);
+                link_particle.r1_z = bank_traj.getFloat("z", row_traj);
+                break;
+              case 18: // region 2
+                link_particle.r2_found = 1;
+                link_particle.r2_x = bank_traj.getFloat("x", row_traj);
+                link_particle.r2_y = bank_traj.getFloat("y", row_traj);
+                link_particle.r2_z = bank_traj.getFloat("z", row_traj);
+                // Determine Sector from the center of the DC
+                link_particle.sector = GetSector(link_particle.r2_x, link_particle.r2_y, link_particle.r2_z);
+                break;
+              case 36: // region 3
+                link_particle.r3_found = 1;
+                link_particle.r3_x = bank_traj.getFloat("x", row_traj);
+                link_particle.r3_y = bank_traj.getFloat("y", row_traj);
+                link_particle.r3_z = bank_traj.getFloat("z", row_traj);
+                break;
+            }
           }
         }
       }

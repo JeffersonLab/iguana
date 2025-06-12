@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
 
@@ -68,32 +69,27 @@ namespace iguana::clas12 {
       // loop over `REC::Calorimeter` rows, setting elements of linked `CalorimeterLinkerVars`
       for(auto const& row_calorimeter : bank_calorimeter.getRowList()) {
         if(row_particle == bank_calorimeter.getShort("pindex", row_calorimeter)) {
-          auto sector = bank_calorimeter.getByte("sector", row_calorimeter);
-          auto lu     = bank_calorimeter.getFloat("lu", row_calorimeter);
-          auto lv     = bank_calorimeter.getFloat("lv", row_calorimeter);
-          auto lw     = bank_calorimeter.getFloat("lw", row_calorimeter);
-          auto layer  = bank_calorimeter.getByte("layer", row_calorimeter);
-          switch(layer){
-            case 1:
+          switch(bank_calorimeter.getByte("layer", row_calorimeter)) {
+            case DetectorLayer::PCAL:
               link_particle.pcal_found  = 1;
-              link_particle.pcal_sector = sector;
-              link_particle.pcal_lu     = lu;
-              link_particle.pcal_lv     = lv;
-              link_particle.pcal_lw     = lw;
+              link_particle.pcal_sector = bank_calorimeter.getByte("sector", row_calorimeter);
+              link_particle.pcal_lu     = bank_calorimeter.getFloat("lu", row_calorimeter);
+              link_particle.pcal_lv     = bank_calorimeter.getFloat("lv", row_calorimeter);
+              link_particle.pcal_lw     = bank_calorimeter.getFloat("lw", row_calorimeter);
               break;
-            case 4:
+            case DetectorLayer::EC_INNER:
               link_particle.ecin_found  = 1;
-              link_particle.ecin_sector = sector;
-              link_particle.ecin_lu     = lu;
-              link_particle.ecin_lv     = lv;
-              link_particle.ecin_lw     = lw;
+              link_particle.ecin_sector = bank_calorimeter.getByte("sector", row_calorimeter);
+              link_particle.ecin_lu     = bank_calorimeter.getFloat("lu", row_calorimeter);
+              link_particle.ecin_lv     = bank_calorimeter.getFloat("lv", row_calorimeter);
+              link_particle.ecin_lw     = bank_calorimeter.getFloat("lw", row_calorimeter);
               break;
-            case 7:
+            case DetectorLayer::EC_OUTER:
               link_particle.ecout_found  = 1;
-              link_particle.ecout_sector = sector;
-              link_particle.ecout_lu     = lu;
-              link_particle.ecout_lv     = lv;
-              link_particle.ecout_lw     = lw;
+              link_particle.ecout_sector = bank_calorimeter.getByte("sector", row_calorimeter);
+              link_particle.ecout_lu     = bank_calorimeter.getFloat("lu", row_calorimeter);
+              link_particle.ecout_lv     = bank_calorimeter.getFloat("lv", row_calorimeter);
+              link_particle.ecout_lw     = bank_calorimeter.getFloat("lw", row_calorimeter);
               break;
           }
         }
