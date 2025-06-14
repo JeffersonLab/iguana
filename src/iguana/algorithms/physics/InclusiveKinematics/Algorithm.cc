@@ -119,34 +119,37 @@ namespace iguana::physics {
 
   int InclusiveKinematics::FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const
   {
+    bool lepton_found    = false;
     int lepton_row       = -1;
     double lepton_energy = 0;
 
     switch(o_method_lepton_finder) {
     case method_lepton_finder::highest_energy_FD_trigger: {
-      // find highest energy lepton
+
       for(auto const& row : particle_bank.getRowList()) {
-        if(particle_bank.getInt("pid", row) == o_beam_pdg) {
-          double px = particle_bank.getFloat("px", row);
-          double py = particle_bank.getFloat("py", row);
-          double pz = particle_bank.getFloat("pz", row);
-          double en = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(o_beam_mass, 2));
-          if(en > lepton_energy) {
-            lepton_row    = row;
-            lepton_energy = en;
+        if(particle_bank.getInt("pid", row) == o_beam_pdg) { // if beam PDG
+          auto status = particle_bank.getShort("status", row);
+          if(status > -3000 && status <= -2000) { // if in FD trigger
+            m_log->Trace("row {} status {} is in FD trigger", row, status);
+            double en = std::sqrt(
+                std::pow(particle_bank.getFloat("px", row), 2) +
+                std::pow(particle_bank.getFloat("py", row), 2) +
+                std::pow(particle_bank.getFloat("pz", row), 2) +
+                std::pow(o_beam_mass, 2));
+            if(en > lepton_energy) { // select max-E
+              lepton_found  = true;
+              lepton_row    = row;
+              lepton_energy = en;
+            }
           }
         }
       }
-      // require it to be in the FD trigger
-      if(lepton_row >= 0) {
-        auto status = particle_bank.getShort("status", lepton_row);
-        if(status <= -3000 || status > -2000)
-          lepton_row = -1;
-      }
+      if(lepton_found && lepton_row != 0)
+        m_log->Warn("Found scattered lepton which is NOT at pindex 0");
       break;
     }
     }
-    if(lepton_row >= 0)
+    if(lepton_found)
       m_log->Debug("Found scattered lepton: row={}, energy={}", lepton_row, lepton_energy);
     else
       m_log->Debug("Scattered lepton not found");
