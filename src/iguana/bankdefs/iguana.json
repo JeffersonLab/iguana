@@ -85,5 +85,53 @@
       { "name": "V",       "type": "D", "info": "depolarization factor @latex{V(\\varepsilon, y)}" },
       { "name": "W",       "type": "D", "info": "depolarization factor @latex{W(\\varepsilon, y)}" }
     ]
+  },
+  {
+    "name":      "REC::Particle::Calorimeter",
+    "algorithm": "clas12::CalorimeterLinker",
+    "group":     30000,
+    "item":      6,
+    "info":      "",
+    "entries": [
+      { "name": "pindex",       "type": "S", "info": "row number in the particle bank" },
+      { "name": "pcal_found",   "type": "B", "info": "1 if PCAL info found for this particle, 0 otherwise" },
+      { "name": "pcal_sector",  "type": "I", "info": "PCAL sector" },
+      { "name": "pcal_lu",      "type": "F", "info": "PCAL distance on U-side" },
+      { "name": "pcal_lv",      "type": "F", "info": "PCAL distance on V-side" },
+      { "name": "pcal_lw",      "type": "F", "info": "PCAL distance on W-side" },
+      { "name": "ecin_found",   "type": "B", "info": "1 if ECIN info found for this particle, 0 otherwise" },
+      { "name": "ecin_sector",  "type": "I", "info": "ECIN sector" },
+      { "name": "ecin_lu",      "type": "F", "info": "ECIN distance on U-side" },
+      { "name": "ecin_lv",      "type": "F", "info": "ECIN distance on V-side" },
+      { "name": "ecin_lw",      "type": "F", "info": "ECIN distance on W-side" },
+      { "name": "ecout_found",  "type": "B", "info": "1 if ECOUT info found for this particle, 0 otherwise" },
+      { "name": "ecout_sector", "type": "I", "info": "ECOUT sector" },
+      { "name": "ecout_lu",     "type": "F", "info": "ECOUT distance on U-side" },
+      { "name": "ecout_lv",     "type": "F", "info": "ECOUT distance on V-side" },
+      { "name": "ecout_lw",     "type": "F", "info": "ECOUT distance on W-side" }
+    ]
+  },
+  {
+    "name":      "REC::Particle::Traj",
+    "algorithm": "clas12::TrajLinker",
+    "group":     30000,
+    "item":      7,
+    "info":      "",
+    "entries": [
+      { "name": "pindex",   "type": "S", "info": "row number in the particle bank" },
+      { "name": "sector",   "type": "I", "info": "sector" },
+      { "name": "r1_found", "type": "B", "info": "1 if Region 1 info found for this particle, 0 otherwise" },
+      { "name": "r1_x",     "type": "F", "info": "Region 1 x-position" },
+      { "name": "r1_y",     "type": "F", "info": "Region 1 y-position" },
+      { "name": "r1_z",     "type": "F", "info": "Region 1 z-position" },
+      { "name": "r2_found", "type": "B", "info": "1 if Region 2 info found for this particle, 0 otherwise" },
+      { "name": "r2_x",     "type": "F", "info": "Region 2 x-position" },
+      { "name": "r2_y",     "type": "F", "info": "Region 2 y-position" },
+      { "name": "r2_z",     "type": "F", "info": "Region 2 z-position" },
+      { "name": "r3_found", "type": "B", "info": "1 if Region 3 info found for this particle, 0 otherwise" },
+      { "name": "r3_x",     "type": "F", "info": "Region 3 x-position" },
+      { "name": "r3_y",     "type": "F", "info": "Region 3 y-position" },
+      { "name": "r3_z",     "type": "F", "info": "Region 3 z-position" }
+    ]
   }
 ]

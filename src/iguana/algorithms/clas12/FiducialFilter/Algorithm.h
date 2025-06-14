@@ -4,15 +4,26 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` bank by applying DC (drift chamber) fiducial cuts
+  /// @brief_algo Filter the `REC::Particle` bank by applying DC (drift chamber) and ECAL (electromagnetic calorimeter) fiducial cuts
+  ///
+  /// Currently these are the "legacy" Pass 1 fiducial cuts tuned for Run Group A.
   ///
   /// @begin_doc_algo{clas12::FiducialFilter | Filter}
-  /// @input_banks{REC::Particle, REC::Traj, RUN::config}
+  /// @input_banks{REC::Particle, RUN::config, and others (see below)}
   /// @output_banks{REC::Particle}
   /// @end_doc
   ///
+  /// The following **additional banks** are needed:
+  /// - if configuration option `pass` is `1`:
+  ///   - `REC::Particle::Traj`, created by algorithm `iguana::clas12::TrajLinker`
+  ///   - `REC::Particle::Calorimeter`, created by algorithm `iguana::clas12::CalorimeterLinker`
+  ///
   /// @begin_doc_config{clas12/FiducialFilter}
   /// @config_param{pass | int | cook type to use for assigning fiducial cuts}
+  /// @config_param{pcal_electron_cut_level | string | cut level for PCAL homogeneous cuts for electrons and positrons, one of: loose, medium, tight}
+  /// @config_param{pcal_photon_cut_level | string | cut level for PCAL homogeneous cuts for photons, one of: loose, medium, tight}
+  /// @config_param{enable_pcal_cuts | int | enable (1) or disable (0) PCAL cuts }
+  /// @config_param{enable_dc_cuts | int | enable (1) or disable (0) DC cuts }
   /// @end_doc
   class FiducialFilter : public Algorithm
   {
@@ -21,71 +32,149 @@ namespace iguana::clas12 {
 
     public:
 
+      /// cut levels, currently only used for PCAL cuts
+      enum CutLevel {
+        loose,
+        medium,
+        tight
+      };
+
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// structure to hold `REC::Traj` data
-      struct traj_row_data {
-        /// @doxygen_off
-        double x1 = -999;
-        double x2 = -999;
-        double x3 = -999;
-        double y1 = -999;
-        double y2 = -999;
-        double y3 = -999;
-        double z1 = -999;
-        double z2 = -999;
-        double z3 = -999;
-        int sector= -1;
-        /// @doxygen_on
-      };
-
-      /// **Method**: Gets trajectory data for particles in the event
-      /// @param bank the bank to get data from
-      /// @returns a map with keys as particle indices (pindex) and values as traj_row_data structs
-      static std::map<int, FiducialFilter::traj_row_data> GetTrajMap(hipo::bank const &bank);
-
-      /// **Method**: Gets trajectory data for particles in the event
-      /// @param x Drift Chamber x coord
-      /// @param y Drift Chamber y coord
-      /// @param z Drift Chamber z coord
-      /// @returns sector number in DC
-      static int determineSectorDC(float x, float y, float z);
-
-    private:
-
-      /// **Method**: checks if the particle passes fiducial cuts
-      /// @param traj_row data struct of the particle in REC::Traj
-      /// @param torus toroidal magnetic field sign
-      /// @param pid pid of the particle
+      /// @action_function{scalar filter} top-level fiducial cut for RG-A Pass 1
+      /// @param pcal_sector PCAL sector
+      /// @param pcal_lv PCAL lv
+      /// @param pcal_lw PCAL lw
+      /// @param pcal_found if PCAL info exists for this particle, this should be true
+      /// @param dc_sector DC sector
+      /// @param dc_r1_x DC region 1 x
+      /// @param dc_r1_y DC region 1 y
+      /// @param dc_r1_z DC region 1 z
+      /// @param dc_r1_found if DC region 1 info exists for this particle, this should be true
+      /// @param dc_r2_x DC region 2 x
+      /// @param dc_r2_y DC region 2 y
+      /// @param dc_r2_z DC region 2 z
+      /// @param dc_r2_found if DC region 2 info exists for this particle, this should be true
+      /// @param dc_r3_x DC region 3 x
+      /// @param dc_r3_y DC region 3 y
+      /// @param dc_r3_z DC region 3 z
+      /// @param dc_r3_found if DC region 3 info exists for this particle, this should be true
+      /// @param torus the torus magnetic field sign
+      /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
-      bool Filter(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const;
+      bool FilterRgaPass1(
+          int const pcal_sector,
+          float const pcal_lv,
+          float const pcal_lw,
+          bool const pcal_found,
+          int const dc_sector,
+          float const dc_r1_x,
+          float const dc_r1_y,
+          float const dc_r1_z,
+          bool const dc_r1_found,
+          float const dc_r2_x,
+          float const dc_r2_y,
+          float const dc_r2_z,
+          bool const dc_r2_found,
+          float const dc_r3_x,
+          float const dc_r3_y,
+          float const dc_r3_z,
+          bool const dc_r3_found,
+          float const torus,
+          int const pid) const;
 
-      
-      /// **Method**: Examines XY fiducial cut for pass1
-      /// @param traj_row data struct of the particle in REC::Traj
-      /// @param torus toroidal magnetic field sign
-      /// @param pid pid of the particle
+      /// @action_function{scalar filter} EC hit position homogeneous cut on lv and lw
+      /// @param pcal_sector PCAL sector
+      /// @param lv PCAL lv
+      /// @param lw PCAL lw
+      /// @param torus the torus magnetic field sign
+      /// @param pid the PDG of the particle
+      bool FilterPcalHomogeneous(
+          int const pcal_sector,
+          float const lv,
+          float const lw,
+          float const torus,
+          int const pid) const;
+
+      /// @action_function{scalar filter} filter using DC XY fiducial cut
+      /// @param dc_sector DC sector
+      /// @param r1_x DC region 1 x
+      /// @param r1_y DC region 1 y
+      /// @param r1_z DC region 1 z
+      /// @param r2_x DC region 2 x
+      /// @param r2_y DC region 2 y
+      /// @param r2_z DC region 2 z
+      /// @param r3_x DC region 3 x
+      /// @param r3_y DC region 3 y
+      /// @param r3_z DC region 3 z
+      /// @param torus the torus magnetic field sign
+      /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
-      bool DC_fiducial_cut_XY_pass1(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const;
-      
-      
-      /// **Method**: Examines Theta Phi fiducial cut for pass1
-      /// @param traj_row data struct of the particle in REC::Traj
-      /// @param torus toroidal magnetic field sign
-      /// @param pid pid of the particle
+      bool FilterDcXY(
+          int const dc_sector,
+          float const r1_x,
+          float const r1_y,
+          float const r1_z,
+          float const r2_x,
+          float const r2_y,
+          float const r2_z,
+          float const r3_x,
+          float const r3_y,
+          float const r3_z,
+          float const torus,
+          int const pid) const;
+
+      /// @action_function{scalar filter} filter using DC theta-phi fiducial cut
+      /// @param dc_sector DC sector
+      /// @param r1_x DC region 1 x
+      /// @param r1_y DC region 1 y
+      /// @param r1_z DC region 1 z
+      /// @param r2_x DC region 2 x
+      /// @param r2_y DC region 2 y
+      /// @param r2_z DC region 2 z
+      /// @param r3_x DC region 3 x
+      /// @param r3_y DC region 3 y
+      /// @param r3_z DC region 3 z
+      /// @param torus the torus magnetic field sign
+      /// @param pid the PDG of the particle
       /// @returns `true` if passes fiducial cuts
-      bool DC_fiducial_cut_theta_phi_pass1(FiducialFilter::traj_row_data const traj_row, float const torus, int const pid) const;
-      
-      /// `hipo::banklist` 
+      bool FilterDcThetaPhi(
+          int const dc_sector,
+          float const r1_x,
+          float const r1_y,
+          float const r1_z,
+          float const r2_x,
+          float const r2_y,
+          float const r2_z,
+          float const r3_x,
+          float const r3_y,
+          float const r3_z,
+          float const torus,
+          int const pid) const;
+
+    private: // methods
+
+      /// @param level the cut level string
+      /// @returns `CutLevel` associated to the input
+      CutLevel ParseCutLevel(std::string const& level) const;
+
+    private: // members
+
+      // `hipo::banklist`
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_traj;
+      hipo::banklist::size_type b_cal;
       hipo::banklist::size_type b_config;
-      
-      /// Pass Reconstruction
+
+      // options
       int o_pass = 1;
-      
+      CutLevel o_pcal_electron_cut_level;
+      CutLevel o_pcal_photon_cut_level;
+      bool o_enable_pcal_cuts;
+      bool o_enable_dc_cuts;
+
   };
 
 }
