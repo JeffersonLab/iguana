@@ -33,7 +33,7 @@ jobs:
       - uses: actions/cache@v4
         id: cache
         with:
-          key: test_data # fixed key will always hit; clear cache to trigger cache miss
+          key: test_data_June16 # fixed key will always hit; clear cache to trigger cache miss
           path: test_data.hipo
           lookup-only: true
       - name: install xrootd-client
@@ -105,7 +105,7 @@ jobs:
       - name: get test data
         uses: actions/cache/restore@v4
         with:
-          key: test_data
+          key: test_data_June16
           path: test_data.hipo
       ### dependencies
       ###### for iguana
