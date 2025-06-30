@@ -133,7 +133,7 @@ with open(input_file_name) as input_file:
                 if entry["type"] in type_dict:
                     out_h.write(textwrap.indent(textwrap.dedent(f'''\
                     /// @brief {entry["info"]}
-                    {type_dict[entry["type"]]} {entry["name"]};
+                    {type_dict[entry["type"]]} {entry["name"]} = 0;
                 '''), '    '))
                 else:
                     print(f'ERROR: bank entry type "{entry["type"]}" is unknown', file=sys.stderr)
