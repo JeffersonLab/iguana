@@ -99,16 +99,19 @@
       { "name": "pcal_lu",      "type": "F", "info": "PCAL distance on U-side" },
       { "name": "pcal_lv",      "type": "F", "info": "PCAL distance on V-side" },
       { "name": "pcal_lw",      "type": "F", "info": "PCAL distance on W-side" },
+      { "name": "pcal_energy",  "type": "F", "info": "Energy associated with the PCAL hit (GeV)" },
       { "name": "ecin_found",   "type": "B", "info": "1 if ECIN info found for this particle, 0 otherwise" },
       { "name": "ecin_sector",  "type": "I", "info": "ECIN sector" },
       { "name": "ecin_lu",      "type": "F", "info": "ECIN distance on U-side" },
       { "name": "ecin_lv",      "type": "F", "info": "ECIN distance on V-side" },
       { "name": "ecin_lw",      "type": "F", "info": "ECIN distance on W-side" },
+      { "name": "ecin_energy",  "type": "F", "info": "Energy associated with the ECIN hit (GeV)" },
       { "name": "ecout_found",  "type": "B", "info": "1 if ECOUT info found for this particle, 0 otherwise" },
       { "name": "ecout_sector", "type": "I", "info": "ECOUT sector" },
       { "name": "ecout_lu",     "type": "F", "info": "ECOUT distance on U-side" },
       { "name": "ecout_lv",     "type": "F", "info": "ECOUT distance on V-side" },
-      { "name": "ecout_lw",     "type": "F", "info": "ECOUT distance on W-side" }
+      { "name": "ecout_lw",     "type": "F", "info": "ECOUT distance on W-side" },
+      { "name": "ecout_energy", "type": "F", "info": "Energy associated with the ECOUT hit (GeV)" }
     ]
   },
   {
