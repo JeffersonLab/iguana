@@ -19,6 +19,10 @@ env:
   num_events: 1000
   num_threads: 0 # use 0 for "all" available cores
   verbose_test: 'false' # only set this to 'true' if `meson test` fails and you need more output to investigate
+  # additional options
+  ## use offsite DB URIs, since GitHub actions does not respect the image's entrypoint, which is supposed
+  ## to automatically choose between the onsite and offsite URIs based on hostname
+  RCDB_CONNECTION: mysql://rcdb@clasdb-farm.jlab.org/rcdb
 
 jobs:
 
@@ -97,6 +101,8 @@ jobs:
     steps:
       - run: whoami
       - run: container_info
+      - name: echo RCDB_CONNECTION
+        run: echo $RCDB_CONNECTION
       ### setup
       - uses: actions/checkout@v4
         with:
