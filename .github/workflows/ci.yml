@@ -22,7 +22,7 @@ env:
   # additional options
   ## use offsite DB URIs, since GitHub actions does not respect the image's entrypoint, which is supposed
   ## to automatically choose between the onsite and offsite URIs based on hostname
-  RCDB_CONNECTION: mysql://rcdb@clasdb-farm.jlab.org/rcdb
+  RCDB_CONNECTION: mysql://rcdb@clasdb.jlab.org/rcdb
 
 jobs:
 
