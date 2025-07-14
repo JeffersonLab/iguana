@@ -8,7 +8,9 @@ class Generator
     @algo_name   = algo_name
     @algo_header = File.join *@algo_name.split('::'), 'Algorithm.h'
     @log_tag     = generator_name.empty? ? "[chameleon]" : "[chameleon::#{File.basename generator_name, '.rb'}]"
+    @ftn_name    = nil
     @ftn_type    = nil
+    @ftn_rank    = nil
     unless out_name.empty?
       verbose "generating #{description} '#{@out_name}'"
       @out = File.open @out_name, 'w'

@@ -4,6 +4,7 @@ algorithm:
 actions:
   - name: GetSector
     type: creator
+    rank: vector
     inputs:
       - { name: sectors,         type: std::vector<int>, dimension: 1 }
       - { name: pindices,        type: std::vector<int>, dimension: 1 }
@@ -12,6 +13,7 @@ actions:
       - type: int
   - name: GetStandardSector
     type: creator
+    rank: scalar
     inputs:
       - { name: sectors_track,   type: std::vector<int>, dimension: 1 }
       - { name: pindices_track,  type: std::vector<int>, dimension: 1 }
@@ -24,6 +26,7 @@ actions:
       - type: int
   - name: GetStandardSector
     type: creator
+    rank: vector
     suffix: vec
     inputs:
       - { name: sectors_track,     type: std::vector<int>, dimension: 1 }

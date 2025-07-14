@@ -27,13 +27,14 @@ class Bind_c < Generator
     # get function name and type
     @action_spec = spec
     @ftn_type = get_spec @action_spec, 'type'
-    ftn_name = get_spec @action_spec, 'name'
-    ftn_suffix = get_spec @action_spec, 'suffix', ''
-    ftn_name_fortran = "iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{ftn_name.downcase}#{ftn_suffix.downcase}"
+    @ftn_name = get_spec @action_spec, 'name'
+    @ftn_rank = get_spec @action_spec, 'rank'
+    ftn_name_fortran = "iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{@ftn_name.downcase}"
+    ftn_name_fortran += 'vec' if @ftn_rank == 'vector' # append 'vec' for vector action functions
     ftn_name_c = "#{ftn_name_fortran}_"
     convertors_array_to_vector = []
-    verbose " - bind #{@ftn_type} function #{@algo_name}::#{ftn_name}"
-    check_function_type "#{@algo_name}::#{ftn_name}", @ftn_type
+    verbose " - bind #{@ftn_type} function #{@algo_name}::#{@ftn_name}"
+    check_function_type "#{@algo_name}::#{@ftn_name}", @ftn_type
 
     # function to generate parameter docstrings
     def gen_docstring_params(key, in_or_out)
@@ -111,18 +112,27 @@ class Bind_c < Generator
     # -----------------------------------------
 
     # generate parts lists
-    docstring_param_list = ['[in] algo_idx the algorithm index']
-    par_list             = ['algo_idx_t* algo_idx']
-    call_arg_list        = []
-    assignment_list      = []
+    docstring_param_list = ['[in] algo_idx the algorithm index'] # list of doxygen docstrings
+    par_list             = ['algo_idx_t* algo_idx'] # list of C function parameters
+    call_arg_list        = [] # list of C++ action function arguments
+    assignment_list      = [] # list of return-value assignments
     case @ftn_type
     when 'filter'
       docstring_param_list += gen_docstring_params 'inputs', 'in'
       docstring_param_list << "[in,out] #{RESULT_VAR} the filter return value; if this value is already set, the result will be the `AND` of the initial value and this filter"
+      docstring_param_list << "[in] #{RESULT_VAR}__size the size of `#{RESULT_VAR}`" if @ftn_rank == 'vector'
       par_list += gen_ftn_params 'inputs'
       par_list << "bool* #{RESULT_VAR}"
+      par_list << "int* #{RESULT_VAR}__size" if @ftn_rank == 'vector'
       call_arg_list += gen_call_args 'inputs'
-      assignment_list << "*#{RESULT_VAR} = *#{RESULT_VAR} && out;"
+      case @ftn_rank
+      when 'scalar'
+        assignment_list << "*#{RESULT_VAR} = *#{RESULT_VAR} && out;"
+      when 'vector'
+        assignment_list << "*#{RESULT_VAR}__size = out.size();"
+        assignment_list << "for(std::size_t i = 0; i < out.size(); i++)"
+        assignment_list << "  #{RESULT_VAR}[i] = #{RESULT_VAR}[i] && out[i];"
+      end
     when 'creator', 'transformer'
       docstring_param_list += gen_docstring_params 'inputs', 'in'
       docstring_param_list += gen_docstring_params 'outputs', 'out'
@@ -159,7 +169,7 @@ class Bind_c < Generator
       ///       call #{ftn_name_fortran}(algo_idx, ...params...)
       /// ```
       /// It binds to the following C++ action function, wherein you can find its documentation:
-      /// - `iguana::#{@algo_name}::#{ftn_name}`
+      /// - `iguana::#{@algo_name}::#{@ftn_name}`
       #{docstring_param_list.map{|s|"/// @param #{s}"}.join "\n"}
       void #{ftn_name_c}(
         #{par_list.join ",\n  "})
@@ -169,7 +179,7 @@ class Bind_c < Generator
         #{convertors_array_to_vector.join "\n  "}
 
         // call action function
-        auto out = dynamic_cast<iguana::#{@algo_name}*>(iguana_get_algo_(algo_idx))->#{ftn_name}(
+        auto out = dynamic_cast<iguana::#{@algo_name}*>(iguana_get_algo_(algo_idx))->#{@ftn_name}(
           #{call_arg_list.join ",\n    "});
 
         // handle output

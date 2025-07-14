@@ -4,6 +4,7 @@ algorithm:
 actions:
   - name: FilterRgaPass1
     type: filter
+    rank: scalar
     inputs:
       - { name: pcal_sector, type: int }
       - { name: pcal_lv,     type: float }
@@ -26,6 +27,7 @@ actions:
       - { name: pid,         type: int }
   - name: FilterPcalHomogeneous
     type: filter
+    rank: scalar
     inputs:
       - { name: pcal_sector, type: int }
       - { name: lv, type: float }
@@ -34,6 +36,7 @@ actions:
       - { name: pid, type: int }
   - name: FilterDcXY
     type: filter
+    rank: scalar
     inputs:
       - { name: dc_sector, type: int }
       - { name: r1_x, type: float }
@@ -49,6 +52,7 @@ actions:
       - { name: pid, type: int }
   - name: FilterDcThetaPhi
     type: filter
+    rank: scalar
     inputs:
       - { name: dc_sector, type: int }
       - { name: r1_x, type: float }

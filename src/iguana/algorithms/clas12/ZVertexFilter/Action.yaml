@@ -4,6 +4,7 @@ algorithm:
 actions:
   - name: PrepareEvent
     type: creator
+    rank: scalar
     inputs:
       - name: runnum
         type: int
@@ -12,6 +13,7 @@ actions:
         cast: int
   - name: Filter
     type: filter
+    rank: scalar
     inputs:
       - name: zvertex
         type: double

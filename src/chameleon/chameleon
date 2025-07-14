@@ -64,20 +64,17 @@ out_files = {
   :c_bindings => Bind_c.new(File.join(out_dir, out_name('bind.cc')), algo_name),
 }
 
-# require all action function names to be unique for this algorithm;
-# overloaded functions require unique suffixes
+# require all action function names+ranks to be unique for this algorithm;
+# also check that 'rank' is valid
 action_function_names = @main.get_spec(main_spec, 'actions').map do |a|
-  uniq_name = a['name']
-  uniq_name += a['suffix'] if a.has_key? 'suffix'
-  uniq_name
+  name = @main.get_spec a, 'name'
+  rank = @main.get_spec a, 'rank'
+  raise "unknown rank '#{rank}' for action function '#{name}' in algorithm '#{algo_name}'" unless ['scalar', 'vector'].include? rank
+  "#{name}{#{rank}}"
 end
 unless action_function_names.uniq == action_function_names
   duplicates = action_function_names.select{ |f| action_function_names.count(f) > 1 }
-  @main.error "Algorithm '#{algo_name}' has overloaded action functions [#{duplicates.join ', '}]."
-  @main.error "Please add 'suffix:' values to the corresponding action functions in Action.yaml."
-  @main.error "Convention: if a vector action function overloads a scalar action function, add"
-  @main.error "            'suffix: vec' to the vector action function."
-  raise "cannot bind C/Fortran, see errors above"
+  raise "Algorithm '#{algo_name}' has overloaded action functions [#{duplicates.join ', '}]. Overloads are not allowed for action functions of the same rank."
 end
 
 # parse action functions

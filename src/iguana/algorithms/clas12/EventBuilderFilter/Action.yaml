@@ -4,10 +4,12 @@ algorithm:
 actions:
   - name: Filter
     type: filter
+    rank: scalar
     inputs:
       - { name: pid, type: int }
   - name: Filter
     type: filter
+    rank: vector
     suffix: vec
     inputs:
       - { name: pids, type: std::vector<int>, dimension: 1 }

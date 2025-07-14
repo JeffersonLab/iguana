@@ -191,11 +191,12 @@ from HIPO bank rows. The return type of an action function depends on the algori
 Some algorithms have action functions which require a number from _all_ of the rows of a bank; this distinction
 motivates further classification of action functions:
 
-| Action Function Type | Description |
+| Action Function Rank | Description |
 | --- | --- |
-| **Scalar** | All inputs and outputs are scalar quantities (single values). This type of function may be used on a single bank row. |
-| **Vector** | All inputs and outputs are vector quantities (lists of values). This type of action function needs values from all of the bank rows. |
-| **Mixed** | Inputs and outputs are scalar or vector quantities. |
+| **Scalar** | Outputs are scalar quantities (single values). This type of function may be used on a single bank row. |
+| **Vector** | Outputs are vector quantities (lists of values). This type of action function needs values from all of the bank rows. |
+
+Note that the action function parameters may be scalars and/or vectors, _i.e._, 0-dimensional or 1-dimensional.
 
 To maximize compatibility with user analysis code, these functions are overloaded:
 - for every scalar function, there should be a vector function which calls the scalar function iteratively

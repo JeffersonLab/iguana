@@ -88,7 +88,7 @@ namespace iguana::clas12 {
           std::vector<int> const& pindices,
           int const& pindex_particle) const;
 
-      /// @action_function{vector creator} for a given particle with index `pindex_particle`, get its sector from
+      /// @action_function{scalar creator} for a given particle with index `pindex_particle`, get its sector from
       /// using the standard method
       ///
       /// The following detectors' banks will be searched in order, and once the sector is found for any detector, it is returned:

@@ -5,6 +5,7 @@ actions:
 
   - name: Transform
     type: transformer
+    rank: scalar
     inputs:
       - name: px
         type: double
@@ -34,6 +35,7 @@ actions:
 
   - name: CorrectEnergy
     type: transformer
+    rank: scalar
     inputs:
       - name: E
         type: double
