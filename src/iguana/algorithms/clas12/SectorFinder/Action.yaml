@@ -22,8 +22,9 @@ actions:
       - { name: pindex_particle, type: int }
     outputs:
       - type: int
-  - name: GetStandardSectors
+  - name: GetStandardSector
     type: creator
+    suffix: vec
     inputs:
       - { name: sectors_track,     type: std::vector<int>, dimension: 1 }
       - { name: pindices_track,    type: std::vector<int>, dimension: 1 }

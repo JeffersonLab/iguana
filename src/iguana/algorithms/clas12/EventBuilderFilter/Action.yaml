@@ -5,5 +5,9 @@ actions:
   - name: Filter
     type: filter
     inputs:
-      - name: pid
-        type: int
+      - { name: pid, type: int }
+  - name: Filter
+    type: filter
+    suffix: vec
+    inputs:
+      - { name: pids, type: std::vector<int>, dimension: 1 }

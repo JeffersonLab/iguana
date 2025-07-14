@@ -263,7 +263,7 @@ c       get sector number
         write(*,*) '  sector_sci', (sector_sci(j),j=1,nrows_sci)
         write(*,*) '  pindex_sci', (pindex_sci(j),j=1,nrows_sci)
         print *, '<<<'
-        call iguana_clas12_sectorfinder_getstandardsectors(
+        call iguana_clas12_sectorfinder_getstandardsectorvec(
      &    algo_sec_finder,
      &    sector_trk, nrows_trk, pindex_trk, nrows_trk,
      &    sector_cal, nrows_cal, pindex_cal, nrows_cal,

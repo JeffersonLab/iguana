@@ -188,7 +188,7 @@ namespace iguana::clas12 {
     return -1;
   }
 
-  std::vector<int> SectorFinder::GetStandardSectors(
+  std::vector<int> SectorFinder::GetStandardSector(
       std::vector<int> const& sectors_track,
       std::vector<int> const& pindices_track,
       std::vector<int> const& sectors_cal,
