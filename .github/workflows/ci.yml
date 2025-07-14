@@ -19,6 +19,10 @@ env:
   num_events: 1000
   num_threads: 0 # use 0 for "all" available cores
   verbose_test: 'false' # only set this to 'true' if `meson test` fails and you need more output to investigate
+  # additional options
+  ## use offsite DB URIs, since GitHub actions does not respect the image's entrypoint, which is supposed
+  ## to automatically choose between the onsite and offsite URIs based on hostname
+  RCDB_CONNECTION: mysql://rcdb@clasdb.jlab.org/rcdb
 
 jobs:
 
@@ -28,7 +32,7 @@ jobs:
   download_test_data:
     name: Download test data
     runs-on: ubuntu-latest
-    # NOTE: using Ubuntu runner, rather than a `container-forge` image, since there were problems accessing the cache
+    # NOTE: using Ubuntu runner, rather than a `container-forge` image, since it's much faster for cache hits
     steps:
       - uses: actions/cache@v4
         id: cache
@@ -97,6 +101,8 @@ jobs:
     steps:
       - run: whoami
       - run: container_info
+      - name: echo RCDB_CONNECTION
+        run: echo $RCDB_CONNECTION
       ### setup
       - uses: actions/checkout@v4
         with:
@@ -291,7 +297,7 @@ jobs:
         if: ${{ matrix.id == 'cpp' }}
         with:
           name: _validation_results
-          retention-days: 5
+          retention-days: 90
           path: validation_results
       - name: upload documentation artifacts
         uses: actions/upload-artifact@v4

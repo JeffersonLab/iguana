@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
 
@@ -26,6 +27,7 @@ namespace iguana::clas12 {
   ///
   /// The action functions ::GetStandardSector and ::GetStandardSectors identify the sector(s) using these banks in a priority order, whereas
   /// the action function ::GetSector uses a single bank's data.
+  /// Note: rows that have been filtered out of `REC::Particle` will still have their sectors determined.
   ///
   /// @creator_note
   class SectorFinder : public Algorithm
@@ -61,7 +63,7 @@ namespace iguana::clas12 {
       ///     int det=bank.getInt("detector",row);
       ///
       ///     //NB: you should check you read from an FD detector
-      ///     // eg det 7 is the ECAL
+      ///     // e.g. det 7 is the ECAL (see/use `iguana::DetectorType` enum)
       ///     if(det==7){
       ///       sectors.push_back(bank.getInt("sector", row));
       ///       pindices.push_back(bank.getShort("pindex", row));
@@ -172,7 +174,14 @@ namespace iguana::clas12 {
       std::string o_bankname_uncharged;
 
       //only want sectors from FD detectors
-      std::set<int> const listFDDets{6,7,12,15,16,18};
+      std::set<int> const listFDDets{
+        DetectorType::DC,
+        DetectorType::ECAL,
+        DetectorType::FTOF,
+        DetectorType::HTCC,
+        DetectorType::LTCC,
+        DetectorType::RICH
+      };
   };
 
 }

@@ -145,27 +145,41 @@ If you will _install_ `iguana` (recommended), set an installation prefix:
 meson configure --prefix=/path/to/iguana-installation  # must be an ABSOLUTE path
 ```
 
-All build options, their current values, and their descriptions may be found by running one of
+Aside from `--prefix`, most other build options are set with `-D`:
 ```bash
-meson configure              # outputs in a pager (`less`); you may scroll, or press 'q' to quit
-meson configure --no-pager   # do not use a pager
+meson configure -D<option>=<value>  # syntax
+meson configure -Dbind_python=true  # example, which sets option 'bind_python' to 'true'
 ```
-**but that's a _lot_ of text!** The _most important_ build options are under the **"Project options"**
-sections: the first such section is for `iguana`, and the rest are for subprojects (_e.g._, `rcdb`).
+The following table includes commonly-used build options; they are not required since they have default values,
+but you may prefer to change them:
 
-To see _just_ the project options, run the following (which requires [`jq`](https://jqlang.github.io/jq/)):
-```bash
-/path/to/iguana-source/meson/dump-build-options.sh .
-```
+| Option             | Type    | Description                                                                       |
+| ---                | ---     | ---                                                                               |
+| `bind_fortran`     | boolean | Install Fortran bindings                                                          |
+| `bind_python`      | boolean | Install Python bindings                                                           |
+| `install_examples` | boolean | Install examples                                                                  |
+| `rcdb:home`        | string  | Location of RCDB installation; if empty, RCDB-dependent code will not be included |
 
-To set any build option, _e.g._ `install_examples` to `true`, run:
+The current value of all options, and their descriptions, may be found by running:
 ```bash
-meson configure -Dinstall_examples=true
+meson configure   # you may scroll, or press 'q' to quit
 ```
-You can add as many `-D<option>=<value>` arguments as you need.
+Scroll down to the **"Project options"** sections, which are near the bottom, for Iguana specific options.
 
 > [!NOTE]
-> To set a subproject's option, you must prefix the subproject name. For example, for `rcdb`, use `-Drcdb:<option>=<value>`.
+> The first **"Project options"** section is for Iguana, while the subsequent **"Project options"** sections are for its subprojects.
+> To set a subproject option, you must prefix the subproject name; for example, for subproject `rcdb`, to set option `home` to `/opt/rcdb`:
+> ```bash
+> meson configure -Drcdb:home=/opt/rcdb
+> ```
+<!--`-->
+
+> [!TIP]
+> To see _just_ the project options, run the following (which requires [`jq`](https://jqlang.github.io/jq/)):
+> ```bash
+> /path/to/iguana-source/meson/dump-build-options.sh .
+> ```
+<!--`-->
 
 ### 🟩 Step 4: Compile and Install
 Now compile and install Iguana:

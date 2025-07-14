@@ -1,6 +1,63 @@
 #pragma once
 
-namespace iguana::clas12 {
+namespace iguana::clas12::fiducial_pass1 {
+
+    ///////////////////////////////////////////////////////////////////
+    /// inbending:
+    // 
+    double const min_lu_tight_inb[6] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+    double const min_lu_med_inb[6]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+    double const min_lu_loose_inb[6] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+    // 
+    double const max_lu_tight_inb[6] = {398, 398, 398, 398, 398, 398}; 
+    double const max_lu_med_inb[6]   = {408, 408, 408, 408, 408, 408}; 
+    double const max_lu_loose_inb[6] = {420, 420, 420, 420, 420, 420}; 
+    // 
+    double const min_lv_tight_inb[6] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+    double const min_lv_med_inb[6]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+    double const min_lv_loose_inb[6] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+    //
+    double const max_lv_tight_inb[6] = {400, 400, 400, 400, 400, 400};
+    double const max_lv_med_inb[6]   = {400, 400, 400, 400, 400, 400};
+    double const max_lv_loose_inb[6] = {400, 400, 400, 400, 400, 400};
+    //
+    double const min_lw_tight_inb[6] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+    double const min_lw_med_inb[6]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+    double const min_lw_loose_inb[6] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+    // 
+    double const max_lw_tight_inb[6] = {400, 400, 400, 400, 400, 400};
+    double const max_lw_med_inb[6]   = {400, 400, 400, 400, 400, 400};
+    double const max_lw_loose_inb[6] = {400, 400, 400, 400, 400, 400};
+
+
+    ///////////////////////////////////////////////////////////////////////
+    /// outbending (not adjusted up to now, same as inbending!):
+    // 
+    double const min_lu_tight_out[6] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+    double const min_lu_med_out[6]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+    double const min_lu_loose_out[6] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+    // 
+    double const max_lu_tight_out[6] = {398, 398, 398, 398, 398, 398}; 
+    double const max_lu_med_out[6]   = {408, 408, 408, 408, 408, 408}; 
+    double const max_lu_loose_out[6] = {420, 420, 420, 420, 420, 420}; 
+    // 
+    double const min_lv_tight_out[6] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+    double const min_lv_med_out[6]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+    double const min_lv_loose_out[6] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+    // 
+    double const max_lv_tight_out[6] = {400, 400, 400, 400, 400, 400};
+    double const max_lv_med_out[6]   = {400, 400, 400, 400, 400, 400};
+    double const max_lv_loose_out[6] = {400, 400, 400, 400, 400, 400};
+    //
+    double const min_lw_tight_out[6] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+    double const min_lw_med_out[6]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+    double const min_lw_loose_out[6] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+    //
+    double const max_lw_tight_out[6] = {400, 400, 400, 400, 400, 400};
+    double const max_lw_med_out[6]   = {400, 400, 400, 400, 400, 400};
+    double const max_lw_loose_out[6] = {400, 400, 400, 400, 400, 400};
+
+    //////////////////////////////////////////////////////////////
 
     const double maxparams_in_theta_phi_pass1[6][6][3][4] = {
       {{{-37.5489,27.4543,-1.11484,0.00522935},{-29.7228,26.7512,-1.52592,0.0122397},{-20.3559,23.1586,-1.47441,0.0133898}},

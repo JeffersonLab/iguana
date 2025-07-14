@@ -1,7 +1,4 @@
-pythondir = 'python'
-project_pkg_vars += 'pythonpath=' + '${prefix}' / pythondir
-
-install_subdir('pyiguana', install_dir: pythondir)
+install_subdir('pyiguana', install_dir: project_pythondir)
 
 if (get_option('install_examples'))
   python_examples = [
