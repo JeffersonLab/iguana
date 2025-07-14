@@ -28,7 +28,8 @@ class Bind_c < Generator
     @action_spec = spec
     @ftn_type = get_spec @action_spec, 'type'
     ftn_name = get_spec @action_spec, 'name'
-    ftn_name_fortran = "iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{ftn_name.downcase}"
+    ftn_suffix = get_spec @action_spec, 'suffix', ''
+    ftn_name_fortran = "iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{ftn_name.downcase}#{ftn_suffix.downcase}"
     ftn_name_c = "#{ftn_name_fortran}_"
     convertors_array_to_vector = []
     verbose " - bind #{@ftn_type} function #{@algo_name}::#{ftn_name}"
