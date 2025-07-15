@@ -30,7 +30,7 @@ numEvents = int(sys.argv[2]) if len(sys.argv)>2 else 3
 reader = hipo.reader(inFile)
 
 # set list of banks to be read
-banks  = reader.getBanks([
+banks = reader.getBanks([
     "REC::Particle",
     "RUN::config",
     "REC::Track",
@@ -51,9 +51,9 @@ algo_sector_finder       = iguana.clas12.SectorFinder()
 algo_momentum_correction = iguana.clas12.MomentumCorrection()
 
 # set log levels
-algo_eventbuilder_filter.SetOption('log', 'debug')
-algo_sector_finder.SetOption('log', 'debug')
-algo_momentum_correction.SetOption('log', 'debug')
+algo_eventbuilder_filter.SetOption('log', 'info')
+algo_sector_finder.SetOption('log', 'info')
+algo_momentum_correction.SetOption('log', 'info')
 
 # set algorithm options
 algo_eventbuilder_filter.SetOption('pids',  [11, 211, -211])
@@ -75,19 +75,30 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     calorimeterBank  = banks[b_calorimeter]
     scintillatorBank = banks[b_scintillator]
 
+    print(f'evnum = {configBank.getInt("event",0)}')
+
     # we'll need information from all the rows of REC::Track,Calorimeter,Scintilator,
     # in order to get the sector information for each particle
-    # NOTE: not giving a row number argument to these `get*` functions means they will return Arrays of all rows' values
-    # FIXME: these are not the right integer-type accessors (need `getShort` and `getByte`); see https://github.com/gavalian/hipo/issues/72
-    trackBank_sectors         = trackBank.getInt("pindex");
-    trackBank_pindices        = trackBank.getInt("sector");
-    calorimeterBank_sectors   = calorimeterBank.getInt("pindex");
-    calorimeterBank_pindices  = calorimeterBank.getInt("sector");
-    scintillatorBank_sectors  = scintillatorBank.getInt("pindex");
-    scintillatorBank_pindices = scintillatorBank.getInt("sector");
+    # FIXME: there are vectorized accessors, but we cannot use them yet; see https://github.com/gavalian/hipo/issues/72
+    #        until then, we fill lists manually
+    trackBank_sectors = []
+    trackBank_pindices = []
+    calorimeterBank_sectors = []
+    calorimeterBank_pindices = []
+    scintillatorBank_sectors = []
+    scintillatorBank_pindices = []
+    for r in trackBank.getRowList():
+        trackBank_sectors.append(trackBank.getByte("sector", r))
+        trackBank_pindices.append(trackBank.getShort("pindex", r))
+    for r in calorimeterBank.getRowList():
+        calorimeterBank_sectors.append(calorimeterBank.getByte("sector", r))
+        calorimeterBank_pindices.append(calorimeterBank.getShort("pindex", r))
+    for r in scintillatorBank.getRowList():
+        scintillatorBank_sectors.append(scintillatorBank.getByte("sector", r))
+        scintillatorBank_pindices.append(scintillatorBank.getShort("pindex", r))
 
     # show the particle bank
-    particleBank.show()
+    # particleBank.show()
 
     # loop over bank rows
     for row in particleBank.getRowList():
@@ -119,11 +130,13 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
 
             # then print the result
             print(f'Accepted PID {pid}:')
+            print(f'  sector = {sector}')
             print(f'  p_old = ({particleBank.getFloat("px", row)}, {particleBank.getFloat("py", row)}, {particleBank.getFloat("pz", row)})')
             print(f'  p_new = ({p_corrected.px}, {p_corrected.py}, {p_corrected.pz})')
 
 # stop the algorithms
 algo_eventbuilder_filter.Stop()
+algo_sector_finder.Stop()
 algo_momentum_correction.Stop()
 
 """!@doxygen_on"""

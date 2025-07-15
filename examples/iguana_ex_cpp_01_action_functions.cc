@@ -61,9 +61,9 @@ int main(int argc, char** argv)
   iguana::clas12::MomentumCorrection algo_momentum_correction;
 
   // set log levels
-  algo_eventbuilder_filter.SetOption("log", "debug");
-  algo_sector_finder.SetOption("log", "debug");
-  algo_momentum_correction.SetOption("log", "debug");
+  algo_eventbuilder_filter.SetOption("log", "info");
+  algo_sector_finder.SetOption("log", "info");
+  algo_momentum_correction.SetOption("log", "info");
 
   // set algorithm options
   algo_eventbuilder_filter.SetOption<std::vector<int>>("pids", {11, 211, -211});
@@ -86,17 +86,30 @@ int main(int argc, char** argv)
 
     // we'll need information from all the rows of REC::Track,Calorimeter,Scintilator,
     // in order to get the sector information for each particle
-    // NOTE: not giving a row number argument to these `get*` functions means they will return `std::vector` objects of all rows' values
-    // FIXME: these are not the right integer-type accessors (need `getShort` and `getByte`); see https://github.com/gavalian/hipo/issues/72
-    auto trackBank_sectors         = trackBank.getInt("pindex");
-    auto trackBank_pindices        = trackBank.getInt("sector");
-    auto calorimeterBank_sectors   = calorimeterBank.getInt("pindex");
-    auto calorimeterBank_pindices  = calorimeterBank.getInt("sector");
-    auto scintillatorBank_sectors  = scintillatorBank.getInt("pindex");
-    auto scintillatorBank_pindices = scintillatorBank.getInt("sector");
+    // FIXME: there are vectorized accessors, but we cannot use them yet; see https://github.com/gavalian/hipo/issues/72
+    //        until then, we fill `std::vector`s manually
+    std::vector<int> trackBank_sectors;
+    std::vector<int> trackBank_pindices;
+    std::vector<int> calorimeterBank_sectors;
+    std::vector<int> calorimeterBank_pindices;
+    std::vector<int> scintillatorBank_sectors;
+    std::vector<int> scintillatorBank_pindices;
+    for(auto const& r : trackBank.getRowList()) {
+      trackBank_sectors.push_back(trackBank.getByte("sector", r));
+      trackBank_pindices.push_back(trackBank.getShort("pindex", r));
+    }
+    for(auto const& r : calorimeterBank.getRowList()) {
+      calorimeterBank_sectors.push_back(calorimeterBank.getByte("sector", r));
+      calorimeterBank_pindices.push_back(calorimeterBank.getShort("pindex", r));
+    }
+    for(auto const& r : scintillatorBank.getRowList()) {
+      scintillatorBank_sectors.push_back(scintillatorBank.getByte("sector", r));
+      scintillatorBank_pindices.push_back(scintillatorBank.getShort("pindex", r));
+    }
 
     // show the particle bank
-    particleBank.show();
+    // particleBank.show();
+    fmt::print("evnum = {}\n", configBank.getInt("event", 0));
 
     // loop over bank rows
     for(auto const& row : particleBank.getRowList()) {
