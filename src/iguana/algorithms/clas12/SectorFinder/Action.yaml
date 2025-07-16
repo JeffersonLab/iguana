@@ -4,7 +4,7 @@ algorithm:
 actions:
   - name: GetSector
     type: creator
-    rank: vector
+    rank: scalar
     inputs:
       - { name: sectors,         type: std::vector<int>, dimension: 1 }
       - { name: pindices,        type: std::vector<int>, dimension: 1 }
