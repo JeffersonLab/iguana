@@ -27,7 +27,6 @@ actions:
   - name: GetStandardSector
     type: creator
     rank: vector
-    suffix: vec
     inputs:
       - { name: sectors_track,     type: std::vector<int>, dimension: 1 }
       - { name: pindices_track,    type: std::vector<int>, dimension: 1 }
