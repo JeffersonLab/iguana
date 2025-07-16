@@ -116,9 +116,9 @@ namespace iguana::clas12 {
           std::vector<int> const& pindices_scint,
           int const& pindex_particle) const;
 
-      /// @action_function{vector creator} get sectors for all particles, using the standard method;
+      /// @action_function{vector creator} get sectors for all particles, using the standard method
       ///
-      /// This function overloads a corresponding scalar action function.
+      /// @overloads_scalar
       ///
       /// @see ::GetSector, which exemplifies using only one bank's lists of `sectors` and `pindices`
       ///
