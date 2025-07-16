@@ -32,7 +32,6 @@ class Bind_c < Generator
     ftn_name_fortran = "iguana_#{@algo_name.downcase.gsub /::/, '_'}_#{@ftn_name.downcase}"
     ftn_name_fortran += 'vec' if @ftn_rank == 'vector' # append 'vec' for vector action functions
     ftn_name_c = "#{ftn_name_fortran}_"
-    convertors_array_to_vector = []
     verbose " - bind #{@ftn_type} function #{@algo_name}::#{@ftn_name}"
     check_function_type "#{@algo_name}::#{@ftn_name}", @ftn_type
 
@@ -63,6 +62,27 @@ class Bind_c < Generator
             "#{cast.empty? ? type : cast}* #{name}",
             "int* #{name}__size",
           ]
+        end
+      end.flatten
+    end
+
+    # function to generate conversions from C-array to C++ std::vector
+    def gen_arr2vec(key)
+      map_spec_params(@action_spec, key) do |name, type, cast, dimension|
+        if dimension == 1
+          type_in     = type
+          type_out    = cast.empty? ? type_in : cast
+          name_array  = name
+          name_vector = "#{name_array}__vector"
+          elem        = "#{name_array}[i]"
+          vector_type = type_out=='bool' ? 'std::deque' : 'std::vector' # use `deque<bool>` insead of forbidden `vector<bool>`
+          code_str_list = [
+            "#{vector_type}<#{type_out}> #{name_vector}(#{name_array}, #{name_array} + *#{name_array}__size);"
+          ]
+          if DEBUG
+            code_str_list << "fmt::print(\"[C] #{name_array} = [{}]\\n\", fmt::join(#{name_vector}, \", \"));"
+          end
+          code_str_list
         end
       end.flatten
     end
@@ -114,6 +134,7 @@ class Bind_c < Generator
     # generate parts lists
     docstring_param_list = ['[in] algo_idx the algorithm index'] # list of doxygen docstrings
     par_list             = ['algo_idx_t* algo_idx'] # list of C function parameters
+    arr2vec_list         = [] # list of converters from C array to C++ std::vector
     call_arg_list        = [] # list of C++ action function arguments
     assignment_list      = [] # list of return-value assignments
     case @ftn_type
@@ -124,6 +145,7 @@ class Bind_c < Generator
       par_list += gen_ftn_params 'inputs'
       par_list << "bool* #{RESULT_VAR}"
       par_list << "int* #{RESULT_VAR}__size" if @ftn_rank == 'vector'
+      arr2vec_list += gen_arr2vec 'inputs'
       call_arg_list += gen_call_args 'inputs'
       case @ftn_rank
       when 'scalar'
@@ -138,27 +160,9 @@ class Bind_c < Generator
       docstring_param_list += gen_docstring_params 'outputs', 'out'
       par_list += gen_ftn_params 'inputs'
       par_list += gen_ftn_params 'outputs'
+      arr2vec_list += gen_arr2vec 'inputs'
       call_arg_list += gen_call_args 'inputs'
       assignment_list += gen_assignments 'outputs'
-    end
-
-    # generate array-to-vector converters
-    map_spec_params(@action_spec, 'inputs') do |name, type, cast, dimension|
-      if dimension == 1
-        type_in     = type
-        type_out    = cast.empty? ? type_in : cast
-        name_array  = name
-        name_vector = "#{name_array}__vector"
-        elem        = "#{name_array}[i]"
-        vector_type = type_out=='bool' ? 'std::deque' : 'std::vector' # use `deque<bool>` insead of forbidden `vector<bool>`
-        code_str_list = [
-          "#{vector_type}<#{type_out}> #{name_vector}(#{name_array}, #{name_array} + *#{name_array}__size);"
-        ]
-        if DEBUG
-          code_str_list << "fmt::print(\"[C] #{name_array} = [{}]\\n\", fmt::join(#{name_vector}, \", \"));"
-        end
-        convertors_array_to_vector << code_str_list.join("\n  ")
-      end
     end
 
     # generate code
@@ -176,7 +180,7 @@ class Bind_c < Generator
       {
         #{DEBUG ? "fmt::print(\"[C] CALL #{ftn_name_c}\\n\");" : ''}
         // convert arrays to vectors
-        #{convertors_array_to_vector.join "\n  "}
+        #{arr2vec_list.join "\n  "}
 
         // call action function
         auto out = dynamic_cast<iguana::#{@algo_name}*>(iguana_get_algo_(algo_idx))->#{@ftn_name}(
