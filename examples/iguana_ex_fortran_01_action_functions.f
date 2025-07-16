@@ -49,6 +49,7 @@ c     RUN::config columns
       integer(c_int) nrows_c ! number of rows
       real(c_float)  torus(N_MAX)
       integer(c_int) runnum(N_MAX)
+      integer(c_int) evnum(N_MAX)
 
 c     REC::Track, REC::Calorimeter, REC::Scintillator columns
       integer(c_int) nrows_trk, nrows_cal, nrows_sci
@@ -209,6 +210,7 @@ c       get bank elements
         call hipo_read_int('REC::Particle', 'status', nr, stat, N_MAX)
         call hipo_read_float('RUN::config', 'torus', nr, torus, N_MAX)
         call hipo_read_int('RUN::config', 'run', nr, runnum, N_MAX)
+        call hipo_read_int('RUN::config', 'event', nr, evnum, N_MAX)
         call hipo_read_int('REC::Track', 'sector', nr,
      &      sector_trk, N_MAX)
         call hipo_read_int('REC::Track', 'pindex', nr,
@@ -221,20 +223,31 @@ c       get bank elements
      &      sector_sci, N_MAX)
         call hipo_read_int('REC::Scintillator', 'pindex', nr,
      &      pindex_sci, N_MAX)
-c       simple list of pindices in REC::Particle
+
+c       print the event number
+        print *, 'evnum =', evnum(1)
+
+c       fill simple list of pindices in REC::Particle
         do i=1, nrows_p
-          pindex(i) = i
+          pindex(i) = i-1 ! NOTE: pindex starts at ZERO
         enddo
 
 c       before using the Z-vertext filter, we must "prepare" the
 c       algorithm's configuration for this event; the resulting
 c       'key_vz_filter' must be passed to the action function;
+        print *, '===> call iguana prepare-event functions'
         call iguana_clas12_zvertexfilter_prepareevent(
      &      algo_vz_filter, runnum(1), key_vz_filter)
-c       similarly for the inclusive kinematics algorithm; use '-1'
-c       for the beam energy, so RCDB is used to get the energy
+c       similarly for the inclusive kinematics algorithm
+c       - use '-1' for the beam energy argument, so RCDB is used
+c         to get the beam energy (otherwise hard-code a value)
+c       - be sure the literal is of kind `real(c_double)`, e.g.,
+c         use `-1.0_c_double` instead of `-1`, otherwise the
+c         correct number will not be passed to the C++ code
         call iguana_physics_inclusivekinematics_prepareevent(
-     &      algo_inc_kin, runnum(1), -1, key_inc_kin)
+     &      algo_inc_kin, runnum(1), -1.0_c_double, key_inc_kin)
+!       print *, '  key_vz_filter =', key_vz_filter
+!       print *, '    key_inc_kin =', key_inc_kin
 
 c       call iguana filters
 c       - the `logical` variable `accept` must be initialized to
@@ -250,19 +263,22 @@ c       - the AND with the z-vertex filter is the final filter, `accept`
           call iguana_clas12_zvertexfilter_filter(
      &      algo_vz_filter, vz(i), pid(i), stat(i),
      &      key_vz_filter, accept(i))
-          print *, '  i = ', i, '  pid = ', pid(i), ' vz = ', vz(i),
-     &      '  status = ', stat(i), '  =>  accept = ', accept(i)
+          print *, '  pindex =', pindex(i), ' pid =', pid(i),
+     &      ' vz =', vz(i), ' status =', stat(i),
+     &      ' =>  accept =', accept(i)
         enddo
 
-c       get sector number
-        print *, '>>> debug'
-        write(*,*) '  sector_trk', (sector_trk(j),j=1,nrows_trk)
-        write(*,*) '  pindex_trk', (pindex_trk(j),j=1,nrows_trk)
-        write(*,*) '  sector_cal', (sector_cal(j),j=1,nrows_cal)
-        write(*,*) '  pindex_cal', (pindex_cal(j),j=1,nrows_cal)
-        write(*,*) '  sector_sci', (sector_sci(j),j=1,nrows_sci)
-        write(*,*) '  pindex_sci', (pindex_sci(j),j=1,nrows_sci)
-        print *, '<<<'
+c       get sector number; this calls a vector action function, where
+c       many of its arguments are arrays
+        print *, '===> determine particle sectors:'
+!       write(*,*) '  pindex_trk', (pindex_trk(j),j=1,nrows_trk)
+!       write(*,*) '  sector_trk', (sector_trk(j),j=1,nrows_trk)
+!       print *, '---'
+!       write(*,*) '  pindex_cal', (pindex_cal(j),j=1,nrows_cal)
+!       write(*,*) '  sector_cal', (sector_cal(j),j=1,nrows_cal)
+!       print *, '---'
+!       write(*,*) '  pindex_sci', (pindex_sci(j),j=1,nrows_sci)
+!       write(*,*) '  sector_sci', (sector_sci(j),j=1,nrows_sci)
         call iguana_clas12_sectorfinder_getstandardsectorvec(
      &    algo_sec_finder,
      &    sector_trk, nrows_trk, pindex_trk, nrows_trk,
@@ -270,10 +286,8 @@ c       get sector number
      &    sector_sci, nrows_sci, pindex_sci, nrows_sci,
      &    pindex, nrows_p,
      &    sector, nrows_sec)
-        print *, '>>> debug'
-        write(*,*) '  nrows_sec: ', nrows_sec
-        write(*,*) '  sector', (sector(j),j=1,nrows_sec)
-        print *, '<<<'
+        write(*,*) '  pindex:', (pindex(j),j=1,nrows_p)
+        write(*,*) '  sector:', (sector(j),j=1,nrows_sec)
 
 c       momentum corrections
         if(nrows_c.lt.1) then
@@ -283,7 +297,9 @@ c       momentum corrections
           print *, '===> momentum corrections:'
           do i=1, nrows_p
             if(accept(i)) then
-              print *, '  i = ', i
+              print *, '  pindex =', pindex(i)
+              print *, '     pid =', pid(i)
+              print *, '  sector =', sector(i)
               print *, '  before: p = (', px(i), py(i), pz(i), ')'
               call iguana_clas12_momentumcorrection_transform(
      &          algo_mom_cor,
@@ -301,7 +317,7 @@ c       simple electron finder: trigger and highest |p|
         print *, '===> finding electron...'
         do i=1, nrows_p
           if(accept(i)) then
-            print *, '  i = ', i, '     status = ', stat(i)
+            print *, '  pindex =', pindex(i), ' status =', stat(i)
             if(pid(i).eq.11 .and. stat(i).lt.0) then
               p = sqrt(px(i)**2 + py(i)**2 + pz(i)**2)
               if(p.gt.p_ele) then
@@ -314,8 +330,9 @@ c       simple electron finder: trigger and highest |p|
         enddo
         if(found_ele) then
           print *, '===> found DIS electron:'
-          print *, '  i = ', i_ele
-          print *, '  p = ', p_ele
+          print *, '  pindex =', pindex(i_ele)
+          print *, '     |p| =', p_ele
+          print *, '       p = (', px(i_ele), py(i_ele), pz(i_ele), ')'
         else
           print *, '===> no DIS electron'
         endif

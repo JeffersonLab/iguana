@@ -222,6 +222,8 @@ namespace iguana::physics {
     }
 
     // save the configuration
+    m_log->Trace("-> Reloaded beam:   ({}, {}, {}, {})", beam_px, beam_py, beam_pz, o_beam_mass);
+    m_log->Trace("-> Reloaded target: ({}, {}, {}, {})", target_px, target_py, target_pz, target_mass);
     o_beam_PxPyPzM->Save({beam_px, beam_py, beam_pz, o_beam_mass}, key);
     o_target_PxPyPzM->Save({target_px, target_py, target_pz, target_mass}, key);
   }
@@ -237,7 +239,7 @@ namespace iguana::physics {
   {
     InclusiveKinematicsVars result;
 
-    m_log->Trace("Reconstruct inclusive kinematics from lepton with p=({}, {}, {})", lepton_px, lepton_py, lepton_pz);
+    m_log->Trace("Reconstruct inclusive kinematics from lepton with p=({}, {}, {}), key={}", lepton_px, lepton_py, lepton_pz, key);
 
     enum {px, py, pz, m};
     auto beam   = o_beam_PxPyPzM->Load(key);
@@ -259,6 +261,8 @@ namespace iguana::physics {
     result.nu      = vec_target.Dot(vec_q) / target[m];
     result.beamPz  = beam[pz];
     result.targetM = target[m];
+
+    m_log->Trace("Result: Q2={}  x={}  W={}", result.Q2, result.x, result.W);
 
     return result;
   }

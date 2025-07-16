@@ -179,7 +179,7 @@ class Bind_c < Generator
         #{par_list.join ",\n  "})
       {
         #{DEBUG ? "fmt::print(\"[C] CALL #{ftn_name_c}\\n\");" : ''}
-        // convert arrays to vectors
+        #{arr2vec_list.empty? ? '' : '// convert arrays to vectors'}
         #{arr2vec_list.join "\n  "}
 
         // call action function
