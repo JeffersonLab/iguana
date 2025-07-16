@@ -84,6 +84,12 @@ int main(int argc, char** argv)
     auto& calorimeterBank  = banks.at(b_calorimeter);
     auto& scintillatorBank = banks.at(b_scintillator);
 
+    // show the particle bank
+    // particleBank.show();
+
+    // print the event number
+    fmt::print("evnum = {}\n", configBank.getInt("event", 0));
+
     // we'll need information from all the rows of REC::Track,Calorimeter,Scintilator,
     // in order to get the sector information for each particle
     // FIXME: there are vectorized accessors, but we cannot use them yet; see https://github.com/gavalian/hipo/issues/72
@@ -106,12 +112,6 @@ int main(int argc, char** argv)
       scintillatorBank_sectors.push_back(scintillatorBank.getByte("sector", r));
       scintillatorBank_pindices.push_back(scintillatorBank.getShort("pindex", r));
     }
-
-    // show the particle bank
-    // particleBank.show();
-
-    // print the event number
-    fmt::print("evnum = {}\n", configBank.getInt("event", 0));
 
     // loop over bank rows
     for(auto const& row : particleBank.getRowList()) {

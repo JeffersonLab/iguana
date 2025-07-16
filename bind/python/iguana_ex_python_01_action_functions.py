@@ -75,6 +75,9 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     calorimeterBank  = banks[b_calorimeter]
     scintillatorBank = banks[b_scintillator]
 
+    # show the particle bank
+    # particleBank.show()
+
     # print the event number
     print(f'evnum = {configBank.getInt("event",0)}')
 
@@ -97,9 +100,6 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     for r in scintillatorBank.getRowList():
         scintillatorBank_sectors.append(scintillatorBank.getByte("sector", r))
         scintillatorBank_pindices.append(scintillatorBank.getShort("pindex", r))
-
-    # show the particle bank
-    # particleBank.show()
 
     # loop over bank rows
     for row in particleBank.getRowList():
