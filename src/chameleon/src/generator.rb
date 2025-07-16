@@ -67,6 +67,7 @@ class Generator
       type      = get_scalar_type(get_spec var, 'type') # get the fundamental type
       cast      = get_spec var, 'cast', default: ''
       dimension = get_spec var, 'dimension', default: 0
+      raise 'casting is not yet supported for variables with dimension > 0 (FIXME: this needs to be fixed in chameleon)' if cast != '' and dimension > 0
       yield name, type, cast, dimension
     end
       .compact
