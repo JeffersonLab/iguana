@@ -193,8 +193,8 @@ motivates further classification of action functions:
 
 | Action Function Rank | Description |
 | --- | --- |
-| **Scalar** | Outputs are scalar quantities (single values). This type of function may be used on a single bank row. |
-| **Vector** | Outputs are vector quantities (lists of values). This type of action function needs values from all of the bank rows. |
+| **Scalar** | Outputs are scalar quantities (single values). This type of function typically may be used on a single bank row. |
+| **Vector** | Outputs are vector quantities (lists of values). This type of action function typically needs values from all of the bank rows. |
 
 Note that the action function parameters may be scalars and/or vectors, _i.e._, 0-dimensional or 1-dimensional.
 
