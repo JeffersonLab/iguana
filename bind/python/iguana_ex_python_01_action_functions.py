@@ -75,6 +75,7 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     calorimeterBank  = banks[b_calorimeter]
     scintillatorBank = banks[b_scintillator]
 
+    # print the event number
     print(f'evnum = {configBank.getInt("event",0)}')
 
     # we'll need information from all the rows of REC::Track,Calorimeter,Scintilator,

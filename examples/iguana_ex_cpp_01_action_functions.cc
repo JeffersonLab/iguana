@@ -109,6 +109,8 @@ int main(int argc, char** argv)
 
     // show the particle bank
     // particleBank.show();
+
+    // print the event number
     fmt::print("evnum = {}\n", configBank.getInt("event", 0));
 
     // loop over bank rows
