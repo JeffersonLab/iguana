@@ -109,7 +109,7 @@ class Bind_c < Generator
           "out.#{name.sub /^#{RESULT_VAR}_/, ''}"
         case dimension
         when 0
-          out_var = "#{cast}(#{out_var})" if !cast.empty? and dimension==0
+          out_var = "#{cast}(#{out_var})" if !cast.empty?
           code_str_list << "*#{name} = #{out_var};"
         when 1
           type_in     = cast.empty? ? type : cast
