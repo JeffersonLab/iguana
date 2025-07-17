@@ -5,6 +5,7 @@ actions:
 
   - name: Transform
     type: transformer
+    rank: scalar
     inputs:
       - name: px
         type: double
@@ -34,6 +35,7 @@ actions:
 
   - name: CorrectionInbending
     type: creator
+    rank: scalar
     inputs:
       - name: px
         type: double
@@ -53,6 +55,7 @@ actions:
 
   - name: CorrectionOutbending
     type: creator
+    rank: scalar
     inputs:
       - name: px
         type: double
@@ -72,6 +75,7 @@ actions:
 
   - name: EnergyLossInbending
     type: creator
+    rank: scalar
     inputs:
       - name: px
         type: double
@@ -89,6 +93,7 @@ actions:
 
   - name: EnergyLossOutbending
     type: creator
+    rank: scalar
     inputs:
       - name: px
         type: double

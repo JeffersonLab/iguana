@@ -296,6 +296,7 @@ ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
 # action functions
 ALIASES += action_function{1}="\xrefitem action \"Function Type\" \"List of all Action Functions\" \1 \brief **Action Function:** "
 ALIASES += when_to_call{1}="@note This function should be called **\1**"
+ALIASES += overloads_scalar="@note This vector action function _overloads_ a corresponding scalar action function; see that scalar action function for more documentation."
 # examples
 ALIASES += begin_doc_example{1}="@addtogroup examples_\1^^@{"
 ALIASES += end_doc_example="@}"

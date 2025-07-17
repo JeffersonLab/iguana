@@ -29,16 +29,16 @@ In summary, the general way to use an Iguana algorithm is as follows; see exampl
     - Tip: you may use `iguana::AlgorithmSequence` to help run a _sequence_ of algorithms
 2. Check each algorithm configuration, and [adjust it if you prefer](#mainpageConfiguring)
 3. Start each algorithm, which "locks in" its configuration:
-    - call `Start(banklist)` if you use [**the HIPO API**](https://github.com/gavalian/hipo) and [Common Functions](#mainpageCommon)
-    - call `Start()` otherwise, _i.e._, if you use [Action Functions](#mainpageAction)
+    - call iguana::Algorithm::Start(hipo::banklist&) if you use [**the HIPO API**](https://github.com/gavalian/hipo) and [Common Functions](#mainpageCommon)
+    - call iguana::Algorithm::Start() otherwise, _i.e._, if you use [Action Functions](#mainpageAction)
 4. In the event loop, run the algorithm:
-    - call `Run(...)` if you use Common Functions
+    - call iguana::Algorithm::Run(hipo::banklist&) const if you use Common Functions
     - call the Action Function(s) otherwise
 5. Proceed with your analysis
-    - if you called `Run(...)`, the banks will be filtered, transformed, and/or created
+    - if you called iguana::Algorithm::Run(hipo::banklist&) const, the banks will be filtered, transformed, and/or created
     - if you called action functions, you will need to handle their output yourself
     - in either case, see [guidance on how to run algorithms](#mainpageRunning) for more details
-6. After your event loop, stop each algorithm by calling `Stop()`
+6. After your event loop, stop each algorithm by calling iguana::Algorithm::Stop()
 
 Please let the maintainers know if your use case is not covered in any examples or if you need any help.
 
@@ -122,13 +122,13 @@ All algorithms have the following **Common Functions**, which may be used in ana
 
 | Common Functions ||
 | --- | --- |
-| `iguana::Algorithm::Start` | To be called before event processing |
-| `iguana::Algorithm::Run` | To be called for every event |
-| `iguana::Algorithm::Stop` | To be called after event processing |
+| iguana::Algorithm::Start(hipo::banklist&) | To be called before event processing |
+| iguana::Algorithm::Run(hipo::banklist&) const | To be called for every event |
+| iguana::Algorithm::Stop() | To be called after event processing |
 
 The algorithms are implemented in C++ classes which inherit from the base class `iguana::Algorithm`; these three class methods are overridden in each algorithm.
 
-The `iguana::Algorithm::Run` function should be called on every event; the general consequence, that is, how the user should handle the algorithm's results, depends on the
+The iguana::Algorithm::Run(hipo::banklist&) const function should be called on every event; the general consequence, that is, how the user should handle the algorithm's results, depends on the
 algorithm type:
 
 <table>
@@ -157,12 +157,12 @@ typically change the particle momentum components.
 <tr> <td>**Creator**</td> <td>
 Creator-type algorithms will simply create a new `hipo::bank` object, appending
 it to the end of the input `hipo::banklist`. An initial version is created upon calling
-`iguana::Algorithm::Start`, so that you may begin to reference it; it is helpful to
+iguana::Algorithm::Start(hipo::banklist&), so that you may begin to reference it; it is helpful to
 use `hipo::getBanklistIndex` (see [the examples for details](#mainpageExample)).
 </td> </tr>
 </table>
 
-Internally, `iguana::Algorithm::Run` calls Action Functions, which are described in the next section.
+Internally, iguana::Algorithm::Run(hipo::banklist&) const calls Action Functions, which are described in the next section.
 
 <br>
 @anchor mainpageAction
@@ -174,6 +174,10 @@ These functions are unique to each algorithm, so view the algorithm
 documentation for details, or browse the full list:
 
 - [List of all Action Functions](#action)
+
+@note To start an algorithm in order to use action functions, you may `Start` it without a bank list, that is, call
+iguana::Algorithm::Start() instead of iguana::Algorithm::Start(hipo::banklist&). Stopping the algorithm is the same
+regardless of whether you use action functions or not: call iguana::Algorithm::Stop().
 
 Action function parameters are supposed to be _simple_: numbers or lists of numbers, preferably obtainable _directly_
 from HIPO bank rows. The return type of an action function depends on the algorithm type:
@@ -187,11 +191,12 @@ from HIPO bank rows. The return type of an action function depends on the algori
 Some algorithms have action functions which require a number from _all_ of the rows of a bank; this distinction
 motivates further classification of action functions:
 
-| Action Function Type | Description |
+| Action Function Rank | Description |
 | --- | --- |
-| **Scalar** | All inputs and outputs are scalar quantities (single values). This type of function may be used on a single bank row. |
-| **Vector** | All inputs and outputs are vector quantities (lists of values). This type of action function needs values from all of the bank rows. |
-| **Mixed** | Inputs and outputs are scalar or vector quantities. |
+| **Scalar** | Outputs are scalar quantities (single values). This type of function typically may be used on a single bank row. |
+| **Vector** | Outputs are vector quantities (lists of values). This type of action function typically needs values from all of the bank rows. |
+
+Note that the action function parameters may be scalars and/or vectors, _i.e._, 0-dimensional or 1-dimensional.
 
 To maximize compatibility with user analysis code, these functions are overloaded:
 - for every scalar function, there should be a vector function which calls the scalar function iteratively

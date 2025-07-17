@@ -8,7 +8,9 @@ class Generator
     @algo_name   = algo_name
     @algo_header = File.join *@algo_name.split('::'), 'Algorithm.h'
     @log_tag     = generator_name.empty? ? "[chameleon]" : "[chameleon::#{File.basename generator_name, '.rb'}]"
+    @ftn_name    = nil
     @ftn_type    = nil
+    @ftn_rank    = nil
     unless out_name.empty?
       verbose "generating #{description} '#{@out_name}'"
       @out = File.open @out_name, 'w'
@@ -49,7 +51,8 @@ class Generator
 
   # let `spec_params` be a specification tree of action function parameters,
   # found at `node[key]`. This method "maps" its elements (i.e.,
-  # "spec_params.map") by yielding a block with parameters |name, type, cast|
+  # "spec_params.map") by yielding a block with parameters |name, type, cast, dimension|
+  # NOTE: `get_scalar_type` is used to get the fundamental type, for parameters with dimension > 0
   def map_spec_params(node, key)
     spec_params = get_spec node, key
     spec_params.map do |var|
@@ -61,9 +64,10 @@ class Generator
         error "don't name your variable '#{name}', since this name is reserved" if name == RESULT_VAR
         name = "#{RESULT_VAR}_#{name}" if @ftn_type == 'transformer' and key == 'outputs'
       end
-      type = get_spec var, 'type'
-      cast = get_spec var, 'cast', default: ''
-      yield name, type, cast
+      type      = get_scalar_type(get_spec var, 'type') # get the fundamental type
+      cast      = get_spec var, 'cast', default: ''
+      dimension = get_spec var, 'dimension', default: 0
+      yield name, type, cast, dimension
     end
       .compact
   end
@@ -71,6 +75,11 @@ class Generator
   # check if the function type is known
   def check_function_type(name, type)
     error("action function '#{name}' has unknown type type '#{type}'") unless ['filter', 'transformer', 'creator'].include? type
+  end
+
+  # function to get the scalar type, e.g. `get_scalar_type('std::vector<int>') => 'int'`
+  def get_scalar_type(type)
+    type.split('<').last.split('>').first
   end
 
   # deter developers from editting the generated files

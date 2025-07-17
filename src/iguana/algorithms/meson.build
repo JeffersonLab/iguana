@@ -45,8 +45,6 @@ algo_dict = [
   },
   {
     'name': 'clas12::SectorFinder',
-    'has_validator': true,
-    'has_action_yaml': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator' ],
     },
@@ -191,7 +189,8 @@ foreach algo : algo_dict
           '--input', '@INPUT0@',
           '--output', '@OUTDIR@',
           '--prefix', target_name,
-          '--quiet'
+          '--quiet',
+          # '--debug',
         ],
       )
       algo_bind_c_sources += tgt[0]

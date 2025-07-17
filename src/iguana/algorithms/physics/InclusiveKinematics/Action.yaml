@@ -4,6 +4,7 @@ algorithm:
 actions:
   - name: PrepareEvent
     type: creator
+    rank: scalar
     inputs:
       - name: runnum
         type: int
@@ -14,6 +15,7 @@ actions:
         cast: int
   - name: ComputeFromLepton
     type: creator
+    rank: scalar
     inputs:
       - name: lepton_px
         type: double

@@ -53,18 +53,18 @@ namespace iguana::clas12 {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& resultBank   = GetBank(banks, b_result, "REC::Particle::Sector");
 
-    std::vector<int> sectors_uncharged;
-    std::vector<int> pindices_uncharged;
+    std::vector<int> sectors_user_uncharged;
+    std::vector<int> pindices_user_uncharged;
     if(userSpecifiedBank_uncharged){
       auto const& userBank = GetBank(banks, b_user_uncharged);
-      GetListsSectorPindex(userBank,sectors_uncharged,pindices_uncharged);
+      GetListsSectorPindex(userBank,sectors_user_uncharged,pindices_user_uncharged);
     }
 
-    std::vector<int> sectors_charged;
-    std::vector<int> pindices_charged;
+    std::vector<int> sectors_user_charged;
+    std::vector<int> pindices_user_charged;
     if(userSpecifiedBank_charged){
       auto const& userBank = GetBank(banks, b_user_charged);
-      GetListsSectorPindex(userBank,sectors_charged,pindices_charged);
+      GetListsSectorPindex(userBank,sectors_user_charged,pindices_user_charged);
     }
 
     std::vector<int> sectors_track;
@@ -87,8 +87,8 @@ namespace iguana::clas12 {
       auto const& scintBank = GetBank(banks, b_scint);
       GetListsSectorPindex(scintBank,sectors_scint,pindices_scint);
     }
-    
-    
+
+
     // sync new bank with particle bank, and fill it with zeroes
     resultBank.setRows(particleBank.getRows());
     resultBank.getMutableRowList().setList(particleBank.getRowList());
@@ -101,46 +101,29 @@ namespace iguana::clas12 {
     // some downstream algorithms may still need sector info, so obtain sector for _all_ particles,
     // not just the ones that were filtered out (use `.getRows()` rather than `.getRowList()`)
     for(int row = 0; row < particleBank.getRows(); row++) {
-      int charge=particleBank.getInt("charge",row);
 
-      bool userSp = charge==0 ? userSpecifiedBank_uncharged : userSpecifiedBank_charged;
-      std::vector<int>& sct_us = charge==0 ? sectors_uncharged : sectors_charged;
-      std::vector<int>& pin_us = charge==0 ? pindices_uncharged : pindices_charged;
+      auto charge=particleBank.getInt("charge",row);
+      int sect = -1;
 
-      
-      
-      if(userSp){
-        int sect=GetSector(sct_us, pin_us,row);
-        if (sect!=-1){
-          resultBank.putInt(i_sector, row, sect);
-          resultBank.putShort(i_pindex, row, static_cast<int16_t>(row));
-        }
-      } else {
-        enum det_enum {kTrack, kScint, kCal, nDet}; // try to get sector from these detectors, in this order
-        for(int d = 0; d < nDet; d++) {
-          int sect = -1;
-          std::string det_name;
-          switch(d) {
-            case kTrack:
-              sect=GetSector(sectors_track, pindices_track,row);
-              det_name="track";
-              break;
-            case kScint:
-              sect=GetSector(sectors_scint, pindices_scint,row);
-              det_name="scint";
-              break;
-            case kCal:
-              sect=GetSector(sectors_cal, pindices_cal,row);
-              det_name="cal";
-              break;
-          }
-          if(sect != -1) {
-            m_log->Trace("{} pindex {} sect {}", det_name, row, sect);
-            resultBank.putInt(i_sector, row, sect);
-            resultBank.putShort(i_pindex, row, static_cast<int16_t>(row));
-            break;
-          }
-        }
+      // if user-specified bank
+      if(charge==0 ? userSpecifiedBank_uncharged : userSpecifiedBank_charged)
+        sect = GetSector(
+            charge==0 ? sectors_user_uncharged : sectors_user_charged,
+            charge==0 ? pindices_user_uncharged : pindices_user_charged,
+            row);
+      else // if not user-specified bank, use the standard method
+        sect = GetStandardSector(
+            sectors_track,
+            pindices_track,
+            sectors_cal,
+            pindices_cal,
+            sectors_scint,
+            pindices_scint,
+            row);
+
+      if (sect!=-1){
+        resultBank.putInt(i_sector, row, sect);
+        resultBank.putShort(i_pindex, row, static_cast<int16_t>(row));
       }
     }
 
@@ -152,22 +135,79 @@ namespace iguana::clas12 {
     for(auto const& row : bank.getRowList()) {
       //check that we're only using FD detectors
       //eg have "sectors" in CND which we don't want to add here
-      int det=bank.getByte("detector",row);
+      auto det=bank.getByte("detector",row);
       if (listFDDets.find(det) != listFDDets.end()) {
         sectors.push_back(bank.getInt("sector", row));
         pindices.push_back(bank.getShort("pindex", row));
       }
     }
   }
-  
-  int SectorFinder::GetSector(std::vector<int> const& sectors, std::vector<int> const& pindices, int const pindex) const
+
+  int SectorFinder::GetSector(std::vector<int> const& sectors, std::vector<int> const& pindices, int const& pindex_particle) const
   {
     for(std::size_t i=0;i<sectors.size();i++){
-      if (pindices.at(i)==pindex){
+      if (pindices.at(i)==pindex_particle){
         return sectors.at(i);
       }
     }
     return -1;
+  }
+
+  int SectorFinder::GetStandardSector(
+      std::vector<int> const& sectors_track,
+      std::vector<int> const& pindices_track,
+      std::vector<int> const& sectors_cal,
+      std::vector<int> const& pindices_cal,
+      std::vector<int> const& sectors_scint,
+      std::vector<int> const& pindices_scint,
+      int const& pindex_particle) const
+  {
+    enum det_enum {kTrack, kScint, kCal, nDet}; // try to get sector from these detectors, in this order
+    for(int d = 0; d < nDet; d++) {
+      int sect = -1;
+      std::string det_name;
+      switch(d) {
+        case kTrack:
+          sect = GetSector(sectors_track, pindices_track, pindex_particle);
+          det_name = "track";
+          break;
+        case kScint:
+          sect = GetSector(sectors_scint, pindices_scint, pindex_particle);
+          det_name = "scint";
+          break;
+        case kCal:
+          sect = GetSector(sectors_cal, pindices_cal, pindex_particle);
+          det_name = "cal";
+          break;
+      }
+      if(sect != -1) {
+        m_log->Trace("{} pindex {} sect {}", det_name,  pindex_particle, sect);
+        return sect;
+      }
+    }
+    return -1;
+  }
+
+  std::vector<int> SectorFinder::GetStandardSector(
+      std::vector<int> const& sectors_track,
+      std::vector<int> const& pindices_track,
+      std::vector<int> const& sectors_cal,
+      std::vector<int> const& pindices_cal,
+      std::vector<int> const& sectors_scint,
+      std::vector<int> const& pindices_scint,
+      std::vector<int> const& pindices_particle) const
+  {
+    std::vector<int> sect_list;
+    for(auto const& pindex : pindices_particle)
+      sect_list.push_back(GetStandardSector(
+      sectors_track,
+      pindices_track,
+      sectors_cal,
+      pindices_cal,
+      sectors_scint,
+      pindices_scint,
+      pindex));
+    return sect_list;
   }
 
   void SectorFinder::Stop()

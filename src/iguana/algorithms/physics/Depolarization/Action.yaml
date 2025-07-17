@@ -4,6 +4,7 @@ algorithm:
 actions:
   - name: Compute
     type: creator
+    rank: scalar
     inputs:
       - name: Q2
         type: double
