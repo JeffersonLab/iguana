@@ -195,7 +195,7 @@ c     ------------------------------------------------------------------
 
 c       read banks
         call hipo_file_next(reader_status)
-c       get number of rows
+c       read each bank and get their numbers of rows
         call hipo_read_bank('REC::Particle', nrows_p)
         call hipo_read_bank('RUN::config', nrows_c)
         call hipo_read_bank('REC::Track', nrows_trk)
