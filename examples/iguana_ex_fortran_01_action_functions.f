@@ -295,18 +295,18 @@ c       momentum corrections
      &      'apply momentum corrections'
         else
           print *, '===> momentum corrections:'
+          print *, 'evnum =', evnum(1)
           do i=1, nrows_p
             if(accept(i)) then
-              print *, '  pindex =', pindex(i)
-              print *, '     pid =', pid(i)
+              print *, 'Particle PDG =', pid(i)
               print *, '  sector =', sector(i)
-              print *, '  before: p = (', px(i), py(i), pz(i), ')'
+              print *, '  p_old = (', px(i), ',', py(i), ',', pz(i), ')'
               call iguana_clas12_momentumcorrection_transform(
      &          algo_mom_cor,
      &          px(i), py(i), pz(i),
      &          sector(i), pid(i), torus(1),
      &          px(i), py(i), pz(i))
-              print *, '   after: p = (', px(i), py(i), pz(i), ')'
+              print *, '  p_new = (', px(i), ',', py(i), ',', pz(i), ')'
             endif
           enddo
         endif

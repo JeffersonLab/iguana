@@ -96,7 +96,7 @@ for iBatch, batch in enumerate(hp.iterate([inFile],banks=banks,step=step)):
                 )
 
                 # then print the result
-                print(f'Accepted PID {pid}:')
+                print(f'Particle PDG = {pid}')
                 print(f'  sector = {sector}')
                 print(f'  p_old = ({batch["REC::Particle_px"][iEvent][row]}, {batch["REC::Particle_py"][iEvent][row]}, {batch["REC::Particle_pz"][iEvent][row]})')
                 print(f'  p_new = ({p_corrected.px}, {p_corrected.py}, {p_corrected.pz})')

@@ -130,7 +130,7 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
                     )
 
             # then print the result
-            print(f'Accepted PID {pid}:')
+            print(f'Particle PDG = {pid}')
             print(f'  sector = {sector}')
             print(f'  p_old = ({particleBank.getFloat("px", row)}, {particleBank.getFloat("py", row)}, {particleBank.getFloat("pz", row)})')
             print(f'  p_new = ({p_corrected.px}, {p_corrected.py}, {p_corrected.pz})')

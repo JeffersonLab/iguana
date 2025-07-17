@@ -141,14 +141,10 @@ int main(int argc, char** argv)
             configBank.getFloat("torus", 0));
 
         // then print the result
-        fmt::print("Accepted PID {}:\n", pid);
-        auto printMomentum = [](auto v1, auto v2)
-        { fmt::print("  {:>20}  {:>20}\n", v1, v2); };
-        printMomentum("p_old", "p_new");
-        printMomentum("--------", "--------");
-        printMomentum(particleBank.getFloat("px", row), px);
-        printMomentum(particleBank.getFloat("py", row), py);
-        printMomentum(particleBank.getFloat("pz", row), pz);
+        fmt::print("Particle PDG = {}\n", pid);
+        fmt::print("  sector = {}\n", sector);
+        fmt::print("  p_old = ({}, {}, {})\n", particleBank.getFloat("px", row), particleBank.getFloat("py", row), particleBank.getFloat("pz", row));
+        fmt::print("  p_new = ({}, {}, {})\n", px, py, pz);
       }
     }
   }
