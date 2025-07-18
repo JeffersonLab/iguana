@@ -28,9 +28,8 @@ int main(int argc, char** argv)
 {
 
   // parse arguments
-  int argi               = 1;
-  char const* inFileName = argc > argi ? argv[argi++] : "data.hipo";
-  int const numEvents    = argc > argi ? std::stoi(argv[argi++]) : 1;
+  char const* inFileName = argc > 1 ? argv[1] : "data.hipo";
+  int const numEvents    = argc > 2 ? std::stoi(argv[2]) : 3;
 
   // read input file
   hipo::reader reader(inFileName,{0});
@@ -56,9 +55,9 @@ int main(int argc, char** argv)
   iguana::GlobalConcurrencyModel = "single";
 
   // create the algorithms
-  iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
-  iguana::clas12::SectorFinder algo_sector_finder;
-  iguana::clas12::MomentumCorrection algo_momentum_correction;
+  iguana::clas12::EventBuilderFilter algo_eventbuilder_filter; // filter by Event Builder PID (a filter algorithm)
+  iguana::clas12::SectorFinder algo_sector_finder; // get the sector for each particle (a creator algorithm)
+  iguana::clas12::MomentumCorrection algo_momentum_correction; // momentum corrections (a transformer algorithm)
 
   // set log levels
   algo_eventbuilder_filter.SetOption("log", "info");
@@ -66,6 +65,7 @@ int main(int argc, char** argv)
   algo_momentum_correction.SetOption("log", "info");
 
   // set algorithm options
+  // NOTE: this can also be done in a config file
   algo_eventbuilder_filter.SetOption<std::vector<int>>("pids", {11, 211, -211});
 
   // start the algorithms
@@ -141,10 +141,10 @@ int main(int argc, char** argv)
             configBank.getFloat("torus", 0));
 
         // then print the result
-        fmt::print("Particle PDG = {}\n", pid);
+        fmt::print("Analysis Particle PDG = {}\n", pid);
         fmt::print("  sector = {}\n", sector);
-        fmt::print("  p_old = ({}, {}, {})\n", particleBank.getFloat("px", row), particleBank.getFloat("py", row), particleBank.getFloat("pz", row));
-        fmt::print("  p_new = ({}, {}, {})\n", px, py, pz);
+        fmt::print("  p_old = ({:11.5f}, {:11.5f}, {:11.5f})\n", particleBank.getFloat("px", row), particleBank.getFloat("py", row), particleBank.getFloat("pz", row));
+        fmt::print("  p_new = ({:11.5f}, {:11.5f}, {:11.5f})\n", px, py, pz);
       }
     }
   }

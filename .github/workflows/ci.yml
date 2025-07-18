@@ -230,21 +230,41 @@ jobs:
         run: source iguana/bin/this_iguana.sh --verbose --githubCI
       ### test installed examples
       ###### cpp
-      - run: iguana_ex_cpp_00_run_functions test_data.hipo ${{ env.num_events }}
+      - name: test example iguana_ex_cpp_00_run_functions.cc
+        run: stdbuf -o0 iguana_ex_cpp_00_run_functions test_data.hipo ${{ env.num_events }} | tee equivalence.00.cpp.txt
+        if: ${{ matrix.id == 'cpp' || matrix.id == 'python' }}
+      - name: test example iguana_ex_cpp_01_action_functions.cc
+        run: stdbuf -o0 iguana_ex_cpp_01_action_functions test_data.hipo ${{ env.num_events }} | tee equivalence.01.cpp.txt
+        if: ${{ matrix.id == 'cpp' || matrix.id == 'python' }}
+      - name: test example iguana_ex_cpp_dataframes.cc
+        run: iguana_ex_cpp_dataframes test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'cpp' }}
-      - run: iguana_ex_cpp_01_action_functions test_data.hipo ${{ env.num_events }}
-        if: ${{ matrix.id == 'cpp' }}
-      - run: iguana_ex_cpp_dataframes test_data.hipo ${{ env.num_events }}
-        if: ${{ matrix.id == 'cpp' }}
-      - run: iguana_ex_cpp_config_files iguana/etc/iguana/examples
+      - name: test example iguana_ex_cpp_config_files.cc
+        run: iguana_ex_cpp_config_files iguana/etc/iguana/examples
         if: ${{ matrix.id == 'cpp' }}
       ###### python
-      - run: iguana_ex_python_00_run_functions.py test_data.hipo ${{ env.num_events }}
+      - name: test example iguana_ex_python_00_run_functions.py
+        run: stdbuf -o0 iguana_ex_python_00_run_functions.py test_data.hipo ${{ env.num_events }} | tee equivalence.00.py.txt
         if: ${{ matrix.id == 'python' }}
-      - run: iguana_ex_python_01_action_functions.py test_data.hipo ${{ env.num_events }}
+      - name: test example iguana_ex_python_01_action_functions.py
+        run: stdbuf -o0 iguana_ex_python_01_action_functions.py test_data.hipo ${{ env.num_events }} | tee equivalence.01.py.txt
         if: ${{ matrix.id == 'python' }}
-      - run: iguana_ex_python_hipopy.py test_data.hipo ${{ env.num_events }}
+      - name: test example iguana_ex_python_hipopy.py
+        run: stdbuf -o0 iguana_ex_python_hipopy.py test_data.hipo ${{ env.num_events }} | tee equivalence.01.hipopy.txt
         if: ${{ matrix.id == 'python' }}
+      ###### cpp and python equivalence
+      - name: equivalence of C++ and Python for 00_run_functions examples
+        if: ${{ matrix.id == 'python' }}
+        run: diff equivalence.00.{cpp,py}.txt
+      - name: equivalence of C++ and Python for 01_action_functions examples
+        if: ${{ matrix.id == 'python' }}
+        run: diff equivalence.01.{cpp,py}.txt
+      - name: equivalence of Python HIPO bindings and HipoPy examples
+        if: ${{ matrix.id == 'python' }}
+        run: |
+          grep -v 'compression type' equivalence.01.hipopy.txt > equivalence.01.hipopy.txt.tmp
+          mv equivalence.01.hipopy.txt{.tmp,}
+          diff equivalence.01.{py,hipopy}.txt
       ###### fortran
       - run: iguana_ex_fortran_01_action_functions test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'fortran' }}

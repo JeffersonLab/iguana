@@ -4,6 +4,7 @@
 @begin_doc_example{python}
 @file iguana_ex_python_01_action_functions.py
 @brief Python version of `iguana_ex_cpp_01_action_functions.cc` (for more details, see this `.cc` file)
+@note You may need to run this example using `stdbuf -o0` (preceding your command) if the output appears to be jumbled
 @end_doc_example
 @doxygen_off
 """
@@ -46,9 +47,9 @@ b_calorimeter  = hipo.getBanklistIndex(banks, "REC::Calorimeter");
 b_scintillator = hipo.getBanklistIndex(banks, "REC::Scintillator");
 
 # create the algorithms
-algo_eventbuilder_filter = iguana.clas12.EventBuilderFilter()
-algo_sector_finder       = iguana.clas12.SectorFinder()
-algo_momentum_correction = iguana.clas12.MomentumCorrection()
+algo_eventbuilder_filter = iguana.clas12.EventBuilderFilter() # filter by Event Builder PID (a filter algorithm)
+algo_sector_finder       = iguana.clas12.SectorFinder() # get the sector for each particle (a creator algorithm)
+algo_momentum_correction = iguana.clas12.MomentumCorrection() # momentum corrections (a transformer algorithm)
 
 # set log levels
 algo_eventbuilder_filter.SetOption('log', 'info')
@@ -130,10 +131,10 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
                     )
 
             # then print the result
-            print(f'Particle PDG = {pid}')
+            print(f'Analysis Particle PDG = {pid}')
             print(f'  sector = {sector}')
-            print(f'  p_old = ({particleBank.getFloat("px", row)}, {particleBank.getFloat("py", row)}, {particleBank.getFloat("pz", row)})')
-            print(f'  p_new = ({p_corrected.px}, {p_corrected.py}, {p_corrected.pz})')
+            print(f'  p_old = ({particleBank.getFloat("px", row):11.5f}, {particleBank.getFloat("py", row):11.5f}, {particleBank.getFloat("pz", row):11.5f})')
+            print(f'  p_new = ({p_corrected.px:11.5f}, {p_corrected.py:11.5f}, {p_corrected.pz:11.5f})')
 
 # stop the algorithms
 algo_eventbuilder_filter.Stop()
