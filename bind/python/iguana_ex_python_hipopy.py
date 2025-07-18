@@ -96,10 +96,10 @@ for iBatch, batch in enumerate(hp.iterate([inFile],banks=banks,step=step)):
                 )
 
                 # then print the result
-                print(f'Particle PDG = {pid}')
+                print(f'Analysis Particle PDG = {pid}')
                 print(f'  sector = {sector}')
-                print(f'  p_old = ({batch["REC::Particle_px"][iEvent][row]}, {batch["REC::Particle_py"][iEvent][row]}, {batch["REC::Particle_pz"][iEvent][row]})')
-                print(f'  p_new = ({p_corrected.px}, {p_corrected.py}, {p_corrected.pz})')
+                print(f'  p_old = ({batch["REC::Particle_px"][iEvent][row]:11.5f}, {batch["REC::Particle_py"][iEvent][row]:11.5f}, {batch["REC::Particle_pz"][iEvent][row]:11.5f})')
+                print(f'  p_new = ({p_corrected.px:11.5f}, {p_corrected.py:11.5f}, {p_corrected.pz:11.5f})')
 
     # End iteration if maximum number of batches reached
     if (iBatch+1>=nbatches): break

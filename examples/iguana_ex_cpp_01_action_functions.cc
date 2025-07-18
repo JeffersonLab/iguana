@@ -143,8 +143,8 @@ int main(int argc, char** argv)
         // then print the result
         fmt::print("Analysis Particle PDG = {}\n", pid);
         fmt::print("  sector = {}\n", sector);
-        fmt::print("  p_old = ({}, {}, {})\n", particleBank.getFloat("px", row), particleBank.getFloat("py", row), particleBank.getFloat("pz", row));
-        fmt::print("  p_new = ({}, {}, {})\n", px, py, pz);
+        fmt::print("  p_old = ({:11.5f}, {:11.5f}, {:11.5f})\n", particleBank.getFloat("px", row), particleBank.getFloat("py", row), particleBank.getFloat("pz", row));
+        fmt::print("  p_new = ({:11.5f}, {:11.5f}, {:11.5f})\n", px, py, pz);
       }
     }
   }

@@ -130,10 +130,10 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
                     )
 
             # then print the result
-            print(f'Particle PDG = {pid}')
+            print(f'Analysis Particle PDG = {pid}')
             print(f'  sector = {sector}')
-            print(f'  p_old = ({particleBank.getFloat("px", row)}, {particleBank.getFloat("py", row)}, {particleBank.getFloat("pz", row)})')
-            print(f'  p_new = ({p_corrected.px}, {p_corrected.py}, {p_corrected.pz})')
+            print(f'  p_old = ({particleBank.getFloat("px", row):11.5f}, {particleBank.getFloat("py", row):11.5f}, {particleBank.getFloat("pz", row):11.5f})')
+            print(f'  p_new = ({p_corrected.px:11.5f}, {p_corrected.py:11.5f}, {p_corrected.pz:11.5f})')
 
 # stop the algorithms
 algo_eventbuilder_filter.Stop()

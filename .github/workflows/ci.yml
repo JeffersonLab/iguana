@@ -248,13 +248,24 @@ jobs:
       ###### fortran
       - run: iguana_ex_fortran_01_action_functions test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'fortran' }}
-      ###### cpp and python comparison
-      - name: compare C++ and Python equivalence for 00_run_functions
+      ###### cpp and python equivalence
+      - name: equivalence of C++ and Python for 00_run_functions
         if: ${{ matrix.id == 'python' }}
         run: |
-          iguana_ex_cpp_00_run_functions test_data.hipo ${{ env.num_events }} > equivalence.cpp.txt
-          iguana_ex_python_00_run_functions.py test_data.hipo ${{ env.num_events }} > equivalence.py.txt
-          diff equivalence.{cpp,py}.txt
+          stdbuf -o0 iguana_ex_cpp_00_run_functions test_data.hipo ${{ env.num_events }} > equivalence.00.cpp.txt
+          stdbuf -o0 iguana_ex_python_00_run_functions.py test_data.hipo ${{ env.num_events }} > equivalence.00.py.txt
+          diff equivalence.00.{cpp,py}.txt
+      - name: equivalence of C++ and Python for 01_action_functions
+        if: ${{ matrix.id == 'python' }}
+        run: |
+          stdbuf -o0 iguana_ex_cpp_01_action_functions test_data.hipo ${{ env.num_events }} > equivalence.01.cpp.txt
+          stdbuf -o0 iguana_ex_python_01_action_functions.py test_data.hipo ${{ env.num_events }} > equivalence.01.py.txt
+          diff equivalence.01.{cpp,py}.txt
+      - name: equivalence of Python HIPO bindings and HipoPy
+        if: ${{ matrix.id == 'python' }}
+        run: |
+          stdbuf -o0 iguana_ex_python_hipopy.py test_data.hipo ${{ env.num_events }} | grep -v 'compression type' > equivalence.01.hipopy.txt
+          diff equivalence.01.{py,hipopy}.txt
       ### test ROOT macro
       - name: test iguana_ex_cpp_ROOT_macro.C interpreted
         run: root -b -q iguana_src/examples/iguana_ex_cpp_ROOT_macro.C
