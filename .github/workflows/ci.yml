@@ -248,6 +248,12 @@ jobs:
       ###### fortran
       - run: iguana_ex_fortran_01_action_functions test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'fortran' }}
+      ###### cpp and python comparison
+      - name: compare C++ and Python equivalence for 00_run_functions
+        run: |
+          iguana_ex_cpp_00_run_functions test_data.hipo ${{ env.num_events }} > equivalence.cpp.txt
+          iguana_ex_python_00_run_functions.py test_data.hipo ${{ env.num_events }} > equivalence.py.txt
+          diff equivalence.{cpp,py}.txt
       ### test ROOT macro
       - name: test iguana_ex_cpp_ROOT_macro.C interpreted
         run: root -b -q iguana_src/examples/iguana_ex_cpp_ROOT_macro.C
