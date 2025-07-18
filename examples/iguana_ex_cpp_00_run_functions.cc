@@ -40,7 +40,7 @@ int main(int argc, char** argv)
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID (a filter algorithm)
   seq.Add("clas12::SectorFinder"); // get the sector for each particle (a creator algorithm)
   seq.Add("clas12::MomentumCorrection"); // momentum corrections (a transformer algorithm)
-  seq.PrintSequence();
+  // seq.PrintSequence();
 
   // set log levels
   // NOTE: this can also be done in a config file
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
           bank_particle.getFloat("pz", row));
       auto pdg = bank_particle.getInt("pid", row);
       auto sector = bank_sector.getInt("sector", row);
-      fmt::print("  {:<20} {:<20} {:<20.3} {:<20}\n", row, pdg, p, sector);
+      fmt::print("  {:<20} {:<20} {:<20.3f} {:<20}\n", row, pdg, p, sector);
     }
     fmt::print("\n");
 

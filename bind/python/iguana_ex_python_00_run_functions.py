@@ -40,7 +40,7 @@ seq = iguana.AlgorithmSequence('pyiguana')
 seq.Add('clas12::EventBuilderFilter')
 seq.Add('clas12::SectorFinder')
 seq.Add('clas12::MomentumCorrection')
-seq.PrintSequence()
+# seq.PrintSequence()
 
 # set log levels
 # NOTE: this can also be done in a config file
@@ -99,7 +99,7 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
             banks[b_particle].getFloat('pz', row))
         pdg = banks[b_particle].getInt('pid', row)
         sector = banks[b_sector].getInt('sector', row)
-        print(f'  {row:<20} {pdg:<20} {p:<20.3} {sector:<20}', flush=True)
+        print(f'  {row:<20} {pdg:<20} {p:<20.3f} {sector:<20}', flush=True)
     print(flush=True)
 
 # stop algorithms
