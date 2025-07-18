@@ -28,9 +28,8 @@ int main(int argc, char** argv)
 {
 
   // parse arguments
-  int argi               = 1;
-  char const* inFileName = argc > argi ? argv[argi++] : "data.hipo";
-  int const numEvents    = argc > argi ? std::stoi(argv[argi++]) : 1;
+  char const* inFileName = argc > 1 ? argv[1] : "data.hipo";
+  int const numEvents    = argc > 2 ? std::stoi(argv[2]) : 3;
 
   // read input file
   hipo::reader reader(inFileName,{0});
@@ -142,7 +141,7 @@ int main(int argc, char** argv)
             configBank.getFloat("torus", 0));
 
         // then print the result
-        fmt::print("Particle PDG = {}\n", pid);
+        fmt::print("Analysis Particle PDG = {}\n", pid);
         fmt::print("  sector = {}\n", sector);
         fmt::print("  p_old = ({}, {}, {})\n", particleBank.getFloat("px", row), particleBank.getFloat("py", row), particleBank.getFloat("pz", row));
         fmt::print("  p_new = ({}, {}, {})\n", px, py, pz);

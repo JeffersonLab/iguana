@@ -27,10 +27,9 @@ int main(int argc, char** argv)
 {
 
   // parse arguments
-  int argi                    = 1;
-  char const* in_file         = argc > argi ? argv[argi++] : "data.hipo";
-  int const num_events        = argc > argi ? std::stoi(argv[argi++]) : 100;
-  bool const interactive_mode = argc > argi ? std::string(argv[argi++]) == "true" : false;
+  char const* in_file         = argc > 1 ? argv[1] : "data.hipo";
+  int const num_events        = argc > 2 ? std::stoi(argv[2]) : 100;
+  bool const interactive_mode = argc > 3 ? std::string(argv[3]) == "true" : false;
 
   // iguana algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
