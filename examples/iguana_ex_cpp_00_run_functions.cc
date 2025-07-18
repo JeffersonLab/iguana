@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 
     // print the banks after Iguana algorithms
     fmt::println("----- AFTER IGUANA -----");
-    bank_particle.show(); // the filtered particle bank, with corrected momentum
+    bank_particle.show(); // the filtered particle bank, with corrected momenta
     bank_sector.show();   // the new sector bank
 
     // print a table; first the header

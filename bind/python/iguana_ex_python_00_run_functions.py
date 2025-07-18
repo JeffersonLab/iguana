@@ -37,9 +37,9 @@ banks  = reader.getBanks([
 # iguana algorithm sequence
 # NOTE: the order that they are added to the sequence here will be the same order in which they will be run
 seq = iguana.AlgorithmSequence('pyiguana')
-seq.Add('clas12::EventBuilderFilter')
-seq.Add('clas12::SectorFinder')
-seq.Add('clas12::MomentumCorrection')
+seq.Add('clas12::EventBuilderFilter') # filter by Event Builder PID (a filter algorithm)
+seq.Add('clas12::SectorFinder') # get the sector for each particle (a creator algorithm)
+seq.Add('clas12::MomentumCorrection') # momentum corrections (a transformer algorithm)
 # seq.PrintSequence()
 
 # set log levels
@@ -67,7 +67,7 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     iEvent += 1
 
     # print the event number
-    # NOTE: we use 'flush=True' in python `print` calls here, otherwise these `print`
+    # NOTE: we use 'flush=True' in Python `print` calls here, otherwise these `print`
     # calls will be out-of-order with respect to C++ printouts coming from, e.g.,
     # Iguana and `hipo::bank::show()` (they use different buffers)
     print(f'===== EVENT {banks[b_config].getInt("event", 0)} =====', flush=True)
@@ -81,13 +81,12 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
 
     # print the banks after Iguana algorithms
     print('----- AFTER IGUANA -----', flush=True)
-    banks[b_particle].show() # the filtered particle bank, with corrected momentum
+    banks[b_particle].show() # the filtered particle bank, with corrected momenta
     banks[b_sector].show()   # the new sector bank
 
     # print a table; first the header
     print('----- Analysis Particles -----', flush=True)
     print(f'  {"row == pindex":<20} {"PDG":<20} {"|p|":<20} {"sector":<20}', flush=True)
-
     # then print a row for each particle
     # - use the `banks[b_particle].getRowList()` method to loop over the bank rows that PASS the filter; note
     #   that it needs to be converted via `list()` in order to be iterated
