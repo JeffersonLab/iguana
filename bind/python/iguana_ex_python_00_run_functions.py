@@ -89,7 +89,8 @@ while(reader.next(banks) and (numEvents==0 or iEvent < numEvents)):
     print(f'  {"row == pindex":<20} {"PDG":<20} {"|p|":<20} {"sector":<20}', flush=True)
 
     # then print a row for each particle
-    # - use the `banks[b_particle].getRowList()` method to loop over the bank rows that PASS the filter
+    # - use the `banks[b_particle].getRowList()` method to loop over the bank rows that PASS the filter; note
+    #   that it needs to be converted via `list()` in order to be iterated
     # - if you'd rather loop over ALL bank rows, iterate from `i=0` up to `i < banks[b_particle].getRows()` instead
     for row in list(banks[b_particle].getRowList()):
         p = math.hypot(
