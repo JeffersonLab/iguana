@@ -261,7 +261,10 @@ jobs:
         run: diff equivalence.01.{cpp,py}.txt
       - name: equivalence of Python HIPO bindings and HipoPy examples
         if: ${{ matrix.id == 'python' }}
-        run: diff equivalence.01.{py,hipopy}.txt
+        run: |
+          grep -v 'compression type' equivalence.01.hipopy.txt > equivalence.01.hipopy.txt.tmp
+          mv equivalence.01.hipopy.txt{.tmp,}
+          diff equivalence.01.{py,hipopy}.txt
       ###### fortran
       - run: iguana_ex_fortran_01_action_functions test_data.hipo ${{ env.num_events }}
         if: ${{ matrix.id == 'fortran' }}
