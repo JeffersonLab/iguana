@@ -4,6 +4,7 @@
 @begin_doc_example{python}
 @file iguana_ex_python_01_action_functions.py
 @brief Python version of `iguana_ex_cpp_01_action_functions.cc` (for more details, see this `.cc` file)
+@note You may need to run this example using `stdbuf -o0` (preceding your command) if the output appears to be jumbled
 @end_doc_example
 @doxygen_off
 """

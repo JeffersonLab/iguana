@@ -4,6 +4,7 @@
 @begin_doc_example{python}
 @file iguana_ex_python_hipopy.py
 @brief Python iguana example using HIPOPy: https://github.com/mfmceneaney/hipopy
+@note You may need to run this example using `stdbuf -o0` (preceding your command) if the output appears to be jumbled
 @end_doc_example
 @doxygen_off
 """
