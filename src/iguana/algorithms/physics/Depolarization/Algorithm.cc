@@ -16,8 +16,6 @@ namespace iguana::physics {
     i_C       = result_schema.getEntryOrder("C");
     i_V       = result_schema.getEntryOrder("V");
     i_W       = result_schema.getEntryOrder("W");
-
-    m_log->Warn("the kinematic calculations in this algorithm need to be cross checked; use this algorithm at your own risk!");
   }
 
   ///////////////////////////////////////////////////////////////////////////////
