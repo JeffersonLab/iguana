@@ -70,8 +70,6 @@ namespace iguana::physics {
       m_log->Error("Unknown beam particle {:?}", beam_particle);
       throw std::runtime_error("Start failed");
     }
-
-    m_log->Warn("the kinematic calculations in this algorithm need to be cross checked; use this algorithm at your own risk!");
   }
 
   ///////////////////////////////////////////////////////////////////////////////
