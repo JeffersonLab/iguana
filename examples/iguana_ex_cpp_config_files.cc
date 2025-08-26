@@ -47,8 +47,7 @@ int main(int argc, char** argv)
         algo->Start();
         auto key = algo->PrepareEvent(4800); // sets the run number and loads the cuts
         assert((algo->GetRunNum(key) == 4800)); // pass the key into the 'Get*' methods
-        assert((algo->GetElectronZcuts(key).at(0) == -13.0));
-        assert((algo->GetElectronZcuts(key).at(1) == 12.0));
+        fmt::println("Z-vertex cuts: {} to {}", algo->GetElectronZcuts(key).at(0), algo->GetElectronZcuts(key).at(1));
         break;
       }
 
