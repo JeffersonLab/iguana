@@ -7,10 +7,34 @@ clas12::ZVertexFilter:
     - default:
       vz: [ -20.0, 20.0 ]
 
+    # RG-A spring2018 inbending, 1st period
+    - runs: [ 3031, 3087 ]
+      vz: [ -6.061, 1.819 ]
+
+    # RG-A spring2018 outbending, 1st period
+    - runs: [ 3103, 3293 ]
+      vz: [ -7.272, 0.909 ]
+
+    # RG-A spring2018 inbending, 2nd period
+    - runs: [ 3306, 3817 ]
+      vz: [ -6.061, 1.819 ]
+
+    # RG-A spring2018 outbending, 2nd period
+    - runs: [ 3820, 3987 ]
+      vz: [ -7.272, 0.909 ]
+
+    # RG-A spring2018 inbending, 3rd period
+    - runs: [ 4003, 4325 ]
+      vz: [ -6.061, 1.819 ]
+
     # RG-A fall2018 inbending
-    - runs: [ 4760, 5419 ]
-      vz: [ -13.0, 12.0 ]
+    - runs: [ 4763, 5419 ]
+      vz: [ -6.364, 1.515 ]
 
     # RG-A fall2018 outbending
-    - runs: [ 5420, 5674 ]
-      vz: [ -18.0, 10.0 ]
+    - runs: [ 5423, 5666 ]
+      vz: [ -7.879, 0.303 ]
+
+    # RG-A spring2019 inbending
+    - runs: [ 6616, 6783 ]
+      vz: [ -6.364, 1.515 ]
