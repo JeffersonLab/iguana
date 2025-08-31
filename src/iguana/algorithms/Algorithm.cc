@@ -251,6 +251,15 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  hipo::bank Algorithm::CreateBank(std::string const& bank_name) const noexcept(false) {
+    hipo::banklist new_banks;
+    hipo::banklist::size_type new_bank_idx;
+    CreateBank(new_banks, new_bank_idx, bank_name);
+    return new_banks.at(0);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::ShowBanks(hipo::banklist& banks, std::string_view message, Logger::Level const level) const
   {
     if(m_log->GetLevel() <= level) {

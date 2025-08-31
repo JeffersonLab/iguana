@@ -164,6 +164,11 @@ namespace iguana {
           hipo::banklist::size_type& bank_idx,
           std::string const& bank_name) const noexcept(false);
 
+      /// Create a new bank. The bank must be defined in `src/iguana/bankdefs/iguana.json`.
+      /// @param [in] bank_name the new bank name
+      /// @returns the new bank
+      hipo::bank CreateBank(std::string const& bank_name) const noexcept(false);
+
       /// Dump all banks in a `hipo::banklist`
       /// @param banks the banks to show
       /// @param message if specified, print a header message
