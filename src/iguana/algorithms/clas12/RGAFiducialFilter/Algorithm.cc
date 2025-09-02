@@ -161,7 +161,7 @@ namespace iguana::clas12 {
     const std::string sectorStr = std::to_string(h.sector);
 
     // helper: safe fetch of vector<vector<double>> at a YAML path
-    auto get2d = [this](auto path) -> std::vector<std::vector<double>> {
+    auto get2d = [this](const YAMLReader::node_path_t& path) -> std::vector<std::vector<double>> {
       try {
         return GetOptionVector<std::vector<double>>("cal_mask", path);
       } catch (...) {
@@ -169,26 +169,38 @@ namespace iguana::clas12 {
       }
     };
 
-    // build and fetch windows directly with a mixed node_path:
+    // build a node_path_t:
     // { "calorimeter", "masks", InRange("runs", runnum), "sectors", "<sector>", "<layer>", "<axis>" }
-    const auto pcal_lv = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "pcal",  "lv" });
-    const auto pcal_lw = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "pcal",  "lw" });
-    const auto pcal_lu = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "pcal",  "lu" });
+    auto make_path = [this, &sectorStr, runnum](const char* layer, const char* axis) {
+      YAMLReader::node_path_t np = {
+        "calorimeter",
+        "masks",
+        GetConfig()->InRange("runs", runnum),
+        "sectors",
+        sectorStr,
+        layer,
+        axis
+      };
+      return np;
+    };
 
-    const auto ecin_lv = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecin",  "lv" });
-    const auto ecin_lw = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecin",  "lw" });
-    const auto ecin_lu = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecin",  "lu" });
+    const auto pcal_lv  = get2d(make_path("pcal",  "lv"));
+    const auto pcal_lw  = get2d(make_path("pcal",  "lw"));
+    const auto pcal_lu  = get2d(make_path("pcal",  "lu"));
 
-    const auto ecout_lv = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecout", "lv" });
-    const auto ecout_lw = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecout", "lw" });
-    const auto ecout_lu = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecout", "lu" });
+    const auto ecin_lv  = get2d(make_path("ecin",  "lv"));
+    const auto ecin_lw  = get2d(make_path("ecin",  "lw"));
+    const auto ecin_lu  = get2d(make_path("ecin",  "lu"));
+
+    const auto ecout_lv = get2d(make_path("ecout", "lv"));
+    const auto ecout_lw = get2d(make_path("ecout", "lw"));
+    const auto ecout_lu = get2d(make_path("ecout", "lu"));
 
     auto toWindows = [](const std::vector<std::vector<double>>& vv) {
       std::vector<std::pair<float,float>> w;
       w.reserve(vv.size());
       for (auto const& r : vv) {
-        if (r.size() >= 2) w.emplace_back(static_cast<float>(r[0]),
-                                          static_cast<float>(r[1]));
+        if (r.size() >= 2) w.emplace_back(static_cast<float>(r[0]), static_cast<float>(r[1]));
       }
       return w;
     };
