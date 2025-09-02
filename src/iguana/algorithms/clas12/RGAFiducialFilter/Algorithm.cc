@@ -1,7 +1,6 @@
 #include "Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/YAMLReader.h"
-#include <yaml-cpp/yaml.h>
 
 namespace iguana::clas12 {
 
@@ -162,7 +161,7 @@ namespace iguana::clas12 {
   {
     const std::string sectorStr = std::to_string(h.sector);
 
-    // Build a node path like:
+    // Build a node_path like:
     // { "calorimeter", "masks", InRange("runs", runnum), "sectors", "<sector>", "<layer>", "<axis>" }
     auto make_path = [this, &sectorStr, runnum](const char* layer, const char* axis) {
       YAMLReader::node_path_t np = {
@@ -177,47 +176,43 @@ namespace iguana::clas12 {
       return np;
     };
 
-    // Fetch YAML::Node at a path; returns empty node if missing
-    auto get_node = [this](const YAMLReader::node_path_t& path) -> YAML::Node {
+    // Safe fetch: returns a flat vector<double> (length is 2*N for N windows) or empty if missing
+    auto get_flat = [this](const YAMLReader::node_path_t& path) -> std::vector<double> {
       try {
-        return GetConfig()->GetNode(path);
+        return GetOptionVector<double>("cal_mask", path);
       } catch (...) {
-        return YAML::Node();
+        return {};
       }
     };
 
-    // Convert a YAML sequence-of-sequences into vector<pair<float,float>>
-    auto to_windows = [](const YAML::Node& n) {
+    // Convert flat [a,b,c,d,...] -> vector<pair<float,float>> windows
+    auto to_windows = [](const std::vector<double>& v) {
       std::vector<std::pair<float,float>> w;
-      if (!n || !n.IsSequence()) return w;
-      w.reserve(n.size());
-      for (auto const& row : n) {
-        if (row.IsSequence() && row.size() >= 2) {
-          w.emplace_back(row[0].as<float>(), row[1].as<float>());
-        }
+      w.reserve(v.size() / 2);
+      for (size_t i = 0; i + 1 < v.size(); i += 2) {
+        w.emplace_back(static_cast<float>(v[i]), static_cast<float>(v[i+1]));
       }
       return w;
     };
 
-    auto in_any = [](float v, const std::vector<std::pair<float,float>>& wins) {
-      for (auto const& w : wins) if (v > w.first && v < w.second) return true;
+    auto in_any = [](float val, const std::vector<std::pair<float,float>>& wins) {
+      for (auto const& w : wins) if (val > w.first && val < w.second) return true;
       return false;
     };
 
-    // Load all possible windows for this sector/layer/axis
-    const auto pcal_lv  = to_windows(get_node(make_path("pcal",  "lv")));
-    const auto pcal_lw  = to_windows(get_node(make_path("pcal",  "lw")));
-    const auto pcal_lu  = to_windows(get_node(make_path("pcal",  "lu")));
+    // Load and check all windows for this sector/layer/axis
+    const auto pcal_lv  = to_windows(get_flat(make_path("pcal",  "lv")));
+    const auto pcal_lw  = to_windows(get_flat(make_path("pcal",  "lw")));
+    const auto pcal_lu  = to_windows(get_flat(make_path("pcal",  "lu")));
 
-    const auto ecin_lv  = to_windows(get_node(make_path("ecin",  "lv")));
-    const auto ecin_lw  = to_windows(get_node(make_path("ecin",  "lw")));
-    const auto ecin_lu  = to_windows(get_node(make_path("ecin",  "lu")));
+    const auto ecin_lv  = to_windows(get_flat(make_path("ecin",  "lv")));
+    const auto ecin_lw  = to_windows(get_flat(make_path("ecin",  "lw")));
+    const auto ecin_lu  = to_windows(get_flat(make_path("ecin",  "lu")));
 
-    const auto ecout_lv = to_windows(get_node(make_path("ecout", "lv")));
-    const auto ecout_lw = to_windows(get_node(make_path("ecout", "lw")));
-    const auto ecout_lu = to_windows(get_node(make_path("ecout", "lu")));
+    const auto ecout_lv = to_windows(get_flat(make_path("ecout", "lv")));
+    const auto ecout_lw = to_windows(get_flat(make_path("ecout", "lw")));
+    const auto ecout_lu = to_windows(get_flat(make_path("ecout", "lu")));
 
-    // Any hit inside any forbidden window -> reject
     if (in_any(h.lv1, pcal_lv) || in_any(h.lw1, pcal_lw) || in_any(h.lu1, pcal_lu)) return false;
     if (in_any(h.lv4, ecin_lv) || in_any(h.lw4, ecin_lw) || in_any(h.lu4, ecin_lu)) return false;
     if (in_any(h.lv7, ecout_lv)|| in_any(h.lw7, ecout_lw)|| in_any(h.lu7, ecout_lu)) return false;
