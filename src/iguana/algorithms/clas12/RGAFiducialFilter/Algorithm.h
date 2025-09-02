@@ -67,7 +67,7 @@ namespace iguana::clas12 {
       static bool PassCalStrictness(const CalLayers& h, int strictness);
 
       /// Dead-PMT masks (run and sector dependent; only applied for strictness >= 2)
-      static bool PassCalDeadPMTMasks(const CalLayers& h, int runnum);
+      bool PassCalDeadPMTMasks(const CalLayers& h, int runnum) const;
 
       /// Load per-run options from YAML (calorimeter.strictness)
       void Reload(int runnum, concurrent_key_t key) const;

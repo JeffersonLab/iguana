@@ -1,44 +1,240 @@
 #include "Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 
 namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter);
-  // REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter , "clas12::newBank1", "clas12::newBank2"); // if this algorithm creates 2 new banks
+
+  // -------------------------
+  // lifecycle
+  // -------------------------
 
   void RGAFiducialFilter::Start(hipo::banklist& banks)
   {
+    // parse YAML, allocate thread-safe per-run cache
     ParseYAMLConfig();
-    o_exampleInt    = GetOptionScalar<int>("exampleInt");
-    o_exampleDouble = GetOptionScalar<double>("exampleDouble");
-    b_particle = GetBankIndex(banks, "REC::Particle");
-    // CreateBank(.....); // use this to create a new bank
-  }
+    o_runnum        = ConcurrentParamFactory::Create<int>();
+    o_cal_strictness= ConcurrentParamFactory::Create<int>();
 
+    // expected banks
+    b_particle = GetBankIndex(banks, "REC::Particle");
+    b_calor    = GetBankIndex(banks, "REC::Calorimeter");
+    b_config   = GetBankIndex(banks, "RUN::config");
+  }
 
   void RGAFiducialFilter::Run(hipo::banklist& banks) const
   {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
+    auto& calorBank    = GetBank(banks, b_calor,    "REC::Calorimeter");
+    auto& configBank   = GetBank(banks, b_config,   "RUN::config");
 
-    particleBank.getMutableRowList().filter([this, &particleBank](auto bank, auto row) {
-      auto pid    = particleBank.getInt("pid", row);
-      auto accept = Filter(pid);
-      m_log->Debug("input PID {} -- accept = {}", pid, accept);
+    // prepare per-event/per-run cache
+    auto key = PrepareEvent(configBank.getInt("run", 0));
+
+    // filter tracks in place
+    particleBank.getMutableRowList().filter([this, &calorBank, key](auto bank, auto row) {
+      const int pindex = row; // REC::Particle row index is used as pindex in REC::Calorimeter
+      const bool accept = Filter(pindex, calorBank, key);
+      m_log->Debug("RGAFiducialFilter: pindex {} -> {}", pindex, accept ? "keep" : "drop");
       return accept ? 1 : 0;
-      });
-
-    ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+    });
   }
-
-
-  bool RGAFiducialFilter::Filter(int const pid) const
-  {
-    return pid > 0;
-  }
-
 
   void RGAFiducialFilter::Stop()
   {
+    // nothing to do
   }
 
-}
+  // -------------------------
+  // event preparation
+  // -------------------------
+
+  concurrent_key_t RGAFiducialFilter::PrepareEvent(int runnum) const
+  {
+    if (o_runnum->NeedsHashing()) {
+      std::hash<int> hash_ftn;
+      auto key = hash_ftn(runnum);
+      if (!o_runnum->HasKey(key)) Reload(runnum, key);
+      return key;
+    } else {
+      if (o_runnum->IsEmpty() || o_runnum->Load(0) != runnum) Reload(runnum, 0);
+      return 0;
+    }
+  }
+
+  void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const
+  {
+    std::lock_guard<std::mutex> const lock(m_mutex); // guard successive saves
+    m_log->Trace("RGAFiducialFilter::Reload(run={}, key={})", runnum, key);
+
+    // cache the run number
+    o_runnum->Save(runnum, key);
+
+    // read strictness from YAML (default to 1 if not present)
+    int strictness = 1;
+    try {
+      strictness = GetOption<int>("calorimeter.strictness",
+                                  { "calorimeter", "strictness" });
+    } catch(...) {
+      // leave strictness = 1
+    }
+    if (strictness < 1) strictness = 1;
+    if (strictness > 3) strictness = 3;
+    o_cal_strictness->Save(strictness, key);
+  }
+
+  // -------------------------
+  // core filter
+  // -------------------------
+
+  bool RGAFiducialFilter::Filter(int particle_index,
+                                 const hipo::bank& calBank,
+                                 concurrent_key_t key) const
+  {
+    // collect calorimeter info linked to this track
+    CalLayers h = CollectCalHitsForParticle(calBank, particle_index);
+
+    // if there is no calorimeter association, pass the track through
+    if (!h.has_any) return true;
+
+    // PCAL edge strictness (required at all levels)
+    const int strictness = GetCalStrictness(key);
+    if (!PassCalStrictness(h, strictness)) return false;
+
+    // dead-PMT masks only for strictness >= 2
+    const int runnum = GetRunNum(key);
+    if (strictness >= 2) {
+      if (!PassCalDeadPMTMasks(h, runnum)) return false;
+    }
+
+    return true;
+  }
+
+  // -------------------------
+  // helpers
+  // -------------------------
+
+  RGAFiducialFilter::CalLayers
+  RGAFiducialFilter::CollectCalHitsForParticle(const hipo::bank& calBank, int pindex)
+  {
+    CalLayers out;
+    const int nrows = calBank.getRows();
+    for (int i = 0; i < nrows; ++i) {
+      if (calBank.getInt("pindex", i) != pindex) continue;
+
+      out.has_any = true;
+      out.sector  = calBank.getInt("sector", i);
+      const int layer = calBank.getInt("layer", i);
+
+      const float lv = calBank.getFloat("lv", i);
+      const float lw = calBank.getFloat("lw", i);
+      const float lu = calBank.getFloat("lu", i);
+
+      if      (layer == 1) { out.lv1 = lv; out.lw1 = lw; out.lu1 = lu; }
+      else if (layer == 4) { out.lv4 = lv; out.lw4 = lw; out.lu4 = lu; }
+      else if (layer == 7) { out.lv7 = lv; out.lw7 = lw; out.lu7 = lu; }
+    }
+    return out;
+  }
+
+  bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
+  {
+    // PCAL-only edge cuts on (lv1, lw1)
+    switch (strictness) {
+      case 1: // recommended for electrons in BSAs
+        if (h.lw1 < 9.0f || h.lv1 < 9.0f) return false;
+        break;
+      case 2: // recommended for photons in BSAs
+        if (h.lw1 < 13.5f || h.lv1 < 13.5f) return false;
+        break;
+      case 3: // recommended for cross sections
+        if (h.lw1 < 18.0f || h.lv1 < 18.0f) return false;
+        break;
+      default:
+        return false;
+    }
+    return true;
+  }
+
+  bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, int runnum) const
+  {
+    // Select the masks entry whose "runs" range contains runnum
+    // Path pattern: calorimeter -> masks -> <InRange('runs', runnum)> -> sectors -> "<sector>"
+    const std::string idx = GetConfig()->InRange("runs", runnum);
+    const std::string sectorStr = std::to_string(h.sector);
+
+    // Helper to fetch a vector<vector<double>> from YAML; returns {} if not present
+    auto get2d = [this](const std::vector<std::string>& path)
+                   -> std::vector<std::vector<double>>
+    {
+      try {
+        return GetOptionVector<std::vector<double>>("cal_mask", path);
+      } catch (...) {
+        return {};
+      }
+    };
+
+    // Build base path once
+    const std::vector<std::string> base = {
+      "calorimeter", "masks", idx, "sectors", sectorStr
+    };
+
+    // Helpers to append path segments
+    auto path = [&base](std::initializer_list<const char*> segs) {
+      std::vector<std::string> out = base;
+      for (auto s : segs) out.emplace_back(s);
+      return out;
+    };
+
+    // Convert vector<vector<double>> -> vector<pair<float,float>>
+    auto toWindows = [](const std::vector<std::vector<double>>& vv) {
+      std::vector<std::pair<float,float>> w;
+      w.reserve(vv.size());
+      for (auto const& r : vv) {
+        if (r.size() >= 2) w.emplace_back(static_cast<float>(r[0]),
+                                          static_cast<float>(r[1]));
+      }
+      return w;
+    };
+
+    // Fetch all possible windows for this sector/layer/axis
+    const auto pcal_lv = toWindows(get2d(path({"pcal",  "lv"})));
+    const auto pcal_lw = toWindows(get2d(path({"pcal",  "lw"})));
+    const auto pcal_lu = toWindows(get2d(path({"pcal",  "lu"})));
+    const auto ecin_lv = toWindows(get2d(path({"ecin",  "lv"})));
+    const auto ecin_lw = toWindows(get2d(path({"ecin",  "lw"})));
+    const auto ecin_lu = toWindows(get2d(path({"ecin",  "lu"})));
+    const auto ecout_lv= toWindows(get2d(path({"ecout", "lv"})));
+    const auto ecout_lw= toWindows(get2d(path({"ecout", "lw"})));
+    const auto ecout_lu= toWindows(get2d(path({"ecout", "lu"})));
+
+    auto in_any = [](float v, const std::vector<std::pair<float,float>>& wins) {
+      for (auto const& w : wins) {
+        if (v > w.first && v < w.second) return true;
+      }
+      return false;
+    };
+
+    // Apply windows: any hit inside any forbidden window -> reject
+    if (in_any(h.lv1, pcal_lv) || in_any(h.lw1, pcal_lw) || in_any(h.lu1, pcal_lu)) return false;
+    if (in_any(h.lv4, ecin_lv) || in_any(h.lw4, ecin_lw) || in_any(h.lu4, ecin_lu)) return false;
+    if (in_any(h.lv7, ecout_lv)|| in_any(h.lw7, ecout_lw)|| in_any(h.lu7, ecout_lu)) return false;
+
+    return true;
+  }
+
+  // -------------------------
+  // accessors
+  // -------------------------
+
+  int RGAFiducialFilter::GetRunNum(concurrent_key_t key) const
+  {
+    return o_runnum->Load(key);
+  }
+
+  int RGAFiducialFilter::GetCalStrictness(concurrent_key_t key) const
+  {
+    return o_cal_strictness->Load(key);
+  }
+
+} // namespace iguana::clas12
