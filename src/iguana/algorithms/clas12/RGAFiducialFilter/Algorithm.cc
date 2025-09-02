@@ -180,7 +180,7 @@ namespace iguana::clas12 {
     // Fetch YAML::Node at a path; returns empty node if missing
     auto get_node = [this](const YAMLReader::node_path_t& path) -> YAML::Node {
       try {
-        return GetConfig()->Get(path);
+        return GetConfig()->GetNode(path);
       } catch (...) {
         return YAML::Node();
       }
