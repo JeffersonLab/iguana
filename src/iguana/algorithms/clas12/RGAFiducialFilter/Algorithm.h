@@ -25,6 +25,16 @@ namespace iguana::clas12 {
       DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
     public:
+
+      // --- helpers and data structures for calorimeter linking ---
+      struct CalLayers {
+        int   sector = 0;
+        float lv1=0.f, lw1=0.f, lu1=0.f; // layer 1 (PCAL)
+        float lv4=0.f, lw4=0.f, lu4=0.f; // layer 4 (ECin)
+        float lv7=0.f, lw7=0.f, lu7=0.f; // layer 7 (ECout)
+        bool  has_any = false;           // saw at least one matching cal row
+      };
+      
       void Start(hipo::banklist& banks) override;
       void Run  (hipo::banklist& banks) const override;
       void Stop () override;
@@ -51,14 +61,6 @@ namespace iguana::clas12 {
       int GetCalStrictness(concurrent_key_t key) const;
 
     private:
-      // --- helpers and data structures for calorimeter linking ---
-      struct CalLayers {
-        int   sector = 0;
-        float lv1=0.f, lw1=0.f, lu1=0.f; // layer 1 (PCAL)
-        float lv4=0.f, lw4=0.f, lu4=0.f; // layer 4 (ECin)
-        float lv7=0.f, lw7=0.f, lu7=0.f; // layer 7 (ECout)
-        bool  has_any = false;           // saw at least one matching cal row
-      };
 
       /// Collect PCAL/ECin/ECout (layers 1/4/7) for a given track index
       static CalLayers CollectCalHitsForTrack(const hipo::bank& calBank, int track_index);

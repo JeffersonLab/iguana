@@ -13,8 +13,8 @@ namespace iguana::clas12 {
   {
     // parse YAML, allocate thread-safe per-run cache
     ParseYAMLConfig();
-    o_runnum        = ConcurrentParamFactory::Create<int>();
-    o_cal_strictness= ConcurrentParamFactory::Create<int>();
+    o_runnum         = ConcurrentParamFactory::Create<int>();
+    o_cal_strictness = ConcurrentParamFactory::Create<int>();
 
     // expected banks
     b_particle = GetBankIndex(banks, "REC::Particle");
@@ -33,9 +33,9 @@ namespace iguana::clas12 {
 
     // filter tracks in place
     particleBank.getMutableRowList().filter([this, &calorBank, key](auto bank, auto row) {
-      const int pindex = row; // REC::Particle row index is used as pindex in REC::Calorimeter
-      const bool accept = Filter(pindex, calorBank, key);
-      m_log->Debug("RGAFiducialFilter: pindex {} -> {}", pindex, accept ? "keep" : "drop");
+      const int track_index = row; // link to REC::Calorimeter via pindex
+      const bool accept = Filter(track_index, calorBank, key);
+      m_log->Debug("RGAFiducialFilter: track {} -> {}", track_index, accept ? "keep" : "drop");
       return accept ? 1 : 0;
     });
   }
@@ -70,13 +70,13 @@ namespace iguana::clas12 {
     // cache the run number
     o_runnum->Save(runnum, key);
 
-    // read strictness from YAML (default to 1 if not present)
+    // read strictness (scalar) from YAML: clas12::RGAFiducialFilter -> calorimeter -> strictness
     int strictness = 1;
     try {
-      strictness = GetOption<int>("calorimeter.strictness",
-                                  { "calorimeter", "strictness" });
-    } catch(...) {
-      // leave strictness = 1
+      auto v = GetOptionVector<int>("strictness", { "calorimeter" });
+      if (!v.empty()) strictness = v.front();
+    } catch (...) {
+      // leave as default 1
     }
     if (strictness < 1) strictness = 1;
     if (strictness > 3) strictness = 3;
@@ -87,12 +87,12 @@ namespace iguana::clas12 {
   // core filter
   // -------------------------
 
-  bool RGAFiducialFilter::Filter(int particle_index,
+  bool RGAFiducialFilter::Filter(int track_index,
                                  const hipo::bank& calBank,
                                  concurrent_key_t key) const
   {
     // collect calorimeter info linked to this track
-    CalLayers h = CollectCalHitsForParticle(calBank, particle_index);
+    CalLayers h = CollectCalHitsForTrack(calBank, track_index);
 
     // if there is no calorimeter association, pass the track through
     if (!h.has_any) return true;
@@ -115,7 +115,7 @@ namespace iguana::clas12 {
   // -------------------------
 
   RGAFiducialFilter::CalLayers
-  RGAFiducialFilter::CollectCalHitsForParticle(const hipo::bank& calBank, int pindex)
+  RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
   {
     CalLayers out;
     const int nrows = calBank.getRows();
@@ -158,15 +158,10 @@ namespace iguana::clas12 {
 
   bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, int runnum) const
   {
-    // Select the masks entry whose "runs" range contains runnum
-    // Path pattern: calorimeter -> masks -> <InRange('runs', runnum)> -> sectors -> "<sector>"
-    const std::string idx = GetConfig()->InRange("runs", runnum);
     const std::string sectorStr = std::to_string(h.sector);
 
-    // Helper to fetch a vector<vector<double>> from YAML; returns {} if not present
-    auto get2d = [this](const std::vector<std::string>& path)
-                   -> std::vector<std::vector<double>>
-    {
+    // helper: safe fetch of vector<vector<double>> at a YAML path
+    auto get2d = [this](auto path) -> std::vector<std::vector<double>> {
       try {
         return GetOptionVector<std::vector<double>>("cal_mask", path);
       } catch (...) {
@@ -174,19 +169,20 @@ namespace iguana::clas12 {
       }
     };
 
-    // Build base path once
-    const std::vector<std::string> base = {
-      "calorimeter", "masks", idx, "sectors", sectorStr
-    };
+    // build and fetch windows directly with a mixed node_path:
+    // { "calorimeter", "masks", InRange("runs", runnum), "sectors", "<sector>", "<layer>", "<axis>" }
+    const auto pcal_lv = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "pcal",  "lv" });
+    const auto pcal_lw = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "pcal",  "lw" });
+    const auto pcal_lu = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "pcal",  "lu" });
 
-    // Helpers to append path segments
-    auto path = [&base](std::initializer_list<const char*> segs) {
-      std::vector<std::string> out = base;
-      for (auto s : segs) out.emplace_back(s);
-      return out;
-    };
+    const auto ecin_lv = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecin",  "lv" });
+    const auto ecin_lw = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecin",  "lw" });
+    const auto ecin_lu = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecin",  "lu" });
 
-    // Convert vector<vector<double>> -> vector<pair<float,float>>
+    const auto ecout_lv = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecout", "lv" });
+    const auto ecout_lw = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecout", "lw" });
+    const auto ecout_lu = get2d({ "calorimeter", "masks", GetConfig()->InRange("runs", runnum), "sectors", sectorStr, "ecout", "lu" });
+
     auto toWindows = [](const std::vector<std::vector<double>>& vv) {
       std::vector<std::pair<float,float>> w;
       w.reserve(vv.size());
@@ -197,28 +193,15 @@ namespace iguana::clas12 {
       return w;
     };
 
-    // Fetch all possible windows for this sector/layer/axis
-    const auto pcal_lv = toWindows(get2d(path({"pcal",  "lv"})));
-    const auto pcal_lw = toWindows(get2d(path({"pcal",  "lw"})));
-    const auto pcal_lu = toWindows(get2d(path({"pcal",  "lu"})));
-    const auto ecin_lv = toWindows(get2d(path({"ecin",  "lv"})));
-    const auto ecin_lw = toWindows(get2d(path({"ecin",  "lw"})));
-    const auto ecin_lu = toWindows(get2d(path({"ecin",  "lu"})));
-    const auto ecout_lv= toWindows(get2d(path({"ecout", "lv"})));
-    const auto ecout_lw= toWindows(get2d(path({"ecout", "lw"})));
-    const auto ecout_lu= toWindows(get2d(path({"ecout", "lu"})));
-
     auto in_any = [](float v, const std::vector<std::pair<float,float>>& wins) {
-      for (auto const& w : wins) {
-        if (v > w.first && v < w.second) return true;
-      }
+      for (auto const& w : wins) if (v > w.first && v < w.second) return true;
       return false;
     };
 
     // Apply windows: any hit inside any forbidden window -> reject
-    if (in_any(h.lv1, pcal_lv) || in_any(h.lw1, pcal_lw) || in_any(h.lu1, pcal_lu)) return false;
-    if (in_any(h.lv4, ecin_lv) || in_any(h.lw4, ecin_lw) || in_any(h.lu4, ecin_lu)) return false;
-    if (in_any(h.lv7, ecout_lv)|| in_any(h.lw7, ecout_lw)|| in_any(h.lu7, ecout_lu)) return false;
+    if (in_any(h.lv1, toWindows(pcal_lv)) || in_any(h.lw1, toWindows(pcal_lw)) || in_any(h.lu1, toWindows(pcal_lu))) return false;
+    if (in_any(h.lv4, toWindows(ecin_lv)) || in_any(h.lw4, toWindows(ecin_lw)) || in_any(h.lu4, toWindows(ecin_lu))) return false;
+    if (in_any(h.lv7, toWindows(ecout_lv))|| in_any(h.lw7, toWindows(ecout_lw))|| in_any(h.lu7, toWindows(ecout_lu))) return false;
 
     return true;
   }
