@@ -162,12 +162,6 @@ namespace iguana {
     RECOIL    = 26,
     TARGET    = 100,
     MAGNETS   = 101,
-    ECIN      = 110,
-    ECOUT     = 111,
-    ECTOT     = 112,
-    LAC       = 113,
-    SC        = 114,
-    CC        = 115,
   };
 
   /// detector layer IDs; this is a _copy_ of `coatjava`'s `DetectorLayer` class
