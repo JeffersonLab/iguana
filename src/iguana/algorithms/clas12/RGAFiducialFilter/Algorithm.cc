@@ -1,5 +1,7 @@
 #include "Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
+#include "iguana/services/YAMLReader.h"
+#include <yaml-cpp/yaml.h>
 
 namespace iguana::clas12 {
 
@@ -160,16 +162,7 @@ namespace iguana::clas12 {
   {
     const std::string sectorStr = std::to_string(h.sector);
 
-    // helper: safe fetch of vector<vector<double>> at a YAML path
-    auto get2d = [this](const YAMLReader::node_path_t& path) -> std::vector<std::vector<double>> {
-      try {
-        return GetOptionVector<std::vector<double>>("cal_mask", path);
-      } catch (...) {
-        return {};
-      }
-    };
-
-    // build a node_path_t:
+    // Build a node path like:
     // { "calorimeter", "masks", InRange("runs", runnum), "sectors", "<sector>", "<layer>", "<axis>" }
     auto make_path = [this, &sectorStr, runnum](const char* layer, const char* axis) {
       YAMLReader::node_path_t np = {
@@ -184,23 +177,24 @@ namespace iguana::clas12 {
       return np;
     };
 
-    const auto pcal_lv  = get2d(make_path("pcal",  "lv"));
-    const auto pcal_lw  = get2d(make_path("pcal",  "lw"));
-    const auto pcal_lu  = get2d(make_path("pcal",  "lu"));
+    // Fetch YAML::Node at a path; returns empty node if missing
+    auto get_node = [this](const YAMLReader::node_path_t& path) -> YAML::Node {
+      try {
+        return GetConfig()->Get(path);
+      } catch (...) {
+        return YAML::Node();
+      }
+    };
 
-    const auto ecin_lv  = get2d(make_path("ecin",  "lv"));
-    const auto ecin_lw  = get2d(make_path("ecin",  "lw"));
-    const auto ecin_lu  = get2d(make_path("ecin",  "lu"));
-
-    const auto ecout_lv = get2d(make_path("ecout", "lv"));
-    const auto ecout_lw = get2d(make_path("ecout", "lw"));
-    const auto ecout_lu = get2d(make_path("ecout", "lu"));
-
-    auto toWindows = [](const std::vector<std::vector<double>>& vv) {
+    // Convert a YAML sequence-of-sequences into vector<pair<float,float>>
+    auto to_windows = [](const YAML::Node& n) {
       std::vector<std::pair<float,float>> w;
-      w.reserve(vv.size());
-      for (auto const& r : vv) {
-        if (r.size() >= 2) w.emplace_back(static_cast<float>(r[0]), static_cast<float>(r[1]));
+      if (!n || !n.IsSequence()) return w;
+      w.reserve(n.size());
+      for (auto const& row : n) {
+        if (row.IsSequence() && row.size() >= 2) {
+          w.emplace_back(row[0].as<float>(), row[1].as<float>());
+        }
       }
       return w;
     };
@@ -210,10 +204,23 @@ namespace iguana::clas12 {
       return false;
     };
 
-    // Apply windows: any hit inside any forbidden window -> reject
-    if (in_any(h.lv1, toWindows(pcal_lv)) || in_any(h.lw1, toWindows(pcal_lw)) || in_any(h.lu1, toWindows(pcal_lu))) return false;
-    if (in_any(h.lv4, toWindows(ecin_lv)) || in_any(h.lw4, toWindows(ecin_lw)) || in_any(h.lu4, toWindows(ecin_lu))) return false;
-    if (in_any(h.lv7, toWindows(ecout_lv))|| in_any(h.lw7, toWindows(ecout_lw))|| in_any(h.lu7, toWindows(ecout_lu))) return false;
+    // Load all possible windows for this sector/layer/axis
+    const auto pcal_lv  = to_windows(get_node(make_path("pcal",  "lv")));
+    const auto pcal_lw  = to_windows(get_node(make_path("pcal",  "lw")));
+    const auto pcal_lu  = to_windows(get_node(make_path("pcal",  "lu")));
+
+    const auto ecin_lv  = to_windows(get_node(make_path("ecin",  "lv")));
+    const auto ecin_lw  = to_windows(get_node(make_path("ecin",  "lw")));
+    const auto ecin_lu  = to_windows(get_node(make_path("ecin",  "lu")));
+
+    const auto ecout_lv = to_windows(get_node(make_path("ecout", "lv")));
+    const auto ecout_lw = to_windows(get_node(make_path("ecout", "lw")));
+    const auto ecout_lu = to_windows(get_node(make_path("ecout", "lu")));
+
+    // Any hit inside any forbidden window -> reject
+    if (in_any(h.lv1, pcal_lv) || in_any(h.lw1, pcal_lw) || in_any(h.lu1, pcal_lu)) return false;
+    if (in_any(h.lv4, ecin_lv) || in_any(h.lw4, ecin_lw) || in_any(h.lu4, ecin_lu)) return false;
+    if (in_any(h.lv7, ecout_lv)|| in_any(h.lw7, ecout_lw)|| in_any(h.lu7, ecout_lu)) return false;
 
     return true;
   }
