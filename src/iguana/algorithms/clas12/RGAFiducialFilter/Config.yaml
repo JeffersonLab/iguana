@@ -1,3 +1,49 @@
 clas12::RGAFiducialFilter:
-  exampleInt: 8
-  exampleDouble: 7.5
+  calorimeter:
+    # Strictness levels:
+    # 1 = baseline (recommended for electrons in BSAs)
+    # 2 = tighter PCAL edge margins + dead-PMT masks
+    # 3 = tightest (recommended for cross sections)
+
+    # default:
+    strictness: 1 
+
+    # Dead PMT masks (applied only if strictness >= 2)
+    masks:
+      # RGA: 3031–5666
+      - runs: [3031, 5666]
+        sectors:
+          "1":
+            pcal:  { lw: [[72.0, 94.5], [220.5, 234.0]] }
+            ecin:  { lv: [[67.5, 94.5]] }
+            ecout: { lv: [[0.0, 40.5]] }
+          "2":
+            pcal:  { lv: [[99.0, 117.0]] }
+          "3":
+            pcal:  { lw: [[346.5, 378.0]] }
+          "4":
+            pcal:  { lw: [[0.0, 13.5]], lv: [[229.5, 243.0]] }
+          "5":
+            ecin:  { lv: [[0.0, 23.5]] }
+            ecout: { lu: [[193.5, 216.0]] }
+          "6":
+            pcal:  { lw: [[166.5, 193.5]] }
+
+      # RGA: 6616–6783 (base masks + extra Spring 2019 mask)
+      - runs: [6616, 6783]
+        sectors:
+          "1":
+            pcal:  { lw: [[72.0, 94.5], [220.5, 234.0]] }
+            ecin:  { lv: [[67.5, 94.5]] }
+            ecout: { lv: [[0.0, 40.5]] }
+          "2":
+            pcal:  { lv: [[99.0, 117.0], [31.5, 49.5]] }  # extra Spring 2019 window
+          "3":
+            pcal:  { lw: [[346.5, 378.0]] }
+          "4":
+            pcal:  { lw: [[0.0, 13.5]], lv: [[229.5, 243.0]] }
+          "5":
+            ecin:  { lv: [[0.0, 23.5]] }
+            ecout: { lu: [[193.5, 216.0]] }
+          "6":
+            pcal:  { lw: [[166.5, 193.5]] }
