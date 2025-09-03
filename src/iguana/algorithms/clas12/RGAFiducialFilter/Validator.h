@@ -27,10 +27,12 @@ namespace iguana::clas12 {
       void Stop () override;
 
     private:
-      // banks we read
+      // banks we read (indices valid only if corresponding m_have_* is true)
       hipo::banklist::size_type b_particle{};
       hipo::banklist::size_type b_calor{};
       hipo::banklist::size_type b_ft{};
+      bool m_have_calor = false;
+      bool m_have_ft    = false;
 
       // pids to plot
       const std::array<int,2> u_pid_list { 11, 22 }; // electrons, photons
@@ -57,8 +59,6 @@ namespace iguana::clas12 {
 
       void BookPlotsForPID(int pid);
       void DrawSectorGrid2D(int pid, int layer_idx, bool lv_vs_lw); // false -> lv_vs_lu
-
-      // FT drawing
       void DrawFTCanvas();
   };
 

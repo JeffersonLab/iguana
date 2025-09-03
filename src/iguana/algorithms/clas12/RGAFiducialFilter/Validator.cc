@@ -81,10 +81,25 @@ namespace iguana::clas12 {
     m_algo_seq->Add("clas12::RGAFiducialFilter");
     m_algo_seq->Start(banks);
 
-    // banks
+    // required
     b_particle = GetBankIndex(banks, "REC::Particle");
-    b_calor    = GetBankIndex(banks, "REC::Calorimeter");
-    b_ft       = GetBankIndex(banks, "REC::ForwardTagger");
+
+    // optional: calorimeter & FT
+    try {
+      b_calor = GetBankIndex(banks, "REC::Calorimeter");
+      m_have_calor = true;
+    } catch (...) {
+      m_have_calor = false;
+      m_log->Info("Optional bank 'REC::Calorimeter' not found; calorimeter plots will be skipped.");
+    }
+
+    try {
+      b_ft = GetBankIndex(banks, "REC::ForwardTagger");
+      m_have_ft = true;
+    } catch (...) {
+      m_have_ft = false;
+      m_log->Info("Optional bank 'REC::ForwardTagger' not found; FT plots will be skipped.");
+    }
 
     // output file (optional)
     auto output_dir = GetOutputDirectory();
@@ -93,15 +108,13 @@ namespace iguana::clas12 {
       m_output_file          = new TFile(m_output_file_basename + ".root", "RECREATE");
     }
 
-    // book plots for both PIDs we care about
+    // book plots
     for (auto pid : u_pid_list) BookPlotsForPID(pid);
   }
 
   void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
-    auto& calor_bank    = GetBank(banks, b_calor,    "REC::Calorimeter");
-    auto& ft_bank       = GetBank(banks, b_ft,       "REC::ForwardTagger");
 
     // Run the filter first; plot hits associated with surviving tracks only
     m_algo_seq->Run(banks);
@@ -120,43 +133,49 @@ namespace iguana::clas12 {
     // Lock while filling hists
     std::scoped_lock<std::mutex> lock(m_mutex);
 
-    // ----- Calorimeter fills -----
-    const int ncal = calor_bank.getRows();
-    for (int i = 0; i < ncal; ++i) {
-      const int pindex = calor_bank.getInt("pindex", i);
-      const int layer  = calor_bank.getInt("layer",  i);
-      const int sector = calor_bank.getInt("sector", i);
-      const int L      = LayerToIndex(layer);
-      if (L < 0 || sector < 1 || sector > 6) continue;
+    // ----- Calorimeter fills (only if bank present) -----
+    if (m_have_calor) {
+      auto& calor_bank = GetBank(banks, b_calor, "REC::Calorimeter");
+      const int ncal = calor_bank.getRows();
+      for (int i = 0; i < ncal; ++i) {
+        const int pindex = calor_bank.getInt("pindex", i);
+        const int layer  = calor_bank.getInt("layer",  i);
+        const int sector = calor_bank.getInt("sector", i);
+        const int L      = LayerToIndex(layer);
+        if (L < 0 || sector < 1 || sector > 6) continue;
 
-      const float lu = calor_bank.getFloat("lu", i);
-      const float lv = calor_bank.getFloat("lv", i);
-      const float lw = calor_bank.getFloat("lw", i);
+        const float lu = calor_bank.getFloat("lu", i);
+        const float lv = calor_bank.getFloat("lv", i);
+        const float lw = calor_bank.getFloat("lw", i);
 
-      for (auto pid : u_pid_list) {
-        auto it = survivors.find(pid);
-        if (it == survivors.end()) continue;
-        if (it->second.find(pindex) == it->second.end()) continue;
+        for (auto pid : u_pid_list) {
+          auto it = survivors.find(pid);
+          if (it == survivors.end()) continue;
+          if (it->second.find(pindex) == it->second.end()) continue;
 
-        auto& sets = const_cast<RGAFiducialFilterValidator*>(this)->u_plots2d[pid];
-        sets.layer[L].lv_lw.sec[sector]->Fill(lv, lw);
-        sets.layer[L].lv_lu.sec[sector]->Fill(lv, lu);
+          auto& sets = const_cast<RGAFiducialFilterValidator*>(this)->u_plots2d[pid];
+          sets.layer[L].lv_lw.sec[sector]->Fill(lv, lw);
+          sets.layer[L].lv_lu.sec[sector]->Fill(lv, lu);
+        }
       }
     }
 
-    // ----- FT fills (y vs x) -----
-    const int nft = ft_bank.getRows();
-    for (int i = 0; i < nft; ++i) {
-      const int pindex = ft_bank.getInt("pindex", i);
-      const float x    = ft_bank.getFloat("x", i);
-      const float y    = ft_bank.getFloat("y", i);
+    // ----- FT fills (y vs x) (only if bank present) -----
+    if (m_have_ft) {
+      auto& ft_bank = GetBank(banks, b_ft, "REC::ForwardTagger");
+      const int nft = ft_bank.getRows();
+      for (int i = 0; i < nft; ++i) {
+        const int pindex = ft_bank.getInt("pindex", i);
+        const float x    = ft_bank.getFloat("x", i);
+        const float y    = ft_bank.getFloat("y", i);
 
-      for (auto pid : u_pid_list) {
-        auto it = survivors.find(pid);
-        if (it == survivors.end()) continue;
-        if (it->second.find(pindex) == it->second.end()) continue;
-        auto* h = const_cast<RGAFiducialFilterValidator*>(this)->u_ft_xy[pid];
-        if (h) h->Fill(y, x); // title is "y (cm);x (cm)" so Fill(y, x)
+        for (auto pid : u_pid_list) {
+          auto it = survivors.find(pid);
+          if (it == survivors.end()) continue;
+          if (it->second.find(pindex) == it->second.end()) continue;
+          auto* h = const_cast<RGAFiducialFilterValidator*>(this)->u_ft_xy[pid];
+          if (h) h->Fill(y, x); // title is "y (cm);x (cm)" so Fill(y, x)
+        }
       }
     }
   }
@@ -226,16 +245,20 @@ namespace iguana::clas12 {
   {
     if (!GetOutputDirectory()) return;
 
-    // Calorimeter canvases
-    for (auto pid : u_pid_list) {
-      for (int L = 0; L < 3; ++L) {
-        DrawSectorGrid2D(pid, L, true ); // lv vs lw
-        DrawSectorGrid2D(pid, L, false); // lv vs lu
+    // Calorimeter canvases (only if we had Cal)
+    if (m_have_calor) {
+      for (auto pid : u_pid_list) {
+        for (int L = 0; L < 3; ++L) {
+          DrawSectorGrid2D(pid, L, true ); // lv vs lw
+          DrawSectorGrid2D(pid, L, false); // lv vs lu
+        }
       }
     }
 
-    // FT canvas
-    DrawFTCanvas();
+    // FT canvas (only if we had FT)
+    if (m_have_ft) {
+      DrawFTCanvas();
+    }
 
     if (m_output_file) {
       m_output_file->Write();

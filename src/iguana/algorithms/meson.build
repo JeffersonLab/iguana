@@ -125,12 +125,13 @@ algo_dict = [
     'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle', 'REC::Calorimeter', 'RUN::config' ]},
   },
-  {
+    {
     'name': 'clas12::RGAFiducialFilter',
     'has_validator': true,
     'has_action_yaml': false,
     'test_args': {
-      'banks': [ 'REC::Particle', 'REC::Calorimeter', 'REC::ForwardTagger', 'RUN::config' ],
+      # Only the required banks (sometiems REC::ForwardTagger does not exist)
+      'banks': [ 'REC::Particle', 'RUN::config' ],
     },
   },
 ]
