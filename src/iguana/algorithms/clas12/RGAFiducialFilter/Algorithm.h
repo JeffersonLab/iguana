@@ -7,18 +7,19 @@
 #include <optional>   // std::optional
 #include <mutex>
 #include <unordered_map>
+#include <vector>
+#include <array>
 
 namespace iguana::clas12 {
 
-  /// @brief_algo RGA fiducial filter with (for now) calorimeter-only cuts and strictness.
-  /// To do: add FT, DC, CVT fiducial cuts
+  /// @brief_algo RGA fiducial filter with calorimeter + forward tagger cuts.
   ///
   /// @begin_doc_algo{clas12::RGAFiducialFilter | Filter}
-  /// @input_banks{REC::Particle (tracks), REC::Calorimeter, RUN::config}
+  /// @input_banks{REC::Particle (tracks), REC::Calorimeter, REC::ForwardTagger, RUN::config}
   /// @output_banks{REC::Particle (tracks)}
   /// @end_doc
   ///
-  /// Strictness runtime setting (coded in user scripts):
+  /// Strictness runtime setting (coded in user scripts) for calorimeter only:
   ///   - Default strictness = 1
   ///   - Call SetStrictness(1|2|3) before Start() to override
   class RGAFiducialFilter : public Algorithm
@@ -26,7 +27,6 @@ namespace iguana::clas12 {
       DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
     public:
-
       // --- helpers and data structures for calorimeter linking ---
       struct CalLayers {
         int   sector = 0;
@@ -35,29 +35,21 @@ namespace iguana::clas12 {
         float lv7=0.f, lw7=0.f, lu7=0.f; // layer 7 (ECout)
         bool  has_any = false;           // saw at least one matching cal row
       };
-      
+
       void Start(hipo::banklist& banks) override;
       void Run  (hipo::banklist& banks) const override;
       void Stop () override;
 
       /// @action_function{reload} prepare the event and cache per-run options
-      /// @when_to_call{for each event}
-      /// @param runnum the run number
-      /// @returns a key to pass to Filter
       concurrent_key_t PrepareEvent(int runnum) const;
 
-      /// Core filter (calorimeter for now). Applies to any track with associated calorimeter hits.
-      /// Tracks without a calorimeter association are passed through unchanged.
-      /// @when_to_call{for each track}
-      /// @param track_index row index in REC::Particle (used to link to REC::Calorimeter via pindex)
-      /// @param calBank     REC::Calorimeter bank for the current event
-      /// @param key         return value of PrepareEvent
-      /// @returns true if the track passes fiducial cuts (or has no calorimeter hit)
+      /// Core filter: applies calorimeter cuts (with strictness) and forward-tagger cuts.
       bool Filter(int track_index,
                   const hipo::bank& calBank,
+                  const hipo::bank& ftBank,
                   concurrent_key_t key) const;
 
-      // --- User-facing runtime configuration ---
+      // --- User-facing runtime configuration (calorimeter only) ---
       /// Set strictness (1..3). Call BEFORE Start(). Values are clamped to [1,3].
       void SetStrictness(int strictness);
 
@@ -66,21 +58,25 @@ namespace iguana::clas12 {
       int GetCalStrictness(concurrent_key_t key) const;
 
     private:
-
-      /// Collect PCAL/ECin/ECout (layers 1/4/7) for a given track index
+      // ------- Calorimeter helpers -------
       static CalLayers CollectCalHitsForTrack(const hipo::bank& calBank, int track_index);
-
-      /// Strictness-only PCAL edge cuts (mirrors the Java thresholds)
       static bool PassCalStrictness(const CalLayers& h, int strictness);
-
-      /// Dead-PMT masks (run and sector dependent; only applied for strictness >= 2)
       bool PassCalDeadPMTMasks(const CalLayers& h, int runnum) const;
 
-      /// Load per-run options (strictness from user setter or default; masks from YAML)
+      // ------- Forward Tagger helpers -------
+      struct FTParams {
+        float rmin = 8.5f;
+        float rmax = 15.5f;
+        std::vector<std::array<float,3>> holes; // {radius, cx, cy}
+      };
+      bool PassFTFiducial(int track_index, const hipo::bank& ftBank) const;
+
+      /// Load per-run options (cal strictness from user setter/default; cal masks from YAML;
+      /// FT parameters from YAML if present, else defaults).
       void Reload(int runnum, concurrent_key_t key) const;
 
       // bank indices
-      hipo::banklist::size_type b_particle{}, b_calor{}, b_config{};
+      hipo::banklist::size_type b_particle{}, b_calor{}, b_ft{}, b_config{};
 
       // cached (per-run) config
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
@@ -88,6 +84,9 @@ namespace iguana::clas12 {
 
       // user-provided strictness (if any)
       std::optional<int> u_strictness_user;
+
+      // FT parameters (global, not run-dependent)
+      mutable FTParams u_ft_params;
 
       mutable std::mutex m_mutex;
   };

@@ -3,6 +3,9 @@
 #include "iguana/services/YAMLReader.h"
 
 #include <algorithm> // std::clamp
+#include <cmath>     // std::sqrt
+#include <string>
+#include <vector>
 
 namespace iguana::clas12 {
 
@@ -14,7 +17,7 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilter::Start(hipo::banklist& banks)
   {
-    // parse YAML (needed for dead-PMT masks), allocate thread-safe per-run cache
+    // parse YAML (calorimeter masks; FT params optionally), allocate thread-safe per-run cache
     ParseYAMLConfig();
     o_runnum         = ConcurrentParamFactory::Create<int>();
     o_cal_strictness = ConcurrentParamFactory::Create<int>();
@@ -22,6 +25,7 @@ namespace iguana::clas12 {
     // expected banks
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_calor    = GetBankIndex(banks, "REC::Calorimeter");
+    b_ft       = GetBankIndex(banks, "REC::ForwardTagger");
     b_config   = GetBankIndex(banks, "RUN::config");
   }
 
@@ -29,15 +33,16 @@ namespace iguana::clas12 {
   {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& calorBank    = GetBank(banks, b_calor,    "REC::Calorimeter");
+    auto& ftBank       = GetBank(banks, b_ft,       "REC::ForwardTagger");
     auto& configBank   = GetBank(banks, b_config,   "RUN::config");
 
     // prepare per-event/per-run cache
     auto key = PrepareEvent(configBank.getInt("run", 0));
 
     // filter tracks in place
-    particleBank.getMutableRowList().filter([this, &calorBank, key](auto /*bank*/, auto row) {
-      const int track_index = row; // link to REC::Calorimeter via pindex
-      const bool accept = Filter(track_index, calorBank, key);
+    particleBank.getMutableRowList().filter([this, &calorBank, &ftBank, key](auto /*bank*/, auto row) {
+      const int track_index = row;
+      const bool accept = Filter(track_index, calorBank, ftBank, key);
       m_log->Debug("RGAFiducialFilter: track {} -> {}", track_index, accept ? "keep" : "drop");
       return accept ? 1 : 0;
     });
@@ -73,9 +78,38 @@ namespace iguana::clas12 {
     // cache the run number
     o_runnum->Save(runnum, key);
 
-    // strictness: default 1; use user-set value if provided; clamp to [1,3]
+    // ------- calorimeter strictness: default 1; use user-set value if provided; clamp to [1,3]
     int strictness = std::clamp(u_strictness_user.value_or(1), 1, 3);
     o_cal_strictness->Save(strictness, key);
+
+    // ------- forward tagger parameters (optional YAML; otherwise keep defaults) -------
+    try {
+      // radius
+      auto r = GetOptionVector<double>("radius", { "forward_tagger" });
+      if (r.size() >= 2) {
+        float a = static_cast<float>(r[0]);
+        float b = static_cast<float>(r[1]);
+        u_ft_params.rmin = std::min(a, b);
+        u_ft_params.rmax = std::max(a, b);
+      }
+
+      // holes: flattened list of triples
+      auto flat = GetOptionVector<double>("holes", { "forward_tagger" });
+      if (!flat.empty()) {
+        std::vector<std::array<float,3>> holes;
+        holes.reserve(flat.size()/3);
+        for (size_t i = 0; i + 2 < flat.size(); i += 3) {
+          holes.push_back({
+            static_cast<float>(flat[i]),
+            static_cast<float>(flat[i+1]),
+            static_cast<float>(flat[i+2])
+          });
+        }
+        if (!holes.empty()) u_ft_params.holes = std::move(holes);
+      }
+    } catch (...) {
+      // keep defaults on any YAML read problem
+    }
   }
 
   // -------------------------
@@ -94,23 +128,26 @@ namespace iguana::clas12 {
 
   bool RGAFiducialFilter::Filter(int track_index,
                                  const hipo::bank& calBank,
+                                 const hipo::bank& ftBank,
                                  concurrent_key_t key) const
   {
-    // collect calorimeter info linked to this track
+    // ---- Calorimeter: collect hits for this track
     CalLayers h = CollectCalHitsForTrack(calBank, track_index);
 
-    // if there is no calorimeter association, pass the track through
-    if (!h.has_any) return true;
+    // Cal stage: pass if no cal association, otherwise apply strictness + masks
+    if (h.has_any) {
+      const int strictness = GetCalStrictness(key);
+      if (!PassCalStrictness(h, strictness)) return false;
 
-    // PCAL edge strictness (required at all levels)
-    const int strictness = GetCalStrictness(key);
-    if (!PassCalStrictness(h, strictness)) return false;
-
-    // dead-PMT masks only for strictness >= 2
-    const int runnum = GetRunNum(key);
-    if (strictness >= 2) {
-      if (!PassCalDeadPMTMasks(h, runnum)) return false;
+      const int runnum = GetRunNum(key);
+      if (strictness >= 2) {
+        if (!PassCalDeadPMTMasks(h, runnum)) return false;
+      }
     }
+
+    // ---- Forward Tagger: pass if passes FT cuts OR if no FT association
+    // (independent of calorimeter; acceptances are disjoint in practice)
+    if (!PassFTFiducial(track_index, ftBank)) return false;
 
     return true;
   }
@@ -165,8 +202,6 @@ namespace iguana::clas12 {
   {
     const std::string sectorStr = std::to_string(h.sector);
 
-    // Build a node_path like:
-    // { "calorimeter", "masks", InRange("runs", runnum), "sectors", "<sector>", "<layer>", "<axis>" }
     auto make_path = [this, &sectorStr, runnum](const char* layer, const char* axis) {
       YAMLReader::node_path_t np = {
         "calorimeter",
@@ -180,7 +215,6 @@ namespace iguana::clas12 {
       return np;
     };
 
-    // Safe fetch: returns a flat vector<double> (length is 2*N for N windows) or empty if missing
     auto get_flat = [this](const YAMLReader::node_path_t& path) -> std::vector<double> {
       try {
         return GetOptionVector<double>("cal_mask", path);
@@ -189,7 +223,6 @@ namespace iguana::clas12 {
       }
     };
 
-    // Convert flat [a,b,c,d,...] -> vector<pair<float,float>> windows
     auto to_windows = [](const std::vector<double>& v) {
       std::vector<std::pair<float,float>> w;
       w.reserve(v.size() / 2);
@@ -204,7 +237,6 @@ namespace iguana::clas12 {
       return false;
     };
 
-    // Load and check all windows for this sector/layer/axis
     const auto pcal_lv  = to_windows(get_flat(make_path("pcal",  "lv")));
     const auto pcal_lw  = to_windows(get_flat(make_path("pcal",  "lw")));
     const auto pcal_lu  = to_windows(get_flat(make_path("pcal",  "lu")));
@@ -221,6 +253,35 @@ namespace iguana::clas12 {
     if (in_any(h.lv4, ecin_lv) || in_any(h.lw4, ecin_lw) || in_any(h.lu4, ecin_lu)) return false;
     if (in_any(h.lv7, ecout_lv)|| in_any(h.lw7, ecout_lw)|| in_any(h.lu7, ecout_lu)) return false;
 
+    return true;
+  }
+
+  bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank& ftBank) const
+  {
+    const int nrows = ftBank.getRows();
+    for (int i = 0; i < nrows; ++i) {
+      if (ftBank.getInt("pindex", i) != track_index) continue;
+
+      const double x = ftBank.getFloat("x", i);
+      const double y = ftBank.getFloat("y", i);
+      const double r = std::sqrt(x*x + y*y);
+
+      // radial window
+      if (r < u_ft_params.rmin) return false;
+      if (r > u_ft_params.rmax) return false;
+
+      // holes (circles to exclude)
+      for (auto const& h : u_ft_params.holes) {
+        const double hr = h[0], cx = h[1], cy = h[2];
+        const double d  = std::sqrt((x - cx)*(x - cx) + (y - cy)*(y - cy));
+        if (d < hr) return false;
+      }
+
+      // this FT association passes
+      return true;
+    }
+
+    // NEW BEHAVIOR: no FT association -> pass-through
     return true;
   }
 

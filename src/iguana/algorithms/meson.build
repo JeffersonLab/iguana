@@ -130,7 +130,7 @@ algo_dict = [
     'has_validator': true,
     'has_action_yaml': false,
     'test_args': {
-      'banks': [ 'REC::Particle', 'REC::Calorimeter', 'RUN::config' ],
+      'banks': [ 'REC::Particle', 'REC::Calorimeter', 'REC::ForwardTagger', 'RUN::config' ],
     },
   },
 ]

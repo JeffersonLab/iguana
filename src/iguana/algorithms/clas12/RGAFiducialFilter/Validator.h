@@ -11,10 +11,12 @@
 
 namespace iguana::clas12 {
 
-  /// For each PID (11=e⁻, 22=γ) and each layer (PCAL/ECIN/ECOUT),
-  /// make two 2×3 canvases (sector grids):
-  ///  - lv vs lw
-  ///  - lv vs lu
+  /// Calorimeter validation:
+  ///   For each PID (11=e⁻, 22=γ) and each layer (PCAL/ECIN/ECOUT),
+  ///   make two 2×3 canvases (sector grids): lv vs lw, lv vs lu.
+  ///
+  /// Forward Tagger validation:
+  ///   One 1×2 canvas (left: electrons, right: photons) plotting y (cm) vs x (cm).
   class RGAFiducialFilterValidator : public Validator
   {
       DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
@@ -28,18 +30,21 @@ namespace iguana::clas12 {
       // banks we read
       hipo::banklist::size_type b_particle{};
       hipo::banklist::size_type b_calor{};
+      hipo::banklist::size_type b_ft{};
 
       // pids to plot
       const std::array<int,2> u_pid_list { 11, 22 }; // electrons, photons
 
-      // TH2 containers: [pid][layer 0..2][sector 1..6]
-      // layers: 0=PCAL (1), 1=ECIN (4), 2=ECOUT (7)
+      // TH2 containers for calorimeter: [pid][layer 0..2][sector 1..6]
       struct SecH2 { std::array<TH2D*, 7> sec{}; }; // use [1..6]
       struct LayerH2 { SecH2 lv_lw, lv_lu; };
       struct PlotSets { std::array<LayerH2, 3> layer; };
 
       // one set per PID
       std::unordered_map<int, PlotSets> u_plots2d;
+
+      // FT: per-PID x–y occupancy
+      std::unordered_map<int, TH2D*> u_ft_xy;
 
       // output
       TString m_output_file_basename;
@@ -52,6 +57,9 @@ namespace iguana::clas12 {
 
       void BookPlotsForPID(int pid);
       void DrawSectorGrid2D(int pid, int layer_idx, bool lv_vs_lw); // false -> lv_vs_lu
+
+      // FT drawing
+      void DrawFTCanvas();
   };
 
 } // namespace iguana::clas12

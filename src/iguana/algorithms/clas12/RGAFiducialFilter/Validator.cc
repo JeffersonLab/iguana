@@ -28,7 +28,7 @@ namespace iguana::clas12 {
   {
     auto& sets = u_plots2d[pid];
 
-    // 90 bins × 4.5 cm = 405 cm range
+    // 90 bins × 4.5 cm = 405 cm range (calorimeter axes)
     const int    nb = 90;
     const double lo = 0.0;
     const double hi = 405.0;
@@ -61,6 +61,17 @@ namespace iguana::clas12 {
         }
       }
     }
+
+    // FT per-PID occupancy (y vs x), range chosen to encompass FT region
+    if (!u_ft_xy[pid]) {
+      TString hname  = Form("h2_ft_xy_pid%d", pid);
+      TString htitle = Form("Forward Tagger — %s;y (cm);x (cm)", PIDName(pid));
+      // +/-20 cm box with fine binning
+      u_ft_xy[pid] = new TH2D(hname, htitle, 200, -20.0, 20.0, 200, -20.0, 20.0);
+      u_ft_xy[pid]->SetStats(0);
+      u_ft_xy[pid]->GetXaxis()->SetTitleOffset(1.1);
+      u_ft_xy[pid]->GetYaxis()->SetTitleOffset(1.25);
+    }
   }
 
   void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
@@ -68,13 +79,12 @@ namespace iguana::clas12 {
     // Build sequence: run fiducial filter, then plot surviving tracks
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::RGAFiducialFilter");
-    // No strictness options here; algorithm defaults to 1 and ignores SetOption
-
     m_algo_seq->Start(banks);
 
     // banks
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_calor    = GetBankIndex(banks, "REC::Calorimeter");
+    b_ft       = GetBankIndex(banks, "REC::ForwardTagger");
 
     // output file (optional)
     auto output_dir = GetOutputDirectory();
@@ -91,6 +101,7 @@ namespace iguana::clas12 {
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& calor_bank    = GetBank(banks, b_calor,    "REC::Calorimeter");
+    auto& ft_bank       = GetBank(banks, b_ft,       "REC::ForwardTagger");
 
     // Run the filter first; plot hits associated with surviving tracks only
     m_algo_seq->Run(banks);
@@ -109,9 +120,9 @@ namespace iguana::clas12 {
     // Lock while filling hists
     std::scoped_lock<std::mutex> lock(m_mutex);
 
-    // One pass over calorimeter bank; fill when pindex belongs to a surviving track of interest
-    const int nrows = calor_bank.getRows();
-    for (int i = 0; i < nrows; ++i) {
+    // ----- Calorimeter fills -----
+    const int ncal = calor_bank.getRows();
+    for (int i = 0; i < ncal; ++i) {
       const int pindex = calor_bank.getInt("pindex", i);
       const int layer  = calor_bank.getInt("layer",  i);
       const int sector = calor_bank.getInt("sector", i);
@@ -122,7 +133,6 @@ namespace iguana::clas12 {
       const float lv = calor_bank.getFloat("lv", i);
       const float lw = calor_bank.getFloat("lw", i);
 
-      // Fill for each pid type where this pindex survived
       for (auto pid : u_pid_list) {
         auto it = survivors.find(pid);
         if (it == survivors.end()) continue;
@@ -131,6 +141,22 @@ namespace iguana::clas12 {
         auto& sets = const_cast<RGAFiducialFilterValidator*>(this)->u_plots2d[pid];
         sets.layer[L].lv_lw.sec[sector]->Fill(lv, lw);
         sets.layer[L].lv_lu.sec[sector]->Fill(lv, lu);
+      }
+    }
+
+    // ----- FT fills (y vs x) -----
+    const int nft = ft_bank.getRows();
+    for (int i = 0; i < nft; ++i) {
+      const int pindex = ft_bank.getInt("pindex", i);
+      const float x    = ft_bank.getFloat("x", i);
+      const float y    = ft_bank.getFloat("y", i);
+
+      for (auto pid : u_pid_list) {
+        auto it = survivors.find(pid);
+        if (it == survivors.end()) continue;
+        if (it->second.find(pindex) == it->second.end()) continue;
+        auto* h = const_cast<RGAFiducialFilterValidator*>(this)->u_ft_xy[pid];
+        if (h) h->Fill(y, x); // title is "y (cm);x (cm)" so Fill(y, x)
       }
     }
   }
@@ -149,7 +175,6 @@ namespace iguana::clas12 {
 
     for (int s = 1; s <= 6; ++s) {
       canv->cd(s);
-      // extra margins so labels aren't clipped; more right margin for the palette
       gPad->SetLeftMargin(0.16);
       gPad->SetRightMargin(0.14);
       gPad->SetBottomMargin(0.12);
@@ -170,17 +195,47 @@ namespace iguana::clas12 {
     canv->SaveAs(png_name);
   }
 
+  // Draw FT 1×2 canvas (left: electrons, right: photons), plotting y vs x
+  void RGAFiducialFilterValidator::DrawFTCanvas()
+  {
+    TString canv_name  = "rgafid_ft_xy";
+    TString canv_title = "Forward Tagger — y vs x";
+    auto* canv = new TCanvas(canv_name, canv_title, 1200, 600);
+    canv->Divide(2, 1);
+
+    int pad = 1;
+    for (auto pid : u_pid_list) {
+      canv->cd(pad++);
+      gPad->SetLeftMargin(0.16);
+      gPad->SetRightMargin(0.14);
+      gPad->SetBottomMargin(0.12);
+      gPad->SetTopMargin(0.08);
+
+      TH2D* h = u_ft_xy[pid];
+      if (!h) continue;
+      TString t = Form("Forward Tagger — %s", PIDName(pid));
+      h->SetTitle(t);
+      h->Draw("COLZ");
+    }
+
+    TString png_name = m_output_file_basename + "_ft_xy.png";
+    canv->SaveAs(png_name);
+  }
+
   void RGAFiducialFilterValidator::Stop()
   {
     if (!GetOutputDirectory()) return;
 
-    // For each PID and each layer, draw both projections
+    // Calorimeter canvases
     for (auto pid : u_pid_list) {
       for (int L = 0; L < 3; ++L) {
         DrawSectorGrid2D(pid, L, true ); // lv vs lw
         DrawSectorGrid2D(pid, L, false); // lv vs lu
       }
     }
+
+    // FT canvas
+    DrawFTCanvas();
 
     if (m_output_file) {
       m_output_file->Write();
