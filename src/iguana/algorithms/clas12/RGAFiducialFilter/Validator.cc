@@ -4,8 +4,6 @@
 #include <TPad.h>
 #include <TLegend.h>
 #include <unordered_set>
-#include <cstdlib>     // std::getenv
-#include <string>      // std::stoi
 
 namespace iguana::clas12 {
 
@@ -40,7 +38,7 @@ namespace iguana::clas12 {
 
         // lv vs lw
         if (!sets.layer[L].lv_lw.sec[s]) {
-          TString hname = Form("h2_%d_%s_lv_lw_s%d", pid, LayerName(L), s);
+          TString hname  = Form("h2_%d_%s_lv_lw_s%d", pid, LayerName(L), s);
           TString htitle = Form("%s %s Sector %d;lv (cm);lw (cm)",
                                 PIDName(pid), LayerName(L), s);
           auto* h = new TH2D(hname, htitle, nb, lo, hi, nb, lo, hi);
@@ -52,7 +50,7 @@ namespace iguana::clas12 {
 
         // lv vs lu
         if (!sets.layer[L].lv_lu.sec[s]) {
-          TString hname = Form("h2_%d_%s_lv_lu_s%d", pid, LayerName(L), s);
+          TString hname  = Form("h2_%d_%s_lv_lu_s%d", pid, LayerName(L), s);
           TString htitle = Form("%s %s Sector %d;lv (cm);lu (cm)",
                                 PIDName(pid), LayerName(L), s);
           auto* h = new TH2D(hname, htitle, nb, lo, hi, nb, lo, hi);
@@ -70,21 +68,7 @@ namespace iguana::clas12 {
     // Build sequence: run fiducial filter, then plot surviving tracks
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::RGAFiducialFilter");
-
-    // -------- runtime override for strictness (no YAML default) --------
-    // Set via env var IGUANA_RGAFID_STRICTNESS (1..3). Default is 1.
-    if (const char* env = std::getenv("IGUANA_RGAFID_STRICTNESS")) {
-      try {
-        int s = std::stoi(env);
-        if (s < 1) s = 1;
-        if (s > 3) s = 3;
-        u_strictness_override = s;
-      } catch (...) { /* keep default */ }
-    }
-    m_log->Info("RGAFiducialFilterValidator: strictness override = {}", u_strictness_override);
-    m_algo_seq->SetOption<std::vector<int>>(
-      "clas12::RGAFiducialFilter", "strictness", { u_strictness_override });
-    // -------------------------------------------------------------------
+    // No strictness options here; algorithm defaults to 1 and ignores SetOption
 
     m_algo_seq->Start(banks);
 
@@ -175,10 +159,8 @@ namespace iguana::clas12 {
                          : sets.layer[layer_idx].lv_lu.sec[s];
       if (!h) continue;
 
-      // Clean ASCII title (avoid weird characters)
       TString t = Form("%s %s Sector %d", PIDName(pid), LayerName(layer_idx), s);
       h->SetTitle(t);
-
       h->Draw("COLZ");
     }
 

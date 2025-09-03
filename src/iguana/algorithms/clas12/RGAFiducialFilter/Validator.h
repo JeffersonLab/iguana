@@ -11,7 +11,6 @@
 
 namespace iguana::clas12 {
 
-  /// @brief Validator for iguana::clas12::RGAFiducialFilter:
   /// For each PID (11=e⁻, 22=γ) and each layer (PCAL/ECIN/ECOUT),
   /// make two 2×3 canvases (sector grids):
   ///  - lv vs lw
@@ -32,10 +31,6 @@ namespace iguana::clas12 {
 
       // pids to plot
       const std::array<int,2> u_pid_list { 11, 22 }; // electrons, photons
-
-      // runtime override for strictness (1..3). Default 1.
-      // You can override via env var IGUANA_RGAFID_STRICTNESS.
-      int u_strictness_override = 1;
 
       // TH2 containers: [pid][layer 0..2][sector 1..6]
       // layers: 0=PCAL (1), 1=ECIN (4), 2=ECOUT (7)
