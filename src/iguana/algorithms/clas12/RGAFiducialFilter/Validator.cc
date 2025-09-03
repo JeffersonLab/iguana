@@ -3,6 +3,9 @@
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <unordered_set>
+#include <cstdlib>     // std::getenv
+#include <string>      // std::stoi
+#include <algorithm>   // std::min, std::max
 
 namespace iguana::clas12 {
 
@@ -29,7 +32,7 @@ namespace iguana::clas12 {
     // allocate histograms if not present
     auto& grid = u_plots[pid];
 
-    // x-range 0..400, 200 bins
+    // x-range 0..405, 90 bins (4.5cm wide strips)
     const int    nbins = 90;
     const double xmin  = 0.0;
     const double xmax  = 405.0;
@@ -43,7 +46,7 @@ namespace iguana::clas12 {
                        grid.layer[L].lw.sec[s];
 
           if (!h) {
-            TString hname = Form("h_%d_%s_%s_s%d", pid, LayerName(L), AxisName(A), s);
+            TString hname  = Form("h_%d_%s_%s_s%d", pid, LayerName(L), AxisName(A), s);
             TString htitle = Form("%s %s (pid %d, sector %d);%s;counts",
                                   LayerName(L), AxisName(A), pid, s, AxisName(A));
             h = new TH1D(hname, htitle, nbins, xmin, xmax);
@@ -59,6 +62,23 @@ namespace iguana::clas12 {
     // Build sequence: run fiducial filter, then plot surviving tracks
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::RGAFiducialFilter");
+
+    // -------- runtime override for strictness (no YAML default) --------
+    // Set via env var IGUANA_RGAFID_STRICTNESS (1..3). Default is 1.
+    if (const char* env = std::getenv("IGUANA_RGAFID_STRICTNESS")) {
+      try {
+        int s = std::stoi(env);
+        if (s < 1) s = 1;
+        if (s > 3) s = 3;
+        u_strictness_override = s;
+      } catch (...) {
+        // ignore parse errors; keep default 1
+      }
+    }
+    m_log->Info("RGAFiducialFilterValidator: setting strictness override to {}", u_strictness_override);
+    m_algo_seq->SetOption<std::vector<int>>("clas12::RGAFiducialFilter", "strictness", { u_strictness_override });
+    // -------------------------------------------------------------------
+
     m_algo_seq->Start(banks);
 
     // banks

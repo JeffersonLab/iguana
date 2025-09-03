@@ -17,9 +17,9 @@ namespace iguana::clas12 {
   /// @output_banks{REC::Particle (tracks)}
   /// @end_doc
   ///
-  /// @begin_doc_config{clas12/RGAFiducialFilter}
-  /// @config_param{calorimeter/strictness | int | 1,2,3: tighter = larger PCAL edge margins; >=2 also enables dead-PMT masks}
-  /// @end_doc
+  /// Strictness runtime override:
+  ///   - Default strictness = 1
+  ///   - Override via environment variable IGUANA_RGAFID_STRICTNESS (allowed: 1..3)
   class RGAFiducialFilter : public Algorithm
   {
       DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
@@ -71,7 +71,7 @@ namespace iguana::clas12 {
       /// Dead-PMT masks (run and sector dependent; only applied for strictness >= 2)
       bool PassCalDeadPMTMasks(const CalLayers& h, int runnum) const;
 
-      /// Load per-run options from YAML (calorimeter.strictness)
+      /// Load per-run options (strictness from env var, masks from YAML)
       void Reload(int runnum, concurrent_key_t key) const;
 
       // bank indices

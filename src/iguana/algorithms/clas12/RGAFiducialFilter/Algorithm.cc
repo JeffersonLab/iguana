@@ -2,6 +2,10 @@
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/YAMLReader.h"
 
+#include <cstdlib> // std::getenv
+#include <string>  // std::stoi
+#include <algorithm>
+
 namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter);
@@ -12,7 +16,7 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilter::Start(hipo::banklist& banks)
   {
-    // parse YAML, allocate thread-safe per-run cache
+    // parse YAML (needed for dead-PMT masks), allocate thread-safe per-run cache
     ParseYAMLConfig();
     o_runnum         = ConcurrentParamFactory::Create<int>();
     o_cal_strictness = ConcurrentParamFactory::Create<int>();
@@ -33,7 +37,7 @@ namespace iguana::clas12 {
     auto key = PrepareEvent(configBank.getInt("run", 0));
 
     // filter tracks in place
-    particleBank.getMutableRowList().filter([this, &calorBank, key](auto bank, auto row) {
+    particleBank.getMutableRowList().filter([this, &calorBank, key](auto /*bank*/, auto row) {
       const int track_index = row; // link to REC::Calorimeter via pindex
       const bool accept = Filter(track_index, calorBank, key);
       m_log->Debug("RGAFiducialFilter: track {} -> {}", track_index, accept ? "keep" : "drop");
@@ -71,16 +75,17 @@ namespace iguana::clas12 {
     // cache the run number
     o_runnum->Save(runnum, key);
 
-    // read strictness (scalar) from YAML: clas12::RGAFiducialFilter -> calorimeter -> strictness
+    // strictness: default 1; optional runtime override via env var (no YAML read)
     int strictness = 1;
-    try {
-      auto v = GetOptionVector<int>("strictness", { "calorimeter" });
-      if (!v.empty()) strictness = v.front();
-    } catch (...) {
-      // leave as default 1
+    if (const char* env = std::getenv("IGUANA_RGAFID_STRICTNESS")) {
+      try {
+        int s = std::stoi(env);
+        s = std::max(1, std::min(3, s));
+        strictness = s;
+      } catch (...) {
+        // ignore parse error; keep default
+      }
     }
-    if (strictness < 1) strictness = 1;
-    if (strictness > 3) strictness = 3;
     o_cal_strictness->Save(strictness, key);
   }
 
