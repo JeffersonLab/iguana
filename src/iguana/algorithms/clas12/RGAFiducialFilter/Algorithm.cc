@@ -17,29 +17,29 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilter::Start(hipo::banklist& banks)
   {
-    // parse YAML (calorimeter masks; FT params optionally), allocate thread-safe per-run cache
+    // parse YAML and set up caches
     ParseYAMLConfig();
     o_runnum         = ConcurrentParamFactory::Create<int>();
     o_cal_strictness = ConcurrentParamFactory::Create<int>();
 
-    // required banks
+    // required
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
 
-    // optional banks (may not exist in this file): REC::Calorimeter, REC::ForwardTagger
-    // Try to cache their indices; if lookup fails, mark as absent and skip those cuts.
-    try {
+    // optional: Calorimeter
+    if (banks.has("REC::Calorimeter")) {
       b_calor = GetBankIndex(banks, "REC::Calorimeter");
       m_have_calor = true;
-    } catch (...) {
+    } else {
       m_have_calor = false;
-      m_log->Warn("Optional bank 'REC::Calorimeter' not found; calorimeter fiducials will be skipped.");
+      m_log->Info("Optional bank 'REC::Calorimeter' not found; calorimeter fiducials will be skipped.");
     }
 
-    try {
+    // optional: ForwardTagger
+    if (banks.has("REC::ForwardTagger")) {
       b_ft = GetBankIndex(banks, "REC::ForwardTagger");
       m_have_ft = true;
-    } catch (...) {
+    } else {
       m_have_ft = false;
       m_log->Info("Optional bank 'REC::ForwardTagger' not found; FT fiducials will be skipped.");
     }
@@ -95,45 +95,51 @@ namespace iguana::clas12 {
     }
   }
 
-  void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const
-  {
-    std::lock_guard<std::mutex> const lock(m_mutex); // guard successive saves
+  // in RGAFiducialFilter::Reload
+  void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const {
+    std::lock_guard<std::mutex> const lock(m_mutex);
     m_log->Trace("RGAFiducialFilter::Reload(run={}, key={})", runnum, key);
 
-    // cache the run number
     o_runnum->Save(runnum, key);
 
-    // ------- calorimeter strictness: default 1; use user-set value if provided; clamp to [1,3]
+    // calorimeter strictness
     int strictness = std::clamp(u_strictness_user.value_or(1), 1, 3);
     o_cal_strictness->Save(strictness, key);
 
-    // ------- forward tagger parameters (optional YAML; otherwise keep defaults) -------
+    // forward tagger params from YAML if present
+    // keep defaults if subtree or keys are absent
     try {
-      // radius
-      auto r = GetOptionVector<double>("radius", { "forward_tagger" });
-      if (r.size() >= 2) {
-        float a = static_cast<float>(r[0]);
-        float b = static_cast<float>(r[1]);
-        u_ft_params.rmin = std::min(a, b);
-        u_ft_params.rmax = std::max(a, b);
+      // If your YAMLReader has a Has(...) or TryPath(...) style API, use it to avoid noisy errors.
+      // Example using a hypothetical Has(path, key) check:
+      YAMLReader::node_path_t ft_path = { "forward_tagger" };
+
+      if (GetConfig() && GetConfig()->Has(ft_path, "radius")) {
+        auto r = GetOptionVector<double>("radius", ft_path);
+        if (r.size() >= 2) {
+          float a = static_cast<float>(r[0]);
+          float b = static_cast<float>(r[1]);
+          u_ft_params.rmin = std::min(a, b);
+          u_ft_params.rmax = std::max(a, b);
+        }
       }
 
-      // holes: flattened list of triples
-      auto flat = GetOptionVector<double>("holes", { "forward_tagger" });
-      if (!flat.empty()) {
-        std::vector<std::array<float,3>> holes;
-        holes.reserve(flat.size()/3);
-        for (size_t i = 0; i + 2 < flat.size(); i += 3) {
-          holes.push_back({
-            static_cast<float>(flat[i]),
-            static_cast<float>(flat[i+1]),
-            static_cast<float>(flat[i+2])
-          });
+      if (GetConfig() && GetConfig()->Has(ft_path, "holes")) {
+        auto flat = GetOptionVector<double>("holes", ft_path);
+        if (!flat.empty()) {
+          std::vector<std::array<float,3>> holes;
+          holes.reserve(flat.size()/3);
+          for (size_t i = 0; i + 2 < flat.size(); i += 3) {
+            holes.push_back({
+              static_cast<float>(flat[i]),
+              static_cast<float>(flat[i+1]),
+              static_cast<float>(flat[i+2])
+            });
+          }
+          if (!holes.empty()) u_ft_params.holes = std::move(holes);
         }
-        if (!holes.empty()) u_ft_params.holes = std::move(holes);
       }
     } catch (...) {
-      // keep defaults on any YAML read problem
+      // swallow and keep defaults
     }
   }
 

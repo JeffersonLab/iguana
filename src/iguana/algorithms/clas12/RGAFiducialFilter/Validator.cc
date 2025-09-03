@@ -84,19 +84,20 @@ namespace iguana::clas12 {
     // required
     b_particle = GetBankIndex(banks, "REC::Particle");
 
-    // optional: calorimeter & FT
-    try {
+    // optional: Calorimeter
+    if (banks.has("REC::Calorimeter")) {
       b_calor = GetBankIndex(banks, "REC::Calorimeter");
       m_have_calor = true;
-    } catch (...) {
+    } else {
       m_have_calor = false;
       m_log->Info("Optional bank 'REC::Calorimeter' not found; calorimeter plots will be skipped.");
     }
 
-    try {
+    // optional: ForwardTagger
+    if (banks.has("REC::ForwardTagger")) {
       b_ft = GetBankIndex(banks, "REC::ForwardTagger");
       m_have_ft = true;
-    } catch (...) {
+    } else {
       m_have_ft = false;
       m_log->Info("Optional bank 'REC::ForwardTagger' not found; FT plots will be skipped.");
     }
