@@ -165,6 +165,8 @@ if ROOT_dep.found()
     '-lRIO',
     '-lHist',
     '-lGpad',
+    '-lGraf',
+    '-lPostscript',
   ]
   ROOT_dep_rpath = ROOT_libdir
   # preprocessor macro for turning on/off ROOT-dependent parts of the code; currently only used for Validator plot styles
