@@ -44,7 +44,6 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
           sudo apt -y update
-          sudo apt -y upgrade
           sudo apt -y install xrootd-client
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
