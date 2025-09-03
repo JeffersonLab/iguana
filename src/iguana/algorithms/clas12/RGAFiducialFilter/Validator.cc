@@ -176,7 +176,7 @@ namespace iguana::clas12 {
       for (int i = 0; i < nft; ++i) {
         const int pindex = ft_bank.getInt("pindex", i);
         const float x    = ft_bank.getFloat("x", i);
-        const float y    = ft_bank->getFloat("y", i);
+        const float y    = ft_bank.getFloat("y", i);
 
         for (auto pid : u_pid_list) {
           auto it = survivors.find(pid);
