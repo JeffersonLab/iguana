@@ -74,10 +74,9 @@ namespace iguana::clas12 {
     // read strictness (scalar) from YAML: clas12::RGAFiducialFilter -> calorimeter -> strictness
     int strictness = 1;
     try {
-      auto v = GetOptionVector<int>("strictness", { "calorimeter" });
-      if (!v.empty()) strictness = v.front();
-    } catch (...) {
-      // leave as default 1
+      strictness = GetOption<int>("strictness", {"calorimeter"});
+    } catch(...) {
+      /* keep default 1 */
     }
     if (strictness < 1) strictness = 1;
     if (strictness > 3) strictness = 3;
