@@ -1,4 +1,5 @@
 #include "Validator.h"
+#include <cstdlib>   // setenv / _putenv_s
 
 #include <TCanvas.h>
 #include <TPad.h>
@@ -42,40 +43,29 @@ namespace iguana::clas12 {
     const double lo = 0.0;
     const double hi = 405.0;
 
-    for (int L = 0; L < 3; ++L) {        // 0:PCAL 1:ECIN 2:ECOUT
-      for (int s = 1; s <= 6; ++s) {     // sectors 1..6
-
-        // lv vs lw
+    for (int L = 0; L < 3; ++L) {
+      for (int s = 1; s <= 6; ++s) {
         if (!sets.layer[L].lv_lw.sec[s]) {
           TString hname  = Form("h2_%d_%s_lv_lw_s%d", pid, LayerName(L), s);
-          TString htitle = Form("%s %s Sector %d;lv (cm);lw (cm)",
-                                PIDName(pid), LayerName(L), s);
+          TString htitle = Form("%s %s Sector %d;lv (cm);lw (cm)", PIDName(pid), LayerName(L), s);
           auto* h = new TH2D(hname, htitle, nb, lo, hi, nb, lo, hi);
-          h->SetStats(0);
-          h->GetXaxis()->SetTitleOffset(1.1);
-          h->GetYaxis()->SetTitleOffset(1.25);
+          h->SetStats(0); h->GetXaxis()->SetTitleOffset(1.1); h->GetYaxis()->SetTitleOffset(1.25);
           sets.layer[L].lv_lw.sec[s] = h;
         }
-
-        // lv vs lu
         if (!sets.layer[L].lv_lu.sec[s]) {
           TString hname  = Form("h2_%d_%s_lv_lu_s%d", pid, LayerName(L), s);
-          TString htitle = Form("%s %s Sector %d;lv (cm);lu (cm)",
-                                PIDName(pid), LayerName(L), s);
+          TString htitle = Form("%s %s Sector %d;lv (cm);lu (cm)", PIDName(pid), LayerName(L), s);
           auto* h = new TH2D(hname, htitle, nb, lo, hi, nb, lo, hi);
-          h->SetStats(0);
-          h->GetXaxis()->SetTitleOffset(1.1);
-          h->GetYaxis()->SetTitleOffset(1.25);
+          h->SetStats(0); h->GetXaxis()->SetTitleOffset(1.1); h->GetYaxis()->SetTitleOffset(1.25);
           sets.layer[L].lv_lu.sec[s] = h;
         }
       }
     }
 
-    // FT per-PID occupancy (y vs x), range chosen to encompass FT region
+    // FT per-PID occupancy (y vs x)
     if (!u_ft_xy[pid]) {
       TString hname  = Form("h2_ft_xy_pid%d", pid);
       TString htitle = Form("Forward Tagger - %s;y (cm);x (cm)", PIDName(pid));
-      // +/-20 cm box with fine binning
       u_ft_xy[pid] = new TH2D(hname, htitle, 200, -20.0, 20.0, 200, -20.0, 20.0);
       u_ft_xy[pid]->SetStats(0);
       u_ft_xy[pid]->GetXaxis()->SetTitleOffset(1.1);
@@ -85,7 +75,13 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
   {
-    // Build sequence: run fiducial filter, then plot surviving tracks
+    // Force strictness=3 in validator so we exercise dead-PMT masks
+    #if defined(_WIN32)
+      _putenv_s("IGUANA_RGAFID_STRICTNESS", "3");
+    #else
+      setenv("IGUANA_RGAFID_STRICTNESS", "3", 1);
+    #endif
+
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::RGAFiducialFilter");
     m_algo_seq->Start(banks);
@@ -93,27 +89,24 @@ namespace iguana::clas12 {
     // required
     b_particle = GetBankIndex(banks, "REC::Particle");
 
-    // optional: calorimeter & FT
+    // optional banks
     if (banklist_has(banks, "REC::Calorimeter")) {
-      b_calor = GetBankIndex(banks, "REC::Calorimeter");
-      m_have_calor = true;
+      b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor = true;
     } else {
       m_have_calor = false;
       m_log->Info("Optional bank 'REC::Calorimeter' not in banklist; calorimeter plots will be skipped.");
     }
 
     if (banklist_has(banks, "REC::ForwardTagger")) {
-      b_ft = GetBankIndex(banks, "REC::ForwardTagger");
-      m_have_ft = true;
+      b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft = true;
     } else {
       m_have_ft = false;
       m_log->Info("Optional bank 'REC::ForwardTagger' not in banklist; FT plots will be skipped.");
     }
 
-    // output
-    auto output_dir = GetOutputDirectory();
-    if (output_dir) {
-      m_output_file_basename = output_dir.value() + "/rga_fiducial_calorimeter";
+    // output base: rga_fiducial
+    if (auto output_dir = GetOutputDirectory()) {
+      m_output_file_basename = output_dir.value() + std::string("/rga_fiducial");
       m_output_file          = new TFile(m_output_file_basename + ".root", "RECREATE");
     }
 
@@ -125,24 +118,21 @@ namespace iguana::clas12 {
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
 
-    // Run the filter first; plot hits associated with surviving tracks only
+    // run the filter first (bank is filtered in-place)
     m_algo_seq->Run(banks);
 
-    // Build survivor sets keyed by pid 
+    // Build survivor sets keyed by pid
     std::unordered_map<int, std::unordered_set<int>> survivors;
     for (auto pid : u_pid_list) survivors[pid];
 
     for (auto const& row : particle_bank.getRowList()) {
       const int pid = particle_bank.getInt("pid", row);
-      if (survivors.find(pid) != survivors.end()) {
-        survivors[pid].insert(static_cast<int>(row));
-      }
+      if (survivors.find(pid) != survivors.end()) survivors[pid].insert(static_cast<int>(row));
     }
 
-    // Lock while filling hists
     std::scoped_lock<std::mutex> lock(m_mutex);
 
-    // Calorimeter fills (only if bank present)
+    // Calorimeter fills
     if (m_have_calor) {
       auto& calor_bank = GetBank(banks, b_calor, "REC::Calorimeter");
       const int ncal = calor_bank.getRows();
@@ -169,7 +159,7 @@ namespace iguana::clas12 {
       }
     }
 
-    // FT fills (y vs x) (only if bank present)
+    // FT fills
     if (m_have_ft) {
       auto& ft_bank = GetBank(banks, b_ft, "REC::ForwardTagger");
       const int nft = ft_bank.getRows();
@@ -183,66 +173,55 @@ namespace iguana::clas12 {
           if (it == survivors.end()) continue;
           if (it->second.find(pindex) == it->second.end()) continue;
           auto* h = const_cast<RGAFiducialFilterValidator*>(this)->u_ft_xy[pid];
-          if (h) h->Fill(y, x); // title is "y (cm);x (cm)" so Fill(y, x)
+          if (h) h->Fill(y, x); // axes are y (cm); x (cm)
         }
       }
     }
   }
 
-  // Draw a 2x3 sector grid for one layer and one projection
   void RGAFiducialFilterValidator::DrawSectorGrid2D(int pid, int layer_idx, bool lv_vs_lw)
   {
     auto& sets = u_plots2d.at(pid);
     const char* proj = lv_vs_lw ? "lv_vs_lw" : "lv_vs_lu";
 
-    TString canv_name  = Form("rgafid_%s_%s_pid%d", LayerName(layer_idx), proj, pid);
-    TString canv_title = Form("%s %s - %s", PIDName(pid), LayerName(layer_idx),
-                              lv_vs_lw ? "lv vs lw" : "lv vs lu");
-    auto* canv = new TCanvas(canv_name, canv_title, 1400, 900);
+    auto* canv = new TCanvas(Form("rgafid_%s_%s_pid%d", LayerName(layer_idx), proj, pid),
+                             Form("%s %s - %s", PIDName(pid), LayerName(layer_idx),
+                                  lv_vs_lw ? "lv vs lw" : "lv vs lu"),
+                             1400, 900);
     canv->Divide(3, 2);
 
     for (int s = 1; s <= 6; ++s) {
       canv->cd(s);
-      gPad->SetLeftMargin(0.16);
-      gPad->SetRightMargin(0.14);
-      gPad->SetBottomMargin(0.12);
-      gPad->SetTopMargin(0.08);
+      gPad->SetLeftMargin(0.16); gPad->SetRightMargin(0.14);
+      gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
 
       TH2D* h = lv_vs_lw ? sets.layer[layer_idx].lv_lw.sec[s]
                          : sets.layer[layer_idx].lv_lu.sec[s];
       if (!h) continue;
-
-      TString t = Form("%s %s Sector %d", PIDName(pid), LayerName(layer_idx), s);
-      h->SetTitle(t);
+      h->SetTitle(Form("%s %s Sector %d", PIDName(pid), LayerName(layer_idx), s));
       h->Draw("COLZ");
     }
 
-    TString png_name = Form("%s_%s_%s_pid%d.png",
+    TString png_name = Form("%s_calorimeter_%s_%s_pid%d.png",
                             m_output_file_basename.Data(),
                             LayerName(layer_idx), proj, pid);
     canv->SaveAs(png_name);
   }
 
-  // Draw FT 1x2 canvas (left: electrons, right: photons), plotting y vs x
   void RGAFiducialFilterValidator::DrawFTCanvas()
   {
-    TString canv_name  = "rgafid_ft_xy";
-    TString canv_title = "Forward Tagger - y vs x";
-    auto* canv = new TCanvas(canv_name, canv_title, 1200, 600);
+    auto* canv = new TCanvas("rgafid_ft_xy", "Forward Tagger - y vs x", 1200, 600);
     canv->Divide(2, 1);
 
     int pad = 1;
     for (auto pid : u_pid_list) {
       canv->cd(pad++);
-      gPad->SetLeftMargin(0.16);
-      gPad->SetRightMargin(0.14);
-      gPad->SetBottomMargin(0.12);
-      gPad->SetTopMargin(0.08);
+      gPad->SetLeftMargin(0.16); gPad->SetRightMargin(0.14);
+      gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
 
       TH2D* h = u_ft_xy[pid];
       if (!h) continue;
-      TString t = Form("Forward Tagger - %s", PIDName(pid));
-      h->SetTitle(t);
+      h->SetTitle(Form("Forward Tagger - %s", PIDName(pid)));
       h->Draw("COLZ");
     }
 
@@ -254,20 +233,14 @@ namespace iguana::clas12 {
   {
     if (!GetOutputDirectory()) return;
 
-    // Calorimeter canvases (only if we had Cal)
     if (m_have_calor) {
-      for (auto pid : u_pid_list) {
+      for (auto pid : u_pid_list)
         for (int L = 0; L < 3; ++L) {
-          DrawSectorGrid2D(pid, L, true ); // lv vs lw
-          DrawSectorGrid2D(pid, L, false); // lv vs lu
+          DrawSectorGrid2D(pid, L, true );
+          DrawSectorGrid2D(pid, L, false);
         }
-      }
     }
-
-    // FT canvas (only if we had FT)
-    if (m_have_ft) {
-      DrawFTCanvas();
-    }
+    if (m_have_ft) DrawFTCanvas();
 
     if (m_output_file) {
       m_output_file->Write();

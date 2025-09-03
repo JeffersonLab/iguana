@@ -12,7 +12,7 @@
 namespace iguana::clas12 {
 
   /// Calorimeter validation:
-  ///   For each PID (11=e-, 22=gamma) and each layer (PCAL/ECIN/ECOUT),
+  ///   For each PID (11=e-, 22=γ) and each layer (PCAL/ECIN/ECOUT),
   ///   make two 2x3 canvases (sector grids): lv vs lw, lv vs lu.
   ///
   /// Forward Tagger validation:

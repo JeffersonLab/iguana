@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <cstdlib>   // std::getenv
+#include <optional>
 
 namespace iguana::clas12 {
 
@@ -17,6 +19,24 @@ namespace iguana::clas12 {
       if (b.getSchema().getName() == name) return true;
     }
     return false;
+  }
+
+  // try hard to retrieve a vector<double> from various YAML shapes/paths
+  static std::optional<std::vector<double>>
+  try_get_vec_d(RGAFiducialFilter const* self, const std::string& key, std::initializer_list<std::string> prefixes)
+  {
+    if (!self || !self->GetConfig()) return std::nullopt;
+
+    // 1) plain key (relative to algo root)
+    try { return self->GetOptionVector<double>(key); } catch (...) {}
+
+    // 2) with prefixes using path API or dotted/slashed keys
+    for (auto const& p : prefixes) {
+      try { return self->GetOptionVector<double>(key, YAMLReader::node_path_t{ p }); } catch (...) {}
+      try { return self->GetOptionVector<double>(p + "." + key); } catch (...) {}
+      try { return self->GetOptionVector<double>(p + "/" + key); } catch (...) {}
+    }
+    return std::nullopt;
   }
 
   REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter);
@@ -31,6 +51,19 @@ namespace iguana::clas12 {
     ParseYAMLConfig();
     o_runnum         = ConcurrentParamFactory::Create<int>();
     o_cal_strictness = ConcurrentParamFactory::Create<int>();
+
+    // --- strictness precedence: user setter > env var > YAML > default(1) ---
+    if (!u_strictness_user.has_value()) {
+      if (const char* s = std::getenv("IGUANA_RGAFID_STRICTNESS")) {
+        try { u_strictness_user = std::clamp(std::stoi(s), 1, 3); } catch (...) {}
+      }
+    }
+    if (!u_strictness_user.has_value()) {
+      try {
+        auto v = GetOptionVector<int>("strictness", YAMLReader::node_path_t{ "calorimeter" });
+        if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
+      } catch (...) { /* keep default */ }
+    }
 
     // required banks
     b_particle = GetBankIndex(banks, "REC::Particle");
@@ -63,12 +96,8 @@ namespace iguana::clas12 {
     const hipo::bank* calBankPtr = nullptr;
     const hipo::bank* ftBankPtr  = nullptr;
 
-    if (m_have_calor) {
-      calBankPtr = &GetBank(banks, b_calor, "REC::Calorimeter");
-    }
-    if (m_have_ft) {
-      ftBankPtr = &GetBank(banks, b_ft, "REC::ForwardTagger");
-    }
+    if (m_have_calor)  calBankPtr = &GetBank(banks, b_calor, "REC::Calorimeter");
+    if (m_have_ft)     ftBankPtr  = &GetBank(banks, b_ft,    "REC::ForwardTagger");
 
     // prepare per-event/per-run cache
     auto key = PrepareEvent(configBank.getInt("run", 0));
@@ -82,10 +111,7 @@ namespace iguana::clas12 {
     });
   }
 
-  void RGAFiducialFilter::Stop()
-  {
-    // nothing to do
-  }
+  void RGAFiducialFilter::Stop() { /* nothing */ }
 
   // -------------------------
   // event preparation
@@ -106,10 +132,9 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const
   {
-    std::lock_guard<std::mutex> const lock(m_mutex); // guard successive saves
+    std::lock_guard<std::mutex> const lock(m_mutex);
     m_log->Trace("RGAFiducialFilter::Reload(run={}, key={})", runnum, key);
 
-    // cache the run number
     o_runnum->Save(runnum, key);
 
     // calorimeter strictness: default 1; use user-set value if provided; clamp to [1,3]
@@ -118,36 +143,32 @@ namespace iguana::clas12 {
 
     // forward tagger parameters (optional YAML; otherwise keep defaults)
     try {
-      // radius
-      try {
-        auto r = GetOptionVector<double>("radius", YAMLReader::node_path_t{ "forward_tagger" });
-        if (r.size() >= 2) {
-          float a = static_cast<float>(r[0]);
-          float b = static_cast<float>(r[1]);
+      // radius: try several forms
+      if (auto r = try_get_vec_d(this, "radius", { "forward_tagger" })) {
+        if (r->size() >= 2) {
+          float a = static_cast<float>((*r)[0]);
+          float b = static_cast<float>((*r)[1]);
           u_ft_params.rmin = std::min(a, b);
           u_ft_params.rmax = std::max(a, b);
         }
-      } catch (...) {
-        // missing or malformed -> keep defaults
       }
 
-      // holes: flattened list of triples
-      try {
-        auto flat = GetOptionVector<double>("holes", YAMLReader::node_path_t{ "forward_tagger" });
-        if (!flat.empty()) {
-          std::vector<std::array<float,3>> holes;
-          holes.reserve(flat.size()/3);
-          for (size_t i = 0; i + 2 < flat.size(); i += 3) {
-            holes.push_back({
-              static_cast<float>(flat[i]),
-              static_cast<float>(flat[i+1]),
-              static_cast<float>(flat[i+2])
-            });
-          }
-          if (!holes.empty()) u_ft_params.holes = std::move(holes);
+      // holes: prefer a flat list if present, otherwise try the nested key
+      std::optional<std::vector<double>> flat;
+      flat = try_get_vec_d(this, "holes_flat", { "forward_tagger" });
+      if (!flat) flat = try_get_vec_d(this, "holes", { "forward_tagger" });
+
+      if (flat && !flat->empty()) {
+        std::vector<std::array<float,3>> holes;
+        holes.reserve(flat->size()/3);
+        for (size_t i = 0; i + 2 < flat->size(); i += 3) {
+          holes.push_back({
+            static_cast<float>((*flat)[i]),
+            static_cast<float>((*flat)[i+1]),
+            static_cast<float>((*flat)[i+2])
+          });
         }
-      } catch (...) {
-        // missing or malformed -> keep defaults
+        if (!holes.empty()) u_ft_params.holes = std::move(holes);
       }
     } catch (...) {
       // keep defaults on any YAML read problem
@@ -177,7 +198,6 @@ namespace iguana::clas12 {
     if (calBank != nullptr) {
       CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
 
-      // pass if no cal association OR if it passes strictness(+masks when >=2)
       if (h.has_any) {
         const int strictness = GetCalStrictness(key);
         if (!PassCalStrictness(h, strictness)) return false;
@@ -226,17 +246,10 @@ namespace iguana::clas12 {
   {
     // PCAL-only edge cuts on (lv1, lw1)
     switch (strictness) {
-      case 1: // recommended for electrons in BSAs
-        if (h.lw1 < 9.0f || h.lv1 < 9.0f) return false;
-        break;
-      case 2: // recommended for photons in BSAs
-        if (h.lw1 < 13.5f || h.lv1 < 13.5f) return false;
-        break;
-      case 3: // recommended for cross sections
-        if (h.lw1 < 18.0f || h.lv1 < 18.0f) return false;
-        break;
-      default:
-        return false;
+      case 1: if (h.lw1 <  9.0f || h.lv1 <  9.0f) return false; break;  // electrons in BSAs
+      case 2: if (h.lw1 < 13.5f || h.lv1 < 13.5f) return false; break;  // photons in BSAs
+      case 3: if (h.lw1 < 18.0f || h.lv1 < 18.0f) return false; break;  // cross sections
+      default: return false;
     }
     return true;
   }

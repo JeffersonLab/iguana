@@ -4,7 +4,7 @@
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/ConcurrentParam.h"
 
-#include <optional>   // std::optional
+#include <optional>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
@@ -18,21 +18,19 @@ namespace iguana::clas12 {
   /// REC::ForwardTagger (optional), RUN::config
   /// Output banks: REC::Particle (tracks)
   ///
-  /// Strictness runtime setting (coded in user scripts) for calorimeter only:
-  ///   - Default strictness = 1
-  ///   - Call SetStrictness(1|2|3) before Start() to override
+  /// Strictness precedence (cal only):
+  ///   SetStrictness() > env IGUANA_RGAFID_STRICTNESS > YAML [calorimeter.strictness[0]] > default(1)
   class RGAFiducialFilter : public Algorithm
   {
       DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
     public:
-      // helpers and data structures for calorimeter linking
       struct CalLayers {
         int   sector = 0;
         float lv1=0.f, lw1=0.f, lu1=0.f; // layer 1 (PCAL)
         float lv4=0.f, lw4=0.f, lu4=0.f; // layer 4 (ECin)
         float lv7=0.f, lw7=0.f, lu7=0.f; // layer 7 (ECout)
-        bool  has_any = false;           // saw at least one matching cal row
+        bool  has_any = false;
       };
 
       void Start(hipo::banklist& banks) override;
@@ -49,7 +47,6 @@ namespace iguana::clas12 {
                   const hipo::bank* ftBank,    // nullptr => skip FT cuts
                   concurrent_key_t key) const;
 
-      // User-facing runtime configuration (calorimeter only)
       /// Set strictness (1..3). Call BEFORE Start(). Values are clamped to [1,3].
       void SetStrictness(int strictness);
 
@@ -71,7 +68,7 @@ namespace iguana::clas12 {
       };
       bool PassFTFiducial(int track_index, const hipo::bank* ftBank) const; // nullptr => pass
 
-      /// Load per-run options (cal strictness from user setter/default; cal masks from YAML;
+      /// Load per-run options (strictness from user/env/YAML; cal masks from YAML;
       /// FT parameters from YAML if present, else defaults).
       void Reload(int runnum, concurrent_key_t key) const;
 
