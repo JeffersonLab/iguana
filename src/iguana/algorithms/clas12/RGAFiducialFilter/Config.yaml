@@ -1,59 +1,85 @@
 clas12::RGAFiducialFilter:
   calorimeter:
-    # Strictness levels:
-    # 1 = baseline (recommended for electrons in BSAs)
-    # 2 = tighter PCAL edge margins + dead-PMT masks
-    # 3 = tightest (recommended for cross sections)
     strictness: [1]
 
-    # Dead PMT masks (applied only if strictness >= 2)
     masks:
-      # RGA: 3031-5666
       - runs: [3031, 5666]
         sectors:
           "1":
-            pcal:  { lw: { cal_mask: [72.0, 94.5, 220.5, 234.0] } }
-            ecin:  { lv: { cal_mask: [67.5, 94.5] } }
-            ecout: { lv: { cal_mask: [0.0, 40.5] } }
+            pcal:
+              lv: { cal_mask: [] }
+              lw: { cal_mask: [72.0, 94.5, 220.5, 234.0] }
+              lu: { cal_mask: [] }
+            ecin:
+              lv: { cal_mask: [67.5, 94.5] }
+              lw: { cal_mask: [] }
+              lu: { cal_mask: [] }
+            ecout:
+              lv: { cal_mask: [0.0, 40.5] }
+              lw: { cal_mask: [] }
+              lu: { cal_mask: [] }
           "2":
-            pcal:  { lv: { cal_mask: [99.0, 117.0] } }
+            pcal:
+              lv: { cal_mask: [99.0, 117.0] }
+              lw: { cal_mask: [] }
+              lu: { cal_mask: [] }
+            ecin:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
           "3":
-            pcal:  { lw: { cal_mask: [346.5, 378.0] } }
+            pcal:  { lv: { cal_mask: [] }, lw: { cal_mask: [346.5, 378.0] }, lu: { cal_mask: [] } }
+            ecin:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
           "4":
-            pcal:  { lw: { cal_mask: [0.0, 13.5] }, lv: { cal_mask: [229.5, 243.0] } }
+            pcal:
+              lv: { cal_mask: [229.5, 243.0] }
+              lw: { cal_mask: [0.0, 13.5] }
+              lu: { cal_mask: [] }
+            ecin:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
           "5":
-            ecin:  { lv: { cal_mask: [0.0, 23.5] } }
-            ecout: { lu: { cal_mask: [193.5, 216.0] } }
+            pcal:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecin:  { lv: { cal_mask: [0.0, 23.5] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [193.5, 216.0] } }
           "6":
-            pcal:  { lw: { cal_mask: [166.5, 193.5] } }
+            pcal:  { lv: { cal_mask: [] }, lw: { cal_mask: [166.5, 193.5] }, lu: { cal_mask: [] } }
+            ecin:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
 
-      # RGA: 6616-6783 (base masks + extra Spring 2019 mask)
       - runs: [6616, 6783]
         sectors:
           "1":
-            pcal:  { lw: { cal_mask: [72.0, 94.5, 220.5, 234.0] } }
-            ecin:  { lv: { cal_mask: [67.5, 94.5] } }
-            ecout: { lv: { cal_mask: [0.0, 40.5] } }
+            pcal:  { lv: { cal_mask: [] }, lw: { cal_mask: [72.0, 94.5, 220.5, 234.0] }, lu: { cal_mask: [] } }
+            ecin:  { lv: { cal_mask: [67.5, 94.5] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [0.0, 40.5] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
           "2":
-            pcal:  { lv: { cal_mask: [99.0, 117.0, 31.5, 49.5] } }
+            pcal:  { lv: { cal_mask: [99.0, 117.0, 31.5, 49.5] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecin:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
           "3":
-            pcal:  { lw: { cal_mask: [346.5, 378.0] } }
+            pcal:  { lv: { cal_mask: [] }, lw: { cal_mask: [346.5, 378.0] }, lu: { cal_mask: [] } }
+            ecin:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
           "4":
-            pcal:  { lw: { cal_mask: [0.0, 13.5] }, lv: { cal_mask: [229.5, 243.0] } }
+            pcal:
+              lv: { cal_mask: [229.5, 243.0] }
+              lw: { cal_mask: [0.0, 13.5] }
+              lu: { cal_mask: [] }
+            ecin:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
           "5":
-            ecin:  { lv: { cal_mask: [0.0, 23.5] } }
-            ecout: { lu: { cal_mask: [193.5, 216.0] } }
+            pcal:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecin:  { lv: { cal_mask: [0.0, 23.5] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [193.5, 216.0] } }
           "6":
-            pcal:  { lw: { cal_mask: [166.5, 193.5] } }
+            pcal:  { lv: { cal_mask: [] }, lw: { cal_mask: [166.5, 193.5] }, lu: { cal_mask: [] } }
+            ecin:  { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
 
   forward_tagger:
-    # FT fiducial window (radius in cm)
     radius: [8.5, 15.5]
-    # Circular holes to exclude: [radius (cm), x_center (cm), y_center (cm)]
     holes:
       - [1.60, -8.42,   9.89]
       - [1.60, -9.89,  -5.33]
       - [2.30, -6.15, -13.00]
       - [2.00,  3.70,  -6.50]
-    # Flat mirror of "holes" for maximal compatibility:
     holes_flat: [1.60, -8.42, 9.89, 1.60, -9.89, -5.33, 2.30, -6.15, -13.00, 2.00, 3.70, -6.50]
