@@ -6,7 +6,7 @@ clas12::RGAFiducialFilter:
     # 3 = tightest (recommended for cross sections)
 
     # default:
-    strictness: 1 
+    strictness: [1] 
 
     # Dead PMT masks (applied only if strictness >= 2)
     masks:

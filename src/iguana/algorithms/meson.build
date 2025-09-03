@@ -127,7 +127,7 @@ algo_dict = [
   },
   {
     'name': 'clas12::RGAFiducialFilter',
-    'has_validator': false,
+    'has_validator': true,
     'has_action_yaml': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'REC::Calorimeter', 'RUN::config' ],
