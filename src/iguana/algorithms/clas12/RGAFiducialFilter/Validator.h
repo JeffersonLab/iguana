@@ -38,7 +38,7 @@ namespace iguana::clas12 {
       const std::array<int,2> u_pid_list { 11, 22 }; // electrons, photons
 
       // TH2 containers for calorimeter: [pid][layer 0..2][sector 1..6]
-      struct SecH2 { std::array<TH2D*, 7> sec{}; }; // use indices [1..6]
+      struct SecH2 { std::array<TH2D*, 7> sec{}; }; // use [1..6]
       struct LayerH2 { SecH2 lv_lw, lv_lu; };
       struct PlotSets { std::array<LayerH2, 3> layer; };
 

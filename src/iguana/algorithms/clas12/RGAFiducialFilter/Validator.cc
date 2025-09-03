@@ -9,9 +9,10 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
 
-  // helper: does the banklist include a bank with this schema name?
-  static bool banklist_has(const hipo::banklist& banks, const char* name) {
-    for (const auto& b : banks) {
+  // helper: does the banklist the framework gave us include a bank with this name?
+  // note: bank::getSchema() is non-const in hipo4, so banklist is non-const here
+  static bool banklist_has(hipo::banklist& banks, const char* name) {
+    for (auto& b : banks) {
       if (b.getSchema().getName() == name) return true;
     }
     return false;
@@ -92,7 +93,7 @@ namespace iguana::clas12 {
     // required
     b_particle = GetBankIndex(banks, "REC::Particle");
 
-    // optional: Calorimeter
+    // optional: calorimeter & FT
     if (banklist_has(banks, "REC::Calorimeter")) {
       b_calor = GetBankIndex(banks, "REC::Calorimeter");
       m_have_calor = true;
@@ -101,7 +102,6 @@ namespace iguana::clas12 {
       m_log->Info("Optional bank 'REC::Calorimeter' not in banklist; calorimeter plots will be skipped.");
     }
 
-    // optional: ForwardTagger
     if (banklist_has(banks, "REC::ForwardTagger")) {
       b_ft = GetBankIndex(banks, "REC::ForwardTagger");
       m_have_ft = true;
@@ -110,7 +110,7 @@ namespace iguana::clas12 {
       m_log->Info("Optional bank 'REC::ForwardTagger' not in banklist; FT plots will be skipped.");
     }
 
-    // output file (optional)
+    // output
     auto output_dir = GetOutputDirectory();
     if (output_dir) {
       m_output_file_basename = output_dir.value() + "/rga_fiducial_calorimeter";
@@ -128,7 +128,7 @@ namespace iguana::clas12 {
     // Run the filter first; plot hits associated with surviving tracks only
     m_algo_seq->Run(banks);
 
-    // Build survivor sets keyed by pid
+    // Build survivor sets keyed by pid 
     std::unordered_map<int, std::unordered_set<int>> survivors;
     for (auto pid : u_pid_list) survivors[pid];
 
@@ -142,7 +142,7 @@ namespace iguana::clas12 {
     // Lock while filling hists
     std::scoped_lock<std::mutex> lock(m_mutex);
 
-    // ----- Calorimeter fills (only if bank present) -----
+    // Calorimeter fills (only if bank present)
     if (m_have_calor) {
       auto& calor_bank = GetBank(banks, b_calor, "REC::Calorimeter");
       const int ncal = calor_bank.getRows();
@@ -169,14 +169,14 @@ namespace iguana::clas12 {
       }
     }
 
-    // ----- FT fills (y vs x) (only if bank present) -----
+    // FT fills (y vs x) (only if bank present)
     if (m_have_ft) {
       auto& ft_bank = GetBank(banks, b_ft, "REC::ForwardTagger");
       const int nft = ft_bank.getRows();
       for (int i = 0; i < nft; ++i) {
         const int pindex = ft_bank.getInt("pindex", i);
         const float x    = ft_bank.getFloat("x", i);
-        const float y    = ft_bank.getFloat("y", i);
+        const float y    = ft_bank->getFloat("y", i);
 
         for (auto pid : u_pid_list) {
           auto it = survivors.find(pid);

@@ -14,14 +14,9 @@ namespace iguana::clas12 {
 
   /// RGA fiducial filter with calorimeter + forward tagger cuts.
   ///
-  /// Input banks:
-  ///   - REC::Particle (tracks)
-  ///   - REC::Calorimeter (optional)
-  ///   - REC::ForwardTagger (optional)
-  ///   - RUN::config
-  ///
-  /// Output banks:
-  ///   - REC::Particle (tracks)
+  /// Input banks: REC::Particle (tracks), REC::Calorimeter (optional),
+  /// REC::ForwardTagger (optional), RUN::config
+  /// Output banks: REC::Particle (tracks)
   ///
   /// Strictness runtime setting (coded in user scripts) for calorimeter only:
   ///   - Default strictness = 1
@@ -31,7 +26,7 @@ namespace iguana::clas12 {
       DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
     public:
-      // --- helpers and data structures for calorimeter linking ---
+      // helpers and data structures for calorimeter linking
       struct CalLayers {
         int   sector = 0;
         float lv1=0.f, lw1=0.f, lu1=0.f; // layer 1 (PCAL)
@@ -54,7 +49,7 @@ namespace iguana::clas12 {
                   const hipo::bank* ftBank,    // nullptr => skip FT cuts
                   concurrent_key_t key) const;
 
-      // --- User-facing runtime configuration (calorimeter only) ---
+      // User-facing runtime configuration (calorimeter only)
       /// Set strictness (1..3). Call BEFORE Start(). Values are clamped to [1,3].
       void SetStrictness(int strictness);
 
@@ -63,12 +58,12 @@ namespace iguana::clas12 {
       int GetCalStrictness(concurrent_key_t key) const;
 
     private:
-      // ------- Calorimeter helpers -------
+      // Calorimeter helpers
       static CalLayers CollectCalHitsForTrack(const hipo::bank& calBank, int track_index);
       static bool PassCalStrictness(const CalLayers& h, int strictness);
       bool PassCalDeadPMTMasks(const CalLayers& h, int runnum) const;
 
-      // ------- Forward Tagger helpers -------
+      // Forward Tagger helpers
       struct FTParams {
         float rmin = 8.5f;
         float rmax = 15.5f;
@@ -76,7 +71,8 @@ namespace iguana::clas12 {
       };
       bool PassFTFiducial(int track_index, const hipo::bank* ftBank) const; // nullptr => pass
 
-      /// Load run-dependent options (strictness and masks). FT parameters are loaded once in Start().
+      /// Load per-run options (cal strictness from user setter/default; cal masks from YAML;
+      /// FT parameters from YAML if present, else defaults).
       void Reload(int runnum, concurrent_key_t key) const;
 
       // bank indices (set only if present at Start)
