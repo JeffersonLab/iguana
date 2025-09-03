@@ -254,7 +254,11 @@ namespace iguana {
   hipo::bank Algorithm::CreateBank(std::string const& bank_name) const noexcept(false) {
     hipo::banklist new_banks;
     hipo::banklist::size_type new_bank_idx;
-    CreateBank(new_banks, new_bank_idx, bank_name);
+    if(bank_name.empty()) {
+      CreateBank(new_banks, new_bank_idx, AlgorithmFactory::GetCreatedBankName(m_class_name));
+    } else {
+      CreateBank(new_banks, new_bank_idx, bank_name);
+    }
     return new_banks.at(0);
   }
 

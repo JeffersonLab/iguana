@@ -165,9 +165,9 @@ namespace iguana {
           std::string const& bank_name) const noexcept(false);
 
       /// Create a new bank. The bank must be defined in `src/iguana/bankdefs/iguana.json`.
-      /// @param [in] bank_name the new bank name
+      /// @param [in] bank_name the new bank name; if empty (default), get the creator algorithm's created bank (this will fail if the algorithm does not create exactly 1 new bank)
       /// @returns the new bank
-      hipo::bank CreateBank(std::string const& bank_name) const noexcept(false);
+      hipo::bank CreateBank(std::string const& bank_name = "") const noexcept(false);
 
       /// Dump all banks in a `hipo::banklist`
       /// @param banks the banks to show
@@ -266,6 +266,12 @@ namespace iguana {
       /// @param bank_name the name of the bank
       /// @returns the list of algorithms which create it, if any
       static std::optional<std::vector<std::string>> QueryNewBank(std::string const& bank_name) noexcept;
+
+      /// Get the name of a bank created by a creator-type algorithm. Fail if there is not exactly one such bank found; _i.e._, this
+      /// method cannot be used for a creator-type algorithm which creates more than one bank.
+      /// @param algo_name the algorithm name
+      /// @returns the name of the created bank
+      static std::string GetCreatedBankName(std::string const& algo_name) noexcept(false);
 
     private:
 
