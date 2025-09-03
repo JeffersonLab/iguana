@@ -32,4 +32,22 @@ namespace iguana {
       return it->second;
     return {};
   }
+
+  std::string AlgorithmFactory::GetCreatedBankName(std::string const& algo_name) noexcept(false)
+  {
+    std::string bank_name = "";
+    for(const auto& [bank_it, creator_algo_names] : s_created_banks) {
+      for(const auto& creator_algo_name : creator_algo_names) {
+        if(algo_name == creator_algo_name) {
+          if(!bank_name.empty())
+            throw std::runtime_error(fmt::format("algorithm {:?} creates more than one bank; if you called `CreateBank()`, you need to specify the bank name instead", algo_name));
+          bank_name = bank_it;
+          break; // break loop over `creator_algo_names`
+        }
+      }
+    }
+    if(bank_name.empty())
+      throw std::runtime_error(fmt::format("algorithm {:?} does not create any banks", algo_name));
+    return bank_name;
+  }
 }
