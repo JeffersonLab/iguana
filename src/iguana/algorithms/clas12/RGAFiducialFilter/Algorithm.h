@@ -12,12 +12,16 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo RGA fiducial filter with calorimeter + forward tagger cuts.
+  /// RGA fiducial filter with calorimeter + forward tagger cuts.
   ///
-  /// @begin_doc_algo{clas12::RGAFiducialFilter | Filter}
-  /// @input_banks{REC::Particle (tracks), REC::Calorimeter (optional), REC::ForwardTagger (optional), RUN::config}
-  /// @output_banks{REC::Particle (tracks)}
-  /// @end_doc
+  /// Input banks:
+  ///   - REC::Particle (tracks)
+  ///   - REC::Calorimeter (optional)
+  ///   - REC::ForwardTagger (optional)
+  ///   - RUN::config
+  ///
+  /// Output banks:
+  ///   - REC::Particle (tracks)
   ///
   /// Strictness runtime setting (coded in user scripts) for calorimeter only:
   ///   - Default strictness = 1
@@ -72,8 +76,7 @@ namespace iguana::clas12 {
       };
       bool PassFTFiducial(int track_index, const hipo::bank* ftBank) const; // nullptr => pass
 
-      /// Load per-run options (cal strictness from user setter/default; cal masks from YAML;
-      /// FT parameters from YAML if present, else defaults).
+      /// Load run-dependent options (strictness and masks). FT parameters are loaded once in Start().
       void Reload(int runnum, concurrent_key_t key) const;
 
       // bank indices (set only if present at Start)

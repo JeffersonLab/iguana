@@ -10,7 +10,7 @@ clas12::RGAFiducialFilter:
 
     # Dead PMT masks (applied only if strictness >= 2)
     masks:
-      # RGA: 3031–5666
+      # RGA: 3031-5666
       - runs: [3031, 5666]
         sectors:
           "1":
@@ -29,7 +29,7 @@ clas12::RGAFiducialFilter:
           "6":
             pcal:  { lw: [[166.5, 193.5]] }
 
-      # RGA: 6616–6783 (base masks + extra Spring 2019 mask)
+      # RGA: 6616-6783 (base masks + extra Spring 2019 mask)
       - runs: [6616, 6783]
         sectors:
           "1":
@@ -47,8 +47,6 @@ clas12::RGAFiducialFilter:
             ecout: { lu: [[193.5, 216.0]] }
           "6":
             pcal:  { lw: [[166.5, 193.5]] }
-
-  ##################          
 
   forward_tagger:
     # FT fiducial window (radius in cm)

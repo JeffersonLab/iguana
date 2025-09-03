@@ -9,6 +9,14 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
 
+  // helper: does the banklist include a bank with this schema name?
+  static bool banklist_has(const hipo::banklist& banks, const char* name) {
+    for (const auto& b : banks) {
+      if (b.getSchema().getName() == name) return true;
+    }
+    return false;
+  }
+
   // static helpers
   int RGAFiducialFilterValidator::LayerToIndex(int layer) {
     if (layer == 1) return 0; // PCAL
@@ -28,7 +36,7 @@ namespace iguana::clas12 {
   {
     auto& sets = u_plots2d[pid];
 
-    // 90 bins × 4.5 cm = 405 cm range (calorimeter axes)
+    // 90 bins x 4.5 cm = 405 cm range (calorimeter axes)
     const int    nb = 90;
     const double lo = 0.0;
     const double hi = 405.0;
@@ -65,7 +73,7 @@ namespace iguana::clas12 {
     // FT per-PID occupancy (y vs x), range chosen to encompass FT region
     if (!u_ft_xy[pid]) {
       TString hname  = Form("h2_ft_xy_pid%d", pid);
-      TString htitle = Form("Forward Tagger — %s;y (cm);x (cm)", PIDName(pid));
+      TString htitle = Form("Forward Tagger - %s;y (cm);x (cm)", PIDName(pid));
       // +/-20 cm box with fine binning
       u_ft_xy[pid] = new TH2D(hname, htitle, 200, -20.0, 20.0, 200, -20.0, 20.0);
       u_ft_xy[pid]->SetStats(0);
@@ -85,21 +93,21 @@ namespace iguana::clas12 {
     b_particle = GetBankIndex(banks, "REC::Particle");
 
     // optional: Calorimeter
-    if (banks.has("REC::Calorimeter")) {
+    if (banklist_has(banks, "REC::Calorimeter")) {
       b_calor = GetBankIndex(banks, "REC::Calorimeter");
       m_have_calor = true;
     } else {
       m_have_calor = false;
-      m_log->Info("Optional bank 'REC::Calorimeter' not found; calorimeter plots will be skipped.");
+      m_log->Info("Optional bank 'REC::Calorimeter' not in banklist; calorimeter plots will be skipped.");
     }
 
     // optional: ForwardTagger
-    if (banks.has("REC::ForwardTagger")) {
+    if (banklist_has(banks, "REC::ForwardTagger")) {
       b_ft = GetBankIndex(banks, "REC::ForwardTagger");
       m_have_ft = true;
     } else {
       m_have_ft = false;
-      m_log->Info("Optional bank 'REC::ForwardTagger' not found; FT plots will be skipped.");
+      m_log->Info("Optional bank 'REC::ForwardTagger' not in banklist; FT plots will be skipped.");
     }
 
     // output file (optional)
@@ -120,7 +128,7 @@ namespace iguana::clas12 {
     // Run the filter first; plot hits associated with surviving tracks only
     m_algo_seq->Run(banks);
 
-    // Build survivor sets keyed by pid 
+    // Build survivor sets keyed by pid
     std::unordered_map<int, std::unordered_set<int>> survivors;
     for (auto pid : u_pid_list) survivors[pid];
 
@@ -181,14 +189,14 @@ namespace iguana::clas12 {
     }
   }
 
-  // Draw a 2×3 sector grid for one layer and one projection
+  // Draw a 2x3 sector grid for one layer and one projection
   void RGAFiducialFilterValidator::DrawSectorGrid2D(int pid, int layer_idx, bool lv_vs_lw)
   {
     auto& sets = u_plots2d.at(pid);
     const char* proj = lv_vs_lw ? "lv_vs_lw" : "lv_vs_lu";
 
     TString canv_name  = Form("rgafid_%s_%s_pid%d", LayerName(layer_idx), proj, pid);
-    TString canv_title = Form("%s %s — %s", PIDName(pid), LayerName(layer_idx),
+    TString canv_title = Form("%s %s - %s", PIDName(pid), LayerName(layer_idx),
                               lv_vs_lw ? "lv vs lw" : "lv vs lu");
     auto* canv = new TCanvas(canv_name, canv_title, 1400, 900);
     canv->Divide(3, 2);
@@ -215,11 +223,11 @@ namespace iguana::clas12 {
     canv->SaveAs(png_name);
   }
 
-  // Draw FT 1×2 canvas (left: electrons, right: photons), plotting y vs x
+  // Draw FT 1x2 canvas (left: electrons, right: photons), plotting y vs x
   void RGAFiducialFilterValidator::DrawFTCanvas()
   {
     TString canv_name  = "rgafid_ft_xy";
-    TString canv_title = "Forward Tagger — y vs x";
+    TString canv_title = "Forward Tagger - y vs x";
     auto* canv = new TCanvas(canv_name, canv_title, 1200, 600);
     canv->Divide(2, 1);
 
@@ -233,7 +241,7 @@ namespace iguana::clas12 {
 
       TH2D* h = u_ft_xy[pid];
       if (!h) continue;
-      TString t = Form("Forward Tagger — %s", PIDName(pid));
+      TString t = Form("Forward Tagger - %s", PIDName(pid));
       h->SetTitle(t);
       h->Draw("COLZ");
     }

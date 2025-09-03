@@ -9,6 +9,14 @@
 
 namespace iguana::clas12 {
 
+  // helper: does the banklist include a bank with this schema name?
+  static bool banklist_has(const hipo::banklist& banks, const char* name) {
+    for (const auto& b : banks) {
+      if (b.getSchema().getName() == name) return true;
+    }
+    return false;
+  }
+
   REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter);
 
   // -------------------------
@@ -17,31 +25,65 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilter::Start(hipo::banklist& banks)
   {
-    // parse YAML and set up caches
+    // Load YAML for this algorithm
     ParseYAMLConfig();
+
+    // allocate per-run concurrent cache
     o_runnum         = ConcurrentParamFactory::Create<int>();
     o_cal_strictness = ConcurrentParamFactory::Create<int>();
 
-    // required
+    // required (must be requested with -b on the command line)
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
 
     // optional: Calorimeter
-    if (banks.has("REC::Calorimeter")) {
+    if (banklist_has(banks, "REC::Calorimeter")) {
       b_calor = GetBankIndex(banks, "REC::Calorimeter");
       m_have_calor = true;
     } else {
       m_have_calor = false;
-      m_log->Info("Optional bank 'REC::Calorimeter' not found; calorimeter fiducials will be skipped.");
+      m_log->Info("Optional bank 'REC::Calorimeter' not in banklist; calorimeter fiducials will be skipped.");
     }
 
     // optional: ForwardTagger
-    if (banks.has("REC::ForwardTagger")) {
+    if (banklist_has(banks, "REC::ForwardTagger")) {
       b_ft = GetBankIndex(banks, "REC::ForwardTagger");
       m_have_ft = true;
     } else {
       m_have_ft = false;
-      m_log->Info("Optional bank 'REC::ForwardTagger' not found; FT fiducials will be skipped.");
+      m_log->Info("Optional bank 'REC::ForwardTagger' not in banklist; FT fiducials will be skipped.");
+    }
+
+    // Read forward_tagger params from YAML ONCE (keep compiled defaults if absent)
+    // Path is: clas12::RGAFiducialFilter -> forward_tagger -> {radius, holes}
+    try {
+      {
+        auto r = GetOptionVector<double>("radius", { "forward_tagger" });
+        if (r.size() >= 2) {
+          float a = static_cast<float>(r[0]);
+          float b = static_cast<float>(r[1]);
+          u_ft_params.rmin = std::min(a, b);
+          u_ft_params.rmax = std::max(a, b);
+        }
+      }
+      {
+        auto flat = GetOptionVector<double>("holes", { "forward_tagger" });
+        if (!flat.empty()) {
+          std::vector<std::array<float,3>> holes;
+          holes.reserve(flat.size()/3);
+          for (size_t i = 0; i + 2 < flat.size(); i += 3) {
+            holes.push_back({
+              static_cast<float>(flat[i]),
+              static_cast<float>(flat[i+1]),
+              static_cast<float>(flat[i+2])
+            });
+          }
+          if (!holes.empty()) u_ft_params.holes = std::move(holes);
+        }
+      }
+    } catch (...) {
+      // Keep defaults: rmin=8.5, rmax=15.5, holes={}
+      // If the YAML keys are missing and GetOptionVector logs once, it happens only here.
     }
   }
 
@@ -50,7 +92,7 @@ namespace iguana::clas12 {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& configBank   = GetBank(banks, b_config,   "RUN::config");
 
-    // Pointers for optional banks (null => skip that detector's cuts)
+    // Pointers for optional banks (null means skip that detector's cuts)
     const hipo::bank* calBankPtr = nullptr;
     const hipo::bank* ftBankPtr  = nullptr;
 
@@ -61,10 +103,10 @@ namespace iguana::clas12 {
       ftBankPtr = &GetBank(banks, b_ft, "REC::ForwardTagger");
     }
 
-    // prepare per-event/per-run cache
+    // Prepare per-event/per-run cache
     auto key = PrepareEvent(configBank.getInt("run", 0));
 
-    // filter tracks in place
+    // Filter tracks in place
     particleBank.getMutableRowList().filter([this, calBankPtr, ftBankPtr, key](auto /*bank*/, auto row) {
       const int track_index = row;
       const bool accept = Filter(track_index, calBankPtr, ftBankPtr, key);
@@ -95,52 +137,19 @@ namespace iguana::clas12 {
     }
   }
 
-  // in RGAFiducialFilter::Reload
-  void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const {
+  void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const
+  {
     std::lock_guard<std::mutex> const lock(m_mutex);
     m_log->Trace("RGAFiducialFilter::Reload(run={}, key={})", runnum, key);
 
+    // cache the run number
     o_runnum->Save(runnum, key);
 
-    // calorimeter strictness
+    // calorimeter strictness (1..3), user may have set it via SetStrictness
     int strictness = std::clamp(u_strictness_user.value_or(1), 1, 3);
     o_cal_strictness->Save(strictness, key);
 
-    // forward tagger params from YAML if present
-    // keep defaults if subtree or keys are absent
-    try {
-      // If your YAMLReader has a Has(...) or TryPath(...) style API, use it to avoid noisy errors.
-      // Example using a hypothetical Has(path, key) check:
-      YAMLReader::node_path_t ft_path = { "forward_tagger" };
-
-      if (GetConfig() && GetConfig()->Has(ft_path, "radius")) {
-        auto r = GetOptionVector<double>("radius", ft_path);
-        if (r.size() >= 2) {
-          float a = static_cast<float>(r[0]);
-          float b = static_cast<float>(r[1]);
-          u_ft_params.rmin = std::min(a, b);
-          u_ft_params.rmax = std::max(a, b);
-        }
-      }
-
-      if (GetConfig() && GetConfig()->Has(ft_path, "holes")) {
-        auto flat = GetOptionVector<double>("holes", ft_path);
-        if (!flat.empty()) {
-          std::vector<std::array<float,3>> holes;
-          holes.reserve(flat.size()/3);
-          for (size_t i = 0; i + 2 < flat.size(); i += 3) {
-            holes.push_back({
-              static_cast<float>(flat[i]),
-              static_cast<float>(flat[i+1]),
-              static_cast<float>(flat[i+2])
-            });
-          }
-          if (!holes.empty()) u_ft_params.holes = std::move(holes);
-        }
-      }
-    } catch (...) {
-      // swallow and keep defaults
-    }
+    // Note: FT YAML is read once in Start(), not per run.
   }
 
   // -------------------------
@@ -162,11 +171,11 @@ namespace iguana::clas12 {
                                  const hipo::bank* ftBank,
                                  concurrent_key_t key) const
   {
-    // ---- Calorimeter: apply only if we have a cal bank
+    // Calorimeter: apply only if we have a cal bank
     if (calBank != nullptr) {
       CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
 
-      // pass if no cal association OR if it passes strictness(+masks when >=2)
+      // pass if no cal association OR if it passes strictness (plus masks when >=2)
       if (h.has_any) {
         const int strictness = GetCalStrictness(key);
         if (!PassCalStrictness(h, strictness)) return false;
@@ -178,7 +187,7 @@ namespace iguana::clas12 {
       }
     }
 
-    // ---- Forward Tagger: apply only if we have an FT bank
+    // Forward Tagger: apply only if we have an FT bank
     if (!PassFTFiducial(track_index, ftBank)) return false;
 
     return true;
