@@ -74,21 +74,10 @@ namespace iguana::clas12 {
     // read strictness (scalar) from YAML: clas12::RGAFiducialFilter -> calorimeter -> strictness
     int strictness = 1;
     try {
-      // Prefer direct YAML read to avoid logging from GetOptionVector on scalars
-      auto node = GetConfig()->GetNode({"calorimeter", "strictness"});
-      if (node) {
-        if (node.IsScalar()) {
-          strictness = node.as<int>();
-        } else if (node.IsSequence() && node.size() > 0) {
-          strictness = node[0].as<int>();
-        } else {
-          // Fallback: legacy vector getter
-          auto v = GetOptionVector<int>("strictness", {"calorimeter"});
-          if (!v.empty()) strictness = v.front();
-        }
-      }
+      auto v = GetOptionVector<int>("strictness", { "calorimeter" });
+      if (!v.empty()) strictness = v.front();
     } catch (...) {
-      // leave default
+      // leave as default 1
     }
     if (strictness < 1) strictness = 1;
     if (strictness > 3) strictness = 3;
