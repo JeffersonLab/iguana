@@ -2,9 +2,7 @@
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/YAMLReader.h"
 
-#include <cstdlib> // std::getenv
-#include <string>  // std::stoi
-#include <algorithm>
+#include <algorithm> // std::clamp
 
 namespace iguana::clas12 {
 
@@ -75,18 +73,19 @@ namespace iguana::clas12 {
     // cache the run number
     o_runnum->Save(runnum, key);
 
-    // strictness: default 1; optional runtime override via env var (no YAML read)
-    int strictness = 1;
-    if (const char* env = std::getenv("IGUANA_RGAFID_STRICTNESS")) {
-      try {
-        int s = std::stoi(env);
-        s = std::max(1, std::min(3, s));
-        strictness = s;
-      } catch (...) {
-        // ignore parse error; keep default
-      }
-    }
+    // strictness: default 1; use user-set value if provided; clamp to [1,3]
+    int strictness = std::clamp(u_strictness_user.value_or(1), 1, 3);
     o_cal_strictness->Save(strictness, key);
+  }
+
+  // -------------------------
+  // user setter
+  // -------------------------
+
+  void RGAFiducialFilter::SetStrictness(int strictness)
+  {
+    std::lock_guard<std::mutex> const lock(m_mutex);
+    u_strictness_user = std::clamp(strictness, 1, 3);
   }
 
   // -------------------------
