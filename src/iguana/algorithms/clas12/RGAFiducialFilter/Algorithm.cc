@@ -2,18 +2,23 @@
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/YAMLReader.h"
 
-#include <algorithm>
-#include <cmath>
+#include <algorithm> // std::clamp, std::min/max
+#include <cmath>     // std::sqrt
 #include <string>
 #include <vector>
 #include <array>
-#include <cstdlib>
+#include <cstdlib>   // std::getenv
 #include <optional>
+#include <memory>    // std::shared_ptr, std::make_shared
 
 namespace iguana::clas12 {
 
+  // helper: does the banklist the framework gave us include a bank with this name?
+  // note: bank::getSchema() is non-const in hipo4, so banklist is non-const here
   static bool banklist_has(hipo::banklist& banks, const char* name) {
-    for (auto& b : banks) if (b.getSchema().getName() == name) return true;
+    for (auto& b : banks) {
+      if (b.getSchema().getName() == name) return true;
+    }
     return false;
   }
 
@@ -25,19 +30,22 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilter::Start(hipo::banklist& banks)
   {
+    // Parse YAML now so GetOption* works
     ParseYAMLConfig();
-    // show which YAML we actually loaded (see "A" in my message)
+
+    // Optional: show which YAML we actually loaded
     try {
       m_log->Info("RGAFid YAML marker = {}", GetOptionScalar<std::string>("__marker__"));
     } catch (...) {
       m_log->Warn("RGAFid YAML marker not found — likely not reading your edited Config.yaml");
     }
 
+    // Create thread-safe per-run params
     o_runnum         = ConcurrentParamFactory::Create<int>();
     o_cal_strictness = ConcurrentParamFactory::Create<int>();
-    o_cal_masks      = ConcurrentParamFactory::Create<MaskMap>();
+    o_cal_masks      = ConcurrentParamFactory::Create<std::shared_ptr<MaskMap>>();
 
-    // strictness precedence: user setter > env var > YAML > default(1)
+    // --- strictness precedence: user setter > env var > YAML > default(1) ---
     if (!u_strictness_user.has_value()) {
       if (const char* s = std::getenv("IGUANA_RGAFID_STRICTNESS")) {
         try { u_strictness_user = std::clamp(std::stoi(s), 1, 3); } catch (...) {}
@@ -47,10 +55,10 @@ namespace iguana::clas12 {
       try {
         auto v = GetOptionVector<int>("strictness", YAMLReader::node_path_t{ "calorimeter" });
         if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
-      } catch (...) { /* default later */ }
+      } catch (...) { /* keep default later */ }
     }
 
-    // FT params: read once (quietly) from forward_tagger
+    // Forward Tagger params (optional YAML; otherwise keep defaults)
     try {
       auto r = GetOptionVector<double>("radius", YAMLReader::node_path_t{ "forward_tagger" });
       if (r.size() >= 2) {
@@ -74,18 +82,15 @@ namespace iguana::clas12 {
         if (!holes.empty()) u_ft_params.holes = std::move(holes);
       }
     } catch (...) {
-      // optional nested form: we only try it if holes_flat wasn't present
-      try {
-        auto nested = GetOptionVector<double>("holes", YAMLReader::node_path_t{ "forward_tagger" });
-        // many YAML readers won't flatten list-of-lists to doubles; ignore if it fails
-      } catch (...) {}
+      // Optional nested form: many YAML readers won't flatten list-of-lists
+      try { (void)GetOptionVector<double>("holes", YAMLReader::node_path_t{ "forward_tagger" }); } catch (...) {}
     }
 
-    // required
+    // Required banks
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
 
-    // optional
+    // Optional banks
     if (banklist_has(banks, "REC::Calorimeter")) {
       b_calor = GetBankIndex(banks, "REC::Calorimeter");
       m_have_calor = true;
@@ -108,11 +113,14 @@ namespace iguana::clas12 {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& configBank   = GetBank(banks, b_config,   "RUN::config");
 
+    // Pointers for optional banks (null => skip that detector's cuts)
     const hipo::bank* calBankPtr = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter") : nullptr;
     const hipo::bank* ftBankPtr  = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
 
+    // Prepare per-event/per-run cache
     auto key = PrepareEvent(configBank.getInt("run", 0));
 
+    // Filter tracks in place
     particleBank.getMutableRowList().filter([this, calBankPtr, ftBankPtr, key](auto /*bank*/, auto row) {
       const bool accept = Filter(row, calBankPtr, ftBankPtr, key);
       return accept ? 1 : 0;
@@ -145,11 +153,12 @@ namespace iguana::clas12 {
 
     o_runnum->Save(runnum, key);
 
+    // calorimeter strictness: default 1; use user-set value if provided; clamp to [1,3]
     const int strictness = std::clamp(u_strictness_user.value_or(1), 1, 3);
     o_cal_strictness->Save(strictness, key);
 
     // build and cache masks once per run
-    o_cal_masks->Save(BuildCalMaskCache(runnum), key);
+    o_cal_masks->Save(std::make_shared<MaskMap>(BuildCalMaskCache(runnum)), key);
   }
 
   // -------------------------
@@ -171,6 +180,7 @@ namespace iguana::clas12 {
                                  const hipo::bank* ftBank,
                                  concurrent_key_t key) const
   {
+    // Calorimeter: apply only if we have a cal bank
     if (calBank != nullptr) {
       CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
 
@@ -183,6 +193,7 @@ namespace iguana::clas12 {
       }
     }
 
+    // Forward Tagger: apply only if we have an FT bank
     if (!PassFTFiducial(track_index, ftBank)) return false;
 
     return true;
@@ -217,10 +228,11 @@ namespace iguana::clas12 {
 
   bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
   {
+    // PCAL-only edge cuts on (lv1, lw1)
     switch (strictness) {
-      case 1: if (h.lw1 <  9.0f || h.lv1 <  9.0f) return false; break;
-      case 2: if (h.lw1 < 13.5f || h.lv1 < 13.5f) return false; break;
-      case 3: if (h.lw1 < 18.0f || h.lv1 < 18.0f) return false; break;
+      case 1: if (h.lw1 <  9.0f || h.lv1 <  9.0f) return false; break;  // electrons in BSAs
+      case 2: if (h.lw1 < 13.5f || h.lv1 < 13.5f) return false; break;  // photons in BSAs
+      case 3: if (h.lw1 < 18.0f || h.lv1 < 18.0f) return false; break;  // cross sections
       default: return false;
     }
     return true;
@@ -281,15 +293,18 @@ namespace iguana::clas12 {
 
   bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, concurrent_key_t key) const
   {
-    const auto& m = o_cal_masks->Load(key);
-    auto it = m.find(h.sector);
-    if (it == m.end()) return true;
-    const auto& sm = it->second;
+    const auto mptr = o_cal_masks->Load(key);
+    if (!mptr) return true; // nothing cached -> no masks to apply
+    const auto& m = *mptr;
 
     auto in_any = [](float v, const std::vector<window_t>& wins){
       for (auto const& w : wins) if (v > w.first && v < w.second) return true;
       return false;
     };
+
+    auto it = m.find(h.sector);
+    if (it == m.end()) return true;
+    const auto& sm = it->second;
 
     if (in_any(h.lv1, sm.pcal.lv) || in_any(h.lw1, sm.pcal.lw) || in_any(h.lu1, sm.pcal.lu)) return false;
     if (in_any(h.lv4, sm.ecin.lv) || in_any(h.lw4, sm.ecin.lw) || in_any(h.lu4, sm.ecin.lu)) return false;
@@ -300,6 +315,7 @@ namespace iguana::clas12 {
 
   bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank) const
   {
+    // If the FT bank is not present for this file/event, we skip FT cuts (pass-through).
     if (ftBank == nullptr) return true;
 
     const int nrows = ftBank->getRows();
@@ -310,16 +326,23 @@ namespace iguana::clas12 {
       const double y = ftBank->getFloat("y", i);
       const double r = std::sqrt(x*x + y*y);
 
+      // radial window
       if (r < u_ft_params.rmin) return false;
       if (r > u_ft_params.rmax) return false;
 
+      // holes (circles to exclude)
       for (auto const& h : u_ft_params.holes) {
-        const double d = std::sqrt((x - h[1])*(x - h[1]) + (y - h[2])*(y - h[2]));
-        if (d < h[0]) return false;
+        const double hr = h[0], cx = h[1], cy = h[2];
+        const double d  = std::sqrt((x - cx)*(x - cx) + (y - cy)*(y - cy));
+        if (d < hr) return false;
       }
+
+      // this FT association passes
       return true;
     }
-    return true; // no FT association -> pass
+
+    // No FT association for this track in this event -> pass-through
+    return true;
   }
 
   // -------------------------
