@@ -1,17 +1,17 @@
 #include "Validator.h"
 
 #include <TCanvas.h>
-#include <TStyle.h>
+#include <TPad.h>
+#include <TLegend.h>
 #include <unordered_set>
 #include <cstdlib>     // std::getenv
 #include <string>      // std::stoi
-#include <algorithm>   // std::min, std::max
 
 namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
 
-  // --- static helpers ---
+  // static helpers
   int RGAFiducialFilterValidator::LayerToIndex(int layer) {
     if (layer == 1) return 0; // PCAL
     if (layer == 4) return 1; // ECIN
@@ -26,29 +26,40 @@ namespace iguana::clas12 {
     return (pid == 11) ? "Electrons" : (pid == 22) ? "Photons" : "PID";
   }
 
-  // book 2D histos per PID / layer / sector
   void RGAFiducialFilterValidator::BookPlotsForPID(int pid)
   {
-    auto& grid = u_plots[pid];
+    auto& sets = u_plots2d[pid];
 
-    // 0..405 with 90 bins (4.5 cm/bin)
-    const int    nbins = 90;
-    const double xmin  = 0.0;
-    const double xmax  = 405.0;
+    // 90 bins × 4.5 cm = 405 cm range
+    const int    nb = 90;
+    const double lo = 0.0;
+    const double hi = 405.0;
 
-    for (int L = 0; L < 3; ++L) {          // layer index
-      for (int s = 1; s <= 6; ++s) {       // sector 1..6
-        if (!grid.layer[L].lv_vs_lw[s]) {
-          TString hname  = Form("h2_%d_%s_lv_lw_s%d", pid, LayerName(L), s);
-          TString htitle = Form("%s %s — Sector %d;lv [cm];lw [cm]",
+    for (int L = 0; L < 3; ++L) {        // 0:PCAL 1:ECIN 2:ECOUT
+      for (int s = 1; s <= 6; ++s) {     // sectors 1..6
+
+        // lv vs lw
+        if (!sets.layer[L].lv_lw.sec[s]) {
+          TString hname = Form("h2_%d_%s_lv_lw_s%d", pid, LayerName(L), s);
+          TString htitle = Form("%s %s Sector %d;lv (cm);lw (cm)",
                                 PIDName(pid), LayerName(L), s);
-          grid.layer[L].lv_vs_lw[s] = new TH2D(hname, htitle, nbins, xmin, xmax, nbins, xmin, xmax);
+          auto* h = new TH2D(hname, htitle, nb, lo, hi, nb, lo, hi);
+          h->SetStats(0);
+          h->GetXaxis()->SetTitleOffset(1.1);
+          h->GetYaxis()->SetTitleOffset(1.25);
+          sets.layer[L].lv_lw.sec[s] = h;
         }
-        if (!grid.layer[L].lv_vs_lu[s]) {
-          TString hname  = Form("h2_%d_%s_lv_lu_s%d", pid, LayerName(L), s);
-          TString htitle = Form("%s %s — Sector %d;lv [cm];lu [cm]",
+
+        // lv vs lu
+        if (!sets.layer[L].lv_lu.sec[s]) {
+          TString hname = Form("h2_%d_%s_lv_lu_s%d", pid, LayerName(L), s);
+          TString htitle = Form("%s %s Sector %d;lv (cm);lu (cm)",
                                 PIDName(pid), LayerName(L), s);
-          grid.layer[L].lv_vs_lu[s] = new TH2D(hname, htitle, nbins, xmin, xmax, nbins, xmin, xmax);
+          auto* h = new TH2D(hname, htitle, nb, lo, hi, nb, lo, hi);
+          h->SetStats(0);
+          h->GetXaxis()->SetTitleOffset(1.1);
+          h->GetYaxis()->SetTitleOffset(1.25);
+          sets.layer[L].lv_lu.sec[s] = h;
         }
       }
     }
@@ -60,18 +71,20 @@ namespace iguana::clas12 {
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::RGAFiducialFilter");
 
-    // Optional runtime override for strictness (no YAML default in algorithm):
-    // IGUANA_RGAFID_STRICTNESS in {1,2,3}
+    // -------- runtime override for strictness (no YAML default) --------
+    // Set via env var IGUANA_RGAFID_STRICTNESS (1..3). Default is 1.
     if (const char* env = std::getenv("IGUANA_RGAFID_STRICTNESS")) {
       try {
         int s = std::stoi(env);
-        s = std::max(1, std::min(3, s));
+        if (s < 1) s = 1;
+        if (s > 3) s = 3;
         u_strictness_override = s;
-      } catch (...) { /* keep default 1 */ }
+      } catch (...) { /* keep default */ }
     }
     m_log->Info("RGAFiducialFilterValidator: strictness override = {}", u_strictness_override);
-    // This SetOption is informational; the algorithm itself reads the env var.
-    m_algo_seq->SetOption<std::vector<int>>("clas12::RGAFiducialFilter", "strictness", { u_strictness_override });
+    m_algo_seq->SetOption<std::vector<int>>(
+      "clas12::RGAFiducialFilter", "strictness", { u_strictness_override });
+    // -------------------------------------------------------------------
 
     m_algo_seq->Start(banks);
 
@@ -86,7 +99,7 @@ namespace iguana::clas12 {
       m_output_file          = new TFile(m_output_file_basename + ".root", "RECREATE");
     }
 
-    // book plots
+    // book plots for both PIDs we care about
     for (auto pid : u_pid_list) BookPlotsForPID(pid);
   }
 
@@ -98,7 +111,7 @@ namespace iguana::clas12 {
     // Run the filter first; plot hits associated with surviving tracks only
     m_algo_seq->Run(banks);
 
-    // survivor sets keyed by pid
+    // Build survivor sets keyed by pid 
     std::unordered_map<int, std::unordered_set<int>> survivors;
     for (auto pid : u_pid_list) survivors[pid];
 
@@ -112,7 +125,7 @@ namespace iguana::clas12 {
     // Lock while filling hists
     std::scoped_lock<std::mutex> lock(m_mutex);
 
-    // Fill 2D hists
+    // One pass over calorimeter bank; fill when pindex belongs to a surviving track of interest
     const int nrows = calor_bank.getRows();
     for (int i = 0; i < nrows; ++i) {
       const int pindex = calor_bank.getInt("pindex", i);
@@ -125,62 +138,72 @@ namespace iguana::clas12 {
       const float lv = calor_bank.getFloat("lv", i);
       const float lw = calor_bank.getFloat("lw", i);
 
+      // Fill for each pid type where this pindex survived
       for (auto pid : u_pid_list) {
         auto it = survivors.find(pid);
         if (it == survivors.end()) continue;
         if (it->second.find(pindex) == it->second.end()) continue;
 
-        auto& grid = const_cast<RGAFiducialFilterValidator*>(this)->u_plots[pid];
-        if (auto* h = grid.layer[L].lv_vs_lw[sector]) h->Fill(lv, lw);
-        if (auto* h = grid.layer[L].lv_vs_lu[sector]) h->Fill(lv, lu);
+        auto& sets = const_cast<RGAFiducialFilterValidator*>(this)->u_plots2d[pid];
+        sets.layer[L].lv_lw.sec[sector]->Fill(lv, lw);
+        sets.layer[L].lv_lu.sec[sector]->Fill(lv, lu);
       }
     }
   }
 
-  // Draw a 2×3 sector grid for either lv_vs_lw (lv_vs_lw=true) or lv_vs_lu (false)
+  // Draw a 2×3 sector grid for one layer and one projection
   void RGAFiducialFilterValidator::DrawSectorGrid2D(int pid, int layer_idx, bool lv_vs_lw)
   {
-    auto& layer = u_plots.at(pid).layer[layer_idx];
+    auto& sets = u_plots2d.at(pid);
+    const char* proj = lv_vs_lw ? "lv_vs_lw" : "lv_vs_lu";
 
-    gStyle->SetOptStat(0);
-
-    TString canv_name = Form("rgafid2D_pid%d_%s_%s",
-                             pid, LayerName(layer_idx), lv_vs_lw ? "lv_lw" : "lv_lu");
-    TString canv_title = Form("%s — %s — %s",
-                              PIDName(pid), LayerName(layer_idx), lv_vs_lw ? "lv vs lw" : "lv vs lu");
-
-    auto canv = new TCanvas(canv_name, canv_title, 1600, 1000);
-    canv->Divide(3, 2); // 2 rows × 3 cols = 6 sectors
+    TString canv_name  = Form("rgafid_%s_%s_pid%d", LayerName(layer_idx), proj, pid);
+    TString canv_title = Form("%s %s — %s", PIDName(pid), LayerName(layer_idx),
+                              lv_vs_lw ? "lv vs lw" : "lv vs lu");
+    auto* canv = new TCanvas(canv_name, canv_title, 1400, 900);
+    canv->Divide(3, 2);
 
     for (int s = 1; s <= 6; ++s) {
       canv->cd(s);
-      TH2D* h = lv_vs_lw ? layer.lv_vs_lw[s] : layer.lv_vs_lu[s];
+      // extra margins so labels aren't clipped; more right margin for the palette
+      gPad->SetLeftMargin(0.16);
+      gPad->SetRightMargin(0.14);
+      gPad->SetBottomMargin(0.12);
+      gPad->SetTopMargin(0.08);
+
+      TH2D* h = lv_vs_lw ? sets.layer[layer_idx].lv_lw.sec[s]
+                         : sets.layer[layer_idx].lv_lu.sec[s];
       if (!h) continue;
-      // Set sector-specific title for clarity; axis titles already set on booking
-      TString title = Form("%s — %s — Sector %d", PIDName(pid), LayerName(layer_idx), s);
-      h->SetTitle(title);
+
+      // Clean ASCII title (avoid weird characters)
+      TString t = Form("%s %s Sector %d", PIDName(pid), LayerName(layer_idx), s);
+      h->SetTitle(t);
+
       h->Draw("COLZ");
     }
 
-    TString png = Form("%s_pid%d_%s_%s.png",
-                       m_output_file_basename.Data(), pid, LayerName(layer_idx), lv_vs_lw ? "lv_lw" : "lv_lu");
-    canv->SaveAs(png);
+    TString png_name = Form("%s_%s_%s_pid%d.png",
+                            m_output_file_basename.Data(),
+                            LayerName(layer_idx), proj, pid);
+    canv->SaveAs(png_name);
   }
 
   void RGAFiducialFilterValidator::Stop()
   {
-    if (GetOutputDirectory()) {
-      for (auto pid : u_pid_list) {
-        for (int L = 0; L < 3; ++L) {
-          DrawSectorGrid2D(pid, L, /*lv_vs_lw=*/true);
-          DrawSectorGrid2D(pid, L, /*lv_vs_lu=*/false);
-        }
+    if (!GetOutputDirectory()) return;
+
+    // For each PID and each layer, draw both projections
+    for (auto pid : u_pid_list) {
+      for (int L = 0; L < 3; ++L) {
+        DrawSectorGrid2D(pid, L, true ); // lv vs lw
+        DrawSectorGrid2D(pid, L, false); // lv vs lu
       }
-      if (m_output_file) {
-        m_output_file->Write();
-        m_log->Info("Wrote output file {}", m_output_file->GetName());
-        m_output_file->Close();
-      }
+    }
+
+    if (m_output_file) {
+      m_output_file->Write();
+      m_log->Info("Wrote output file {}", m_output_file->GetName());
+      m_output_file->Close();
     }
   }
 
