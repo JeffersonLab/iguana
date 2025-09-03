@@ -1,4 +1,5 @@
 clas12::RGAFiducialFilter:
+  __marker__: "RGAFID YAML v2025-08-25"
   calorimeter:
     strictness: [1]
 
