@@ -9,7 +9,6 @@
 #include <array>
 #include <cstdlib>   // std::getenv
 #include <optional>
-#include <memory>    // std::shared_ptr, std::make_shared
 
 namespace iguana::clas12 {
 
@@ -22,6 +21,24 @@ namespace iguana::clas12 {
     return false;
   }
 
+  // try hard to retrieve a vector<double> from various YAML shapes/paths
+  static std::optional<std::vector<double>>
+  try_get_vec_d(RGAFiducialFilter const* self, const std::string& key, std::initializer_list<std::string> prefixes)
+  {
+    if (!self || !self->GetConfig()) return std::nullopt;
+
+    // 1) plain key (relative to algo root)
+    try { return self->GetOptionVector<double>(key); } catch (...) {}
+
+    // 2) with prefixes using path API or dotted/slashed keys
+    for (auto const& p : prefixes) {
+      try { return self->GetOptionVector<double>(key, YAMLReader::node_path_t{ p }); } catch (...) {}
+      try { return self->GetOptionVector<double>(p + "." + key); } catch (...) {}
+      try { return self->GetOptionVector<double>(p + "/" + key); } catch (...) {}
+    }
+    return std::nullopt;
+  }
+
   REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter);
 
   // -------------------------
@@ -30,20 +47,10 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilter::Start(hipo::banklist& banks)
   {
-    // Parse YAML now so GetOption* works
+    // parse YAML (calorimeter masks; FT params optionally), allocate thread-safe per-run cache
     ParseYAMLConfig();
-
-    // Optional: show which YAML we actually loaded
-    try {
-      m_log->Info("RGAFid YAML marker = {}", GetOptionScalar<std::string>("__marker__"));
-    } catch (...) {
-      m_log->Warn("RGAFid YAML marker not found — likely not reading your edited Config.yaml");
-    }
-
-    // Create thread-safe per-run params
     o_runnum         = ConcurrentParamFactory::Create<int>();
     o_cal_strictness = ConcurrentParamFactory::Create<int>();
-    o_cal_masks      = ConcurrentParamFactory::Create<std::shared_ptr<MaskMap>>();
 
     // --- strictness precedence: user setter > env var > YAML > default(1) ---
     if (!u_strictness_user.has_value()) {
@@ -55,42 +62,46 @@ namespace iguana::clas12 {
       try {
         auto v = GetOptionVector<int>("strictness", YAMLReader::node_path_t{ "calorimeter" });
         if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
-      } catch (...) { /* keep default later */ }
+      } catch (...) { /* keep default */ }
     }
 
-    // Forward Tagger params (optional YAML; otherwise keep defaults)
+    // forward tagger parameters (optional YAML; otherwise keep defaults)
     try {
-      auto r = GetOptionVector<double>("radius", YAMLReader::node_path_t{ "forward_tagger" });
-      if (r.size() >= 2) {
-        float a = static_cast<float>(r[0]), b = static_cast<float>(r[1]);
-        u_ft_params.rmin = std::min(a, b);
-        u_ft_params.rmax = std::max(a, b);
+      if (auto r = try_get_vec_d(this, "radius", { "forward_tagger" })) {
+        if (r->size() >= 2) {
+          float a = static_cast<float>((*r)[0]);
+          float b = static_cast<float>((*r)[1]);
+          u_ft_params.rmin = std::min(a, b);
+          u_ft_params.rmax = std::max(a, b);
+        }
       }
-    } catch (...) {}
-    try {
-      auto flat = GetOptionVector<double>("holes_flat", YAMLReader::node_path_t{ "forward_tagger" });
-      if (!flat.empty()) {
+
+      // holes: prefer a flat list if present, otherwise try the nested key
+      std::optional<std::vector<double>> flat;
+      flat = try_get_vec_d(this, "holes_flat", { "forward_tagger" });
+      if (!flat) flat = try_get_vec_d(this, "holes", { "forward_tagger" });
+
+      if (flat && !flat->empty()) {
         std::vector<std::array<float,3>> holes;
-        holes.reserve(flat.size()/3);
-        for (size_t i = 0; i + 2 < flat.size(); i += 3) {
+        holes.reserve(flat->size()/3);
+        for (size_t i = 0; i + 2 < flat->size(); i += 3) {
           holes.push_back({
-            static_cast<float>(flat[i]),
-            static_cast<float>(flat[i+1]),
-            static_cast<float>(flat[i+2])
+            static_cast<float>((*flat)[i]),
+            static_cast<float>((*flat)[i+1]),
+            static_cast<float>((*flat)[i+2])
           });
         }
         if (!holes.empty()) u_ft_params.holes = std::move(holes);
       }
     } catch (...) {
-      // Optional nested form: many YAML readers won't flatten list-of-lists
-      try { (void)GetOptionVector<double>("holes", YAMLReader::node_path_t{ "forward_tagger" }); } catch (...) {}
+      // keep defaults on any YAML read problem
     }
 
-    // Required banks
+    // required banks
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
 
-    // Optional banks
+    // optional banks (may not exist in this file): REC::Calorimeter, REC::ForwardTagger
     if (banklist_has(banks, "REC::Calorimeter")) {
       b_calor = GetBankIndex(banks, "REC::Calorimeter");
       m_have_calor = true;
@@ -114,20 +125,25 @@ namespace iguana::clas12 {
     auto& configBank   = GetBank(banks, b_config,   "RUN::config");
 
     // Pointers for optional banks (null => skip that detector's cuts)
-    const hipo::bank* calBankPtr = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter") : nullptr;
-    const hipo::bank* ftBankPtr  = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
+    const hipo::bank* calBankPtr = nullptr;
+    const hipo::bank* ftBankPtr  = nullptr;
 
-    // Prepare per-event/per-run cache
+    if (m_have_calor)  calBankPtr = &GetBank(banks, b_calor, "REC::Calorimeter");
+    if (m_have_ft)     ftBankPtr  = &GetBank(banks, b_ft,    "REC::ForwardTagger");
+
+    // prepare per-event/per-run cache
     auto key = PrepareEvent(configBank.getInt("run", 0));
 
-    // Filter tracks in place
+    // filter tracks in place
     particleBank.getMutableRowList().filter([this, calBankPtr, ftBankPtr, key](auto /*bank*/, auto row) {
-      const bool accept = Filter(row, calBankPtr, ftBankPtr, key);
+      const int track_index = row;
+      const bool accept = Filter(track_index, calBankPtr, ftBankPtr, key);
+      m_log->Debug("RGAFiducialFilter: track {} -> {}", track_index, accept ? "keep" : "drop");
       return accept ? 1 : 0;
     });
   }
 
-  void RGAFiducialFilter::Stop() { }
+  void RGAFiducialFilter::Stop() { /* nothing */ }
 
   // -------------------------
   // event preparation
@@ -154,11 +170,15 @@ namespace iguana::clas12 {
     o_runnum->Save(runnum, key);
 
     // calorimeter strictness: default 1; use user-set value if provided; clamp to [1,3]
-    const int strictness = std::clamp(u_strictness_user.value_or(1), 1, 3);
+    int strictness = std::clamp(u_strictness_user.value_or(1), 1, 3);
     o_cal_strictness->Save(strictness, key);
 
-    // build and cache masks once per run
-    o_cal_masks->Save(std::make_shared<MaskMap>(BuildCalMaskCache(runnum)), key);
+    // build and cache masks per run (in a plain map; no ConcurrentParam to avoid link issues)
+    if (m_masks_by_run.find(runnum) == m_masks_by_run.end()) {
+      m_masks_by_run.emplace(runnum, BuildCalMaskCache(runnum));
+    }
+
+    // FT params were already set from YAML in Start(); nothing to do here
   }
 
   // -------------------------
@@ -185,9 +205,10 @@ namespace iguana::clas12 {
       CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
 
       if (h.has_any) {
-        if (!PassCalStrictness(h, GetCalStrictness(key))) return false;
+        const int strictness = GetCalStrictness(key);
+        if (!PassCalStrictness(h, strictness)) return false;
 
-        if (GetCalStrictness(key) >= 2) {
+        if (strictness >= 2) {
           if (!PassCalDeadPMTMasks(h, key)) return false;
         }
       }
@@ -293,18 +314,26 @@ namespace iguana::clas12 {
 
   bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, concurrent_key_t key) const
   {
-    const auto mptr = o_cal_masks->Load(key);
-    if (!mptr) return true; // nothing cached -> no masks to apply
-    const auto& m = *mptr;
+    const int runnum = GetRunNum(key);
+
+    // Guard accesses to m_masks_by_run for thread-safety w.r.t. Reload()
+    std::lock_guard<std::mutex> const lock(m_mutex);
+
+    auto it = m_masks_by_run.find(runnum);
+    if (it == m_masks_by_run.end()) {
+      // Should not happen if Reload() ran, but be defensive.
+      it = m_masks_by_run.emplace(runnum, BuildCalMaskCache(runnum)).first;
+    }
+    const auto& m = it->second;
+
+    auto itsec = m.find(h.sector);
+    if (itsec == m.end()) return true;
+    const auto& sm = itsec->second;
 
     auto in_any = [](float v, const std::vector<window_t>& wins){
       for (auto const& w : wins) if (v > w.first && v < w.second) return true;
       return false;
     };
-
-    auto it = m.find(h.sector);
-    if (it == m.end()) return true;
-    const auto& sm = it->second;
 
     if (in_any(h.lv1, sm.pcal.lv) || in_any(h.lw1, sm.pcal.lw) || in_any(h.lu1, sm.pcal.lu)) return false;
     if (in_any(h.lv4, sm.ecin.lv) || in_any(h.lw4, sm.ecin.lw) || in_any(h.lu4, sm.ecin.lu)) return false;
@@ -349,7 +378,14 @@ namespace iguana::clas12 {
   // accessors
   // -------------------------
 
-  int RGAFiducialFilter::GetRunNum(concurrent_key_t key) const { return o_runnum->Load(key); }
-  int RGAFiducialFilter::GetCalStrictness(concurrent_key_t key) const { return o_cal_strictness->Load(key); }
+  int RGAFiducialFilter::GetRunNum(concurrent_key_t key) const
+  {
+    return o_runnum->Load(key);
+  }
+
+  int RGAFiducialFilter::GetCalStrictness(concurrent_key_t key) const
+  {
+    return o_cal_strictness->Load(key);
+  }
 
 } // namespace iguana::clas12
