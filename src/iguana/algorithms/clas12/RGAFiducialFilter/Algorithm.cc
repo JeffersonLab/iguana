@@ -22,27 +22,52 @@ namespace iguana::clas12 {
     o_runnum         = ConcurrentParamFactory::Create<int>();
     o_cal_strictness = ConcurrentParamFactory::Create<int>();
 
-    // expected banks
+    // required banks
     b_particle = GetBankIndex(banks, "REC::Particle");
-    b_calor    = GetBankIndex(banks, "REC::Calorimeter");
-    b_ft       = GetBankIndex(banks, "REC::ForwardTagger");
     b_config   = GetBankIndex(banks, "RUN::config");
+
+    // optional banks (may not exist in this file): REC::Calorimeter, REC::ForwardTagger
+    // Try to cache their indices; if lookup fails, mark as absent and skip those cuts.
+    try {
+      b_calor = GetBankIndex(banks, "REC::Calorimeter");
+      m_have_calor = true;
+    } catch (...) {
+      m_have_calor = false;
+      m_log->Warn("Optional bank 'REC::Calorimeter' not found; calorimeter fiducials will be skipped.");
+    }
+
+    try {
+      b_ft = GetBankIndex(banks, "REC::ForwardTagger");
+      m_have_ft = true;
+    } catch (...) {
+      m_have_ft = false;
+      m_log->Info("Optional bank 'REC::ForwardTagger' not found; FT fiducials will be skipped.");
+    }
   }
 
   void RGAFiducialFilter::Run(hipo::banklist& banks) const
   {
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto& calorBank    = GetBank(banks, b_calor,    "REC::Calorimeter");
-    auto& ftBank       = GetBank(banks, b_ft,       "REC::ForwardTagger");
     auto& configBank   = GetBank(banks, b_config,   "RUN::config");
+
+    // Pointers for optional banks (null => skip that detector's cuts)
+    const hipo::bank* calBankPtr = nullptr;
+    const hipo::bank* ftBankPtr  = nullptr;
+
+    if (m_have_calor) {
+      calBankPtr = &GetBank(banks, b_calor, "REC::Calorimeter");
+    }
+    if (m_have_ft) {
+      ftBankPtr = &GetBank(banks, b_ft, "REC::ForwardTagger");
+    }
 
     // prepare per-event/per-run cache
     auto key = PrepareEvent(configBank.getInt("run", 0));
 
     // filter tracks in place
-    particleBank.getMutableRowList().filter([this, &calorBank, &ftBank, key](auto /*bank*/, auto row) {
+    particleBank.getMutableRowList().filter([this, calBankPtr, ftBankPtr, key](auto /*bank*/, auto row) {
       const int track_index = row;
-      const bool accept = Filter(track_index, calorBank, ftBank, key);
+      const bool accept = Filter(track_index, calBankPtr, ftBankPtr, key);
       m_log->Debug("RGAFiducialFilter: track {} -> {}", track_index, accept ? "keep" : "drop");
       return accept ? 1 : 0;
     });
@@ -127,26 +152,27 @@ namespace iguana::clas12 {
   // -------------------------
 
   bool RGAFiducialFilter::Filter(int track_index,
-                                 const hipo::bank& calBank,
-                                 const hipo::bank& ftBank,
+                                 const hipo::bank* calBank,
+                                 const hipo::bank* ftBank,
                                  concurrent_key_t key) const
   {
-    // ---- Calorimeter: collect hits for this track
-    CalLayers h = CollectCalHitsForTrack(calBank, track_index);
+    // ---- Calorimeter: apply only if we have a cal bank
+    if (calBank != nullptr) {
+      CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
 
-    // Cal stage: pass if no cal association, otherwise apply strictness + masks
-    if (h.has_any) {
-      const int strictness = GetCalStrictness(key);
-      if (!PassCalStrictness(h, strictness)) return false;
+      // pass if no cal association OR if it passes strictness(+masks when >=2)
+      if (h.has_any) {
+        const int strictness = GetCalStrictness(key);
+        if (!PassCalStrictness(h, strictness)) return false;
 
-      const int runnum = GetRunNum(key);
-      if (strictness >= 2) {
-        if (!PassCalDeadPMTMasks(h, runnum)) return false;
+        const int runnum = GetRunNum(key);
+        if (strictness >= 2) {
+          if (!PassCalDeadPMTMasks(h, runnum)) return false;
+        }
       }
     }
 
-    // ---- Forward Tagger: pass if passes FT cuts OR if no FT association
-    // (independent of calorimeter; acceptances are disjoint in practice)
+    // ---- Forward Tagger: apply only if we have an FT bank
     if (!PassFTFiducial(track_index, ftBank)) return false;
 
     return true;
@@ -256,14 +282,17 @@ namespace iguana::clas12 {
     return true;
   }
 
-  bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank& ftBank) const
+  bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank) const
   {
-    const int nrows = ftBank.getRows();
-    for (int i = 0; i < nrows; ++i) {
-      if (ftBank.getInt("pindex", i) != track_index) continue;
+    // If the FT bank is not present for this file/event, we skip FT cuts (pass-through).
+    if (ftBank == nullptr) return true;
 
-      const double x = ftBank.getFloat("x", i);
-      const double y = ftBank.getFloat("y", i);
+    const int nrows = ftBank->getRows();
+    for (int i = 0; i < nrows; ++i) {
+      if (ftBank->getInt("pindex", i) != track_index) continue;
+
+      const double x = ftBank->getFloat("x", i);
+      const double y = ftBank->getFloat("y", i);
       const double r = std::sqrt(x*x + y*y);
 
       // radial window
@@ -281,7 +310,7 @@ namespace iguana::clas12 {
       return true;
     }
 
-    // NEW BEHAVIOR: no FT association -> pass-through
+    // No FT association for this track in this event -> pass-through
     return true;
   }
 

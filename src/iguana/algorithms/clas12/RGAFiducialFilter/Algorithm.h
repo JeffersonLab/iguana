@@ -15,7 +15,7 @@ namespace iguana::clas12 {
   /// @brief_algo RGA fiducial filter with calorimeter + forward tagger cuts.
   ///
   /// @begin_doc_algo{clas12::RGAFiducialFilter | Filter}
-  /// @input_banks{REC::Particle (tracks), REC::Calorimeter, REC::ForwardTagger, RUN::config}
+  /// @input_banks{REC::Particle (tracks), REC::Calorimeter (optional), REC::ForwardTagger (optional), RUN::config}
   /// @output_banks{REC::Particle (tracks)}
   /// @end_doc
   ///
@@ -40,13 +40,14 @@ namespace iguana::clas12 {
       void Run  (hipo::banklist& banks) const override;
       void Stop () override;
 
-      /// @action_function{reload} prepare the event and cache per-run options
+      /// Prepare per-event cache (run-dependent)
       concurrent_key_t PrepareEvent(int runnum) const;
 
       /// Core filter: applies calorimeter cuts (with strictness) and forward-tagger cuts.
+      /// Each detector's cuts are applied only if its bank is present.
       bool Filter(int track_index,
-                  const hipo::bank& calBank,
-                  const hipo::bank& ftBank,
+                  const hipo::bank* calBank,   // nullptr => skip cal cuts
+                  const hipo::bank* ftBank,    // nullptr => skip FT cuts
                   concurrent_key_t key) const;
 
       // --- User-facing runtime configuration (calorimeter only) ---
@@ -69,14 +70,16 @@ namespace iguana::clas12 {
         float rmax = 15.5f;
         std::vector<std::array<float,3>> holes; // {radius, cx, cy}
       };
-      bool PassFTFiducial(int track_index, const hipo::bank& ftBank) const;
+      bool PassFTFiducial(int track_index, const hipo::bank* ftBank) const; // nullptr => pass
 
       /// Load per-run options (cal strictness from user setter/default; cal masks from YAML;
       /// FT parameters from YAML if present, else defaults).
       void Reload(int runnum, concurrent_key_t key) const;
 
-      // bank indices
-      hipo::banklist::size_type b_particle{}, b_calor{}, b_ft{}, b_config{};
+      // bank indices (set only if present at Start)
+      hipo::banklist::size_type b_particle{}, b_config{};
+      hipo::banklist::size_type b_calor{}; bool m_have_calor = false;
+      hipo::banklist::size_type b_ft{};    bool m_have_ft    = false;
 
       // cached (per-run) config
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
