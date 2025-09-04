@@ -149,7 +149,7 @@ namespace iguana {
       return idx;
     } catch(std::runtime_error const& ex) {
       m_log->Error("required input bank '{}' not found; cannot `Start` algorithm '{}'", bank_name, m_class_name);
-      auto creators = AlgorithmFactory::QueryNewBank(bank_name);
+      auto creators = AlgorithmFactory::GetCreatorAlgorithms(bank_name);
       if(creators)
         m_log->Error(" -> this bank is created by algorithm(s) [{}]; please `Start` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
       throw std::runtime_error("cannot cache bank index");
@@ -208,7 +208,7 @@ namespace iguana {
       }
       catch(std::out_of_range const& o) {
         m_log->Error("required input bank '{}' not found; cannot `Run` algorithm '{}'", expected_bank_name, m_class_name);
-        auto creators = AlgorithmFactory::QueryNewBank(expected_bank_name);
+        auto creators = AlgorithmFactory::GetCreatorAlgorithms(expected_bank_name);
         if(creators)
           m_log->Error(" -> this bank is created by algorithm(s) [{}]; please `Run` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
       }
@@ -218,18 +218,60 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  hipo::schema Algorithm::CreateBank(
-      hipo::banklist& banks,
-      hipo::banklist::size_type& bank_idx,
-      std::string const& bank_name) const noexcept(false)
+  std::vector<std::string> Algorithm::GetCreatedBankNames() const noexcept(false)
   {
-    // loop over bank definitions
-    // NOTE: `BANK_DEFS` is generated at build-time using `src/iguana/bankdefs/iguana.json`
+    auto created_banks = AlgorithmFactory::GetCreatedBanks(m_class_name);
+    if(created_banks)
+      return created_banks.value();
+    throw std::runtime_error("failed to get created bank names");
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  std::string Algorithm::GetCreatedBankName() const noexcept(false)
+  {
+    auto created_banks = GetCreatedBankNames();
+    switch(created_banks.size()) {
+      case 0:
+        m_log->Error("algorithm {:?} creates no new banks", m_class_name);
+        break;
+      case 1:
+        return created_banks.at(0);
+        break;
+      default:
+        m_log->Error("algorithm {:?} creates more than one bank; they are: [{}]", m_class_name, fmt::join(created_banks, ", "));
+        m_log->Error("- if you called `GetCreatedBank` or `GetCreatedBankSchema`, please specify which bank you want");
+        m_log->Error("- if you called `GetCreatedBankName`, call `GetCreatedBankNames` instead");
+        break;
+    }
+    throw std::runtime_error("failed to get created bank names");
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  hipo::bank Algorithm::GetCreatedBank(std::string const& bank_name) const noexcept(false)
+  {
+    return hipo::bank(GetCreatedBankSchema(bank_name));
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  hipo::schema Algorithm::GetCreatedBankSchema(std::string const& bank_name) const noexcept(false)
+  {
+    std::string bank_name_arg = bank_name; // copy, to permit modification
+
+    // if the user did not provide a bank name, get it from the list of banks created by the algorithm;
+    // this will fail if the algorithm creates more than one bank, in which case, the user must
+    // specify the bank name explicitly
+    if(bank_name.empty())
+      bank_name_arg = GetCreatedBankName();
+
+    // loop over bank definitions, `BANK_DEFS`, which is generated at build-time using `src/iguana/bankdefs/iguana.json`
     for(auto const& bank_def : BANK_DEFS) {
-      if(bank_def.name == bank_name) {
+      if(bank_def.name == bank_name_arg) {
         // make sure the new bank is in REGISTER_IGUANA_ALGORITHM
-        if(!AlgorithmFactory::QueryNewBank(bank_name)) {
-          m_log->Error("{:?} creates bank {:?}, which is not registered; new banks must be included in `REGISTER_IGUANA_ALGORITHM` arguments", m_class_name, bank_name);
+        if(!AlgorithmFactory::GetCreatorAlgorithms(bank_name_arg)) {
+          m_log->Error("algorithm {:?} creates bank {:?}, which is not registered; new banks must be included in `REGISTER_IGUANA_ALGORITHM` arguments", m_class_name, bank_name_arg);
           throw std::runtime_error("CreateBank failed");
         }
         // create the schema format string
@@ -238,28 +280,26 @@ namespace iguana {
           schema_def.push_back(entry.name + "/" + entry.type);
         auto format_string = fmt::format("{}", fmt::join(schema_def, ","));
         // create the new bank schema
-        hipo::schema bank_schema(bank_name.c_str(), bank_def.group, bank_def.item);
+        hipo::schema bank_schema(bank_name_arg.c_str(), bank_def.group, bank_def.item);
         bank_schema.parse(format_string);
-        // create the new bank
-        banks.push_back({bank_schema});
-        bank_idx = GetBankIndex(banks, bank_name);
         return bank_schema;
       }
     }
-    throw std::runtime_error(fmt::format("bank {:?} not found in 'BankDefs.h'; is this bank defined in src/iguana/bankdefs/iguana.json ?", bank_name));
+
+    throw std::runtime_error(fmt::format("bank {:?} not found in 'BankDefs.h'; is this bank defined in src/iguana/bankdefs/iguana.json ?", bank_name_arg));
   }
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  hipo::bank Algorithm::CreateBank(std::string const& bank_name) const noexcept(false) {
-    hipo::banklist new_banks;
-    hipo::banklist::size_type new_bank_idx;
-    if(bank_name.empty()) {
-      CreateBank(new_banks, new_bank_idx, AlgorithmFactory::GetCreatedBankName(m_class_name));
-    } else {
-      CreateBank(new_banks, new_bank_idx, bank_name);
-    }
-    return new_banks.at(0);
+  hipo::schema Algorithm::CreateBank(
+      hipo::banklist& banks,
+      hipo::banklist::size_type& bank_idx,
+      std::string const& bank_name) const noexcept(false)
+  {
+    auto bank_schema = GetCreatedBankSchema(bank_name);
+    banks.emplace_back(bank_schema);
+    bank_idx = GetBankIndex(banks, bank_name);
+    return bank_schema;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
