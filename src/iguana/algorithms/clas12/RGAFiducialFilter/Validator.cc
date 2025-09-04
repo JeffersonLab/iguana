@@ -60,7 +60,7 @@ namespace iguana::clas12 {
       }
     }
 
-    // FT per-PID occupancy (y vs x)
+    // FT per-PID occupancy (y vs x) — single canvas later (post-cuts only)
     if (!u_ft_xy[pid]) {
       TString hname  = Form("h2_ft_xy_pid%d", pid);
       TString htitle = Form("Forward Tagger - %s;y (cm);x (cm)", PIDName(pid));
@@ -128,7 +128,7 @@ namespace iguana::clas12 {
     // run the filter first (bank is filtered in-place)
     m_algo_seq->Run(banks);
 
-    // survivors by pid
+    // survivors by pid (post-cut)
     std::unordered_map<int, std::unordered_set<int>> survivors;
     for (auto pid : u_pid_list) survivors[pid];
 
@@ -141,7 +141,7 @@ namespace iguana::clas12 {
     m_log->Info("[VALIDATOR] REC::Particle rows: before={} after={} kept%={:.1f}",
                 before, after, before>0 ? 100.0*after/before : 0.0);
 
-    // Calorimeter fills
+    // Calorimeter fills (survivors only)
     if (m_have_calor) {
       auto& calor_bank = GetBank(banks, b_calor, "REC::Calorimeter");
       const int ncal = calor_bank.getRows();
@@ -168,7 +168,7 @@ namespace iguana::clas12 {
       }
     }
 
-    // FT fills
+    // FT fills (survivors only)
     if (m_have_ft) {
       auto& ft_bank = GetBank(banks, b_ft, "REC::ForwardTagger");
       const int nft = ft_bank.getRows();
@@ -219,7 +219,8 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilterValidator::DrawFTCanvas()
   {
-    auto* canv = new TCanvas("rgafid_ft_xy", "Forward Tagger - y vs x", 1200, 600);
+    // Single FT canvas with cuts enforced (we filled after running the filter)
+    auto* canv = new TCanvas("rgafid_ft_xy", "Forward Tagger - y vs x (post-cuts)", 1200, 600);
     canv->Divide(2, 1);
 
     int pad = 1;
@@ -230,7 +231,6 @@ namespace iguana::clas12 {
 
       TH2D* h = u_ft_xy[pid];
       if (!h) continue;
-      h->SetTitle(Form("Forward Tagger - %s", PIDName(pid)));
       h->Draw("COLZ");
     }
 

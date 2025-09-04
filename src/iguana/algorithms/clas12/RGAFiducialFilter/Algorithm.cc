@@ -69,7 +69,7 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_log->Info("[RGAFID][DEBUG] enabled. masks={}, ft={}, events={}", dbg_masks, dbg_ft, dbg_events);
   }
 
-  // Load YAML (safe if missing). We only query it if IGUANA_RGAFID_USE_YAML=1.
+  // Load YAML (safe if missing). Only consulted if IGUANA_RGAFID_USE_YAML=1.
   ParseYAMLConfig();
   const bool use_yaml = EnvOn("IGUANA_RGAFID_USE_YAML");
   if (dbg_on) m_log->Info("[RGAFID] GetConfig() {} (use_yaml={})",
@@ -79,7 +79,7 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
   o_runnum         = ConcurrentParamFactory::Create<int>();
   o_cal_strictness = ConcurrentParamFactory::Create<int>();
 
-  // strictness precedence: env > YAML (if use_yaml) > default(1)
+  // strictness precedence: env > YAML (if enabled) > default(1)
   if (!u_strictness_user.has_value()) {
     if (const char* s = std::getenv("IGUANA_RGAFID_STRICTNESS")) {
       try { u_strictness_user = std::clamp(std::stoi(s), 1, 3); } catch (...) {}
@@ -254,8 +254,10 @@ bool RGAFiducialFilter::Filter(int track_index,
       const int strictness = GetCalStrictness(key);
       if (!PassCalStrictness(h, strictness)) {
         if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
-          m_log->Info("[RGAFID][CAL] track={} strictness={} -> edge FAIL (lv1={}, lw1={})",
-                      track_index, strictness, h.lv1, h.lw1);
+          // print representative minima for context
+          auto minv = [](const std::vector<float>& v){ return v.empty()?0.f:*std::min_element(v.begin(), v.end()); };
+          m_log->Info("[RGAFID][CAL] track={} strictness={} -> edge FAIL (min lv1={}, min lw1={})",
+                      track_index, strictness, minv(h.L1.lv), minv(h.L1.lw));
         }
         return false;
       }
@@ -294,30 +296,41 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
     if (calBank.getInt("pindex", i) != pindex) continue;
 
     out.has_any = true;
-    out.sector  = calBank.getInt("sector", i);
-    const int layer = calBank.getInt("layer", i);
+    const int sector = calBank.getInt("sector", i);
+    if (out.sector == 0 && sector >= 1 && sector <= 6) out.sector = sector;
 
+    const int layer = calBank.getInt("layer", i);
     const float lv = calBank.getFloat("lv", i);
     const float lw = calBank.getFloat("lw", i);
     const float lu = calBank.getFloat("lu", i);
 
-    if      (layer == 1) { out.lv1 = lv; out.lw1 = lw; out.lu1 = lu; }
-    else if (layer == 4) { out.lv4 = lv; out.lw4 = lw; out.lu4 = lu; }
-    else if (layer == 7) { out.lv7 = lv; out.lw7 = lw; out.lu7 = lu; }
+    if      (layer == 1) { out.L1.lv.push_back(lv); out.L1.lw.push_back(lw); out.L1.lu.push_back(lu); }
+    else if (layer == 4) { out.L4.lv.push_back(lv); out.L4.lw.push_back(lw); out.L4.lu.push_back(lu); }
+    else if (layer == 7) { out.L7.lv.push_back(lv); out.L7.lw.push_back(lw); out.L7.lu.push_back(lu); }
   }
   return out;
 }
 
+static inline bool value_in_any_window(float v, const std::vector<std::pair<float,float>>& wins)
+{
+  for (auto const& w : wins) if (v > w.first && v < w.second) return true;
+  return false;
+}
+
 bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
 {
-  // PCAL-only edge cut
+  // Strictness is a PCAL-edge cut applied to ALL PCAL hits: we use minima.
+  if (h.L1.lv.empty() || h.L1.lw.empty()) return true; // no PCAL -> do not apply
+
+  const float min_lv = *std::min_element(h.L1.lv.begin(), h.L1.lv.end());
+  const float min_lw = *std::min_element(h.L1.lw.begin(), h.L1.lw.end());
+
   switch (strictness) {
-    case 1: if (h.lw1 <  9.0f || h.lv1 <  9.0f) return false; break;
-    case 2: if (h.lw1 < 13.5f || h.lv1 < 13.5f) return false; break;
-    case 3: if (h.lw1 < 18.0f || h.lv1 < 18.0f) return false; break;
+    case 1: return !(min_lw <  9.0f || min_lv <  9.0f);
+    case 2: return !(min_lw < 13.5f || min_lv < 13.5f);
+    case 3: return !(min_lw < 18.0f || min_lv < 18.0f);
     default: return false;
   }
-  return true;
 }
 
 // BuildCalMaskCache: hard-coded defaults; optional YAML replacement if enabled
@@ -413,22 +426,20 @@ bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, concurrent_key_t
   if (itsec == m.end()) return true;
   const auto& sm = itsec->second;
 
-  auto in_any = [](float v, const std::vector<window_t>& wins){
-    for (auto const& w : wins) if (v > w.first && v < w.second) return true;
+  auto any_in = [](const std::vector<float>& vals, const std::vector<window_t>& wins){
+    for (float v : vals) if (value_in_any_window(v, wins)) return true;
     return false;
   };
 
   const bool fail =
-    in_any(h.lv1, sm.pcal.lv) || in_any(h.lw1, sm.pcal.lw) || in_any(h.lu1, sm.pcal.lu) ||
-    in_any(h.lv4, sm.ecin.lv) || in_any(h.lw4, sm.ecin.lw) || in_any(h.lu4, sm.ecin.lu) ||
-    in_any(h.lv7, sm.ecout.lv)|| in_any(h.lw7, sm.ecout.lw)|| in_any(h.lu7, sm.ecout.lu);
+    any_in(h.L1.lv, sm.pcal.lv) || any_in(h.L1.lw, sm.pcal.lw) || any_in(h.L1.lu, sm.pcal.lu) ||
+    any_in(h.L4.lv, sm.ecin.lv) || any_in(h.L4.lw, sm.ecin.lw) || any_in(h.L4.lu, sm.ecin.lu) ||
+    any_in(h.L7.lv, sm.ecout.lv)|| any_in(h.L7.lw, sm.ecout.lw)|| any_in(h.L7.lu, sm.ecout.lu);
 
   if ((dbg_on || dbg_masks) && fail && g_dbg_events_seen.load() < dbg_events) {
-    m_log->Info("[RGAFID][MASK] sec={} (lv1,lw1,lu1)=({:.1f},{:.1f},{:.1f})"
-                " (lv4,lw4,lu4)=({:.1f},{:.1f},{:.1f})"
-                " (lv7,lw7,lu7)=({:.1f},{:.1f},{:.1f}) -> FAIL",
-                h.sector,
-                h.lv1,h.lw1,h.lu1, h.lv4,h.lw4,h.lu4, h.lv7,h.lw7,h.lu7);
+    auto pick = [](const std::vector<float>& v){ return v.empty()?0.f:v.front(); };
+    m_log->Info("[RGAFID][MASK] sec={} (ex. lv1,lw1,lu1)=({:.1f},{:.1f},{:.1f}) -> FAIL",
+                h.sector, pick(h.L1.lv), pick(h.L1.lw), pick(h.L1.lu));
   }
 
   return !fail;

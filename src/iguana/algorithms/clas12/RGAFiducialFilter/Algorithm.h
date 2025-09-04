@@ -18,23 +18,23 @@ namespace iguana::clas12 {
   /// RGA fiducial filter with calorimeter + forward tagger cuts.
   ///
   /// Input banks: REC::Particle (tracks), REC::Calorimeter (optional),
-  /// REC::ForwardTagger (optional), RUN::config
-  /// Output banks: REC::Particle (tracks)
+  ///              REC::ForwardTagger (optional), RUN::config
+  /// Output bank: REC::Particle (tracks)
   ///
-  /// Strictness precedence (cal only):
+  /// Strictness precedence (PCAL only):
   ///   SetStrictness() > env IGUANA_RGAFID_STRICTNESS > YAML [calorimeter.strictness[0]] > default(1)
-  /// YAML is only read if IGUANA_RGAFID_USE_YAML=1 is set in the environment.
+  /// YAML is read only if IGUANA_RGAFID_USE_YAML=1.
   class RGAFiducialFilter : public Algorithm
   {
       DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
     public:
+      struct CalHit { int sector=0; float lv=0, lw=0, lu=0; };
       struct CalLayers {
-        int   sector = 0;
-        float lv1=0.f, lw1=0.f, lu1=0.f; // layer 1 (PCAL)
-        float lv4=0.f, lw4=0.f, lu4=0.f; // layer 4 (ECin)
-        float lv7=0.f, lw7=0.f, lu7=0.f; // layer 7 (ECout)
-        bool  has_any = false;
+        std::vector<CalHit> L1;  // PCAL   (layer==1)
+        std::vector<CalHit> L4;  // ECIN   (layer==4)
+        std::vector<CalHit> L7;  // ECOUT  (layer==7)
+        bool has_any = false;
       };
 
       void Start(hipo::banklist& banks) override;
