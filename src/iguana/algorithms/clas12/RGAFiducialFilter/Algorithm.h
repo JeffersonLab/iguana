@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 #include <array>
-#include <utility>   // std::pair
+#include <utility>
 #include <string>
 
 namespace iguana::clas12 {
@@ -91,7 +91,7 @@ namespace iguana::clas12 {
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
       mutable std::unique_ptr<ConcurrentParam<int>> o_cal_strictness;
 
-      // mask cache per run (no ConcurrentParam to avoid link-time instantiations)
+      // mask cache per run
       mutable std::unordered_map<int, MaskMap> m_masks_by_run;
 
       // user-provided strictness (if any)
