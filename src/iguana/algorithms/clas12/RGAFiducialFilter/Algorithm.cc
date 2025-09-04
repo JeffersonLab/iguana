@@ -10,6 +10,7 @@
 #include <functional>
 #include <mutex>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -185,7 +186,14 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
   });
 }
 
-void RGAFiducialFilter::Stop() { /* nothing */ }
+void RGAFiducialFilter::Stop()
+{
+  if (dbg_on || dbg_masks || dbg_ft) {
+    long tot = c_pass + c_fail_edge + c_fail_mask + c_fail_ft;
+    m_log->Info("[RGAFID][SUMMARY] total={} pass={}  edge_fail={}  mask_fail={}  ft_fail={}",
+                tot, c_pass.load(), c_fail_edge.load(), c_fail_mask.load(), c_fail_ft.load());
+  }
+}
 
 // --- per-event prep --------------------------------------------------------
 
@@ -245,11 +253,15 @@ bool RGAFiducialFilter::Filter(int track_index,
     if (h.has_any) {
       const int strictness = GetCalStrictness(key);
       if (!PassCalStrictness(h, strictness)) {
+        ++c_fail_edge;
         if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
           // show minima seen in PCAL for context
           float min_lv = std::numeric_limits<float>::infinity();
           float min_lw = std::numeric_limits<float>::infinity();
-          for (const auto& hit : h.L1) { if (hit.lv < min_lv) min_lv = hit.lv; if (hit.lw < min_lw) min_lw = hit.lw; }
+          for (const auto& hit : h.L1) {
+            if (hit.lv < min_lv) min_lv = hit.lv;
+            if (hit.lw < min_lw) min_lw = hit.lw;
+          }
           m_log->Info("[RGAFID][CAL] track={} strictness={} -> edge FAIL (min lv1={:.1f}, min lw1={:.1f})",
                       track_index, strictness,
                       std::isinf(min_lv)?0.f:min_lv, std::isinf(min_lw)?0.f:min_lw);
@@ -259,6 +271,7 @@ bool RGAFiducialFilter::Filter(int track_index,
 
       if (strictness >= 2) {
         if (!PassCalDeadPMTMasks(h, key)) {
+          ++c_fail_mask;
           if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
             m_log->Info("[RGAFID][CAL] track={} -> dead-PMT mask FAIL", track_index);
           }
@@ -270,12 +283,14 @@ bool RGAFiducialFilter::Filter(int track_index,
 
   // Forward Tagger
   if (!PassFTFiducial(track_index, ftBank)) {
+    ++c_fail_ft;
     if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
       m_log->Info("[RGAFID][FT] track={} -> FT FAIL", track_index);
     }
     return false;
   }
 
+  ++c_pass;
   return true;
 }
 
@@ -308,6 +323,11 @@ static inline bool value_in_any_window(float v, const std::vector<std::pair<floa
 {
   for (auto const& w : wins) if (v > w.first && v < w.second) return true;
   return false;
+}
+static inline int window_index(float v, const std::vector<std::pair<float,float>>& wins) {
+  for (size_t i=0;i<wins.size();++i)
+    if (v > wins[i].first && v < wins[i].second) return static_cast<int>(i);
+  return -1;
 }
 
 bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
@@ -389,7 +409,7 @@ RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int /*runnum*/) 
 
     for (int s=1; s<=6; ++s) {
       SectorMasks sm;
-      const std::string base = "calorimeter.masks.0.sectors/" + std::to_string(s) + "/";
+      const std::string base = "calorimeter.masks.0.sectors." + std::to_string(s) + ".";
       (void)read_axis(base+"pcal.lv.cal_mask",  sm.pcal.lv);
       (void)read_axis(base+"pcal.lw.cal_mask",  sm.pcal.lw);
       (void)read_axis(base+"pcal.lu.cal_mask",  sm.pcal.lu);
@@ -402,6 +422,15 @@ RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int /*runnum*/) 
       yaml.emplace(s, std::move(sm));
     }
     out.swap(yaml);
+  }
+
+  // --- Self-test: force PCAL.lw rejection if requested (sanity check path) ---
+  if (EnvOn("IGUANA_RGAFID_SELFTEST_PCALLW")) {
+    for (auto& [sec, sm] : out) {
+      sm.pcal.lw.clear();
+      sm.pcal.lw.emplace_back(0.f, 405.f); // reject any PCAL lw
+    }
+    m_log->Warn("[RGAFID][MASK][SELFTEST] Forcing PCAL.lw full-range mask for all sectors");
   }
 
   if (dbg_on || dbg_masks) DumpMaskSummary(-1, out);
@@ -420,40 +449,62 @@ bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, concurrent_key_t
 
   const auto& mm = it->second;
 
-  auto layer_fails = [&mm](const std::vector<CalHit>& hits,
-                           const std::function<bool(const CalHit&, const SectorMasks&)>& in_mask)->bool {
+  // diag: show how many windows we really loaded once per run
+  if (dbg_on || dbg_masks) {
+    static std::atomic<int> once{0};
+    if (once.fetch_add(1) == 0) DumpMaskSummary(runnum, mm);
+  }
+
+  auto layer_fails = [&](const char* lname,
+                         const std::vector<CalHit>& hits,
+                         const std::function<bool(const CalHit&, const SectorMasks&, std::string& why)>& in_mask)->bool
+  {
     for (const auto& hit : hits) {
       auto itsec = mm.find(hit.sector);
       if (itsec == mm.end()) continue; // no masks for this sector
-      if (in_mask(hit, itsec->second)) return true;
+      std::string why;
+      if (in_mask(hit, itsec->second, why)) {
+        if ((dbg_on || dbg_masks) && g_dbg_events_seen.load() < std::max(1, dbg_events)) {
+          m_log->Info("[RGAFID][MASK] {} sec={} lv={:.1f} lw={:.1f} lu={:.1f} -> {}",
+                      lname, hit.sector, hit.lv, hit.lw, hit.lu, why);
+        }
+        return true;
+      }
     }
     return false;
   };
 
-  const bool fail_pcal = layer_fails(h.L1, [](const CalHit& hit, const SectorMasks& sm){
-    return value_in_any_window(hit.lv, sm.pcal.lv)
-        || value_in_any_window(hit.lw, sm.pcal.lw)
-        || value_in_any_window(hit.lu, sm.pcal.lu);
+  const bool fail_pcal = layer_fails("PCAL", h.L1, [](const CalHit& hit, const SectorMasks& sm, std::string& why){
+    int ilv = window_index(hit.lv, sm.pcal.lv);
+    int ilw = window_index(hit.lw, sm.pcal.lw);
+    int ilu = window_index(hit.lu, sm.pcal.lu);
+    if (ilv>=0) { auto w=sm.pcal.lv[ilv]; std::ostringstream s; s<<"lv in ["<<w.first<<","<<w.second<<"] (win "<<ilv<<")"; why=s.str(); return true; }
+    if (ilw>=0) { auto w=sm.pcal.lw[ilw]; std::ostringstream s; s<<"lw in ["<<w.first<<","<<w.second<<"] (win "<<ilw<<")"; why=s.str(); return true; }
+    if (ilu>=0) { auto w=sm.pcal.lu[ilu]; std::ostringstream s; s<<"lu in ["<<w.first<<","<<w.second<<"] (win "<<ilu<<")"; why=s.str(); return true; }
+    return false;
   });
 
-  const bool fail_ecin = layer_fails(h.L4, [](const CalHit& hit, const SectorMasks& sm){
-    return value_in_any_window(hit.lv, sm.ecin.lv)
-        || value_in_any_window(hit.lw, sm.ecin.lw)
-        || value_in_any_window(hit.lu, sm.ecin.lu);
+  const bool fail_ecin = layer_fails("ECIN", h.L4, [](const CalHit& hit, const SectorMasks& sm, std::string& why){
+    int ilv = window_index(hit.lv, sm.ecin.lv);
+    int ilw = window_index(hit.lw, sm.ecin.lw);
+    int ilu = window_index(hit.lu, sm.ecin.lu);
+    if (ilv>=0) { auto w=sm.ecin.lv[ilv]; std::ostringstream s; s<<"lv in ["<<w.first<<","<<w.second<<"] (win "<<ilv<<")"; why=s.str(); return true; }
+    if (ilw>=0) { auto w=sm.ecin.lw[ilw]; std::ostringstream s; s<<"lw in ["<<w.first<<","<<w.second<<"] (win "<<ilw<<")"; why=s.str(); return true; }
+    if (ilu>=0) { auto w=sm.ecin.lu[ilu]; std::ostringstream s; s<<"lu in ["<<w.first<<","<<w.second<<"] (win "<<ilu<<")"; why=s.str(); return true; }
+    return false;
   });
 
-  const bool fail_ecout = layer_fails(h.L7, [](const CalHit& hit, const SectorMasks& sm){
-    return value_in_any_window(hit.lv, sm.ecout.lv)
-        || value_in_any_window(hit.lw, sm.ecout.lw)
-        || value_in_any_window(hit.lu, sm.ecout.lu);
+  const bool fail_ecout = layer_fails("ECOUT", h.L7, [](const CalHit& hit, const SectorMasks& sm, std::string& why){
+    int ilv = window_index(hit.lv, sm.ecout.lv);
+    int ilw = window_index(hit.lw, sm.ecout.lw);
+    int ilu = window_index(hit.lu, sm.ecout.lu);
+    if (ilv>=0) { auto w=sm.ecout.lv[ilv]; std::ostringstream s; s<<"lv in ["<<w.first<<","<<w.second<<"] (win "<<ilv<<")"; why=s.str(); return true; }
+    if (ilw>=0) { auto w=sm.ecout.lw[ilw]; std::ostringstream s; s<<"lw in ["<<w.first<<","<<w.second<<"] (win "<<ilw<<")"; why=s.str(); return true; }
+    if (ilu>=0) { auto w=sm.ecout.lu[ilu]; std::ostringstream s; s<<"lu in ["<<w.first<<","<<w.second<<"] (win "<<ilu<<")"; why=s.str(); return true; }
+    return false;
   });
 
   const bool fail = fail_pcal || fail_ecin || fail_ecout;
-
-  if ((dbg_on || dbg_masks) && fail && g_dbg_events_seen.load() < dbg_events) {
-    m_log->Info("[RGAFID][MASK] -> FAIL (sector-aware per-hit check)");
-  }
-
   return !fail;
 }
 

@@ -12,6 +12,7 @@
 #include <utility>
 #include <string>
 #include <atomic>
+#include <functional>
 
 namespace iguana::clas12 {
 
@@ -108,6 +109,9 @@ namespace iguana::clas12 {
       bool dbg_ft = false;
       int  dbg_events = 0;         // how many track decisions to print
       mutable std::atomic<int> dbg_events_seen {0};
+
+      // --- diag counters (printed in Stop) ---
+      mutable std::atomic<long> c_pass{0}, c_fail_edge{0}, c_fail_mask{0}, c_fail_ft{0};
 
       // helpers
       static bool EnvOn(const char* name);

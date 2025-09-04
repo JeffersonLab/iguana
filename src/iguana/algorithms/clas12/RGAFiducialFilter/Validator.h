@@ -17,7 +17,7 @@ namespace iguana::clas12 {
   ///
   /// Forward Tagger validation:
   ///   One 1x2 canvas (left: electrons, right: photons) plotting y vs x.
-  ///   (Only ONE FT image is saved: rga_fiducial_ft_xy.png; post-cuts only.)
+  ///   Only ONE FT image is saved: rga_fiducial_ft_xy.png (post-cuts).
   class RGAFiducialFilterValidator : public Validator
   {
       DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
