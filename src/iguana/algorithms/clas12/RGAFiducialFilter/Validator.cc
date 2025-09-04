@@ -6,6 +6,7 @@
 #include <TLegend.h>
 #include <TEllipse.h>
 #include <TStyle.h>
+#include <TString.h>
 
 #include <set>
 #include <unordered_map>
@@ -21,8 +22,7 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
 }
 
 // ----------------------------------------------------------------------------
-// In this crash-free version we DO NOT read YAML here.
-// We just hard-code the FT overlay to the same defaults the algorithm uses.
+// No YAML reads here — hard-coded FT overlay defaults.
 // ----------------------------------------------------------------------------
 void RGAFiducialFilterValidator::LoadFTParamsFromYAML()
 {
@@ -104,8 +104,8 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
 
   // Output
   if (auto dir = GetOutputDirectory()) {
-    m_base = dir.value() + std::string("/rga_fiducial");
-    m_out  = new TFile((m_base + ".root").c_str(), "RECREATE");
+    m_base.Form("%s/rga_fiducial", dir->c_str());
+    m_out  = new TFile(Form("%s.root", m_base.Data()), "RECREATE");
   } else {
     m_base = "rga_fiducial";
     m_out  = nullptr;
@@ -230,7 +230,7 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title)
     leg->Draw();
   }
 
-  c->SaveAs(Form("%s_pcal_lv_lw_pid%d.png", m_base.c_str(), pid));
+  c->SaveAs(Form("%s_pcal_lv_lw_pid%d.png", m_base.Data(), pid));
 }
 
 void RGAFiducialFilterValidator::DrawFTCanvas2x2()
@@ -272,7 +272,7 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2()
   draw_pad(3, m_ft_h.at(22).before, "Photons (before cuts);x (cm);y (cm)");
   draw_pad(4, m_ft_h.at(22).after,  "Photons (after cuts);x (cm);y (cm)");
 
-  c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.c_str()));
+  c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
 }
 
 void RGAFiducialFilterValidator::Stop()
