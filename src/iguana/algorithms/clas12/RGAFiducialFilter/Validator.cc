@@ -10,8 +10,6 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
 
-  // helper: does the banklist the framework gave us include a bank with this name?
-  // note: bank::getSchema() is non-const in hipo4, so banklist is non-const here
   static bool banklist_has(hipo::banklist& banks, const char* name) {
     for (auto& b : banks) {
       if (b.getSchema().getName() == name) return true;
@@ -82,6 +80,12 @@ namespace iguana::clas12 {
       setenv("IGUANA_RGAFID_STRICTNESS", "3", 1);
     #endif
 
+    // Also default the debug to on for one pass (user can turn off via env)
+    if (!std::getenv("IGUANA_RGAFID_DEBUG"))
+      setenv("IGUANA_RGAFID_DEBUG", "1", 0);
+    if (!std::getenv("IGUANA_RGAFID_DEBUG_EVENTS"))
+      setenv("IGUANA_RGAFID_DEBUG_EVENTS", "50", 0); // print first 50 track decisions
+
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::RGAFiducialFilter");
     m_algo_seq->Start(banks);
@@ -118,10 +122,13 @@ namespace iguana::clas12 {
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
 
+    // Count before
+    int before = static_cast<int>(particle_bank.getRowList().size());
+
     // run the filter first (bank is filtered in-place)
     m_algo_seq->Run(banks);
 
-    // Build survivor sets keyed by pid
+    // survivors by pid
     std::unordered_map<int, std::unordered_set<int>> survivors;
     for (auto pid : u_pid_list) survivors[pid];
 
@@ -130,7 +137,9 @@ namespace iguana::clas12 {
       if (survivors.find(pid) != survivors.end()) survivors[pid].insert(static_cast<int>(row));
     }
 
-    std::scoped_lock<std::mutex> lock(m_mutex);
+    int after = static_cast<int>(particle_bank.getRowList().size());
+    m_log->Info("[VALIDATOR] REC::Particle rows: before={} after={} kept%={:.1f}",
+                before, after, before>0 ? 100.0*after/before : 0.0);
 
     // Calorimeter fills
     if (m_have_calor) {
@@ -173,7 +182,7 @@ namespace iguana::clas12 {
           if (it == survivors.end()) continue;
           if (it->second.find(pindex) == it->second.end()) continue;
           auto* h = const_cast<RGAFiducialFilterValidator*>(this)->u_ft_xy[pid];
-          if (h) h->Fill(y, x); // axes are y (cm); x (cm)
+          if (h) h->Fill(y, x);
         }
       }
     }

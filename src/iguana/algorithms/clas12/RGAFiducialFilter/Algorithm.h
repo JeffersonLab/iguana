@@ -11,6 +11,7 @@
 #include <array>
 #include <utility>
 #include <string>
+#include <atomic>
 
 namespace iguana::clas12 {
 
@@ -99,6 +100,19 @@ namespace iguana::clas12 {
 
       // FT parameters (global, not run-dependent)
       FTParams u_ft_params;
+
+      // Debug controls (read once at Start)
+      bool dbg_on = false;
+      bool dbg_masks = false;
+      bool dbg_ft = false;
+      int  dbg_events = 0;         // how many track decisions to print
+      mutable std::atomic<int> dbg_events_seen {0};
+
+      // helpers
+      static bool EnvOn(const char* name);
+      static int  EnvInt(const char* name, int def);
+      void DumpFTParams() const;
+      void DumpMaskSummary(int runnum, const MaskMap& mm) const;
 
       mutable std::mutex m_mutex;
   };
