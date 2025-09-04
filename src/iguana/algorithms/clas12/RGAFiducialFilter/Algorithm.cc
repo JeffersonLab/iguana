@@ -1,190 +1,297 @@
-// Algorithm.cc (drop the old body and paste this)
-
 #include "Algorithm.h"
 #include "iguana/services/YAMLReader.h"
+
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
+#include <mutex>
+#include <optional>
+
+namespace {
+std::atomic<int> g_dbg_events_seen{0};
+}
 
 namespace iguana::clas12 {
 
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter);
 
-// env helpers
+// -------- small utils ----------
 bool RGAFiducialFilter::EnvOn(const char* name) {
   if (const char* s = std::getenv(name)) {
-    std::string v{s}; return v=="1"||v=="true"||v=="TRUE";
+    std::string v{s};
+    return (v == "1" || v == "true" || v == "TRUE");
   }
   return false;
 }
 int RGAFiducialFilter::EnvInt(const char* name, int def) {
-  if (const char* s = std::getenv(name)) { try { return std::stoi(s); } catch (...) {} }
+  if (const char* s = std::getenv(name)) {
+    try { return std::stoi(s); } catch (...) {}
+  }
   return def;
 }
-
-static bool banklist_has(hipo::banklist& banks, const char* name) {
+bool RGAFiducialFilter::banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
 
-void RGAFiducialFilter::SetStrictness(int s) {
-  m_strictness = std::clamp(s, 1, 3);
-  m_strictness_overridden = true;
-}
-
+// -------- YAML (algo-local Config.yaml) ----------
 void RGAFiducialFilter::LoadConfigFromYAML()
 {
+  // This call makes the framework search *this algorithm’s* directory first,
+  // just like ZVertexFilter does. Safe if missing.
   ParseYAMLConfig();
   if (!GetConfig()) return;
 
-  // strictness (only if not programmatically overridden)
-  if (!m_strictness_overridden) {
-    try {
-      auto v = GetOptionVector<int>("calorimeter.strictness");
-      if (!v.empty()) m_strictness = std::clamp(v.front(), 1, 3);
-    } catch (...) {}
-  }
+  // Calorimeter strictness (default handled later)
+  try {
+    auto v = GetOptionVector<int>("calorimeter.strictness");
+    if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
+  } catch (...) {}
 
-  // FT radius
+  // FT annulus radii
   try {
     auto r = GetOptionVector<double>("forward_tagger.radius");
     if (r.size() >= 2) {
       float a = static_cast<float>(r[0]);
       float b = static_cast<float>(r[1]);
-      m_ft.rmin = std::min(a, b);
-      m_ft.rmax = std::max(a, b);
+      u_ft_params.rmin = std::min(a, b);
+      u_ft_params.rmax = std::max(a, b);
     }
   } catch (...) {}
 
-  // FT holes
+  // FT holes (R, cx, cy) flat
   try {
     auto flat = GetOptionVector<double>("forward_tagger.holes_flat");
     if (!flat.empty()) {
-      m_ft.holes.clear();
-      for (size_t i=0; i+2<flat.size(); i+=3)
-        m_ft.holes.push_back({ (float)flat[i], (float)flat[i+1], (float)flat[i+2] });
+      u_ft_params.holes.clear();
+      for (size_t i = 0; i + 2 < flat.size(); i += 3) {
+        u_ft_params.holes.push_back({
+          static_cast<float>(flat[i]),
+          static_cast<float>(flat[i+1]),
+          static_cast<float>(flat[i+2])
+        });
+      }
     }
   } catch (...) {}
 }
 
+void RGAFiducialFilter::SetStrictness(int s) {
+  u_strictness_user = std::clamp(s, 1, 3);
+}
+
+// -------- lifecycle ----------
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   // Debug knobs
   dbg_on     = EnvOn("IGUANA_RGAFID_DEBUG");
   dbg_ft     = EnvOn("IGUANA_RGAFID_DEBUG_FT");
   dbg_events = EnvInt("IGUANA_RGAFID_DEBUG_EVENTS", 0);
-  if (dbg_on) m_log->Info("[RGAFID][DEBUG] ft={}, events={}", dbg_ft, dbg_events);
 
-  // defaults for FT holes (in case YAML is absent)
-  if (m_ft.holes.empty()) {
-    const float H[] = {
-      1.60f, -8.42f,  9.89f,
-      1.60f, -9.89f, -5.33f,
-      2.30f, -6.15f, -13.00f,
-      2.00f,  3.70f, -6.50f
-    };
-    for (size_t i=0; i+2<std::size(H); i+=3)
-      m_ft.holes.push_back({H[i],H[i+1],H[i+2]});
-  }
-
-  // Load YAML from the same directory (like ZVertexFilter)
+  // Load algo-local YAML (safe if missing)
   LoadConfigFromYAML();
+
+  // concurrent params
+  o_runnum         = ConcurrentParamFactory::Create<int>();
+  o_cal_strictness = ConcurrentParamFactory::Create<int>();
+
+  // If strictness not set programmatically or via YAML, default to 1
+  if (!u_strictness_user.has_value()) u_strictness_user = 1;
+
   if (dbg_on) {
-    m_log->Info("[RGAFID] strictness = {}", m_strictness);
-    m_log->Info("[RGAFID][FT] rmin={:.3f} rmax={:.3f} holes={}", m_ft.rmin, m_ft.rmax, m_ft.holes.size());
+    m_log->Info("[RGAFID][DEBUG] ft={} events={}", dbg_ft, dbg_events);
+    m_log->Info("[RGAFID] strictness = {}", *u_strictness_user);
   }
+  if (dbg_on || dbg_ft) DumpFTParams();
 
   // required banks
   b_particle = GetBankIndex(banks, "REC::Particle");
   b_config   = GetBankIndex(banks, "RUN::config");
 
   // optional banks
-  if (banklist_has(banks, "REC::Calorimeter")) { b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor=true; }
-  if (banklist_has(banks, "REC::ForwardTagger")) { b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft=true; }
+  if (banklist_has(banks, "REC::Calorimeter")) {
+    b_calor = GetBankIndex(banks, "REC::Calorimeter");
+    m_have_calor = true;
+  }
+  if (banklist_has(banks, "REC::ForwardTagger")) {
+    b_ft = GetBankIndex(banks, "REC::ForwardTagger");
+    m_have_ft = true;
+  }
+}
+
+concurrent_key_t RGAFiducialFilter::PrepareEvent(int runnum) const
+{
+  if (o_runnum->NeedsHashing()) {
+    std::hash<int> hash_ftn;
+    auto key = hash_ftn(runnum);
+    if (!o_runnum->HasKey(key)) Reload(runnum, key);
+    return key;
+  } else {
+    if (o_runnum->IsEmpty() || o_runnum->Load(0) != runnum) Reload(runnum, 0);
+    return 0;
+  }
+}
+
+void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+  o_runnum->Save(runnum, key);
+  o_cal_strictness->Save(std::clamp(u_strictness_user.value_or(1), 1, 3), key);
+
+  if (dbg_on) {
+    m_log->Info("[RGAFID][Reload] run={} key={} strictness={}", runnum, (uint64_t)key, GetCalStrictness(key));
+  }
 }
 
 void RGAFiducialFilter::Run(hipo::banklist& banks) const
 {
   auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
+  auto& configBank   = GetBank(banks, b_config,   "RUN::config");
+
+  const int runnum = configBank.getInt("run", 0);
+  auto key = PrepareEvent(runnum);
+
+  if (dbg_on) {
+    static std::atomic<int> once{0};
+    if (once.fetch_add(1) == 0) {
+      m_log->Info("[RGAFID] Run(): run={} have_calor={} have_ft={} strictness={}",
+                  runnum, m_have_calor, m_have_ft, GetCalStrictness(key));
+    }
+  }
+
   const hipo::bank* calBankPtr = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter") : nullptr;
   const hipo::bank* ftBankPtr  = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
 
-  particleBank.getMutableRowList().filter([this, calBankPtr, ftBankPtr](auto, auto row) {
+  particleBank.getMutableRowList().filter([this, calBankPtr, ftBankPtr, key](auto, auto row) {
     const int track_index = row;
+    const bool accept = Filter(track_index, calBankPtr, ftBankPtr, key);
 
-    // PCAL edge cuts
-    if (calBankPtr) {
-      std::vector<CalHit> pcal_hits;
-      CollectPCALHitsForTrack(*calBankPtr, track_index, pcal_hits);
-      if (!pcal_hits.empty() && !PassPCalEdgeCuts(pcal_hits)) return 0;
+    if (dbg_on && dbg_events > 0) {
+      int seen = ++g_dbg_events_seen;
+      if (seen <= dbg_events) {
+        m_log->Info("[RGAFID][track={}] -> {}", track_index, accept ? "ACCEPT" : "REJECT");
+      }
     }
-
-    // FT annulus + holes
-    if (!PassFTFiducial(track_index, ftBankPtr)) return 0;
-
-    return 1;
+    return accept ? 1 : 0;
   });
 }
 
-void RGAFiducialFilter::CollectPCALHitsForTrack(const hipo::bank& cal, int pindex,
-                                                std::vector<CalHit>& out_hits)
+// -------- filter core ----------
+RGAFiducialFilter::CalLayers
+RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
 {
-  const int n = cal.getRows();
-  for (int i=0;i<n;++i) {
-    if (cal.getInt("pindex", i) != pindex) continue;
-    if (cal.getInt("layer",  i) != 1)      continue; // PCAL only
-    CalHit h;
-    h.layer  = 1;
-    h.sector = cal.getInt("sector", i);
-    h.lv     = cal.getFloat("lv", i);
-    h.lw     = cal.getFloat("lw", i);
-    h.lu     = cal.getFloat("lu", i);
-    out_hits.push_back(h);
+  CalLayers out;
+  const int nrows = calBank.getRows();
+  for (int i = 0; i < nrows; ++i) {
+    if (calBank.getInt("pindex", i) != pindex) continue;
+    out.has_any = true;
+    const int layer = calBank.getInt("layer", i);
+    if (layer == 1) { // PCAL only
+      CalHit hit;
+      hit.sector = calBank.getInt("sector", i);
+      hit.lv     = calBank.getFloat("lv", i);
+      hit.lw     = calBank.getFloat("lw", i);
+      hit.lu     = calBank.getFloat("lu", i);
+      out.L1.push_back(hit);
+    }
   }
+  return out;
 }
 
-bool RGAFiducialFilter::PassPCalEdgeCuts(const std::vector<CalHit>& hits) const
+bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
 {
-  // use minima across PCAL hits
+  if (h.L1.empty()) return true; // no PCAL association ⇒ no PCAL cut
+
   float min_lv = std::numeric_limits<float>::infinity();
   float min_lw = std::numeric_limits<float>::infinity();
-  for (auto const& h : hits) {
-    if (h.lv < min_lv) min_lv = h.lv;
-    if (h.lw < min_lw) min_lw = h.lw;
+  for (const auto& hit : h.L1) {
+    if (hit.lv < min_lv) min_lv = hit.lv;
+    if (hit.lw < min_lw) min_lw = hit.lw;
   }
 
-  const float thr = (m_strictness==1 ?  9.0f :
-                    (m_strictness==2 ? 13.5f : 18.0f));
-
-  return !(min_lv < thr || min_lw < thr);
+  switch (strictness) {
+    case 1: return !(min_lw <  9.0f || min_lv <  9.0f);
+    case 2: return !(min_lw < 13.5f || min_lv < 13.5f);
+    case 3: return !(min_lw < 18.0f || min_lv < 18.0f);
+    default: return false;
+  }
 }
 
 bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank) const
 {
-  if (!ftBank) return true;
+  if (ftBank == nullptr) return true;
 
-  const int n = ftBank->getRows();
-  for (int i=0;i<n;++i) {
+  const int nrows = ftBank->getRows();
+  for (int i = 0; i < nrows; ++i) {
     if (ftBank->getInt("pindex", i) != track_index) continue;
 
     const double x = ftBank->getFloat("x", i);
     const double y = ftBank->getFloat("y", i);
     const double r = std::sqrt(x*x + y*y);
 
-    if (dbg_ft && dbg_events>0) {
-      m_log->Info("[RGAFID][FT] trk={} x={:.2f} y={:.2f} r={:.2f} rwin=[{:.2f},{:.2f}]",
-                  track_index, x, y, r, m_ft.rmin, m_ft.rmax);
+    if (dbg_ft && g_dbg_events_seen.load() < std::max(1, dbg_events)) {
+      m_log->Info("[RGAFID][FT] track={} x={:.2f} y={:.2f} r={:.2f} rwin=[{:.2f},{:.2f}]",
+                  track_index, x, y, r, u_ft_params.rmin, u_ft_params.rmax);
     }
 
-    if (r < m_ft.rmin || r > m_ft.rmax) return false;
-    for (auto const& h : m_ft.holes) {
-      const double d = std::sqrt((x-h[1])*(x-h[1]) + (y-h[2])*(y-h[2]));
+    if (r < u_ft_params.rmin) return false;
+    if (r > u_ft_params.rmax) return false;
+
+    for (auto const& h : u_ft_params.holes) {
+      const double d = std::sqrt((x - h[1])*(x - h[1]) + (y - h[2])*(y - h[2]));
       if (d < h[0]) return false;
     }
+
     return true; // first associated FT row decides
   }
-  return true; // no FT association -> pass
+
+  return true; // no FT association → pass
+}
+
+bool RGAFiducialFilter::Filter(int track_index,
+                               const hipo::bank* calBank,
+                               const hipo::bank* ftBank,
+                               concurrent_key_t key) const
+{
+  // PCAL strictness only
+  if (calBank != nullptr) {
+    CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
+    if (h.has_any && !PassCalStrictness(h, GetCalStrictness(key))) {
+      if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
+        float min_lv = std::numeric_limits<float>::infinity();
+        float min_lw = std::numeric_limits<float>::infinity();
+        for (const auto& hit : h.L1) {
+          if (hit.lv < min_lv) min_lv = hit.lv;
+          if (hit.lw < min_lw) min_lw = hit.lw;
+        }
+        m_log->Info("[RGAFID][CAL] track={} strictness={} -> edge FAIL (min lv1={:.1f}, min lw1={:.1f})",
+                    track_index, GetCalStrictness(key),
+                    std::isinf(min_lv)?0.f:min_lv, std::isinf(min_lw)?0.f:min_lw);
+      }
+      return false;
+    }
+  }
+
+  // FT annulus + holes
+  if (!PassFTFiducial(track_index, ftBank)) {
+    if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
+      m_log->Info("[RGAFID][FT] track={} -> FT FAIL", track_index);
+    }
+    return false;
+  }
+
+  return true;
+}
+
+// -------- diag ----------
+void RGAFiducialFilter::DumpFTParams() const {
+  m_log->Info("[RGAFID][FT] rmin={:.3f} rmax={:.3f} holes={}",
+              u_ft_params.rmin, u_ft_params.rmax, u_ft_params.holes.size());
+  for (size_t i = 0; i < u_ft_params.holes.size() && i < 8; ++i) {
+    const auto& h = u_ft_params.holes[i];
+    m_log->Info("   hole[{}] R={:.3f} cx={:.3f} cy={:.3f}", i, h[0], h[1], h[2]);
+  }
 }
 
 } // namespace iguana::clas12

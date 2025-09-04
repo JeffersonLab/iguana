@@ -1,9 +1,11 @@
+// src/iguana/algorithms/clas12/RGAFiducialFilter/Validator.cc
+
 #include "Validator.h"
-#include "iguana/services/YAMLReader.h"
 
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <TEllipse.h>
+#include <TStyle.h>
 
 #include <set>
 #include <unordered_map>
@@ -18,32 +20,26 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
   return false;
 }
 
+// ----------------------------------------------------------------------------
+// In this crash-free version we DO NOT read YAML here.
+// We just hard-code the FT overlay to the same defaults the algorithm uses.
+// ----------------------------------------------------------------------------
 void RGAFiducialFilterValidator::LoadFTParamsFromYAML()
 {
-  // defaults already set
-
-  try {
-    auto r = GetOptionVector<double>("clas12::RGAFiducialFilter.forward_tagger.radius");
-    if (r.empty()) r = GetOptionVector<double>("forward_tagger.radius"); // allow bare
-    if (r.size() >= 2) {
-      float a = (float)r[0], b = (float)r[1];
-      m_ftdraw.rmin = std::min(a,b); m_ftdraw.rmax = std::max(a,b);
-    }
-  } catch (...) {}
-
-  try {
-    auto flat = GetOptionVector<double>("clas12::RGAFiducialFilter.forward_tagger.holes_flat");
-    if (flat.empty()) flat = GetOptionVector<double>("forward_tagger.holes_flat");
-    m_ftdraw.holes.clear();
-    for (size_t i=0;i+2<flat.size(); i+=3)
-      m_ftdraw.holes.push_back({(float)flat[i], (float)flat[i+1], (float)flat[i+2]});
-  } catch (...) {}
+  // Defaults: annulus [8.5, 15.5] cm and 4 holes
+  m_ftdraw.rmin = 8.5f;
+  m_ftdraw.rmax = 15.5f;
+  m_ftdraw.holes.clear();
+  m_ftdraw.holes.push_back({1.60f, -8.42f,  9.89f});
+  m_ftdraw.holes.push_back({1.60f, -9.89f, -5.33f});
+  m_ftdraw.holes.push_back({2.30f, -6.15f, -13.00f});
+  m_ftdraw.holes.push_back({2.00f,  3.70f,  -6.50f});
 }
 
 void RGAFiducialFilterValidator::BookIfNeeded()
 {
   // PCAL: range 0..27 cm, 0.5 cm bins
-  const int nb=54; const double lo=0, hi=27;
+  const int nb=54; const double lo=0.0, hi=27.0;
 
   for (int pid : kPIDs) {
     auto& P = m_cal[pid];
@@ -82,7 +78,8 @@ void RGAFiducialFilterValidator::BookIfNeeded()
       F.after  = new TH2F(Form("h_ft_after_pid%d", pid),
                           Form("FT x-y after (PID %d);x (cm);y (cm)", pid),
                           120, -30, 30, 120, -30, 30);
-    F.before->SetStats(0); F.after->SetStats(0);
+    F.before->SetStats(0);
+    F.after->SetStats(0);
   }
 }
 
@@ -95,16 +92,23 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
 
   // Banks
   b_particle = GetBankIndex(banks, "REC::Particle");
-  if (banklist_has(banks, "REC::Calorimeter")) { b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor=true; }
-  if (banklist_has(banks, "REC::ForwardTagger")) { b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft=true; }
+  if (banklist_has(banks, "REC::Calorimeter")) {
+    b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor=true;
+  }
+  if (banklist_has(banks, "REC::ForwardTagger")) {
+    b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft=true;
+  }
 
-  // FT overlay params
+  // FT overlay params (defaults only; no YAML here to avoid crashes)
   LoadFTParamsFromYAML();
 
   // Output
   if (auto dir = GetOutputDirectory()) {
     m_base = dir.value() + std::string("/rga_fiducial");
-    m_out  = new TFile(m_base + ".root", "RECREATE");
+    m_out  = new TFile((m_base + ".root").c_str(), "RECREATE");
+  } else {
+    m_base = "rga_fiducial";
+    m_out  = nullptr;
   }
 
   BookIfNeeded();
@@ -113,6 +117,7 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
 void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
 {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
+
   // --- BEFORE snapshot (pindex -> pid for 11/22)
   std::unordered_map<int,int> before_pid;
   for (auto const& row : particle.getRowList()) {
@@ -142,8 +147,8 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
     for (int i=0;i<n;++i) {
       int pidx = cal.getInt("pindex", i);
       auto itb = before_pid.find(pidx);
-      if (itb == before_pid.end()) continue; // not an e-/γ before
-      if (cal.getInt("layer", i) != 1) continue; // PCAL only
+      if (itb == before_pid.end()) continue;         // not an e-/γ before
+      if (cal.getInt("layer", i) != 1) continue;     // PCAL only
 
       int pid = itb->second;
       int sec = cal.getInt("sector", i);
@@ -200,13 +205,13 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title)
     auto& H = it->second[s];
     if (!H.lv_kept) continue;
 
-    // styles
+    // styles: kept = solid, cut = dashed
     H.lv_kept->SetLineColor(kBlue+1);  H.lv_kept->SetLineWidth(2);  H.lv_kept->SetLineStyle(1);
     H.lw_kept->SetLineColor(kRed+1);   H.lw_kept->SetLineWidth(2);  H.lw_kept->SetLineStyle(1);
-    H.lv_cut ->SetLineColor(kBlue+1);  H.lv_cut ->SetLineWidth(2);  H.lv_cut ->SetLineStyle(2); // dashed
+    H.lv_cut ->SetLineColor(kBlue+1);  H.lv_cut ->SetLineWidth(2);  H.lv_cut ->SetLineStyle(2);
     H.lw_cut ->SetLineColor(kRed+1);   H.lw_cut ->SetLineWidth(2);  H.lw_cut ->SetLineStyle(2);
 
-    // give an explicit title on lv kept
+    // explicit title on lv kept (pad title)
     H.lv_kept->SetTitle(Form("%s - Sector %d;length (cm);counts",
                       pid==11?"Electrons":"Photons", s));
 
@@ -225,7 +230,7 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title)
     leg->Draw();
   }
 
-  c->SaveAs(Form("%s_pcal_lv_lw_pid%d.png", m_base.Data(), pid));
+  c->SaveAs(Form("%s_pcal_lv_lw_pid%d.png", m_base.c_str(), pid));
 }
 
 void RGAFiducialFilterValidator::DrawFTCanvas2x2()
@@ -267,7 +272,7 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2()
   draw_pad(3, m_ft_h.at(22).before, "Photons (before cuts);x (cm);y (cm)");
   draw_pad(4, m_ft_h.at(22).after,  "Photons (after cuts);x (cm);y (cm)");
 
-  c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
+  c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.c_str()));
 }
 
 void RGAFiducialFilterValidator::Stop()

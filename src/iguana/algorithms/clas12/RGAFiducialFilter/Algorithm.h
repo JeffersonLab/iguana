@@ -1,16 +1,27 @@
-// Algorithm.h  (replace your current header with this)
-
 #pragma once
+
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
+#include "iguana/services/ConcurrentParam.h"
+
 #include <array>
-#include <vector>
+#include <atomic>
+#include <mutex>
 #include <optional>
+#include <string>
+#include <vector>
 
 namespace iguana::clas12 {
 
-class RGAFiducialFilter : public Algorithm
-{
+/// Minimal RGA fiducial filter:
+///   • PCAL-only edge cuts on lv & lw with strictness thresholds:
+///       s=1 → {lv,lw} ≥  9.0 cm
+///       s=2 → {lv,lw} ≥ 13.5 cm
+///       s=3 → {lv,lw} ≥ 18.0 cm
+///   • Forward Tagger annulus + circular hole vetoes.
+/// Defaults are read from Config.yaml (same dir). A caller may override
+/// strictness via SetStrictness(1|2|3) BEFORE Start().
+class RGAFiducialFilter : public Algorithm {
   DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
 public:
@@ -18,11 +29,11 @@ public:
   void Run  (hipo::banklist& banks) const override;
   void Stop () override {}
 
-  // Programmatic override (call before Start)
+  /// Programmatic override (takes precedence over YAML). Call before Start().
   void SetStrictness(int strictness);
 
 private:
-  // --- banks ---
+  // ---- bank indices / presence
   hipo::banklist::size_type b_particle{};
   hipo::banklist::size_type b_config{};
   hipo::banklist::size_type b_calor{};
@@ -30,31 +41,54 @@ private:
   bool m_have_calor = false;
   bool m_have_ft    = false;
 
-  // --- config ---
+  // ---- config knobs
   struct FTParams {
     float rmin = 8.5f;
     float rmax = 15.5f;
     std::vector<std::array<float,3>> holes; // {R,cx,cy}
   };
-  FTParams m_ft{};
-  int      m_strictness = 1;   // YAML default; SetStrictness can override
-  bool     m_strictness_overridden = false;
+  FTParams              u_ft_params{};              // in-use FT params
+  std::optional<int>    u_strictness_user;          // if SetStrictness() used
 
-  // --- debug env toggles ---
-  static bool EnvOn (const char* name);
+  // ---- concurrent / per-event state
+  mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
+  mutable std::unique_ptr<ConcurrentParam<int>> o_cal_strictness;
+
+  // ---- debug flags
+  bool dbg_on     = false;
+  bool dbg_ft     = false;
+  int  dbg_events = 0;
+  static bool EnvOn(const char* name);
   static int  EnvInt(const char* name, int def);
-  bool dbg_on=false, dbg_ft=false;
-  int  dbg_events=0;
 
-  // --- YAML ---
-  void LoadConfigFromYAML();
+  // ---- lifecycle helpers
+  void   Reload(int runnum, concurrent_key_t key) const;
+  static bool banklist_has(hipo::banklist& banks, const char* name);
 
-  // --- helpers ---
-  struct CalHit { int sector=0; float lv=0, lw=0, lu=0; int layer=0; };
-  static void CollectPCALHitsForTrack(const hipo::bank& cal, int pindex,
-                                      std::vector<CalHit>& out_hits);
-  bool PassPCalEdgeCuts(const std::vector<CalHit>& pcal_hits) const;
+  // ---- filter core
+  struct CalHit { int sector=0; float lv=0, lw=0, lu=0; };
+  struct CalLayers { std::vector<CalHit> L1; bool has_any=false; };
+
+  static CalLayers CollectCalHitsForTrack(const hipo::bank& cal, int pindex);
+  static bool PassCalStrictness(const CalLayers& h, int strictness);
+
   bool PassFTFiducial(int track_index, const hipo::bank* ftBank) const;
+
+  bool Filter(int track_index,
+              const hipo::bank* calBank,
+              const hipo::bank* ftBank,
+              concurrent_key_t key) const;
+
+  // ---- accessors
+  int GetRunNum(concurrent_key_t key) const { return o_runnum->Load(key); }
+  int GetCalStrictness(concurrent_key_t key) const { return o_cal_strictness->Load(key); }
+
+  // ---- YAML
+  void LoadConfigFromYAML();  // reads from this algorithm’s Config.yaml
+  void DumpFTParams() const;
+
+  // ---- concurrency utils
+  concurrent_key_t PrepareEvent(int runnum) const;
 };
 
 } // namespace iguana::clas12
