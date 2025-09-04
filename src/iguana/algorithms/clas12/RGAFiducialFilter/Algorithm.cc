@@ -164,6 +164,7 @@ namespace iguana::clas12 {
 
   void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const
   {
+    m_log->Info("RGAFiducialFilter: loading masks for run {}", runnum);
     std::lock_guard<std::mutex> const lock(m_mutex);
     m_log->Trace("RGAFiducialFilter::Reload(run={}, key={})", runnum, key);
 
