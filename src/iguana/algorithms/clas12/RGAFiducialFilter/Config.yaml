@@ -1,15 +1,91 @@
-clas12::RGAFiducialFilter:
+clas12::RGAFidialFilter:
+  __marker__: "RGAFID YAML v2025-08-25"
+
   calorimeter:
     strictness: [1]
+
     masks:
       - default:
           sectors:
-            "1": { pcal: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecin: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } } }
-            "2": { pcal: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecin: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } } }
-            "3": { pcal: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecin: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } } }
-            "4": { pcal: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecin: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } } }
-            "5": { pcal: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecin: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } } }
-            "6": { pcal: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecin: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }, ecout: { lv: { cal_mask: [] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } } }
+            "1":
+              pcal:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecin:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecout:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+            "2":
+              pcal:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecin:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecout:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+            "3":
+              pcal:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecin:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecout:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+            "4":
+              pcal:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecin:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecout:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+            "5":
+              pcal:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecin:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecout:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+            "6":
+              pcal:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
+              ecin:
+                lv: { cal_mask: [] }
+               极 
+                  cal_mask: []
+                lu: { cal_mask: [] }
+              ecout:
+                lv: { cal_mask: [] }
+                lw: { cal_mask: [] }
+                lu: { cal_mask: [] }
 
       - runs: [3031, 5666]
         sectors:
@@ -27,39 +103,56 @@ clas12::RGAFiducialFilter:
               lw: { cal_mask: [] }
               lu: { cal_mask: [] }
           "2":
-            pcal:  { lv: { cal_mask: [99.0, 117.0] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
+            pcal:
+              lv: { cal_mask: [99.0, 117.0] }
+              lw: { cal_mask: [] }
+              lu: { cal_mask: [] }
           "3":
-            pcal:  { lv: { cal_mask: [] }, lw: { cal_mask: [346.5, 378.0] }, lu: { cal_mask: [] } }
+            pcal:
+              lv: { cal_mask: [] }
+              lw: { cal_mask: [346.5, 378.0] }
+              lu: {极 
           "4":
             pcal:
               lv: { cal_mask: [229.5, 243.0] }
               lw: { cal_mask: [0.0, 13.5] }
               lu: { cal_mask: [] }
           "5":
-            ecin:  { lv: { cal_mask: [0.0, 23.5] } }
-            ecout: { lu: { cal_mask: [193.5, 216.0] } }
+            ecin:
+              lv: { cal_mask: [0.0, 23.5] }
+            ecout:
+              lu: { cal_mask: [193.5, 216.0] }
           "6":
-            pcal:  { lw: { cal_mask: [166.5, 193.5] } }
+            pcal:
+              lw: { cal_mask: [166.5, 193.5] }
 
       - runs: [6616, 6783]
         sectors:
           "1":
-            pcal:  { lw: { cal_mask: [72.0, 94.5, 220.5, 234.0] } }
-            ecin:  { lv: { cal_mask: [67.5, 94.5] } }
-            ecout: { lv: { cal_mask: [0.0, 40.5] } }
+            pcal:
+              lw: { cal_mask: [72.0, 94.5, 220.5, 234.0] }
+            ecin:
+              lv: { cal_mask: [67.5, 94.5] }
+            ecout:
+              lv: { cal_mask: [0.0, 40.5] }
           "2":
-            pcal:  { lv: { cal_mask: [99.0, 117.0, 31.5, 49.5] } }
+            pcal:
+              lv: { cal_mask: [99.0, 117.0, 31.5, 49.5] }
           "3":
-            pcal:  { lw: { cal_mask: [346.5, 378.0] } }
+            pcal:
+              lw: { cal_mask: [346.5, 378.0] }
           "4":
             pcal:
               lv: { cal_mask: [229.5, 243.0] }
               lw: { cal_mask: [0.0, 13.5] }
           "5":
-            ecin:  { lv: { cal_mask: [0.0, 23.5] } }
-            ecout: { lu: { cal_mask: [193.5, 216.0] } }
+            ecin:
+              lv: { cal_mask: [0.0, 23.5] }
+            ecout:
+              lu: { cal_mask: [193.5, 216.0] }
           "6":
-            pcal:  { lw: { cal_mask: [166.5, 193.5] } }
+            pcal:
+              lw: { cal_mask: [极 5, 193.5] }
 
   forward_tagger:
     radius: [8.5, 15.5]
