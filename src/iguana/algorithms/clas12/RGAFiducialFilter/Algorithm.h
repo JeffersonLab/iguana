@@ -23,6 +23,7 @@ namespace iguana::clas12 {
   ///
   /// Strictness precedence (cal only):
   ///   SetStrictness() > env IGUANA_RGAFID_STRICTNESS > YAML [calorimeter.strictness[0]] > default(1)
+  /// YAML is only read if IGUANA_RGAFID_USE_YAML=1 is set in the environment.
   class RGAFiducialFilter : public Algorithm
   {
       DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
