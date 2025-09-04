@@ -38,10 +38,10 @@ to_windows_flat(const std::vector<double>& v) {
 }
 
 // Wrap GetOptionVector so we can probe *once* without spamming logs
-template <typename T>
-bool TryGetVector(const YAMLReader& yr, const std::string& dotted_key, std::vector<T>& out) {
+template <typename Reader, typename T>
+bool TryGetVector(const Reader& r, const std::string& dotted_key, std::vector<T>& out) {
   try {
-    out = yr.GetOptionVector<T>(dotted_key);
+    out = r.template GetOptionVector<T>(dotted_key);
     return true;
   } catch (...) {
     return false;
