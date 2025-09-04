@@ -332,49 +332,46 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
 RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int runnum) const
 {
   MaskMap out;
-  if (!GetConfig()) {
-    if (dbg_on || dbg_masks) m_log->Info("[RGAFID][MASK] no YAML config; empty masks");
-    return out; // no YAML -> no dead-PMT masks
-  }
+  if (!GetConfig()) return out;
 
-  auto read_axis = [this, runnum](int sector, const char* layer, const char* axis) -> std::vector<window_t> {
-    YAMLReader::node_path_t p;
-
-    // Choose run-range element or default
-    bool used_default = false;
-    if (runnum > 0) {
+  auto find_mask_index = [this, runnum]() -> int {
+    // try indices 0..15 (enough for our file); choose the one whose runs[] contains runnum
+    for (int i = 0; i < 16; ++i) {
       try {
-        p = { "calorimeter", "masks",
-              GetConfig()->InRange("runs", runnum), // selects the element within masks
-              "sectors", std::to_string(sector), layer, axis };
+        auto rr = GetOptionVector<int>("cal.masks.runs",
+          YAMLReader::node_path_t{ "calorimeter","masks", std::to_string(i), "runs" });
+        if (rr.size() >= 2 && runnum >= rr.front() && runnum <= rr.back()) return i;
       } catch (...) {
-        p = { "calorimeter", "masks", "default",
-              "sectors", std::to_string(sector), layer, axis };
-        used_default = true;
+        // no runs[] at this index or index out of range — ignore
       }
-    } else {
-      p = { "calorimeter", "masks", "default",
-            "sectors", std::to_string(sector), layer, axis };
-      used_default = true;
     }
-
-    if (dbg_on || dbg_masks) {
-      m_log->Info("[RGAFID][MASK] path={} {} sec={} layer={} axis={}",
-                  used_default ? "default" : "range", used_default ? "(fallback)" : "",
-                  sector, layer, axis);
+    // fallback: first index that has NO runs[] (your default block)
+    for (int i = 0; i < 16; ++i) {
+      try {
+        auto rr = GetOptionVector<int>("cal.masks.runs",
+          YAMLReader::node_path_t{ "calorimeter","masks", std::to_string(i), "runs" });
+        (void)rr; // if this succeeds, it's not the default; continue
+      } catch (...) {
+        return i; // this index has no runs[] -> treat as default
+      }
     }
+    return -1; // nothing found
+  };
 
+  const int idx = find_mask_index();
+  if (idx < 0) {
+    m_log->Info("[RGAFID][MASK] no usable masks entry; run={} -> using empty masks", runnum);
+    return out;
+  }
+  m_log->Info("[RGAFID][MASK] run={} -> masks index={}", runnum, idx);
+
+  auto read_axis = [this, idx](int sector, const char* layer, const char* axis) -> std::vector<window_t> {
     try {
-      // IMPORTANT: key is the leaf at this parent path
-      auto flat = GetOptionVector<double>("cal_mask", p);
-      if ((dbg_on || dbg_masks) && !flat.empty()) {
-        m_log->Info("[RGAFID][MASK] cal_mask size={} first={:.3f}", flat.size(), flat.front());
-      }
+      auto flat = GetOptionVector<double>("cal.masks",
+        YAMLReader::node_path_t{ "calorimeter","masks", std::to_string(idx),
+                                 "sectors", std::to_string(sector), layer, axis, "cal_mask" });
       return to_windows_flat(flat);
-    } catch (const std::exception& e) {
-      if (dbg_on || dbg_masks) {
-        m_log->Info("[RGAFID][MASK] cal_mask read EXC: {}", e.what());
-      }
+    } catch (...) {
       return {};
     }
   };
@@ -392,6 +389,14 @@ RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int runnum) cons
     sm.ecout.lu = read_axis(s, "ecout", "lu");
     out.emplace(s, std::move(sm));
   }
+
+  size_t total = 0;
+  for (auto const& [sec, sm] : out) {
+    total += sm.pcal.lv.size()+sm.pcal.lw.size()+sm.pcal.lu.size()
+           + sm.ecin.lv.size()+sm.ecin.lw.size()+sm.ecin.lu.size()
+           + sm.ecout.lv.size()+sm.ecout.lw.size()+sm.ecout.lu.size();
+  }
+  m_log->Info("[RGAFID][MASK] run={} sectors={} total_windows={}", runnum, out.size(), total);
   return out;
 }
 
