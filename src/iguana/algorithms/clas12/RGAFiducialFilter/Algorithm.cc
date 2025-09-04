@@ -56,7 +56,7 @@ namespace iguana::clas12 {
       try {
         // YAML: calorimeter.strictness: [<int>, ...]
         auto v = GetOptionVector<int>("strictness",
-                                      YAMLReader::node_path_t{ "calorimeter", "strictness" });
+                                      YAMLReader::node_path_t{ "calorimeter" });
         if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
       } catch (...) { /* keep default */ }
     }
@@ -68,7 +68,7 @@ namespace iguana::clas12 {
     try {
       // YAML: forward_tagger.radius: [rmin, rmax]
       auto r = GetOptionVector<double>("radius",
-                                       YAMLReader::node_path_t{ "forward_tagger", "radius" });
+                                       YAMLReader::node_path_t{ "forward_tagger" });
       if (r.size() >= 2) {
         float a = static_cast<float>(r[0]);
         float b = static_cast<float>(r[1]);
@@ -80,7 +80,7 @@ namespace iguana::clas12 {
     try {
       // YAML: forward_tagger.holes_flat: [R, cx, cy, R, cx, cy, ...]
       auto flat = GetOptionVector<double>("holes_flat",
-                                          YAMLReader::node_path_t{ "forward_tagger", "holes_flat" });
+                                          YAMLReader::node_path_t{ "forward_tagger" });
       for (size_t i = 0; i + 2 < flat.size(); i += 3) {
         u_ft_params.holes.push_back({
           static_cast<float>(flat[i]),
@@ -256,17 +256,18 @@ namespace iguana::clas12 {
       if (runnum > 0) {
         try {
           p = { "calorimeter","masks", GetConfig()->InRange("runs", runnum),
-                "sectors", std::to_string(sector), layer, axis, "cal_mask" };
+                "sectors", std::to_string(sector), layer, axis };
         } catch (...) {
           p = { "calorimeter","masks","default",
-                "sectors", std::to_string(sector), layer, axis, "cal_mask" };
+                "sectors", std::to_string(sector), layer, axis };
         }
       } else {
         p = { "calorimeter","masks","default",
-              "sectors", std::to_string(sector), layer, axis, "cal_mask" };
+              "sectors", std::to_string(sector), layer, axis };
       }
 
       try {
+        // leaf key lives under '.../axis'
         auto flat = GetOptionVector<double>("cal_mask", p);
         return to_windows_flat(flat);
       } catch (...) {
