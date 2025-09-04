@@ -21,8 +21,6 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
 void RGAFiducialFilterValidator::LoadFTParamsFromYAML()
 {
   // defaults already set
-  ParseYAMLConfig();
-  if (!GetConfig()) return;
 
   try {
     auto r = GetOptionVector<double>("clas12::RGAFiducialFilter.forward_tagger.radius");

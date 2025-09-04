@@ -16,16 +16,10 @@ namespace iguana::clas12 {
   ///       s=1 -> {lv,lw} >=  9.0 cm
   ///       s=2 -> {lv,lw} >= 13.5 cm
   ///       s=3 -> {lv,lw} >= 18.0 cm
-  ///   * Forward Tagger annulus veto + fixed circular holes.
+  ///   * Forward Tagger annulus + fixed circular hole vetoes.
   ///
-  /// Defaults (strictness and FT) are read from Config.yaml under:
-  ///   clas12::RGAFiducialFilter:
-  ///     calorimeter.strictness: [2]
-  ///     forward_tagger.radius: [8.5, 15.5]
-  ///     forward_tagger.holes_flat: [r1, cx1, cy1, r2, cx2, cy2, ...]
-  ///
-  /// A programmatic caller may override strictness by calling SetStrictness()
-  /// BEFORE Start(). No environment variables are consulted for physics cuts.
+  /// Defaults are read from Config.yaml. A caller may override strictness via
+  /// SetStrictness(1|2|3) BEFORE Start().
   class RGAFiducialFilter : public Algorithm
   {
       DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
@@ -35,11 +29,10 @@ namespace iguana::clas12 {
       void Run  (hipo::banklist& banks) const override;
       void Stop () override;
 
-      /// Optional runtime override: call BEFORE Start(). Value clamped to [1,3].
       void SetStrictness(int strictness);
 
     private:
-      // --- data we read
+      // banks
       hipo::banklist::size_type b_particle{};
       hipo::banklist::size_type b_config{};
       hipo::banklist::size_type b_calor{};
@@ -47,26 +40,23 @@ namespace iguana::clas12 {
       bool m_have_calor = false;
       bool m_have_ft    = false;
 
-      // --- config (from YAML; strictness optionally overridden via SetStrictness)
+      // config
       struct FTParams {
         float rmin = 8.5f;
         float rmax = 15.5f;
-        std::vector<std::array<float,3>> holes; // {radius, cx, cy}
+        std::vector<std::array<float,3>> holes; // {R,cx,cy}
       };
       FTParams m_ft{};
-      int      m_strictness = 2;   // default; YAML may change; SetStrictness() may override
+      int      m_strictness = 1;   // default (YAML can override)
 
-      // --- helpers
+      // helpers
       struct CalHit { int sector=0; float lv=0, lw=0, lu=0; int layer=0; };
-      void LoadConfigFromYAML(); // safe if YAML absent
-
+      void LoadConfigFromYAML();
       static void CollectPCALHitsForTrack(const hipo::bank& cal, int pindex,
                                           std::vector<CalHit>& out_hits);
-
       bool PassPCalEdgeCuts(const std::vector<CalHit>& pcal_hits) const;
       bool PassFTFiducial(int track_index, const hipo::bank* ftBank) const;
 
-      // small debug toggle (optional)
       bool m_dbg = false;
   };
 

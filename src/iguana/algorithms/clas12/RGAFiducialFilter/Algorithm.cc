@@ -46,87 +46,141 @@ void RGAFiducialFilter::SetStrictness(int s) { m_strictness = std::clamp(s, 1, 3
 
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
-  if (const char* d = std::getenv("IGUANA_RGAFID_DEBUG"))
-    m_dbg = (std::string(d)=="1" || std::string(d)=="true" || std::string(d)=="TRUE");
+  // Debug knobs
+  dbg_on     = EnvOn("IGUANA_RGAFID_DEBUG");
+  dbg_masks  = false;                 // masks removed
+  dbg_ft     = EnvOn("IGUANA_RGAFID_DEBUG_FT");
+  dbg_events = EnvInt("IGUANA_RGAFID_DEBUG_EVENTS", 0);
 
-  LoadConfigFromYAML();
+  if (dbg_on) {
+    m_log->Info("[RGAFID][DEBUG] enabled. ft={}, events={}", dbg_ft, dbg_events);
+  }
 
+  // === Load YAML from the SAME directory as this algorithm (like ZVertexFilter) ===
+  // The framework search order already includes this algorithm's source dir.
+  ParseYAMLConfig();
+  if (dbg_on) m_log->Info("[RGAFID] YAML {}",
+                          GetConfig() ? "found (using same-dir Config.yaml)" : "not found (using defaults)");
+
+  // concurrent params
+  o_runnum         = ConcurrentParamFactory::Create<int>();
+  o_cal_strictness = ConcurrentParamFactory::Create<int>();
+
+  // ---- Strictness precedence: SetStrictness() > YAML > default(1) ----
+  if (!u_strictness_user.has_value()) {
+    try {
+      // YAML: clas12::RGAFiducialFilter: { calorimeter: { strictness: [1|2|3] } }
+      auto v = GetOptionVector<int>("calorimeter.strictness");
+      if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
+    } catch (...) { /* keep default */ }
+  }
+  if (!u_strictness_user.has_value()) u_strictness_user = 1;  // default
+
+  if (dbg_on) m_log->Info("[RGAFID] strictness (initial) = {}", *u_strictness_user);
+
+  // ---- FT params: defaults first; optional YAML override if present ----
+  u_ft_params = FTParams{}; // defaults rmin=8.5, rmax=15.5 and 4 holes
+  try {
+    auto rvec = GetOptionVector<double>("forward_tagger.radius");
+    if (rvec.size() >= 2) {
+      float a = static_cast<float>(rvec[0]);
+      float b = static_cast<float>(rvec[1]);
+      u_ft_params.rmin = std::min(a, b);
+      u_ft_params.rmax = std::max(a, b);
+    }
+  } catch (...) { /* keep defaults */ }
+
+  try {
+    auto flat = GetOptionVector<double>("forward_tagger.holes_flat");
+    if (!flat.empty()) {
+      u_ft_params.holes.clear();
+      for (size_t i = 0; i + 2 < flat.size(); i += 3) {
+        u_ft_params.holes.push_back({
+          static_cast<float>(flat[i]),
+          static_cast<float>(flat[i+1]),
+          static_cast<float>(flat[i+2])
+        });
+      }
+    }
+  } catch (...) { /* keep defaults */ }
+
+  if (dbg_on || dbg_ft) DumpFTParams();
+
+  // required banks
   b_particle = GetBankIndex(banks, "REC::Particle");
   b_config   = GetBankIndex(banks, "RUN::config");
-  if (banklist_has(banks, "REC::Calorimeter")) { b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor=true; }
-  if (banklist_has(banks, "REC::ForwardTagger")) { b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft=true; }
 
-  if (m_dbg) m_log->Info("[RGAFID] Start: strictness={}  FT r=[{:.1f},{:.1f}] holes={}",
-                         m_strictness, m_ft.rmin, m_ft.rmax, m_ft.holes.size());
+  // optional banks
+  if (banklist_has(banks, "REC::Calorimeter")) {
+    b_calor = GetBankIndex(banks, "REC::Calorimeter");
+    m_have_calor = true;
+  } else {
+    m_have_calor = false;
+    m_log->Info("Optional bank 'REC::Calorimeter' not in banklist; calorimeter fiducials will be skipped.");
+  }
+  if (banklist_has(banks, "REC::ForwardTagger")) {
+    b_ft = GetBankIndex(banks, "REC::ForwardTagger");
+    m_have_ft = true;
+  } else {
+    m_have_ft = false;
+    m_log->Info("Optional bank 'REC::ForwardTagger' not in banklist; FT fiducials will be skipped.");
+  }
 }
 
-void RGAFiducialFilter::Run(hipo::banklist& banks) const
+void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const
 {
-  auto& particle = GetBank(banks, b_particle, "REC::Particle");
-  const hipo::bank* cal = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter") : nullptr;
-  const hipo::bank* ft  = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
-  (void)GetBank(banks, b_config, "RUN::config");
+  std::lock_guard<std::mutex> lock(m_mutex);
+  o_runnum->Save(runnum, key);
 
-  particle.getMutableRowList().filter([this, cal, ft](auto, auto row)->int {
-    if (cal) {
-      std::vector<CalHit> pcal_hits;
-      CollectPCALHitsForTrack(*cal, row, pcal_hits);
-      if (!pcal_hits.empty() && !PassPCalEdgeCuts(pcal_hits)) return 0;
+  // If SetStrictness() was called programmatically, keep that;
+  // otherwise use whatever YAML gave us earlier (already in u_strictness_user).
+  const int strict = std::clamp(u_strictness_user.value_or(1), 1, 3);
+  o_cal_strictness->Save(strict, key);
+
+  if (dbg_on) {
+    m_log->Info("[RGAFID][Reload] run={} key={} strictness={}", runnum, (uint64_t)key, strict);
+  }
+}
+
+bool RGAFiducialFilter::Filter(int track_index,
+                               const hipo::bank* calBank,
+                               const hipo::bank* ftBank,
+                               concurrent_key_t key) const
+{
+  // --- Calorimeter: PCAL edge cut only (no dead-PMT masks) ---
+  if (calBank != nullptr) {
+    CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
+    if (h.has_any) {
+      const int strictness = GetCalStrictness(key);
+      if (!PassCalStrictness(h, strictness)) {
+        ++c_fail_edge;
+        if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
+          float min_lv = std::numeric_limits<float>::infinity();
+          float min_lw = std::numeric_limits<float>::infinity();
+          for (const auto& hit : h.L1) {
+            if (hit.lv < min_lv) min_lv = hit.lv;
+            if (hit.lw < min_lw) min_lw = hit.lw;
+          }
+          m_log->Info("[RGAFID][CAL] track={} strictness={} -> edge FAIL (min lv1={:.1f}, min lw1={:.1f})",
+                      track_index, strictness,
+                      std::isinf(min_lv)?0.f:min_lv, std::isinf(min_lw)?0.f:min_lw);
+        }
+        return false;
+      }
     }
-    if (!PassFTFiducial(row, ft)) return 0;
-    return 1;
-  });
-}
-
-void RGAFiducialFilter::Stop() {}
-
-void RGAFiducialFilter::CollectPCALHitsForTrack(const hipo::bank& cal, int pindex,
-                                                std::vector<CalHit>& out_hits)
-{
-  out_hits.clear();
-  const int n = cal.getRows();
-  for (int i=0;i<n;++i) {
-    if (cal.getInt("pindex", i) != pindex) continue;
-    if (cal.getInt("layer",  i) != 1)     continue; // PCAL only
-    CalHit h;
-    h.sector = cal.getInt ("sector", i);
-    h.layer  = 1;
-    h.lv     = cal.getFloat("lv", i);
-    h.lw     = cal.getFloat("lw", i);
-    h.lu     = cal.getFloat("lu", i);
-    out_hits.push_back(h);
   }
-}
 
-bool RGAFiducialFilter::PassPCalEdgeCuts(const std::vector<CalHit>& hits) const
-{
-  float min_lv = std::numeric_limits<float>::infinity();
-  float min_lw = std::numeric_limits<float>::infinity();
-  for (const auto& h : hits) {
-    if (h.lv < min_lv) min_lv = h.lv;
-    if (h.lw < min_lw) min_lw = h.lw;
-  }
-  const float thr = (m_strictness==1 ?  9.0f : m_strictness==2 ? 13.5f : 18.0f);
-  return !(min_lv < thr || min_lw < thr);
-}
-
-bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank) const
-{
-  if (!ftBank) return true;
-  const int n = ftBank->getRows();
-  for (int i=0;i<n;++i) {
-    if (ftBank->getInt("pindex", i) != track_index) continue;
-    const double x = ftBank->getFloat("x", i);
-    const double y = ftBank->getFloat("y", i);
-    const double r = std::sqrt(x*x + y*y);
-    if (r < m_ft.rmin || r > m_ft.rmax) return false;
-    for (auto const& H : m_ft.holes) {
-      const double d = std::hypot(x - H[1], y - H[2]);
-      if (d < H[0]) return false;
+  // --- Forward Tagger: circle window + holes ---
+  if (!PassFTFiducial(track_index, ftBank)) {
+    ++c_fail_ft;
+    if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
+      m_log->Info("[RGAFID][FT] track={} -> FT FAIL", track_index);
     }
-    return true; // first FT match decides
+    return false;
   }
-  return true; // no FT association
+
+  ++c_pass;
+  return true;
 }
 
 } // namespace iguana::clas12
