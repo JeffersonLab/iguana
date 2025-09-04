@@ -2,18 +2,19 @@
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/YAMLReader.h"
 
-#include <algorithm>   // clamp, min, max
+#include <algorithm>
 #include <array>
 #include <atomic>
-#include <cmath>       // sqrt
-#include <cstdlib>     // getenv
-#include <functional>  // hash
+#include <cmath>
+#include <cstdlib>
+#include <functional>
 #include <mutex>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <limits>
 
 namespace {
 std::atomic<int> g_dbg_events_seen{0};   // TU-local to avoid header changes
@@ -26,15 +27,6 @@ namespace iguana::clas12 {
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
-}
-
-static std::vector<std::pair<float,float>>
-to_windows_flat(const std::vector<double>& v) {
-  std::vector<std::pair<float,float>> w;
-  w.reserve(v.size() / 2);
-  for (size_t i = 0; i + 1 < v.size(); i += 2)
-    w.emplace_back(static_cast<float>(v[i]), static_cast<float>(v[i+1]));
-  return w;
 }
 
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter);
@@ -254,10 +246,13 @@ bool RGAFiducialFilter::Filter(int track_index,
       const int strictness = GetCalStrictness(key);
       if (!PassCalStrictness(h, strictness)) {
         if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
-          // print representative minima for context
-          auto minv = [](const std::vector<float>& v){ return v.empty()?0.f:*std::min_element(v.begin(), v.end()); };
-          m_log->Info("[RGAFID][CAL] track={} strictness={} -> edge FAIL (min lv1={}, min lw1={})",
-                      track_index, strictness, minv(h.L1.lv), minv(h.L1.lw));
+          // show minima seen in PCAL for context
+          float min_lv = std::numeric_limits<float>::infinity();
+          float min_lw = std::numeric_limits<float>::infinity();
+          for (const auto& hit : h.L1) { if (hit.lv < min_lv) min_lv = hit.lv; if (hit.lw < min_lw) min_lw = hit.lw; }
+          m_log->Info("[RGAFID][CAL] track={} strictness={} -> edge FAIL (min lv1={:.1f}, min lw1={:.1f})",
+                      track_index, strictness,
+                      std::isinf(min_lv)?0.f:min_lv, std::isinf(min_lw)?0.f:min_lw);
         }
         return false;
       }
@@ -265,8 +260,7 @@ bool RGAFiducialFilter::Filter(int track_index,
       if (strictness >= 2) {
         if (!PassCalDeadPMTMasks(h, key)) {
           if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
-            m_log->Info("[RGAFID][CAL] track={} -> dead-PMT mask FAIL (sec={})",
-                        track_index, h.sector);
+            m_log->Info("[RGAFID][CAL] track={} -> dead-PMT mask FAIL", track_index);
           }
           return false;
         }
@@ -296,17 +290,16 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
     if (calBank.getInt("pindex", i) != pindex) continue;
 
     out.has_any = true;
-    const int sector = calBank.getInt("sector", i);
-    if (out.sector == 0 && sector >= 1 && sector <= 6) out.sector = sector;
+    const int layer  = calBank.getInt("layer",  i);
+    CalHit hit;
+    hit.sector = calBank.getInt("sector", i);
+    hit.lv = calBank.getFloat("lv", i);
+    hit.lw = calBank.getFloat("lw", i);
+    hit.lu = calBank.getFloat("lu", i);
 
-    const int layer = calBank.getInt("layer", i);
-    const float lv = calBank.getFloat("lv", i);
-    const float lw = calBank.getFloat("lw", i);
-    const float lu = calBank.getFloat("lu", i);
-
-    if      (layer == 1) { out.L1.lv.push_back(lv); out.L1.lw.push_back(lw); out.L1.lu.push_back(lu); }
-    else if (layer == 4) { out.L4.lv.push_back(lv); out.L4.lw.push_back(lw); out.L4.lu.push_back(lu); }
-    else if (layer == 7) { out.L7.lv.push_back(lv); out.L7.lw.push_back(lw); out.L7.lu.push_back(lu); }
+    if      (layer == 1) out.L1.push_back(hit);
+    else if (layer == 4) out.L4.push_back(hit);
+    else if (layer == 7) out.L7.push_back(hit);
   }
   return out;
 }
@@ -319,11 +312,15 @@ static inline bool value_in_any_window(float v, const std::vector<std::pair<floa
 
 bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
 {
-  // Strictness is a PCAL-edge cut applied to ALL PCAL hits: we use minima.
-  if (h.L1.lv.empty() || h.L1.lw.empty()) return true; // no PCAL -> do not apply
+  // PCAL edge cut uses the *minimum* lv and lw across all PCAL hits for the track.
+  if (h.L1.empty()) return true; // no PCAL -> do not apply
 
-  const float min_lv = *std::min_element(h.L1.lv.begin(), h.L1.lv.end());
-  const float min_lw = *std::min_element(h.L1.lw.begin(), h.L1.lw.end());
+  float min_lv = std::numeric_limits<float>::infinity();
+  float min_lw = std::numeric_limits<float>::infinity();
+  for (const auto& hit : h.L1) {
+    if (hit.lv < min_lv) min_lv = hit.lv;
+    if (hit.lw < min_lw) min_lw = hit.lw;
+  }
 
   switch (strictness) {
     case 1: return !(min_lw <  9.0f || min_lv <  9.0f);
@@ -392,7 +389,7 @@ RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int /*runnum*/) 
 
     for (int s=1; s<=6; ++s) {
       SectorMasks sm;
-      const std::string base = "calorimeter.masks.0.sectors." + std::to_string(s) + ".";
+      const std::string base = "calorimeter.masks.0.sectors/" + std::to_string(s) + "/";
       (void)read_axis(base+"pcal.lv.cal_mask",  sm.pcal.lv);
       (void)read_axis(base+"pcal.lw.cal_mask",  sm.pcal.lw);
       (void)read_axis(base+"pcal.lu.cal_mask",  sm.pcal.lu);
@@ -421,25 +418,40 @@ bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, concurrent_key_t
   if (it == m_masks_by_run.end())
     it = m_masks_by_run.emplace(runnum, BuildCalMaskCache(runnum)).first;
 
-  const auto& m = it->second;
-  auto itsec = m.find(h.sector);
-  if (itsec == m.end()) return true;
-  const auto& sm = itsec->second;
+  const auto& mm = it->second;
 
-  auto any_in = [](const std::vector<float>& vals, const std::vector<window_t>& wins){
-    for (float v : vals) if (value_in_any_window(v, wins)) return true;
+  auto layer_fails = [&mm](const std::vector<CalHit>& hits,
+                           const std::function<bool(const CalHit&, const SectorMasks&)>& in_mask)->bool {
+    for (const auto& hit : hits) {
+      auto itsec = mm.find(hit.sector);
+      if (itsec == mm.end()) continue; // no masks for this sector
+      if (in_mask(hit, itsec->second)) return true;
+    }
     return false;
   };
 
-  const bool fail =
-    any_in(h.L1.lv, sm.pcal.lv) || any_in(h.L1.lw, sm.pcal.lw) || any_in(h.L1.lu, sm.pcal.lu) ||
-    any_in(h.L4.lv, sm.ecin.lv) || any_in(h.L4.lw, sm.ecin.lw) || any_in(h.L4.lu, sm.ecin.lu) ||
-    any_in(h.L7.lv, sm.ecout.lv)|| any_in(h.L7.lw, sm.ecout.lw)|| any_in(h.L7.lu, sm.ecout.lu);
+  const bool fail_pcal = layer_fails(h.L1, [](const CalHit& hit, const SectorMasks& sm){
+    return value_in_any_window(hit.lv, sm.pcal.lv)
+        || value_in_any_window(hit.lw, sm.pcal.lw)
+        || value_in_any_window(hit.lu, sm.pcal.lu);
+  });
+
+  const bool fail_ecin = layer_fails(h.L4, [](const CalHit& hit, const SectorMasks& sm){
+    return value_in_any_window(hit.lv, sm.ecin.lv)
+        || value_in_any_window(hit.lw, sm.ecin.lw)
+        || value_in_any_window(hit.lu, sm.ecin.lu);
+  });
+
+  const bool fail_ecout = layer_fails(h.L7, [](const CalHit& hit, const SectorMasks& sm){
+    return value_in_any_window(hit.lv, sm.ecout.lv)
+        || value_in_any_window(hit.lw, sm.ecout.lw)
+        || value_in_any_window(hit.lu, sm.ecout.lu);
+  });
+
+  const bool fail = fail_pcal || fail_ecin || fail_ecout;
 
   if ((dbg_on || dbg_masks) && fail && g_dbg_events_seen.load() < dbg_events) {
-    auto pick = [](const std::vector<float>& v){ return v.empty()?0.f:v.front(); };
-    m_log->Info("[RGAFID][MASK] sec={} (ex. lv1,lw1,lu1)=({:.1f},{:.1f},{:.1f}) -> FAIL",
-                h.sector, pick(h.L1.lv), pick(h.L1.lw), pick(h.L1.lu));
+    m_log->Info("[RGAFID][MASK] -> FAIL (sector-aware per-hit check)");
   }
 
   return !fail;
@@ -467,13 +479,7 @@ bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank
 
     for (auto const& h : u_ft_params.holes) {
       const double d = std::sqrt((x - h[1])*(x - h[1]) + (y - h[2])*(y - h[2]));
-      if (d < h[0]) {
-        if (dbg_ft && g_dbg_events_seen.load() < std::max(1, dbg_events)) {
-          m_log->Info("[RGAFID][FT] track={} inside hole R={:.2f} @({:.2f},{:.2f})",
-                      track_index, h[0], h[1], h[2]);
-        }
-        return false;
-      }
+      if (d < h[0]) return false;
     }
 
     return true; // first associated FT row decides
