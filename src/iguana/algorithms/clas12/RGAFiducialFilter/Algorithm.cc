@@ -188,28 +188,23 @@ namespace iguana::clas12 {
     MaskMap out;
     if (!GetConfig()) return out;
 
-    // InRange returns a node_finder_t, NOT a string.
-    auto inrange = GetConfig()->InRange("runs", runnum);
+    auto read_axis = [this, runnum](int sector, const char* layer, const char* axis) -> std::vector<window_t> {
+      YAMLReader::node_path_t p;
 
-    auto read_axis = [this,&inrange](int sector, const char* layer, const char* axis) -> std::vector<window_t> {
-      // 1) Try the run-range selected by InRange(...)
+      // Prefer the run-range selector; if it fails, use the literal "default" node
       try {
-        YAMLReader::node_path_t p = {
-          "calorimeter","masks", inrange, "sectors", std::to_string(sector), layer, axis
-        };
-        auto flat = GetOptionVector<double>("cal_mask", p);   // nested: lv: { cal_mask: [...] }
+        p = { "calorimeter","masks", GetConfig()->InRange("runs", runnum),
+              "sectors", std::to_string(sector), layer, axis };
+      } catch (...) {
+        p = { "calorimeter","masks", "default",
+              "sectors", std::to_string(sector), layer, axis };
+      }
+
+      try {
+        auto flat = GetOptionVector<double>("cal_mask", p);  // nested form only
         return to_windows_flat(flat);
       } catch (...) {
-        // 2) Fallback cleanly to the explicit "default" item
-        try {
-          YAMLReader::node_path_t p = {
-            "calorimeter","masks", "default", "sectors", std::to_string(sector), layer, axis
-          };
-          auto flat = GetOptionVector<double>("cal_mask", p);
-          return to_windows_flat(flat);
-        } catch (...) {
-          return {};
-        }
+        return {};
       }
     };
 
