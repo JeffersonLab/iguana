@@ -39,31 +39,86 @@ bool RGAFiducialFilter::banklist_has(hipo::banklist& banks, const char* name) {
 // -------- YAML (algo-local Config.yaml) ----------
 void RGAFiducialFilter::LoadConfigFromYAML()
 {
-  // This call makes the framework search *this algorithm’s* directory first,
-  // just like ZVertexFilter does. Safe if missing.
+  // Make the framework search THIS algorithm’s directory first (same as ZVertexFilter)
   ParseYAMLConfig();
-  if (!GetConfig()) return;
 
-  // Calorimeter strictness (default handled later)
-  try {
-    auto v = GetOptionVector<int>("calorimeter.strictness");
-    if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
-  } catch (...) {}
+  // If there’s no config at all, keep defaults and log once
+  if (!GetConfig()) {
+    m_log->Info("[RGAFID][CFG] No Config.yaml found for RGAFiducialFilter; using built-in defaults.");
+    return;
+  }
 
-  // FT annulus radii
+  // Helper to try two forms: bare + fully-qualified (defensive)
+  auto getDoubles = [&](const char* bare, const char* qualified) -> std::vector<double> {
+    try { return GetOptionVector<double>(bare, {bare}); } catch (...) {}
+    try {
+      // allow explicit namespace if someone writes it that way
+      // e.g. "clas12::RGAFiducialFilter.forward_tagger.radius"
+      return GetOptionVector<double>(qualified, {qualified});
+    } catch (...) {}
+    return {};
+  };
+  auto getInts = [&](const char* bare, const char* qualified) -> std::vector<int> {
+    try { return GetOptionVector<int>(bare, {bare}); } catch (...) {}
+    try { return GetOptionVector<int>(qualified, {qualified}); } catch (...) {}
+    return {};
+  };
+
+  // --- calorimeter.strictness ---
+  // Use an explicit node path relative to the algorithm root:
+  //   clas12::RGAFiducialFilter:
+  //     calorimeter:
+  //       strictness: [1]
   try {
-    auto r = GetOptionVector<double>("forward_tagger.radius");
+    auto v = GetOptionVector<int>("calorimeter.strictness",
+                                  {"calorimeter", "strictness"});
+    if (!v.empty()) {
+      u_strictness_user = std::clamp(v.front(), 1, 3);
+      m_log->Info("[RGAFID][CFG] YAML strictness = {}", *u_strictness_user);
+    }
+  } catch (...) {
+    // try a super-defensive fully-qualified key if someone copied a pattern
+    auto v = getInts("clas12::RGAFiducialFilter.calorimeter.strictness",
+                     "clas12::RGAFiducialFilter.calorimeter.strictness");
+    if (!v.empty()) {
+      u_strictness_user = std::clamp(v.front(), 1, 3);
+      m_log->Info("[RGAFID][CFG] YAML strictness (qualified) = {}", *u_strictness_user);
+    } else {
+      m_log->Info("[RGAFID][CFG] strictness not in YAML; default will be used.");
+    }
+  }
+
+  // --- forward_tagger.radius ---
+  try {
+    auto r = GetOptionVector<double>("forward_tagger.radius",
+                                     {"forward_tagger", "radius"});
     if (r.size() >= 2) {
       float a = static_cast<float>(r[0]);
       float b = static_cast<float>(r[1]);
       u_ft_params.rmin = std::min(a, b);
       u_ft_params.rmax = std::max(a, b);
+      m_log->Info("[RGAFID][CFG] YAML FT radius = [{:.3f}, {:.3f}]",
+                  u_ft_params.rmin, u_ft_params.rmax);
     }
-  } catch (...) {}
+  } catch (...) {
+    auto r = getDoubles("clas12::RGAFiducialFilter.forward_tagger.radius",
+                        "clas12::RGAFiducialFilter.forward_tagger.radius");
+    if (r.size() >= 2) {
+      float a = static_cast<float>(r[0]);
+      float b = static_cast<float>(r[1]);
+      u_ft_params.rmin = std::min(a, b);
+      u_ft_params.rmax = std::max(a, b);
+      m_log->Info("[RGAFID][CFG] YAML FT radius (qualified) = [{:.3f}, {:.3f}]",
+                  u_ft_params.rmin, u_ft_params.rmax);
+    } else {
+      m_log->Info("[RGAFID][CFG] FT radius not in YAML; defaults kept.");
+    }
+  }
 
-  // FT holes (R, cx, cy) flat
+  // --- forward_tagger.holes_flat ---
   try {
-    auto flat = GetOptionVector<double>("forward_tagger.holes_flat");
+    auto flat = GetOptionVector<double>("forward_tagger.holes_flat",
+                                        {"forward_tagger", "holes_flat"});
     if (!flat.empty()) {
       u_ft_params.holes.clear();
       for (size_t i = 0; i + 2 < flat.size(); i += 3) {
@@ -73,8 +128,25 @@ void RGAFiducialFilter::LoadConfigFromYAML()
           static_cast<float>(flat[i+2])
         });
       }
+      m_log->Info("[RGAFID][CFG] YAML FT holes set: {} holes", u_ft_params.holes.size());
     }
-  } catch (...) {}
+  } catch (...) {
+    auto flat = getDoubles("clas12::RGAFiducialFilter.forward_tagger.holes_flat",
+                           "clas12::RGAFiducialFilter.forward_tagger.holes_flat");
+    if (!flat.empty()) {
+      u_ft_params.holes.clear();
+      for (size_t i = 0; i + 2 < flat.size(); i += 3) {
+        u_ft_params.holes.push_back({
+          static_cast<float>(flat[i]),
+          static_cast<float>(flat[i+1]),
+          static_cast<float>(flat[i+2])
+        });
+      }
+      m_log->Info("[RGAFID][CFG] YAML FT holes set (qualified): {} holes", u_ft_params.holes.size());
+    } else {
+      m_log->Info("[RGAFID][CFG] FT holes not in YAML; defaults kept.");
+    }
+  }
 }
 
 void RGAFiducialFilter::SetStrictness(int s) {

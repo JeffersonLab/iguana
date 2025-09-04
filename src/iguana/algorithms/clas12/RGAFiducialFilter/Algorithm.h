@@ -24,6 +24,17 @@ namespace iguana::clas12 {
 class RGAFiducialFilter : public Algorithm {
   DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
+struct FTParams {
+  float rmin = 8.5f;
+  float rmax = 15.5f;
+  std::vector<std::array<float,3>> holes{
+      std::array<float,3>{1.60f, -8.42f,   9.89f},
+      std::array<float,3>{1.60f, -9.89f,  -5.33f},
+      std::array<float,3>{2.30f, -6.15f, -13.00f},
+      std::array<float,3>{2.00f,  3.70f,  -6.50f}
+  };
+};
+
 public:
   void Start(hipo::banklist& banks) override;
   void Run  (hipo::banklist& banks) const override;
