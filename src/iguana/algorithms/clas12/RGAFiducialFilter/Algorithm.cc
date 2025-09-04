@@ -54,8 +54,9 @@ namespace iguana::clas12 {
     }
     if (!u_strictness_user.has_value()) {
       try {
-        auto v = GetOptionVector<int>("cal.strictness",
-                                      YAMLReader::node_path_t{ "calorimeter", "strictness" });
+        // YAML: calorimeter.strictness: [<int>, ...]
+        auto v = GetOptionVector<int>("strictness",
+                                      YAMLReader::node_path_t{ "calorimeter" });
         if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
       } catch (...) { /* keep default */ }
     }
@@ -65,8 +66,9 @@ namespace iguana::clas12 {
     u_ft_params = FTParams{}; // default rmin=8.5, rmax=15.5, empty holes
 
     try {
-      auto r = GetOptionVector<double>("ft.radius",
-                                       YAMLReader::node_path_t{ "forward_tagger", "radius" });
+      // YAML: forward_tagger.radius: [rmin, rmax]
+      auto r = GetOptionVector<double>("radius",
+                                       YAMLReader::node_path_t{ "forward_tagger" });
       if (r.size() >= 2) {
         float a = static_cast<float>(r[0]);
         float b = static_cast<float>(r[1]);
@@ -76,8 +78,9 @@ namespace iguana::clas12 {
     } catch (...) {}
 
     try {
-      auto flat = GetOptionVector<double>("ft.holes_flat",
-                                          YAMLReader::node_path_t{ "forward_tagger", "holes_flat" });
+      // YAML: forward_tagger.holes_flat: [R, cx, cy, R, cx, cy, ...]
+      auto flat = GetOptionVector<double>("holes_flat",
+                                          YAMLReader::node_path_t{ "forward_tagger" });
       for (size_t i = 0; i + 2 < flat.size(); i += 3) {
         u_ft_params.holes.push_back({
           static_cast<float>(flat[i]),
@@ -244,24 +247,28 @@ namespace iguana::clas12 {
   RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int runnum) const
   {
     MaskMap out;
-
     if (!GetConfig()) return out; // no YAML -> no dead-PMT masks
 
     auto read_axis = [this, runnum](int sector, const char* layer, const char* axis) -> std::vector<window_t> {
       YAMLReader::node_path_t p;
 
-      // Prefer the run-range selector; if it fails, use the literal "default" node
-      try {
-        p = { "calorimeter","masks", GetConfig()->InRange("runs", runnum),
-              "sectors", std::to_string(sector), layer, axis, "cal_mask" };
-      } catch (...) {
+      // Avoid noisy InRange() errors for invalid/unknown run numbers
+      if (runnum > 0) {
+        try {
+          p = { "calorimeter","masks", GetConfig()->InRange("runs", runnum),
+                "sectors", std::to_string(sector), layer, axis };
+        } catch (...) {
+          p = { "calorimeter","masks","default",
+                "sectors", std::to_string(sector), layer, axis };
+        }
+      } else {
         p = { "calorimeter","masks","default",
-              "sectors", std::to_string(sector), layer, axis, "cal_mask" };
+              "sectors", std::to_string(sector), layer, axis };
       }
 
       try {
-        // NOTE: label is only for logging; the actual data comes from the path.
-        auto flat = GetOptionVector<double>("cal.masks", p);
+        // The key at the leaf mapping is "cal_mask", which is a flat sequence.
+        auto flat = GetOptionVector<double>("cal_mask", p);
         return to_windows_flat(flat);
       } catch (...) {
         return {};
