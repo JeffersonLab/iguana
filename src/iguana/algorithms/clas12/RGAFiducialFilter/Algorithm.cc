@@ -54,9 +54,9 @@ namespace iguana::clas12 {
     }
     if (!u_strictness_user.has_value()) {
       try {
-        // YAML: calorimeter.strictness: [<int>, ...]
-        auto v = GetOptionVector<int>("strictness",
-                                      YAMLReader::node_path_t{ "calorimeter" });
+        // NOTE: pass FULL path including leaf
+        auto v = GetOptionVector<int>("cal.strictness",
+                                      YAMLReader::node_path_t{ "calorimeter", "strictness" });
         if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
       } catch (...) { /* keep default */ }
     }
@@ -66,9 +66,9 @@ namespace iguana::clas12 {
     u_ft_params = FTParams{}; // default rmin=8.5, rmax=15.5, empty holes
 
     try {
-      // YAML: forward_tagger.radius: [rmin, rmax]
-      auto r = GetOptionVector<double>("radius",
-                                       YAMLReader::node_path_t{ "forward_tagger" });
+      // forward_tagger.radius: [rmin, rmax]
+      auto r = GetOptionVector<double>("ft.radius",
+                                       YAMLReader::node_path_t{ "forward_tagger", "radius" });
       if (r.size() >= 2) {
         float a = static_cast<float>(r[0]);
         float b = static_cast<float>(r[1]);
@@ -77,10 +77,11 @@ namespace iguana::clas12 {
       }
     } catch (...) {}
 
+    // Prefer holes_flat; if absent, fall back to holes (list of triplets)
+    bool have_holes = false;
     try {
-      // YAML: forward_tagger.holes_flat: [R, cx, cy, R, cx, cy, ...]
-      auto flat = GetOptionVector<double>("holes_flat",
-                                          YAMLReader::node_path_t{ "forward_tagger" });
+      auto flat = GetOptionVector<double>("ft.holes_flat",
+                                          YAMLReader::node_path_t{ "forward_tagger", "holes_flat" });
       for (size_t i = 0; i + 2 < flat.size(); i += 3) {
         u_ft_params.holes.push_back({
           static_cast<float>(flat[i]),
@@ -88,7 +89,25 @@ namespace iguana::clas12 {
           static_cast<float>(flat[i+2])
         });
       }
+      if (!u_ft_params.holes.empty()) have_holes = true;
     } catch (...) {}
+
+    if (!have_holes) {
+      // forward_tagger.holes: [[R,cx,cy], ...]
+      try {
+        // We can't parse nested sequences directly with GetOptionVector<double> in one shot,
+        // so read a flattened view if your YAMLReader supports it; otherwise read as flat and stride 3.
+        auto flat = GetOptionVector<double>("ft.holes_as_flat",
+                                            YAMLReader::node_path_t{ "forward_tagger", "holes" });
+        for (size_t i = 0; i + 2 < flat.size(); i += 3) {
+          u_ft_params.holes.push_back({
+            static_cast<float>(flat[i]),
+            static_cast<float>(flat[i+1]),
+            static_cast<float>(flat[i+2])
+          });
+        }
+      } catch (...) {}
+    }
 
     // required banks
     b_particle = GetBankIndex(banks, "REC::Particle");
@@ -256,19 +275,19 @@ namespace iguana::clas12 {
       if (runnum > 0) {
         try {
           p = { "calorimeter","masks", GetConfig()->InRange("runs", runnum),
-                "sectors", std::to_string(sector), layer, axis };
+                "sectors", std::to_string(sector), layer, axis, "cal_mask" };
         } catch (...) {
           p = { "calorimeter","masks","default",
-                "sectors", std::to_string(sector), layer, axis };
+                "sectors", std::to_string(sector), layer, axis, "cal_mask" };
         }
       } else {
         p = { "calorimeter","masks","default",
-              "sectors", std::to_string(sector), layer, axis };
+              "sectors", std::to_string(sector), layer, axis, "cal_mask" };
       }
 
       try {
-        // leaf key lives under '.../axis'
-        auto flat = GetOptionVector<double>("cal_mask", p);
+        // FULL path points at the leaf sequence
+        auto flat = GetOptionVector<double>("cal.masks", p);
         return to_windows_flat(flat);
       } catch (...) {
         return {};
