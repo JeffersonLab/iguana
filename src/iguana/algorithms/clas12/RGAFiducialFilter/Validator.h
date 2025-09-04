@@ -1,23 +1,21 @@
 #pragma once
 
-#include "iguana/algorithms/TypeDefs.h"
 #include "iguana/algorithms/Validator.h"
-
-#include <TFile.h>
+#include "iguana/algorithms/TypeDefs.h"
 #include <TH1.h>
 #include <TH2.h>
+#include <TFile.h>
 #include <array>
 #include <unordered_map>
 
 namespace iguana::clas12 {
 
-  /// Calorimeter validation:
-  ///   For each PID (11=e-, 22=γ) and each layer (PCAL/ECIN/ECOUT),
-  ///   make two 2x3 canvases (sector grids): lv vs lw, lv vs lu.
-  ///
-  /// Forward Tagger validation:
-  ///   One 1x2 canvas (left: electrons, right: photons) plotting y vs x.
-  ///   Only ONE FT image is saved: rga_fiducial_ft_xy.png (post-cuts).
+  /// Validator:
+  ///   * Runs RGAFiducialFilter
+  ///   * PCAL (lv & lw) per sector (1..6), range [0,27]:
+  ///       - solid lines = kept (after cuts)
+  ///       - dashed lines = cut (removed by any cut)
+  ///   * FT x–y: 2×2 grid (rows=e-/γ, cols=before/after), with annulus & holes.
   class RGAFiducialFilterValidator : public Validator
   {
       DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
@@ -28,39 +26,44 @@ namespace iguana::clas12 {
       void Stop () override;
 
     private:
-      // banks we read (indices valid only if corresponding m_have_* is true)
+      // banks
       hipo::banklist::size_type b_particle{};
       hipo::banklist::size_type b_calor{};
       hipo::banklist::size_type b_ft{};
       bool m_have_calor = false;
       bool m_have_ft    = false;
 
-      // pids to plot
-      const std::array<int,2> u_pid_list { 11, 22 }; // electrons, photons
+      // algo sequence
+      std::unique_ptr<AlgorithmSequence> m_seq;
 
-      // TH2 containers for calorimeter: [pid][layer 0..2][sector 1..6]
-      struct SecH2 { std::array<TH2D*, 7> sec{}; }; // use [1..6]
-      struct LayerH2 { SecH2 lv_lw, lv_lu; };
-      struct PlotSets { std::array<LayerH2, 3> layer; };
+      // PID rows we care about
+      const std::array<int,2> kPIDs{11,22};
 
-      // one set per PID
-      std::unordered_map<int, PlotSets> u_plots2d;
+      // PCAL hists per PID & sector
+      struct SecHists {
+        TH1D* lv_kept=nullptr; TH1D* lv_cut=nullptr;
+        TH1D* lw_kept=nullptr; TH1D* lw_cut=nullptr;
+      };
+      using PerPIDCal = std::array<SecHists, 7>; // index 1..6
+      std::unordered_map<int, PerPIDCal> m_cal;
 
-      // FT: per-PID x-y occupancy (post cuts)
-      std::unordered_map<int, TH2D*> u_ft_xy;
+      // FT hists per PID (before/after)
+      struct FTHists { TH2F* before=nullptr; TH2F* after=nullptr; };
+      std::unordered_map<int, FTHists> m_ft_h;
+
+      // FT overlay params (read from YAML, with sensible defaults)
+      struct FTDraw { float rmin=8.5f, rmax=15.5f; std::vector<std::array<float,3>> holes; };
+      FTDraw m_ftdraw{};
 
       // output
-      TString m_output_file_basename;
-      TFile*  m_output_file = nullptr;
+      TString m_base;
+      TFile*  m_out = nullptr;
 
       // helpers
-      static int         LayerToIndex(int layer);       // 1->0, 4->1, 7->2, else -1
-      static const char* LayerName(int layer_idx);      // "PCAL","ECIN","ECOUT"
-      static const char* PIDName(int pid);              // "Electrons"/"Photons"
-
-      void BookPlotsForPID(int pid);
-      void DrawSectorGrid2D(int pid, int layer_idx, bool lv_vs_lw); // false -> lv_vs_lu
-      void DrawFTCanvas();
+      void LoadFTParamsFromYAML();
+      void BookIfNeeded();
+      void DrawCalCanvas(int pid, const char* title);
+      void DrawFTCanvas2x2();
   };
 
 } // namespace iguana::clas12

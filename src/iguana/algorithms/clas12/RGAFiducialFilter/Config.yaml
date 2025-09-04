@@ -1,19 +1,18 @@
 clas12::RGAFiducialFilter:
   calorimeter:
-    strictness: [3]   # env IGUANA_RGAFID_STRICTNESS still takes precedence
+    # Default strictness if not overridden programmatically via SetStrictness(1|2|3)
+    # s=1 -> lv,lw >=  9.0 cm
+    # s=2 -> lv,lw >= 13.5 cm
+    # s=3 -> lv,lw >= 18.0 cm
+    strictness: [1]
 
   forward_tagger:
+    # Allowed radial window (cm)
     radius: [8.5, 15.5]
-    holes_flat: [1.60, -8.42, 9.89, 1.60, -9.89, -5.33, 2.30, -6.15, -13.00, 2.00, 3.70, -6.50]
 
-  # To override masks, enable:
-  #   IGUANA_RGAFID_USE_YAML=1
-  # and supply masks like:
-  # calorimeter:
-  #   masks:
-  #     - sectors:
-  #         "1":
-  #           pcal:  { lw: { cal_mask: [72.0, 94.5, 220.5, 234.0] }, lv: { cal_mask: [] }, lu: { cal_mask: [] } }
-  #         "2":
-  #           pcal:  { lv: { cal_mask: [99.0, 117.0] } }
-  #         # ... etc for 3..6 and ecin/ecout {lv,lw,lu}
+    # Circular holes (radius, cx, cy) flattened
+    holes_flat:
+      [ 1.60, -8.42,  9.89,
+        1.60, -9.89, -5.33,
+        2.30, -6.15, -13.00,
+        2.00,  3.70, -6.50 ]

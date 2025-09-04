@@ -4,122 +4,70 @@
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/ConcurrentParam.h"
 
-#include <optional>
-#include <mutex>
-#include <unordered_map>
-#include <vector>
 #include <array>
-#include <utility>
+#include <optional>
 #include <string>
-#include <atomic>
-#include <functional>
+#include <vector>
 
 namespace iguana::clas12 {
 
-  /// RGA fiducial filter with calorimeter + forward tagger cuts.
+  /// RGA fiducial filter (minimal):
+  ///   * PCAL-only edge cuts on lv & lw with strictness thresholds:
+  ///       s=1 -> {lv,lw} >=  9.0 cm
+  ///       s=2 -> {lv,lw} >= 13.5 cm
+  ///       s=3 -> {lv,lw} >= 18.0 cm
+  ///   * Forward Tagger annulus veto + fixed circular holes.
   ///
-  /// Input banks: REC::Particle (tracks), REC::Calorimeter (optional),
-  ///              REC::ForwardTagger (optional), RUN::config
-  /// Output bank: REC::Particle (tracks)
+  /// Defaults (strictness and FT) are read from Config.yaml under:
+  ///   clas12::RGAFiducialFilter:
+  ///     calorimeter.strictness: [2]
+  ///     forward_tagger.radius: [8.5, 15.5]
+  ///     forward_tagger.holes_flat: [r1, cx1, cy1, r2, cx2, cy2, ...]
   ///
-  /// Strictness precedence (PCAL only):
-  ///   SetStrictness() > env IGUANA_RGAFID_STRICTNESS > YAML [calorimeter.strictness[0]] > default(1)
-  /// YAML is read only if IGUANA_RGAFID_USE_YAML=1.
+  /// A programmatic caller may override strictness by calling SetStrictness()
+  /// BEFORE Start(). No environment variables are consulted for physics cuts.
   class RGAFiducialFilter : public Algorithm
   {
       DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
     public:
-      struct CalHit { int sector=0; float lv=0, lw=0, lu=0; };
-      struct CalLayers {
-        std::vector<CalHit> L1;  // PCAL   (layer==1)
-        std::vector<CalHit> L4;  // ECIN   (layer==4)
-        std::vector<CalHit> L7;  // ECOUT  (layer==7)
-        bool has_any = false;
-      };
-
       void Start(hipo::banklist& banks) override;
       void Run  (hipo::banklist& banks) const override;
       void Stop () override;
 
-      /// Prepare per-event cache (run-dependent)
-      concurrent_key_t PrepareEvent(int runnum) const;
-
-      /// Core filter: applies calorimeter cuts (with strictness) and forward-tagger cuts.
-      /// Each detector's cuts are applied only if its bank is present.
-      bool Filter(int track_index,
-                  const hipo::bank* calBank,   // nullptr => skip cal cuts
-                  const hipo::bank* ftBank,    // nullptr => skip FT cuts
-                  concurrent_key_t key) const;
-
-      /// Set strictness (1..3). Call BEFORE Start(). Values are clamped to [1,3].
+      /// Optional runtime override: call BEFORE Start(). Value clamped to [1,3].
       void SetStrictness(int strictness);
 
-      // Accessors (thread-safe via ConcurrentParam)
-      int GetRunNum(concurrent_key_t key) const;
-      int GetCalStrictness(concurrent_key_t key) const;
-
     private:
-      // Calorimeter helpers
-      static CalLayers CollectCalHitsForTrack(const hipo::bank& calBank, int track_index);
-      static bool PassCalStrictness(const CalLayers& h, int strictness);
+      // --- data we read
+      hipo::banklist::size_type b_particle{};
+      hipo::banklist::size_type b_config{};
+      hipo::banklist::size_type b_calor{};
+      hipo::banklist::size_type b_ft{};
+      bool m_have_calor = false;
+      bool m_have_ft    = false;
 
-      // cached masks: windows per sector/layer/axis
-      using window_t = std::pair<float,float>;
-      struct AxisWins { std::vector<window_t> lv, lw, lu; };
-      struct SectorMasks { AxisWins pcal, ecin, ecout; };
-      using MaskMap = std::unordered_map<int, SectorMasks>; // key = sector 1..6
-
-      bool PassCalDeadPMTMasks(const CalLayers& h, concurrent_key_t key) const;
-      MaskMap BuildCalMaskCache(int runnum) const;
-
-      // Forward Tagger
+      // --- config (from YAML; strictness optionally overridden via SetStrictness)
       struct FTParams {
         float rmin = 8.5f;
         float rmax = 15.5f;
         std::vector<std::array<float,3>> holes; // {radius, cx, cy}
       };
+      FTParams m_ft{};
+      int      m_strictness = 2;   // default; YAML may change; SetStrictness() may override
+
+      // --- helpers
+      struct CalHit { int sector=0; float lv=0, lw=0, lu=0; int layer=0; };
+      void LoadConfigFromYAML(); // safe if YAML absent
+
+      static void CollectPCALHitsForTrack(const hipo::bank& cal, int pindex,
+                                          std::vector<CalHit>& out_hits);
+
+      bool PassPCalEdgeCuts(const std::vector<CalHit>& pcal_hits) const;
       bool PassFTFiducial(int track_index, const hipo::bank* ftBank) const;
 
-      /// Load per-run options (strictness from user/env/YAML; cal masks from YAML;
-      /// FT parameters from YAML if present, else defaults).
-      void Reload(int runnum, concurrent_key_t key) const;
-
-      // bank indices (set only if present at Start)
-      hipo::banklist::size_type b_particle{}, b_config{};
-      hipo::banklist::size_type b_calor{}; bool m_have_calor = false;
-      hipo::banklist::size_type b_ft{};    bool m_have_ft    = false;
-
-      // cached (per-run) config
-      mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
-      mutable std::unique_ptr<ConcurrentParam<int>> o_cal_strictness;
-
-      // mask cache per run
-      mutable std::unordered_map<int, MaskMap> m_masks_by_run;
-
-      // user-provided strictness (if any)
-      std::optional<int> u_strictness_user;
-
-      // FT parameters (global, not run-dependent)
-      FTParams u_ft_params;
-
-      // Debug controls (read once at Start)
-      bool dbg_on = false;
-      bool dbg_masks = false;
-      bool dbg_ft = false;
-      int  dbg_events = 0;         // how many track decisions to print
-      mutable std::atomic<int> dbg_events_seen {0};
-
-      // --- diag counters (printed in Stop) ---
-      mutable std::atomic<long> c_pass{0}, c_fail_edge{0}, c_fail_mask{0}, c_fail_ft{0};
-
-      // helpers
-      static bool EnvOn(const char* name);
-      static int  EnvInt(const char* name, int def);
-      void DumpFTParams() const;
-      void DumpMaskSummary(int runnum, const MaskMap& mm) const;
-
-      mutable std::mutex m_mutex;
+      // small debug toggle (optional)
+      bool m_dbg = false;
   };
 
 } // namespace iguana::clas12

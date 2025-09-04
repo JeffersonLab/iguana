@@ -1,261 +1,291 @@
 #include "Validator.h"
-#include <cstdlib>   // setenv / _putenv_s
+#include "iguana/services/YAMLReader.h"
 
 #include <TCanvas.h>
-#include <TPad.h>
 #include <TLegend.h>
-#include <unordered_set>
+#include <TEllipse.h>
+
+#include <set>
+#include <unordered_map>
 
 namespace iguana::clas12 {
 
-  REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
+REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
 
-  static bool banklist_has(hipo::banklist& banks, const char* name) {
-    for (auto& b : banks) {
-      if (b.getSchema().getName() == name) return true;
+// small util
+static bool banklist_has(hipo::banklist& banks, const char* name) {
+  for (auto& b : banks) if (b.getSchema().getName() == name) return true;
+  return false;
+}
+
+void RGAFiducialFilterValidator::LoadFTParamsFromYAML()
+{
+  // defaults already set
+  ParseYAMLConfig();
+  if (!GetConfig()) return;
+
+  try {
+    auto r = GetOptionVector<double>("clas12::RGAFiducialFilter.forward_tagger.radius");
+    if (r.empty()) r = GetOptionVector<double>("forward_tagger.radius"); // allow bare
+    if (r.size() >= 2) {
+      float a = (float)r[0], b = (float)r[1];
+      m_ftdraw.rmin = std::min(a,b); m_ftdraw.rmax = std::max(a,b);
     }
-    return false;
-  }
+  } catch (...) {}
 
-  // static helpers
-  int RGAFiducialFilterValidator::LayerToIndex(int layer) {
-    if (layer == 1) return 0; // PCAL
-    if (layer == 4) return 1; // ECIN
-    if (layer == 7) return 2; // ECOUT
-    return -1;
-  }
-  const char* RGAFiducialFilterValidator::LayerName(int i) {
-    static const char* names[3] = {"PCAL","ECIN","ECOUT"};
-    return (i>=0 && i<3) ? names[i] : "UNK";
-  }
-  const char* RGAFiducialFilterValidator::PIDName(int pid) {
-    return (pid == 11) ? "Electrons" : (pid == 22) ? "Photons" : "PID";
-  }
+  try {
+    auto flat = GetOptionVector<double>("clas12::RGAFiducialFilter.forward_tagger.holes_flat");
+    if (flat.empty()) flat = GetOptionVector<double>("forward_tagger.holes_flat");
+    m_ftdraw.holes.clear();
+    for (size_t i=0;i+2<flat.size(); i+=3)
+      m_ftdraw.holes.push_back({(float)flat[i], (float)flat[i+1], (float)flat[i+2]});
+  } catch (...) {}
+}
 
-  void RGAFiducialFilterValidator::BookPlotsForPID(int pid)
-  {
-    auto& sets = u_plots2d[pid];
+void RGAFiducialFilterValidator::BookIfNeeded()
+{
+  // PCAL: range 0..27 cm, 0.5 cm bins
+  const int nb=54; const double lo=0, hi=27;
 
-    // 90 bins x 4.5 cm = 405 cm range (calorimeter axes)
-    const int    nb = 90;
-    const double lo = 0.0;
-    const double hi = 405.0;
-
-    for (int L = 0; L < 3; ++L) {
-      for (int s = 1; s <= 6; ++s) {
-        if (!sets.layer[L].lv_lw.sec[s]) {
-          TString hname  = Form("h2_%d_%s_lv_lw_s%d", pid, LayerName(L), s);
-          TString htitle = Form("%s %s Sector %d;lv (cm);lw (cm)", PIDName(pid), LayerName(L), s);
-          auto* h = new TH2D(hname, htitle, nb, lo, hi, nb, lo, hi);
-          h->SetStats(0); h->GetXaxis()->SetTitleOffset(1.1); h->GetYaxis()->SetTitleOffset(1.25);
-          sets.layer[L].lv_lw.sec[s] = h;
-        }
-        if (!sets.layer[L].lv_lu.sec[s]) {
-          TString hname  = Form("h2_%d_%s_lv_lu_s%d", pid, LayerName(L), s);
-          TString htitle = Form("%s %s Sector %d;lv (cm);lu (cm)", PIDName(pid), LayerName(L), s);
-          auto* h = new TH2D(hname, htitle, nb, lo, hi, nb, lo, hi);
-          h->SetStats(0); h->GetXaxis()->SetTitleOffset(1.1); h->GetYaxis()->SetTitleOffset(1.25);
-          sets.layer[L].lv_lu.sec[s] = h;
-        }
+  for (int pid : kPIDs) {
+    auto& P = m_cal[pid];
+    for (int s=1; s<=6; ++s) {
+      if (!P[s].lv_kept) {
+        P[s].lv_kept = new TH1D(Form("h_pcal_lv_kept_pid%d_s%d", pid, s),
+                                Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+        P[s].lv_kept->SetStats(0);
       }
-    }
-
-    // FT per-PID occupancy (y vs x) — single canvas later (post-cuts only)
-    if (!u_ft_xy[pid]) {
-      TString hname  = Form("h2_ft_xy_pid%d", pid);
-      TString htitle = Form("Forward Tagger - %s;y (cm);x (cm)", PIDName(pid));
-      u_ft_xy[pid] = new TH2D(hname, htitle, 200, -20.0, 20.0, 200, -20.0, 20.0);
-      u_ft_xy[pid]->SetStats(0);
-      u_ft_xy[pid]->GetXaxis()->SetTitleOffset(1.1);
-      u_ft_xy[pid]->GetYaxis()->SetTitleOffset(1.25);
-    }
-  }
-
-  void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
-  {
-    // Force strictness=3 in validator so we exercise dead-PMT masks
-    #if defined(_WIN32)
-      _putenv_s("IGUANA_RGAFID_STRICTNESS", "3");
-    #else
-      setenv("IGUANA_RGAFID_STRICTNESS", "3", 1);
-    #endif
-
-    // Also default the debug to on for one pass (user can turn off via env)
-    if (!std::getenv("IGUANA_RGAFID_DEBUG"))
-      setenv("IGUANA_RGAFID_DEBUG", "1", 0);
-    if (!std::getenv("IGUANA_RGAFID_DEBUG_EVENTS"))
-      setenv("IGUANA_RGAFID_DEBUG_EVENTS", "50", 0); // print first 50 track decisions
-
-    m_algo_seq = std::make_unique<AlgorithmSequence>();
-    m_algo_seq->Add("clas12::RGAFiducialFilter");
-    m_algo_seq->Start(banks);
-
-    // required
-    b_particle = GetBankIndex(banks, "REC::Particle");
-
-    // optional banks
-    if (banklist_has(banks, "REC::Calorimeter")) {
-      b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor = true;
-    } else {
-      m_have_calor = false;
-      m_log->Info("Optional bank 'REC::Calorimeter' not in banklist; calorimeter plots will be skipped.");
-    }
-
-    if (banklist_has(banks, "REC::ForwardTagger")) {
-      b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft = true;
-    } else {
-      m_have_ft = false;
-      m_log->Info("Optional bank 'REC::ForwardTagger' not in banklist; FT plots will be skipped.");
-    }
-
-    // output base: rga_fiducial
-    if (auto output_dir = GetOutputDirectory()) {
-      m_output_file_basename = output_dir.value() + std::string("/rga_fiducial");
-      m_output_file          = new TFile(m_output_file_basename + ".root", "RECREATE");
-    }
-
-    // book plots
-    for (auto pid : u_pid_list) BookPlotsForPID(pid);
-  }
-
-  void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
-  {
-    auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
-
-    // Count before
-    int before = static_cast<int>(particle_bank.getRowList().size());
-
-    // run the filter first (bank is filtered in-place)
-    m_algo_seq->Run(banks);
-
-    // survivors by pid (post-cut)
-    std::unordered_map<int, std::unordered_set<int>> survivors;
-    for (auto pid : u_pid_list) survivors[pid];
-
-    for (auto const& row : particle_bank.getRowList()) {
-      const int pid = particle_bank.getInt("pid", row);
-      if (survivors.find(pid) != survivors.end()) survivors[pid].insert(static_cast<int>(row));
-    }
-
-    int after = static_cast<int>(particle_bank.getRowList().size());
-    m_log->Info("[VALIDATOR] REC::Particle rows: before={} after={} kept%={:.1f}",
-                before, after, before>0 ? 100.0*after/before : 0.0);
-
-    // Calorimeter fills (survivors only)
-    if (m_have_calor) {
-      auto& calor_bank = GetBank(banks, b_calor, "REC::Calorimeter");
-      const int ncal = calor_bank.getRows();
-      for (int i = 0; i < ncal; ++i) {
-        const int pindex = calor_bank.getInt("pindex", i);
-        const int layer  = calor_bank.getInt("layer",  i);
-        const int sector = calor_bank.getInt("sector", i);
-        const int L      = LayerToIndex(layer);
-        if (L < 0 || sector < 1 || sector > 6) continue;
-
-        const float lu = calor_bank.getFloat("lu", i);
-        const float lv = calor_bank.getFloat("lv", i);
-        const float lw = calor_bank.getFloat("lw", i);
-
-        for (auto pid : u_pid_list) {
-          auto it = survivors.find(pid);
-          if (it == survivors.end()) continue;
-          if (it->second.find(pindex) == it->second.end()) continue;
-
-          auto& sets = const_cast<RGAFiducialFilterValidator*>(this)->u_plots2d[pid];
-          sets.layer[L].lv_lw.sec[sector]->Fill(lv, lw);
-          sets.layer[L].lv_lu.sec[sector]->Fill(lv, lu);
-        }
+      if (!P[s].lv_cut) {
+        P[s].lv_cut = new TH1D(Form("h_pcal_lv_cut_pid%d_s%d", pid, s),
+                               Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+        P[s].lv_cut->SetStats(0);
       }
-    }
-
-    // FT fills (survivors only)
-    if (m_have_ft) {
-      auto& ft_bank = GetBank(banks, b_ft, "REC::ForwardTagger");
-      const int nft = ft_bank.getRows();
-      for (int i = 0; i < nft; ++i) {
-        const int pindex = ft_bank.getInt("pindex", i);
-        const float x    = ft_bank.getFloat("x", i);
-        const float y    = ft_bank.getFloat("y", i);
-
-        for (auto pid : u_pid_list) {
-          auto it = survivors.find(pid);
-          if (it == survivors.end()) continue;
-          if (it->second.find(pindex) == it->second.end()) continue;
-          auto* h = const_cast<RGAFiducialFilterValidator*>(this)->u_ft_xy[pid];
-          if (h) h->Fill(y, x);
-        }
+      if (!P[s].lw_kept) {
+        P[s].lw_kept = new TH1D(Form("h_pcal_lw_kept_pid%d_s%d", pid, s),
+                                Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+        P[s].lw_kept->SetStats(0);
+      }
+      if (!P[s].lw_cut) {
+        P[s].lw_cut = new TH1D(Form("h_pcal_lw_cut_pid%d_s%d", pid, s),
+                               Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+        P[s].lw_cut->SetStats(0);
       }
     }
   }
 
-  void RGAFiducialFilterValidator::DrawSectorGrid2D(int pid, int layer_idx, bool lv_vs_lw)
-  {
-    auto& sets = u_plots2d.at(pid);
-    const char* proj = lv_vs_lw ? "lv_vs_lw" : "lv_vs_lu";
+  // FT: generous range for x,y
+  for (int pid : kPIDs) {
+    auto& F = m_ft_h[pid];
+    if (!F.before)
+      F.before = new TH2F(Form("h_ft_before_pid%d", pid),
+                          Form("FT x-y before (PID %d);x (cm);y (cm)", pid),
+                          120, -30, 30, 120, -30, 30);
+    if (!F.after)
+      F.after  = new TH2F(Form("h_ft_after_pid%d", pid),
+                          Form("FT x-y after (PID %d);x (cm);y (cm)", pid),
+                          120, -30, 30, 120, -30, 30);
+    F.before->SetStats(0); F.after->SetStats(0);
+  }
+}
 
-    auto* canv = new TCanvas(Form("rgafid_%s_%s_pid%d", LayerName(layer_idx), proj, pid),
-                             Form("%s %s - %s", PIDName(pid), LayerName(layer_idx),
-                                  lv_vs_lw ? "lv vs lw" : "lv vs lu"),
-                             1400, 900);
-    canv->Divide(3, 2);
+void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
+{
+  // Build/Start sequence
+  m_seq = std::make_unique<AlgorithmSequence>();
+  m_seq->Add("clas12::RGAFiducialFilter");
+  m_seq->Start(banks);
 
-    for (int s = 1; s <= 6; ++s) {
-      canv->cd(s);
-      gPad->SetLeftMargin(0.16); gPad->SetRightMargin(0.14);
-      gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
+  // Banks
+  b_particle = GetBankIndex(banks, "REC::Particle");
+  if (banklist_has(banks, "REC::Calorimeter")) { b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor=true; }
+  if (banklist_has(banks, "REC::ForwardTagger")) { b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft=true; }
 
-      TH2D* h = lv_vs_lw ? sets.layer[layer_idx].lv_lw.sec[s]
-                         : sets.layer[layer_idx].lv_lu.sec[s];
-      if (!h) continue;
-      h->SetTitle(Form("%s %s Sector %d", PIDName(pid), LayerName(layer_idx), s));
-      h->Draw("COLZ");
-    }
+  // FT overlay params
+  LoadFTParamsFromYAML();
 
-    TString png_name = Form("%s_calorimeter_%s_%s_pid%d.png",
-                            m_output_file_basename.Data(),
-                            LayerName(layer_idx), proj, pid);
-    canv->SaveAs(png_name);
+  // Output
+  if (auto dir = GetOutputDirectory()) {
+    m_base = dir.value() + std::string("/rga_fiducial");
+    m_out  = new TFile(m_base + ".root", "RECREATE");
   }
 
-  void RGAFiducialFilterValidator::DrawFTCanvas()
-  {
-    // Single FT canvas with cuts enforced (we filled after running the filter)
-    auto* canv = new TCanvas("rgafid_ft_xy", "Forward Tagger - y vs x (post-cuts)", 1200, 600);
-    canv->Divide(2, 1);
+  BookIfNeeded();
+}
 
-    int pad = 1;
-    for (auto pid : u_pid_list) {
-      canv->cd(pad++);
-      gPad->SetLeftMargin(0.16); gPad->SetRightMargin(0.14);
-      gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
+void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
+{
+  auto& particle = GetBank(banks, b_particle, "REC::Particle");
+  // --- BEFORE snapshot (pindex -> pid for 11/22)
+  std::unordered_map<int,int> before_pid;
+  for (auto const& row : particle.getRowList()) {
+    int pid = particle.getInt("pid", row);
+    if (pid==11 || pid==22) before_pid.emplace((int)row, pid);
+  }
+  if (before_pid.empty()) return;
 
-      TH2D* h = u_ft_xy[pid];
-      if (!h) continue;
-      h->Draw("COLZ");
-    }
+  // Run the filter (alters REC::Particle)
+  m_seq->Run(banks);
 
-    TString png_name = m_output_file_basename + "_ft_xy.png";
-    canv->SaveAs(png_name);
+  // --- AFTER snapshot
+  std::unordered_map<int,int> after_pid;
+  for (auto const& row : particle.getRowList()) {
+    int pid = particle.getInt("pid", row);
+    if (pid==11 || pid==22) after_pid.emplace((int)row, pid);
   }
 
-  void RGAFiducialFilterValidator::Stop()
-  {
-    if (!GetOutputDirectory()) return;
+  // --- Fill PCAL lv/lw kept vs cut
+  if (m_have_calor) {
+    auto& cal = GetBank(banks, b_calor, "REC::Calorimeter");
 
-    if (m_have_calor) {
-      for (auto pid : u_pid_list)
-        for (int L = 0; L < 3; ++L) {
-          DrawSectorGrid2D(pid, L, true );
-          DrawSectorGrid2D(pid, L, false);
-        }
-    }
-    if (m_have_ft) DrawFTCanvas();
+    // Determine which pindices are cut: present in before but not in after
+    auto is_kept = [&](int pidx){ return after_pid.find(pidx) != after_pid.end(); };
 
-    if (m_output_file) {
-      m_output_file->Write();
-      m_log->Info("Wrote output file {}", m_output_file->GetName());
-      m_output_file->Close();
+    const int n = cal.getRows();
+    for (int i=0;i<n;++i) {
+      int pidx = cal.getInt("pindex", i);
+      auto itb = before_pid.find(pidx);
+      if (itb == before_pid.end()) continue; // not an e-/γ before
+      if (cal.getInt("layer", i) != 1) continue; // PCAL only
+
+      int pid = itb->second;
+      int sec = cal.getInt("sector", i);
+      if (sec < 1 || sec > 6) continue;
+
+      double lv = cal.getFloat("lv", i);
+      double lw = cal.getFloat("lw", i);
+      bool kept = is_kept(pidx);
+
+      auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sec];
+      if (lv >= 0.0 && lv <= 27.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
+      if (lw >= 0.0 && lw <= 27.0) (kept ? H.lw_kept : H.lw_cut)->Fill(lw);
     }
   }
+
+  // --- Fill FT before/after x-y
+  if (m_have_ft) {
+    auto& ft = GetBank(banks, b_ft, "REC::ForwardTagger");
+
+    std::set<int> seen_before, seen_after; // avoid double counting if >1 row/pindex
+
+    const int n = ft.getRows();
+    for (int i=0;i<n;++i) {
+      int pidx = ft.getInt("pindex", i);
+
+      auto itb = before_pid.find(pidx);
+      if (itb != before_pid.end() && !seen_before.count(pidx)) {
+        m_ft_h.at(itb->second).before->Fill(ft.getFloat("x", i), ft.getFloat("y", i));
+        seen_before.insert(pidx);
+      }
+
+      auto ita = after_pid.find(pidx);
+      if (ita != after_pid.end() && !seen_after.count(pidx)) {
+        m_ft_h.at(ita->second).after->Fill(ft.getFloat("x", i), ft.getFloat("y", i));
+        seen_after.insert(pidx);
+      }
+    }
+  }
+}
+
+void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title)
+{
+  auto it = m_cal.find(pid);
+  if (it == m_cal.end()) return;
+
+  auto* c = new TCanvas(Form("rgafid_pcal_pid%d", pid), title, 1400, 900);
+  c->Divide(3,2);
+
+  for (int s=1; s<=6; ++s) {
+    c->cd(s);
+    gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.04);
+    gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
+
+    auto& H = it->second[s];
+    if (!H.lv_kept) continue;
+
+    // styles
+    H.lv_kept->SetLineColor(kBlue+1);  H.lv_kept->SetLineWidth(2);  H.lv_kept->SetLineStyle(1);
+    H.lw_kept->SetLineColor(kRed+1);   H.lw_kept->SetLineWidth(2);  H.lw_kept->SetLineStyle(1);
+    H.lv_cut ->SetLineColor(kBlue+1);  H.lv_cut ->SetLineWidth(2);  H.lv_cut ->SetLineStyle(2); // dashed
+    H.lw_cut ->SetLineColor(kRed+1);   H.lw_cut ->SetLineWidth(2);  H.lw_cut ->SetLineStyle(2);
+
+    // give an explicit title on lv kept
+    H.lv_kept->SetTitle(Form("%s - Sector %d;length (cm);counts",
+                      pid==11?"Electrons":"Photons", s));
+
+    // draw in order so axes come from a "kept" spectrum
+    H.lv_kept->Draw("HIST");
+    H.lw_kept->Draw("HISTSAME");
+    H.lv_cut ->Draw("HISTSAME");
+    H.lw_cut ->Draw("HISTSAME");
+
+    auto* leg = new TLegend(0.55, 0.72, 0.88, 0.90);
+    leg->SetBorderSize(0); leg->SetFillStyle(0);
+    leg->AddEntry(H.lv_kept, "lv kept", "l");
+    leg->AddEntry(H.lw_kept, "lw kept", "l");
+    leg->AddEntry(H.lv_cut , "lv cut",  "l");
+    leg->AddEntry(H.lw_cut , "lw cut",  "l");
+    leg->Draw();
+  }
+
+  c->SaveAs(Form("%s_pcal_lv_lw_pid%d.png", m_base.Data(), pid));
+}
+
+void RGAFiducialFilterValidator::DrawFTCanvas2x2()
+{
+  if (!m_have_ft) return;
+
+  auto* c = new TCanvas("rgafid_ft_xy_2x2", "FT x-y Before/After", 1200, 900);
+  c->Divide(2,2);
+
+  auto draw_pad = [&](int pad, TH2F* h, const char* ttl){
+    c->cd(pad);
+    gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.04);
+    gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
+    h->SetTitle(ttl);
+    h->Draw("COLZ");
+
+    // overlays: annulus + holes
+    auto* outer = new TEllipse(0,0, m_ftdraw.rmax, m_ftdraw.rmax);
+    auto* inner = new TEllipse(0,0, m_ftdraw.rmin, m_ftdraw.rmin);
+    outer->SetFillStyle(0); inner->SetFillStyle(0);
+    outer->SetLineStyle(2); inner->SetLineStyle(2);
+    outer->Draw(); inner->Draw();
+    for (auto const& H : m_ftdraw.holes) {
+      auto* e = new TEllipse(H[1], H[2], H[0], H[0]);
+      e->SetFillStyle(0); e->SetLineColor(kBlack); e->SetLineStyle(7); e->Draw();
+    }
+
+    auto* leg = new TLegend(0.58, 0.80, 0.90, 0.92);
+    leg->SetBorderSize(0); leg->SetFillStyle(0);
+    leg->AddEntry((TObject*)nullptr, "Annulus & holes shown", "");
+    leg->Draw();
+  };
+
+  // electrons row
+  draw_pad(1, m_ft_h.at(11).before, "Electrons (before cuts);x (cm);y (cm)");
+  draw_pad(2, m_ft_h.at(11).after,  "Electrons (after cuts);x (cm);y (cm)");
+
+  // photons row
+  draw_pad(3, m_ft_h.at(22).before, "Photons (before cuts);x (cm);y (cm)");
+  draw_pad(4, m_ft_h.at(22).after,  "Photons (after cuts);x (cm);y (cm)");
+
+  c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
+}
+
+void RGAFiducialFilterValidator::Stop()
+{
+  // Draw PCAL canvases
+  DrawCalCanvas(11, "PCAL lv & lw (Electrons): kept solid, cut dashed");
+  DrawCalCanvas(22, "PCAL lv & lw (Photons): kept solid, cut dashed");
+
+  // Draw FT 2x2
+  DrawFTCanvas2x2();
+
+  if (m_out) {
+    m_out->Write();
+    m_log->Info("Wrote output file {}", m_out->GetName());
+    m_out->Close();
+  }
+}
 
 } // namespace iguana::clas12
