@@ -1,141 +1,29 @@
 clas12::RGAFiducialFilter:
-  __marker__: "RGAFID YAML v2025-08-25"
+  # Strictness: 1 (loose), 2, 3 (tight)
+  strictness: [3]
 
-  calorimeter:
-    strictness: [1]
+  # Forward tagger window and circular holes
+  ft_radius: [8.5, 15.5]
+  ft_holes_flat: [1.60, -8.42, 9.89,
+                  1.60, -9.89, -5.33,
+                  2.30, -6.15, -13.00,
+                  2.00,  3.70, -6.50]
 
-    masks:
-      - runs: [3031, 5666]
-        sectors:
-          "1":
-            pcal:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [72.0, 94.5, 220.5, 234.0] }
-              lu: { cal_mask: [] }
-            ecin:
-              lv: { cal_mask: [67.5, 94.5] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecout:
-              lv: { cal_mask: [0.0, 40.5] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-          "2":
-            pcal:  { lv: { cal_mask: [99.0, 117.0] }, lw: { cal_mask: [] }, lu: { cal_mask: [] } }
-          "3":
-            pcal:  { lv: { cal_mask: [] }, lw: { cal_mask: [346.5, 378.0] }, lu: { cal_mask: [] } }
-          "4":
-            pcal:
-              lv: { cal_mask: [229.5, 243.0] }
-              lw: { cal_mask: [0.0, 13.5] }
-              lu: { cal_mask: [] }
-          "5":
-            ecin:  { lv: { cal_mask: [0.0, 23.5] } }
-            ecout: { lu: { cal_mask: [193.5, 216.0] } }
-          "6":
-            pcal:  { lw: { cal_mask: [166.5, 193.5] } }
-
-      - runs: [6616, 6783]
-        sectors:
-          "1":
-            pcal:  { lw: { cal_mask: [72.0, 94.5, 220.5, 234.0] } }
-            ecin:  { lv: { cal_mask: [67.5, 94.5] } }
-            ecout: { lv: { cal_mask: [0.0, 40.5] } }
-          "2":
-            pcal:  { lv: { cal_mask: [99.0, 117.0, 31.5, 49.5] } }
-          "3":
-            pcal:  { lw: { cal_mask: [346.5, 378.0] } }
-          "4":
-            pcal:
-              lv: { cal_mask: [229.5, 243.0] }
-              lw: { cal_mask: [0.0, 13.5] }
-          "5":
-            ecin:  { lv: { cal_mask: [0.0, 23.5] } }
-            ecout: { lu: { cal_mask: [193.5, 216.0] } }
-          "6":
-            pcal:  { lw: { cal_mask: [166.5, 193.5] } }
-
-      # Fully explicit default: every sector/layer/axis exists with an empty list.
-      - sectors:
-          "1":
-            pcal:
-              lv: { cal_mask: [] }  # default empty
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecin:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecout:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-          "2":
-            pcal:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecin:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecout:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-          "3":
-            pcal:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecin:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecout:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-          "4":
-            pcal:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecin:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecout:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-          "5":
-            pcal:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecin:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecout:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-          "6":
-            pcal:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecin:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-            ecout:
-              lv: { cal_mask: [] }
-              lw: { cal_mask: [] }
-              lu: { cal_mask: [] }
-
-  forward_tagger:
-    radius: [8.5, 15.5]
-    holes_flat: [1.60, -8.42, 9.89, 1.60, -9.89, -5.33, 2.30, -6.15, -13.00, 2.00, 3.70, -6.50]
+  # Dead-PMT / exclusion windows as a **flat list**:
+  # [sector, layer, axis, low, high, ...]
+  # layer: 1=PCAL, 4=ECIN, 7=ECOUT
+  # axis:  0=lv,   1=lw,   2=lu
+  cal_masks_flat: [
+    1, 1, 1,  72.0,  94.5,
+    1, 1, 1, 220.5, 234.0,
+    1, 4, 0,  67.5,  94.5,
+    1, 7, 0,   0.0,  40.5,
+    2, 1, 0,  99.0, 117.0,
+    2, 1, 0,  31.5,  49.5,
+    3, 1, 1, 346.5, 378.0,
+    4, 1, 0, 229.5, 243.0,
+    4, 1, 1,   0.0,  13.5,
+    5, 4, 0,   0.0,  23.5,
+    5, 7, 2, 193.5, 216.0,
+    6, 1, 1, 166.5, 193.5
+  ]

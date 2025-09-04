@@ -16,30 +16,23 @@
 #include <vector>
 
 namespace {
-std::atomic<int> g_dbg_events_seen{0};   // TU-local to avoid header changes
+std::atomic<int> g_dbg_events_seen{0};   // TU-local: avoids touching the header
 }
 
 namespace iguana::clas12 {
 
-// --- helpers ---------------------------------------------------------------
+// ==========================================================================
+// Small helpers (local, simple)
+// ==========================================================================
 
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
 
-static std::vector<std::pair<float,float>>
-to_windows_flat(const std::vector<double>& v) {
-  std::vector<std::pair<float,float>> w;
-  w.reserve(v.size() / 2);
-  for (size_t i = 0; i + 1 < v.size(); i += 2)
-    w.emplace_back(static_cast<float>(v[i]), static_cast<float>(v[i+1]));
-  return w;
-}
-
-// Wrap GetOptionVector so we can probe *once* without spamming logs
+// Read vector from this algorithm's YAML block; be QUIET if missing.
 template <typename Reader, typename T>
-bool TryGetVector(const Reader& r, const std::string& dotted_key, std::vector<T>& out) {
+static bool TryGetVector(const Reader& r, const std::string& dotted_key, std::vector<T>& out) {
   try {
     out = r.template GetOptionVector<T>(dotted_key);
     return true;
@@ -48,14 +41,21 @@ bool TryGetVector(const Reader& r, const std::string& dotted_key, std::vector<T>
   }
 }
 
+// Axis selector for masks
+enum Axis : int { AX_LV = 0, AX_LW = 1, AX_LU = 2 };
+
+// ==========================================================================
+// Registration
+// ==========================================================================
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter);
 
-// --- env knobs -------------------------------------------------------------
-
+// ==========================================================================
+// Environment toggles (tiny, local)
+// ==========================================================================
 bool RGAFiducialFilter::EnvOn(const char* name) {
   if (const char* s = std::getenv(name)) {
     std::string v{s};
-    return (v == "1" || v == "true" || v == "TRUE");
+    return (v == "1" || v == "true" || v == "TRUE" || v == "on" || v == "ON");
   }
   return false;
 }
@@ -66,8 +66,9 @@ int RGAFiducialFilter::EnvInt(const char* name, int def) {
   return def;
 }
 
-// --- lifecycle -------------------------------------------------------------
-
+// ==========================================================================
+// Lifecycle
+// ==========================================================================
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   // Debug knobs
@@ -84,54 +85,91 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
   ParseYAMLConfig();
   if (dbg_on) m_log->Info("[RGAFID] GetConfig() {}", GetConfig() ? "present" : "null");
 
-  // concurrent params
+  // Thread-friendly params (we still keep these to match the header/API)
   o_runnum         = ConcurrentParamFactory::Create<int>();
   o_cal_strictness = ConcurrentParamFactory::Create<int>();
 
-  // strictness precedence: setter > env > YAML > default(1)
+  // ------------------------------------------------------------------------
+  // Strictness (simple): env > YAML:strictness (> YAML legacy) > default(1)
+  // ------------------------------------------------------------------------
   if (!u_strictness_user.has_value()) {
     if (const char* s = std::getenv("IGUANA_RGAFID_STRICTNESS")) {
       try { u_strictness_user = std::clamp(std::stoi(s), 1, 3); } catch (...) {}
     }
   }
   if (!u_strictness_user.has_value()) {
-    try {
-      auto v = GetOptionVector<int>("calorimeter.strictness");
-      if (!v.empty()) u_strictness_user = std::clamp(v.front(), 1, 3);
-      if (dbg_on) m_log->Info("[RGAFID] YAML strictness {} (from calorimeter.strictness[0])",
-                              v.empty() ? -1 : v.front());
-    } catch (...) {
-      // quiet: config may omit it
-    }
+    std::vector<int> v;
+    if (TryGetVector(*this, "strictness", v) && !v.empty())
+      u_strictness_user = std::clamp(v.front(), 1, 3);
+    else if (TryGetVector(*this, "calorimeter.strictness", v) && !v.empty())
+      u_strictness_user = std::clamp(v.front(), 1, 3);
   }
   if (!u_strictness_user.has_value()) u_strictness_user = 1;
   if (dbg_on) m_log->Info("[RGAFID] strictness final = {}", *u_strictness_user);
 
-  // --- FT params from YAML (optional; defaults if missing) ---
-  u_ft_params = FTParams{}; // defaults rmin=8.5, rmax=15.5
+  // ------------------------------------------------------------------------
+  // Forward Tagger parameters (simple: radius, holes). Defaults baked in.
+  // YAML keys (either):  ft_radius, ft_holes_flat
+  //                      forward_tagger.radius, forward_tagger.holes_flat
+  // ------------------------------------------------------------------------
+  u_ft_params = FTParams{}; // defaults rmin=8.5, rmax=15.5, no holes
 
-  if (GetConfig()) {
+  // Default holes (so FT holes work even with empty YAML)
+  {
+    const float H[] = {
+      1.60f, -8.42f,  9.89f,
+      1.60f, -9.89f, -5.33f,
+      2.30f, -6.15f, -13.00f,
+      2.00f,  3.70f, -6.50f
+    };
+    for (size_t i = 0; i + 2 < std::size(H); i += 3)
+      u_ft_params.holes.push_back({H[i], H[i+1], H[i+2]});
+  }
+
+  // YAML override radius
+  {
     std::vector<double> rvec;
-    if (TryGetVector(*this, "forward_tagger.radius", rvec) && rvec.size() >= 2) {
+    if ((!TryGetVector(*this, "ft_radius", rvec) &&
+         !TryGetVector(*this, "forward_tagger.radius", rvec)) == false &&
+        rvec.size() >= 2) {
       float a = static_cast<float>(rvec[0]);
       float b = static_cast<float>(rvec[1]);
       u_ft_params.rmin = std::min(a, b);
       u_ft_params.rmax = std::max(a, b);
     }
+  }
 
-    std::vector<double> holes_flat;
-    if (TryGetVector(*this, "forward_tagger.holes_flat", holes_flat)) {
-      for (size_t i = 0; i + 2 < holes_flat.size(); i += 3) {
+  // YAML override holes
+  {
+    std::vector<double> flat;
+    if ((!TryGetVector(*this, "ft_holes_flat", flat) &&
+         !TryGetVector(*this, "forward_tagger.holes_flat", flat)) == false) {
+      u_ft_params.holes.clear();
+      for (size_t i = 0; i + 2 < flat.size(); i += 3) {
         u_ft_params.holes.push_back({
-          static_cast<float>(holes_flat[i]),
-          static_cast<float>(holes_flat[i+1]),
-          static_cast<float>(holes_flat[i+2])
+          static_cast<float>(flat[i+0]),
+          static_cast<float>(flat[i+1]),
+          static_cast<float>(flat[i+2])
         });
       }
     }
   }
 
   if (dbg_on || dbg_ft) DumpFTParams();
+
+  // ------------------------------------------------------------------------
+  // Build a single, global mask map once (no per-run scanning).
+  // YAML key: cal_masks_flat = [sec, layer, axis, a, b, sec, layer, axis, a, b, ...]
+  //            layer: 1=PCAL, 4=ECIN, 7=ECOUT; axis: 0=lv, 1=lw, 2=lu
+  // If YAML is missing/empty, we use baked-in defaults (the ones you listed).
+  // ------------------------------------------------------------------------
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_masks_by_run.clear(); // (we keep type but only use the current run key)
+    const int pseudo_run = -1;
+    m_masks_by_run.emplace(pseudo_run, BuildCalMaskCache(pseudo_run));
+    if (dbg_on || dbg_masks) DumpMaskSummary(pseudo_run, m_masks_by_run.at(pseudo_run));
+  }
 
   // required banks
   b_particle = GetBankIndex(banks, "REC::Particle");
@@ -163,7 +201,7 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
   const hipo::bank* ftBankPtr  = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
 
   const int runnum = configBank.getInt("run", 0);
-  auto key = PrepareEvent(runnum);
+  auto key = PrepareEvent(runnum); // we keep the API; internally this is very light now
 
   if (dbg_on) {
     static std::atomic<int> once{0};
@@ -189,10 +227,12 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
 
 void RGAFiducialFilter::Stop() { /* nothing */ }
 
-// --- per-event prep --------------------------------------------------------
-
+// ==========================================================================
+// Small, explicit per-event prep (kept for API compatibility)
+// ==========================================================================
 concurrent_key_t RGAFiducialFilter::PrepareEvent(int runnum) const
 {
+  // We no longer build/change anything per-run, but we still update strictness.
   if (o_runnum->NeedsHashing()) {
     std::hash<int> hash_ftn;
     auto key = hash_ftn(runnum);
@@ -206,46 +246,43 @@ concurrent_key_t RGAFiducialFilter::PrepareEvent(int runnum) const
 
 void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const
 {
+  (void)runnum;
   std::lock_guard<std::mutex> lock(m_mutex);
 
   o_runnum->Save(runnum, key);
-
   const int strict = std::clamp(u_strictness_user.value_or(1), 1, 3);
   o_cal_strictness->Save(strict, key);
 
   if (dbg_on) {
     m_log->Info("[RGAFID][Reload] run={} key={} strictness={}", runnum, (uint64_t)key, strict);
   }
-
-  // build masks only once per run; keep *quiet* if config absent
-  if (m_masks_by_run.find(runnum) == m_masks_by_run.end()) {
-    auto mm = BuildCalMaskCache(runnum);
-    if (dbg_on || dbg_masks) DumpMaskSummary(runnum, mm);
-    m_masks_by_run.emplace(runnum, std::move(mm));
-  }
 }
 
-// --- user API --------------------------------------------------------------
-
+// ==========================================================================
+// Public setter
+// ==========================================================================
 void RGAFiducialFilter::SetStrictness(int strictness)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   u_strictness_user = std::clamp(strictness, 1, 3);
 }
 
-// --- core filter -----------------------------------------------------------
-
+// ==========================================================================
+// Core filter: the cut logic lives in tiny local helpers
+// ==========================================================================
 bool RGAFiducialFilter::Filter(int track_index,
                                const hipo::bank* calBank,
                                const hipo::bank* ftBank,
                                concurrent_key_t key) const
 {
-  // Calorimeter
+  // ------------------ Calorimeter ------------------
   if (calBank != nullptr) {
     CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
 
     if (h.has_any) {
       const int strictness = GetCalStrictness(key);
+
+      // Edge cut (strictness-dependent, *very* simple)
       if (!PassCalStrictness(h, strictness)) {
         if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
           m_log->Info("[RGAFID][CAL] track={} strictness={} -> edge FAIL (lv1={}, lw1={})",
@@ -254,11 +291,11 @@ bool RGAFiducialFilter::Filter(int track_index,
         return false;
       }
 
+      // Dead-PMT masks (single global map, no run gates)
       if (strictness >= 2) {
         if (!PassCalDeadPMTMasks(h, key)) {
           if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
-            m_log->Info("[RGAFID][CAL] track={} -> dead-PMT mask FAIL (sec={})",
-                        track_index, h.sector);
+            m_log->Info("[RGAFID][CAL] track={} -> dead-PMT mask FAIL (sec={})", track_index, h.sector);
           }
           return false;
         }
@@ -266,7 +303,7 @@ bool RGAFiducialFilter::Filter(int track_index,
     }
   }
 
-  // Forward Tagger
+  // ------------------ Forward Tagger ---------------
   if (!PassFTFiducial(track_index, ftBank)) {
     if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
       m_log->Info("[RGAFID][FT] track={} -> FT FAIL", track_index);
@@ -277,8 +314,9 @@ bool RGAFiducialFilter::Filter(int track_index,
   return true;
 }
 
-// --- helpers ---------------------------------------------------------------
-
+// ==========================================================================
+// Calorimeter helpers: **explicit and tiny**
+// ==========================================================================
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
 {
@@ -302,6 +340,7 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
   return out;
 }
 
+// Super-simple edge cut on PCAL (layer 1) only
 bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
 {
   switch (strictness) {
@@ -313,86 +352,67 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
   return true;
 }
 
-// BuildCalMaskCache with *minimal* probing to avoid log spam
-RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int runnum) const
+// Build ONE mask-map (no per-run selection). If YAML is absent/empty, use
+// a tiny baked-in list based on your examples.
+RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int /*runnum*/) const
 {
   MaskMap out;
-  if (!GetConfig()) return out;
 
-  // 1) Pick masks block index by checking a small range (0..3 by default)
-  const int idx_max = EnvInt("IGUANA_RGAFID_MASK_INDEX_SCAN_MAX", 3);
-  int idx = -1;
-
-  for (int i = 0; i <= idx_max; ++i) {
-    std::vector<int> rr;
-    if (TryGetVector(*this, "calorimeter.masks." + std::to_string(i) + ".runs", rr)) {
-      if (rr.size() >= 2 && runnum >= rr.front() && runnum <= rr.back()) { idx = i; break; }
-    }
-  }
-  if (idx < 0) {
-    // Fallback: first index with no runs gate (probe once)
-    for (int i = 0; i <= idx_max; ++i) {
-      std::vector<int> rr;
-      if (!TryGetVector(*this, "calorimeter.masks." + std::to_string(i) + ".runs", rr)) {
-        idx = i; break;
-      }
-    }
-  }
-  if (idx < 0) {
-    if (dbg_on || dbg_masks) m_log->Info("[RGAFID][MASK] no usable masks entry; run={} -> using empty masks", runnum);
-    return out;
+  // 1) Try simple YAML
+  std::vector<double> flat;
+  if (!TryGetVector(*this, "cal_masks_flat", flat)) {
+    // 2) Fallback: baked-in defaults (sector, layer, axis, a, b)
+    //    layer: 1=PCAL, 4=ECIN, 7=ECOUT; axis: 0=lv, 1=lw, 2=lu
+    const double DEF[] = {
+      1,1,1,  72.0,  94.5,
+      1,1,1, 220.5, 234.0,
+      1,4,0,  67.5,  94.5,
+      1,7,0,   0.0,  40.5,
+      2,1,0,  99.0, 117.0,
+      2,1,0,  31.5,  49.5, // (added from second list)
+      3,1,1, 346.5, 378.0,
+      4,1,0, 229.5, 243.0,
+      4,1,1,   0.0,  13.5,
+      5,4,0,   0.0,  23.5,
+      5,7,2, 193.5, 216.0,
+      6,1,1, 166.5, 193.5
+    };
+    flat.assign(DEF, DEF + std::size(DEF));
   }
 
-  if (dbg_on || dbg_masks) m_log->Info("[RGAFID][MASK] run={} -> masks index={}", runnum, idx);
-
-  // 2) Sentinel probe: if sector-1 PCAL lv cal_mask missing, assume no masks at all.
-  {
-    std::vector<double> sentinel;
-    const std::string k = "calorimeter.masks." + std::to_string(idx) + ".sectors.1.pcal.lv.cal_mask";
-    if (!TryGetVector(*this, k, sentinel)) {
-      if (dbg_on || dbg_masks) m_log->Info("[RGAFID][MASK] no sector/axis windows found at {}, skipping masks", k);
-      return out;
-    }
-    // If present, we’ll still read *all* sectors/axes below; this probe avoided 50+ error lines.
-  }
-
-  auto read_axis = [this, idx](int sector, const char* layer, const char* axis) -> std::vector<window_t> {
-    std::vector<double> flat;
-    const std::string key = "calorimeter.masks." + std::to_string(idx) +
-                            ".sectors." + std::to_string(sector) + "." + layer + "." + axis + ".cal_mask";
-    if (!TryGetVector(*this, key, flat)) return {};
-    return to_windows_flat(flat);
+  // 3) Fill map
+  auto push_axis = [](AxisWins& ax, int axis_code, float a, float b) {
+    const auto lo = std::min(a, b), hi = std::max(a, b);
+    if      (axis_code == AX_LV) ax.lv.emplace_back(lo, hi);
+    else if (axis_code == AX_LW) ax.lw.emplace_back(lo, hi);
+    else if (axis_code == AX_LU) ax.lu.emplace_back(lo, hi);
   };
 
-  for (int s = 1; s <= 6; ++s) {
-    SectorMasks sm;
-    sm.pcal.lv  = read_axis(s, "pcal",  "lv");
-    sm.pcal.lw  = read_axis(s, "pcal",  "lw");
-    sm.pcal.lu  = read_axis(s, "pcal",  "lu");
-    sm.ecin.lv  = read_axis(s, "ecin",  "lv");
-    sm.ecin.lw  = read_axis(s, "ecin",  "lw");
-    sm.ecin.lu  = read_axis(s, "ecin",  "lu");
-    sm.ecout.lv = read_axis(s, "ecout", "lv");
-    sm.ecout.lw = read_axis(s, "ecout", "lw");
-    sm.ecout.lu = read_axis(s, "ecout", "lu");
-    out.emplace(s, std::move(sm));
+  for (size_t i = 0; i + 4 < flat.size(); i += 5) {
+    const int   sec  = static_cast<int>(flat[i+0]);
+    const int   lay  = static_cast<int>(flat[i+1]); // 1,4,7
+    const int   ax   = static_cast<int>(flat[i+2]); // 0,1,2
+    const float a    = static_cast<float>(flat[i+3]);
+    const float b    = static_cast<float>(flat[i+4]);
+
+    SectorMasks& sm = out[sec];
+    if      (lay == 1) push_axis(sm.pcal,  ax, a, b);
+    else if (lay == 4) push_axis(sm.ecin,  ax, a, b);
+    else if (lay == 7) push_axis(sm.ecout, ax, a, b);
   }
 
-  if (dbg_on || dbg_masks) DumpMaskSummary(runnum, out);
   return out;
 }
 
-bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, concurrent_key_t key) const
+// True if track **passes** masks (i.e., is NOT inside any masked window)
+bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, concurrent_key_t /*key*/) const
 {
-  const int runnum = GetRunNum(key);
-
+  // We store a single mask map under run=-1.
   std::lock_guard<std::mutex> lock(m_mutex);
+  auto it_run = m_masks_by_run.find(-1);
+  if (it_run == m_masks_by_run.end()) return true; // nothing loaded
 
-  auto it = m_masks_by_run.find(runnum);
-  if (it == m_masks_by_run.end())
-    it = m_masks_by_run.emplace(runnum, BuildCalMaskCache(runnum)).first;
-
-  const auto& m = it->second;
+  const auto& m = it_run->second;
   auto itsec = m.find(h.sector);
   if (itsec == m.end()) return true;
   const auto& sm = itsec->second;
@@ -418,6 +438,9 @@ bool RGAFiducialFilter::PassCalDeadPMTMasks(const CalLayers& h, concurrent_key_t
   return !fail;
 }
 
+// ==========================================================================
+// FT: **explicit and tiny**
+// ==========================================================================
 bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank) const
 {
   if (ftBank == nullptr) return true;
@@ -435,11 +458,11 @@ bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank
                   track_index, x, y, r, u_ft_params.rmin, u_ft_params.rmax);
     }
 
-    if (r < u_ft_params.rmin) return false;
-    if (r > u_ft_params.rmax) return false;
+    if (r < u_ft_params.rmin || r > u_ft_params.rmax) return false;
 
     for (auto const& h : u_ft_params.holes) {
-      const double d = std::sqrt((x - h[1])*(x - h[1]) + (y - h[2])*(y - h[2]));
+      const double dx = x - h[1], dy = y - h[2];
+      const double d  = std::sqrt(dx*dx + dy*dy);
       if (d < h[0]) {
         if (dbg_ft && g_dbg_events_seen.load() < std::max(1, dbg_events)) {
           m_log->Info("[RGAFID][FT] track={} inside hole R={:.2f} @({:.2f},{:.2f})",
@@ -455,13 +478,15 @@ bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank
   return true; // no FT association -> pass
 }
 
-// --- accessors -------------------------------------------------------------
-
+// ==========================================================================
+// Accessors (kept for API compatibility)
+// ==========================================================================
 int RGAFiducialFilter::GetRunNum(concurrent_key_t key) const { return o_runnum->Load(key); }
 int RGAFiducialFilter::GetCalStrictness(concurrent_key_t key) const { return o_cal_strictness->Load(key); }
 
-// --- debug dumps -----------------------------------------------------------
-
+// ==========================================================================
+// Debug dumps
+// ==========================================================================
 void RGAFiducialFilter::DumpFTParams() const {
   m_log->Info("[RGAFID][FT] params: rmin={:.3f} rmax={:.3f} holes={}",
               u_ft_params.rmin, u_ft_params.rmax, u_ft_params.holes.size());
@@ -475,7 +500,7 @@ void RGAFiducialFilter::DumpMaskSummary(int runnum, const MaskMap& mm) const {
   size_t total = 0;
   auto sumv = [&](const std::vector<window_t>& v){ total += v.size(); };
   for (const auto& [sec, sm] : mm) {
-    (void)sec;
+    (void)sec; (void)runnum;
     sumv(sm.pcal.lv); sumv(sm.pcal.lw); sumv(sm.pcal.lu);
     sumv(sm.ecin.lv); sumv(sm.ecin.lw); sumv(sm.ecin.lu);
     sumv(sm.ecout.lv);sumv(sm.ecout.lw);sumv(sm.ecout.lu);
