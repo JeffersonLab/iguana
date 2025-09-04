@@ -351,7 +351,8 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
 }
 
 // BuildCalMaskCache: hard-coded defaults; optional YAML replacement if enabled
-RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int /*runnum*/) const
+RGAFiducialFilter::MaskMap
+RGAFiducialFilter::BuildCalMaskCache(int runnum) const
 {
   MaskMap out;
 
@@ -371,38 +372,64 @@ RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int /*runnum*/) 
     out.emplace(sec, std::move(sm));
   };
 
-  // ---------- Built-in masks (in cm) ----------
-  {
+  // ------------------------- Built-ins (Java parity) -------------------------
+  // Only apply these for RGA: 3030..6783
+  if (runnum >= 3030 && runnum <= 6783) {
     SectorMasks s1,s2,s3,s4,s5,s6;
+
+    // Sector 1
     add(1, s1,
-        /*PCAL*/ std::vector<window_t>{},                 // lv
-                 std::vector<window_t>{{72.0f,94.5f},{220.5f,234.0f}}, // lw
-                 std::vector<window_t>{},                 // lu
+        /*PCAL*/ std::vector<window_t>{},                                  // lv
+                 std::vector<window_t>{{72.0f,94.5f}, {220.5f,234.0f}},    // lw
+                 std::vector<window_t>{},                                  // lu
         /*ECIN*/ std::vector<window_t>{{67.5f,94.5f}}, {}, {},
         /*ECOUT*/std::vector<window_t>{{0.0f,40.5f}}, {}, {});
+
+    // Sector 2 (base)
     add(2, s2,
         /*PCAL*/ std::vector<window_t>{{99.0f,117.0f}}, {}, {});
+
+    // Sector 3
     add(3, s3,
         /*PCAL*/ std::vector<window_t>{}, std::vector<window_t>{{346.5f,378.0f}}, {});
+
+    // Sector 4
     add(4, s4,
         /*PCAL*/ std::vector<window_t>{{229.5f,243.0f}},
                  std::vector<window_t>{{0.0f,13.5f}}, {});
+
+    // Sector 5
     add(5, s5,
         /*PCAL*/ std::vector<window_t>{}, {}, {},
         /*ECIN*/ std::vector<window_t>{{0.0f,23.5f}}, {}, {},
         /*ECOUT*/std::vector<window_t>{}, {}, std::vector<window_t>{{193.5f,216.0f}});
+
+    // Sector 6
     add(6, s6,
         /*PCAL*/ std::vector<window_t>{}, std::vector<window_t>{{166.5f,193.5f}}, {});
+
+    // Extra Sp19 band (Java: only for 6616..6783, sector 2 PCAL lv 31.5..49.5)
+    if (runnum >= 6616 && runnum <= 6783) {
+      auto it = out.find(2);
+      if (it != out.end()) it->second.pcal.lv.emplace_back(31.5f, 49.5f);
+      else {
+        SectorMasks s2extra;
+        s2extra.pcal.lv.emplace_back(31.5f, 49.5f);
+        out.emplace(2, std::move(s2extra));
+      }
+    }
   }
 
-  // ---------- Optional YAML override (opt-in) ----------
+  // ------------------------- Optional YAML override --------------------------
+  // If IGUANA_RGAFID_USE_YAML=1, YAML REPLACES the built-ins entirely.
   if (EnvOn("IGUANA_RGAFID_USE_YAML") && GetConfig()) {
     MaskMap yaml;
     auto read_axis = [this](const std::string& key, std::vector<window_t>& dst) {
       try {
         auto flat = GetOptionVector<double>(key);
         dst.clear();
-        for (size_t i=0;i+1<flat.size();i+=2) dst.emplace_back((float)flat[i], (float)flat[i+1]);
+        for (size_t i=0;i+1<flat.size();i+=2)
+          dst.emplace_back(static_cast<float>(flat[i]), static_cast<float>(flat[i+1]));
         return true;
       } catch (...) { return false; }
     };
@@ -424,16 +451,7 @@ RGAFiducialFilter::MaskMap RGAFiducialFilter::BuildCalMaskCache(int /*runnum*/) 
     out.swap(yaml);
   }
 
-  // --- Self-test: force PCAL.lw rejection if requested (sanity check path) ---
-  if (EnvOn("IGUANA_RGAFID_SELFTEST_PCALLW")) {
-    for (auto& [sec, sm] : out) {
-      sm.pcal.lw.clear();
-      sm.pcal.lw.emplace_back(0.f, 405.f); // reject any PCAL lw
-    }
-    m_log->Warn("[RGAFID][MASK][SELFTEST] Forcing PCAL.lw full-range mask for all sectors");
-  }
-
-  if (dbg_on || dbg_masks) DumpMaskSummary(-1, out);
+  if (dbg_on || dbg_masks) DumpMaskSummary(runnum, out);
   return out;
 }
 
