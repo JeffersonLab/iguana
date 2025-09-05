@@ -10,8 +10,7 @@ namespace iguana::physics {
   /// @brief_algo Calculate inclusive kinematics quantities
   ///
   /// @begin_doc_algo{physics::InclusiveKinematics | Creator}
-  /// @input_banks{REC::Particle, RUN::config}
-  /// @output_banks{%physics::InclusiveKinematics}
+  /// <tr><td>see this algorithm's Run function(s) for the input and output bank names</td></tr>
   /// @end_doc
   ///
   /// @begin_doc_config{physics/InclusiveKinematics}
@@ -33,6 +32,15 @@ namespace iguana::physics {
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// run function
+      /// @param [in] particle_bank `REC::Particle`
+      /// @param [in] config_bank `RUN::config`
+      /// @param [out] result_bank `%physics::InclusiveKinematics`
+      void Run(
+          hipo::bank const& particle_bank,
+          hipo::bank const& config_bank,
+          hipo::bank& result_bank) const;
 
       /// @action_function{reload} prepare the event
       /// @when_to_call{for each event}

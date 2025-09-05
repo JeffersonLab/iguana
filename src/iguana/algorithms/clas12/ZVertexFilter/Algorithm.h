@@ -8,8 +8,7 @@ namespace iguana::clas12 {
   /// @brief_algo Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex
   ///
   /// @begin_doc_algo{clas12::ZVertexFilter | Filter}
-  /// @input_banks{REC::Particle, RUN::config}
-  /// @output_banks{REC::Particle}
+  /// <tr><td>see this algorithm's Run function(s) for the input and output bank names</td></tr>
   /// @end_doc
   ///
   /// @begin_doc_config{clas12/ZVertexFilter}
@@ -25,6 +24,11 @@ namespace iguana::clas12 {
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// run function
+      /// @param [in,out] particleBank `REC::Particle`, which will be filtered
+      /// @param [in] configBank `RUN::config`
+      void Run(hipo::bank& particleBank, hipo::bank const& configBank) const;
 
       /// @action_function{reload} prepare the event
       /// @when_to_call{for each event}
