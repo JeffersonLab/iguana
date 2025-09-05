@@ -280,14 +280,14 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto& config   = GetBank(banks, b_config,   "RUN::config");
 
-  // Track torus polarity stats (so we can label DC canvases consistently)
+  // Track torus polarity stats (for DC labels)
   {
     bool e_out = (config.getFloat("torus", 0) == 1.0f);
     if (e_out) const_cast<RGAFiducialFilterValidator*>(this)->m_torus_out_events++;
     else       const_cast<RGAFiducialFilterValidator*>(this)->m_torus_in_events++;
   }
 
-  // Snapshot: pindex -> pid for FT/PCAL and -> sign for DC, also keep momenta for DC
+  // Snapshot: pindex sets
   std::unordered_set<int> electrons_or_photons;
   std::unordered_set<int> hadrons;
   std::unordered_set<int> pos_all, neg_all;
@@ -312,16 +312,18 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
     for (int pidx : electrons_or_photons)
       pass_cache[pidx] = PassCalStrictnessForPIndex(cal, pidx, /*strictness*/1);
 
+    // Unique counts per PID & sector for this event
+    std::array<std::set<int>,7> b_e, a_e, b_g, a_g;
+
     for (int i=0;i<n;++i) {
       int pidx = cal.getInt("pindex", i);
       if (!electrons_or_photons.count(pidx)) continue;
       if (cal.getInt("layer", i) != 1) continue;
 
-      int pid = 11; // default (electron)
-      // If this pindex is a photon, show on 22 panel
-      for (auto r : particle.getRowList()) {
-        if ((int)r == pidx) { pid = particle.getInt("pid", r); break; }
-      }
+      // determine pid for this pindex
+      int pid = 11;
+      for (auto r : particle.getRowList()) { if ((int)r == pidx) { pid = particle.getInt("pid", r); break; } }
+
       int sec = cal.getInt("sector", i);
       if (sec < 1 || sec > 6) continue;
 
@@ -332,6 +334,23 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
       auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sec];
       if (lv >= 0.0 && lv <= 27.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
       if (lw >= 0.0 && lw <= 27.0) (kept ? H.lw_kept : H.lw_cut)->Fill(lw);
+
+      // count once per (pid,sector,pindex)
+      if (pid==11) {
+        if (!b_e[sec].count(pidx)) b_e[sec].insert(pidx);
+        if (kept && !a_e[sec].count(pidx)) a_e[sec].insert(pidx);
+      } else {
+        if (!b_g[sec].count(pidx)) b_g[sec].insert(pidx);
+        if (kept && !a_g[sec].count(pidx)) a_g[sec].insert(pidx);
+      }
+    }
+
+    // accumulate to totals
+    for (int s=1;s<=6;++s) {
+      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[11][s].before += b_e[s].size();
+      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[11][s].after  += a_e[s].size();
+      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[22][s].before += b_g[s].size();
+      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[22][s].after  += a_g[s].size();
     }
   }
 
@@ -350,7 +369,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
       int pidx = ft.getInt("pindex", i);
       if (!electrons_or_photons.count(pidx)) continue;
 
-      // figure pid
+      // pid
       int pid = 11;
       for (auto r : particle.getRowList()) if ((int)r==pidx) { pid = particle.getInt("pid", r); break; }
 
@@ -364,6 +383,12 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
         if ( pass_cache[pidx] && !seen_a_g.count(pidx)) { HH.after ->Fill(ft.getFloat("x", i), ft.getFloat("y", i)); seen_a_g.insert(pidx); }
       }
     }
+
+    // accumulate to totals (unique pindex counts this event)
+    const_cast<RGAFiducialFilterValidator*>(this)->m_ft_before_n[11] += seen_b_e.size();
+    const_cast<RGAFiducialFilterValidator*>(this)->m_ft_after_n [11] += seen_a_e.size();
+    const_cast<RGAFiducialFilterValidator*>(this)->m_ft_before_n[22] += seen_b_g.size();
+    const_cast<RGAFiducialFilterValidator*>(this)->m_ft_after_n [22] += seen_a_g.size();
   }
 
   // ---------------- CVT L12 phi/theta before/after (hadrons), independent cut
@@ -424,11 +449,6 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
       double edge = traj.getFloat("edge", i);
       int layer   = traj.getInt("layer", i);
 
-      auto fill = [&](DCHists& H, std::set<int>& bset, std::set<int>& aset){
-        if (!bset.count(pidx)) { H.r1_before->Fill(edge); bset.insert(pidx); }
-        if (pass_cache[pidx] && !aset.count(pidx)) { H.r1_after->Fill(edge); aset.insert(pidx); }
-      };
-
       if (pid>0) {
         if (layer==6)  { if (!pos_b1.count(pidx)) { m_dc_pos.r1_before->Fill(edge); pos_b1.insert(pidx); }
                          if (pass_cache[pidx] && !pos_a1.count(pidx)) { m_dc_pos.r1_after->Fill(edge);  pos_a1.insert(pidx); } }
@@ -447,10 +467,8 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
     }
 
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n += (long long) pos_all.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n += (long long) neg_all.size();
-
-    // After counts counted once per unique pindex
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  += (long long) (pos_a1.size() + pos_a2.size() + pos_a3.size())/3;
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n += (long long) neg_all.size();
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_after_n  += (long long) (neg_a1.size() + neg_a2.size() + neg_a3.size())/3;
   }
 }
@@ -476,8 +494,13 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title)
     H.lv_cut ->SetLineColor(kBlue+1);  H.lv_cut ->SetLineWidth(2);  H.lv_cut ->SetLineStyle(2);
     H.lw_cut ->SetLineColor(kRed+1);   H.lw_cut ->SetLineWidth(2);  H.lw_cut ->SetLineStyle(2);
 
-    H.lv_kept->SetTitle(Form("%s - Sector %d;length (cm);counts",
-                      pid==11?"Electrons":"Photons", s));
+    // survival % for this PID/sector
+    long long b = m_cal_counts[pid][s].before;
+    long long a = m_cal_counts[pid][s].after;
+    double pct = (b>0) ? (100.0*double(a)/double(b)) : 0.0;
+
+    H.lv_kept->SetTitle(Form("%s - Sector %d  [survive = %.1f%%];length (cm);counts",
+                      pid==11?"Electrons":"Photons", s, pct));
 
     H.lv_kept->Draw("HIST");
     H.lw_kept->Draw("HISTSAME");
@@ -522,13 +545,19 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2()
     }
   };
 
+  auto pct = [&](int pid)->double{
+    long long b = m_ft_before_n[pid];
+    long long a = m_ft_after_n[pid];
+    return (b>0) ? (100.0*double(a)/double(b)) : 0.0;
+  };
+
   // electrons row
   draw_pad(1, m_ft_h.at(11).before, "Electrons (before cuts);x (cm);y (cm)");
-  draw_pad(2, m_ft_h.at(11).after,  "Electrons (after cuts);x (cm);y (cm)");
+  draw_pad(2, m_ft_h.at(11).after,  Form("Electrons (after cuts)  [survive = %.1f%%];x (cm);y (cm)", pct(11)));
 
   // photons row
   draw_pad(3, m_ft_h.at(22).before, "Photons (before cuts);x (cm);y (cm)");
-  draw_pad(4, m_ft_h.at(22).after,  "Photons (after cuts);x (cm);y (cm)");
+  draw_pad(4, m_ft_h.at(22).after,  Form("Photons (after cuts)  [survive = %.1f%%];x (cm);y (cm)", pct(22)));
 
   c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
 }
@@ -609,21 +638,14 @@ void RGAFiducialFilterValidator::Stop()
   // Decide bending labels based on torus majority
   bool electron_out = (m_torus_out_events >= m_torus_in_events);
   // electron_out: positives inbending, negatives outbending
-  const char* pos_bend = electron_out ? "inbending" : "outbending";
-  const char* neg_bend = electron_out ? "outbending" : "inbending";
+  const char* pos_bend = electron_out ? "inb" : "out";
+  const char* neg_bend = electron_out ? "out" : "inb";
 
-  // DC canvases: save as *_dc_inb_2x3.png and *_dc_out_2x3.png
+  // DC canvases
   double pos_pct = (m_dc_pos_before_n>0) ? (100.0*double(m_dc_pos_after_n)/double(m_dc_pos_before_n)) : 0.0;
   double neg_pct = (m_dc_neg_before_n>0) ? (100.0*double(m_dc_neg_after_n)/double(m_dc_neg_before_n)) : 0.0;
-
-  // Map which sign goes to which file name
-  if (std::string(pos_bend) == "inbending") {
-    DrawDCCanvas2x3(m_dc_pos, "inb", pos_pct);
-    DrawDCCanvas2x3(m_dc_neg, "out", neg_pct);
-  } else {
-    DrawDCCanvas2x3(m_dc_pos, "out", pos_pct);
-    DrawDCCanvas2x3(m_dc_neg, "inb", neg_pct);
-  }
+  DrawDCCanvas2x3(m_dc_pos, pos_bend, pos_pct);
+  DrawDCCanvas2x3(m_dc_neg, neg_bend, neg_pct);
 
   if (m_out) {
     m_out->Write();

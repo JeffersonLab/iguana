@@ -16,14 +16,15 @@ namespace iguana::clas12 {
 /// Validator:
 ///   - Each subsystem's before/after is computed **independently** from the raw banks:
 ///       * PCAL (lv & lw) per sector (1..6), range [0,27], strictness s=1:
-///           kept (solid) vs cut (dashed)
+///           kept (solid) vs cut (dashed). **Sector titles include survive %.**
 ///       * FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
+///           **After** titles include survive % (per PID).
 ///       * CVT layer 12 from REC::Traj (detector==5): theta (y) vs phi (x),
 ///           single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before | after,
-///           AFTER includes survive %.
+///           **After** includes survive %.
 ///       * DC (detector==6): two 2x3 canvases. Columns=Region1/2/3 (layers 6/18/36),
-///           rows=before|after. AFTER row titles include survive %, and titles include
-///           (inbending/outbending). Saved filenames are *_dc_inb_2x3.png and *_dc_out_2x3.png.
+///           rows=before|after. **After** row titles include survive %, and titles are
+///           tagged with (inb/out). Saved filenames: *_dc_inb_2x3.png and *_dc_out_2x3.png.
 class RGAFiducialFilterValidator : public Validator {
   DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
 
@@ -54,9 +55,15 @@ private:
   using PerPIDCal = std::array<SecHists, 7>; // index 1..6
   std::unordered_map<int, PerPIDCal> m_cal;
 
-  // FT hists per PID (before/after)
+  // PCAL per-PID, per-sector counts for survive %
+  struct SecCounts { long long before=0, after=0; };
+  using PerPIDCalCounts = std::array<SecCounts, 7>;
+  std::unordered_map<int, PerPIDCalCounts> m_cal_counts;
+
+  // FT hists per PID (before/after) + counters
   struct FTHists { TH2F* before=nullptr; TH2F* after=nullptr; };
   std::unordered_map<int, FTHists> m_ft_h;
+  std::unordered_map<int, long long> m_ft_before_n, m_ft_after_n; // keyed by PID (11,22)
 
   // CVT combined hadron hists (before/after), layer 12: phi vs theta
   TH2F* m_cvt_before = nullptr;
@@ -92,6 +99,7 @@ private:
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
 
+  static void set_dc_pad_margins();
   void DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct);
 };
 
