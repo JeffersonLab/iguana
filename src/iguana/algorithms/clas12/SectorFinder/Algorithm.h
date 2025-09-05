@@ -8,22 +8,21 @@ namespace iguana::clas12 {
   /// @brief_algo Find the sector for all rows in `REC::Particle`
   ///
   /// @begin_doc_algo{clas12::SectorFinder | Creator}
-  /// @input_banks{REC::Particle, REC::Track, REC::Calorimeter, REC::Scintillator}
-  /// @output_banks{%REC::Particle::Sector}
+  /// <tr><td>see this algorithm's Run function(s) for the input and output bank names</td></tr>
   /// @end_doc
   ///
   /// @begin_doc_config{clas12/SectorFinder}
   /// @config_param{bank_charged | string | if not `default`, use this bank for sector finding of charged particles}
-  /// @config_param{bank_uncharged | string | if not `default`, use this bank for sector finding of neutral particles}
+  /// @config_param{bank_neutral | string | if not `default`, use this bank for sector finding of neutral particles}
   /// @end_doc
   ///
-  /// If `bank_charged` and/or `bank_uncharged` is default, then all of the following banks are needed, in addition to `REC::Particle`:
+  /// If `bank_charged` and/or `bank_neutral` is default, then all of the following banks are needed, in addition to `REC::Particle`:
   ///
   /// - `REC::Track`
   /// - `REC::Calorimeter`
   /// - `REC::Scintillator`
   ///
-  /// Otherwise only the bank(s) specified by `bank_charged` and `bank_uncharged` is/are needed, if both of them are non-default.
+  /// Otherwise only the bank(s) specified by `bank_charged` and `bank_neutral` is/are needed, if both of them are non-default.
   ///
   /// The action function ::GetStandardSector identifies the sector(s) using these banks in a priority order, whereas
   /// the action function ::GetSector uses a single bank's data.
@@ -40,6 +39,76 @@ namespace iguana::clas12 {
       void Start(hipo::banklist& banks) override;
       void Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @brief run function, using track, calorimeter, and scintillator banks for both charged and neutral particles
+      /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
+      /// @param [in] particleBank `REC::Particle`
+      /// @param [in] trackBank `REC::Track`
+      /// @param [in] calBank `REC::Calorimeter`
+      /// @param [in] scintBank `REC::Scintillator`
+      /// @param [out] resultBank the output `REC::Particle::Sector` bank
+      void Run(
+          hipo::bank const& particleBank,
+          hipo::bank const& trackBank,
+          hipo::bank const& calBank,
+          hipo::bank const& scintBank,
+          hipo::bank& resultBank) const
+      {
+        RunImpl(&particleBank, &trackBank, &calBank, &scintBank, nullptr, nullptr, &resultBank);
+      }
+
+      /// @brief run function, using track, calorimeter, and scintillator banks for charged particles, and a custom bank for neutral particles
+      /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
+      /// @param [in] particleBank `REC::Particle`
+      /// @param [in] trackBank `REC::Track`
+      /// @param [in] calBank `REC::Calorimeter`
+      /// @param [in] scintBank `REC::Scintillator`
+      /// @param [in] userChargedBank custom bank used to obtain charged-particles' sectors
+      /// @param [out] resultBank the output `REC::Particle::Sector` bank
+      void RunWithCustomChargedBank(
+          hipo::bank const& particleBank,
+          hipo::bank const& trackBank,
+          hipo::bank const& calBank,
+          hipo::bank const& scintBank,
+          hipo::bank const& userChargedBank,
+          hipo::bank& resultBank) const
+      {
+        RunImpl(&particleBank, &trackBank, &calBank, &scintBank, &userChargedBank, nullptr, &resultBank);
+      }
+
+      /// @brief run function, using track, calorimeter, and scintillator banks for neutral particles, and a custom bank for charged particles
+      /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
+      /// @param [in] particleBank `REC::Particle`
+      /// @param [in] trackBank `REC::Track`
+      /// @param [in] calBank `REC::Calorimeter`
+      /// @param [in] scintBank `REC::Scintillator`
+      /// @param [in] userNeutralBank custom bank used to obtain neutral-particles' sectors
+      /// @param [out] resultBank the output `REC::Particle::Sector` bank
+      void RunWithCustomNeutralBank(
+          hipo::bank const& particleBank,
+          hipo::bank const& trackBank,
+          hipo::bank const& calBank,
+          hipo::bank const& scintBank,
+          hipo::bank const& userNeutralBank,
+          hipo::bank& resultBank) const
+      {
+        RunImpl(&particleBank, &trackBank, &calBank, &scintBank, nullptr, &userNeutralBank, &resultBank);
+      }
+
+      /// @brief run function, using custom banks for both charged and neutral particles
+      /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
+      /// @param [in] particleBank `REC::Particle`
+      /// @param [in] userChargedBank custom bank used to obtain charged-particles' sectors
+      /// @param [in] userNeutralBank custom bank used to obtain neutral-particles' sectors
+      /// @param [out] resultBank the output `REC::Particle::Sector` bank
+      void RunWithCustomBanks(
+          hipo::bank const& particleBank,
+          hipo::bank const& userChargedBank,
+          hipo::bank const& userNeutralBank,
+          hipo::bank& resultBank) const
+      {
+        RunImpl(&particleBank, nullptr, nullptr, nullptr, &userChargedBank, &userNeutralBank, &resultBank);
+      }
 
       /// @action_function{scalar creator} for a given particle with index `pindex_particle`, get its sector from
       /// a detector bank's list of `sectors` and `pindices` (both must be ordered in the same way)
@@ -150,16 +219,33 @@ namespace iguana::clas12 {
 
     private:
 
+      /// @brief private implementation of the run function, called by public run functions
+      /// @param [in] particleBank `REC::Particle`
+      /// @param [in] trackBank `REC::Track`
+      /// @param [in] calBank `REC::Calorimeter`
+      /// @param [in] scintBank `REC::Scintillator`
+      /// @param [in] userChargedBank custom bank used to obtain charged-particles' sectors
+      /// @param [in] userNeutralBank custom bank used to obtain neutral-particles' sectors
+      /// @param [out] resultBank the output `REC::Particle::Sector` bank
+      void RunImpl(
+          hipo::bank const* particleBank,
+          hipo::bank const* trackBank,
+          hipo::bank const* calBank,
+          hipo::bank const* scintBank,
+          hipo::bank const* userChargedBank,
+          hipo::bank const* userNeutralBank,
+          hipo::bank* resultBank) const;
+
       /// `hipo::banklist` index for the particle bank
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_calorimeter;
       hipo::banklist::size_type b_track;
       hipo::banklist::size_type b_scint;
       hipo::banklist::size_type b_user_charged;
-      hipo::banklist::size_type b_user_uncharged;
+      hipo::banklist::size_type b_user_neutral;
       hipo::banklist::size_type b_result;
       bool userSpecifiedBank_charged{false};
-      bool userSpecifiedBank_uncharged{true};
+      bool userSpecifiedBank_neutral{false};
 
       // `b_result` bank item indices
       int i_sector;
@@ -167,7 +253,7 @@ namespace iguana::clas12 {
 
       /// Configuration options
       std::string o_bankname_charged;
-      std::string o_bankname_uncharged;
+      std::string o_bankname_neutral;
 
       //only want sectors from FD detectors
       std::set<int> const listFDDets{

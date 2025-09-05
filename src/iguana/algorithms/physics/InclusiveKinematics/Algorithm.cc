@@ -83,8 +83,8 @@ namespace iguana::physics {
   }
 
   void InclusiveKinematics::Run(
-      hipo::bank& particle_bank,
-      hipo::bank& config_bank,
+      hipo::bank const& particle_bank,
+      hipo::bank const& config_bank,
       hipo::bank& result_bank) const
   {
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));

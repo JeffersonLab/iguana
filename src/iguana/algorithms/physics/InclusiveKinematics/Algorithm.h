@@ -38,8 +38,8 @@ namespace iguana::physics {
       /// @param [in] config_bank `RUN::config`
       /// @param [out] result_bank `%physics::InclusiveKinematics`
       void Run(
-          hipo::bank& particle_bank,
-          hipo::bank& config_bank,
+          hipo::bank const& particle_bank,
+          hipo::bank const& config_bank,
           hipo::bank& result_bank) const;
 
       /// @action_function{reload} prepare the event
