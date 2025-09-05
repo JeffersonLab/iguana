@@ -151,6 +151,7 @@ int main(int argc, char** argv)
 
   // stop the algorithms
   algo_eventbuilder_filter.Stop();
+  algo_sector_finder.Stop();
   algo_momentum_correction.Stop();
   return 0;
 }
