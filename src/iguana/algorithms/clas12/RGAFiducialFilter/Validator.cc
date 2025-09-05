@@ -352,36 +352,27 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
   auto* c = new TCanvas("rgafid_cvt_l12_all", title, 1200, 600);
   c->Divide(2,1);
 
+  // Give the palette a bit more breathing room on the right
+  const double left   = 0.12;
+  const double right  = 0.16; // was 0.08
+  const double bottom = 0.12;
+  const double top    = 0.08;
+
   c->cd(1);
-  gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.08);
-  gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
+  gPad->SetLeftMargin(left);
+  gPad->SetRightMargin(right);
+  gPad->SetBottomMargin(bottom);
+  gPad->SetTopMargin(top);
   m_cvt_before->Draw("COLZ");
 
   c->cd(2);
-  gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.08);
-  gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
+  gPad->SetLeftMargin(left);
+  gPad->SetRightMargin(right);
+  gPad->SetBottomMargin(bottom);
+  gPad->SetTopMargin(top);
   m_cvt_after->Draw("COLZ");
 
   c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
-}
-
-void RGAFiducialFilterValidator::Stop()
-{
-  // Draw PCAL canvases
-  DrawCalCanvas(11, "PCAL lv & lw (Electrons): kept solid, cut dashed");
-  DrawCalCanvas(22, "PCAL lv & lw (Photons): kept solid, cut dashed");
-
-  // Draw FT 2x2
-  DrawFTCanvas2x2();
-
-  // Draw CVT L12 1x2 (phi vs theta) for hadrons combined
-  DrawCVTCanvas1x2("CVT layer 12 (hadrons: ±211, ±321, ±2212): phi vs theta");
-
-  if (m_out) {
-    m_out->Write();
-    m_log->Info("Wrote output file {}", m_out->GetName());
-    m_out->Close();
-  }
 }
 
 } // namespace iguana::clas12
