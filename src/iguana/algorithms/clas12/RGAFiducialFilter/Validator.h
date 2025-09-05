@@ -18,8 +18,8 @@ namespace iguana::clas12 {
 ///   - PCAL (lv & lw) per sector (1..6), range [0,27]:
 ///       kept (solid) vs cut (dashed)
 ///   - FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
-///   - CVT layer 12 from REC::Traj (detector==5): theta (y axis) vs phi (x axis),
-///     1x2 per PID: before | after.
+///   - CVT layer 12 from REC::Traj (detector==5): theta (y) vs phi (x),
+///     single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before | after.
 class RGAFiducialFilterValidator : public Validator {
   DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
 
@@ -41,7 +41,7 @@ private:
   // algo sequence
   std::unique_ptr<AlgorithmSequence> m_seq;
 
-  // PID rows we care about
+  // PID rows we care about for PCAL/FT displays
   const std::array<int,2> kPIDs{11,22};
 
   // PCAL hists per PID & sector
@@ -56,9 +56,9 @@ private:
   struct FTHists { TH2F* before=nullptr; TH2F* after=nullptr; };
   std::unordered_map<int, FTHists> m_ft_h;
 
-  // CVT hists per PID (before/after), layer 12: phi vs theta
-  struct CVTHists { TH2F* before=nullptr; TH2F* after=nullptr; };
-  std::unordered_map<int, CVTHists> m_cvt_h;
+  // CVT combined hadron hists (before/after), layer 12: phi vs theta
+  TH2F* m_cvt_before = nullptr;
+  TH2F* m_cvt_after  = nullptr;
 
   // FT overlay params (defaults match algorithm)
   struct FTDraw { float rmin=8.5f, rmax=15.5f; std::vector<std::array<float,3>> holes; };
@@ -73,7 +73,7 @@ private:
   void LoadFTParamsFromYAML(); // guarded, optional
   void DrawCalCanvas(int pid, const char* title);
   void DrawFTCanvas2x2();
-  void DrawCVTCanvas1x2(int pid, const char* title);
+  void DrawCVTCanvas1x2(const char* title);
 };
 
 } // namespace iguana::clas12

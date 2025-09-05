@@ -10,6 +10,7 @@
 
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <cmath>
 
 namespace iguana::clas12 {
@@ -83,20 +84,17 @@ void RGAFiducialFilterValidator::BookIfNeeded()
     F.after->SetStats(0);
   }
 
-  // CVT layer 12: phi (x) vs theta (y)
-  for (int pid : kPIDs) {
-    auto& C = m_cvt_h[pid];
-    if (!C.before)
-      C.before = new TH2F(Form("h_cvt_l12_phi_theta_before_pid%d", pid),
-                          Form("CVT layer 12 before (PID %d);phi (deg);theta (deg)", pid),
-                          180, 0, 360,  90, 0, 90);
-    if (!C.after)
-      C.after  = new TH2F(Form("h_cvt_l12_phi_theta_after_pid%d", pid),
-                          Form("CVT layer 12 after (PID %d);phi (deg);theta (deg)", pid),
-                          180, 0, 360,  90, 0, 90);
-    C.before->SetStats(0);
-    C.after->SetStats(0);
-  }
+  // CVT layer 12: combined hadrons, phi (x) vs theta (y)
+  if (!m_cvt_before)
+    m_cvt_before = new TH2F("h_cvt_l12_phi_theta_before_all",
+                            "CVT layer 12 before (hadrons: #pm211,#pm321,#pm2212);phi (deg);theta (deg)",
+                            180, 0, 360,  90, 0, 90);
+  if (!m_cvt_after)
+    m_cvt_after  = new TH2F("h_cvt_l12_phi_theta_after_all",
+                            "CVT layer 12 after (hadrons: #pm211,#pm321,#pm2212);phi (deg);theta (deg)",
+                            180, 0, 360,  90, 0, 90);
+  m_cvt_before->SetStats(0);
+  m_cvt_after->SetStats(0);
 }
 
 void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
@@ -142,25 +140,45 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
 {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
 
-  // --- BEFORE snapshot (pindex -> pid for 11/22)
+  // --- BEFORE snapshot: electrons/photons for PCAL/FT
   std::unordered_map<int,int> before_pid;
   for (auto const& row : particle.getRowList()) {
     int pid = particle.getInt("pid", row);
     if (pid==11 || pid==22) before_pid.emplace((int)row, pid);
   }
-  if (before_pid.empty()) return;
+  if (before_pid.empty()) {
+    // We still want CVT hadron plots even if no e/gamma present; do not return here.
+  }
+
+  // --- BEFORE snapshot: hadrons for CVT (combined)
+  auto is_hadron = [](int pid){
+    return pid==211 || pid==321 || pid==2212 ||
+           pid==-211 || pid==-321 || pid==-2212;
+  };
+  std::unordered_set<int> cvt_before;
+  for (auto const& row : particle.getRowList()) {
+    int pid = particle.getInt("pid", row);
+    if (is_hadron(pid)) cvt_before.insert((int)row);
+  }
 
   // Run the filter (alters REC::Particle)
   m_seq->Run(banks);
 
-  // --- AFTER snapshot
+  // --- AFTER snapshot: electrons/photons
   std::unordered_map<int,int> after_pid;
   for (auto const& row : particle.getRowList()) {
     int pid = particle.getInt("pid", row);
     if (pid==11 || pid==22) after_pid.emplace((int)row, pid);
   }
 
-  // --- Fill PCAL lv/lw kept vs cut
+  // --- AFTER snapshot: hadrons for CVT
+  std::unordered_set<int> cvt_after;
+  for (auto const& row : particle.getRowList()) {
+    int pid = particle.getInt("pid", row);
+    if (is_hadron(pid)) cvt_after.insert((int)row);
+  }
+
+  // --- Fill PCAL lv/lw kept vs cut (uses e/gamma only)
   if (m_have_calor) {
     auto& cal = GetBank(banks, b_calor, "REC::Calorimeter");
 
@@ -188,7 +206,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
     }
   }
 
-  // --- Fill FT before/after x-y
+  // --- Fill FT before/after x-y (uses e/gamma only)
   if (m_have_ft) {
     auto& ft = GetBank(banks, b_ft, "REC::ForwardTagger");
 
@@ -212,7 +230,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
     }
   }
 
-  // --- Fill CVT L12 before/after (phi vs theta) using REC::Traj detector==5
+  // --- Fill CVT L12 before/after (phi vs theta) using REC::Traj detector==5, for hadrons
   if (m_have_traj) {
     auto& traj = GetBank(banks, b_traj, "REC::Traj");
 
@@ -221,10 +239,9 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
     const int n = traj.getRows();
     for (int i=0; i<n; ++i) {
       if (traj.getInt("detector", i) != 5) continue; // CVT only
+      if (traj.getInt("layer", i) != 12) continue;   // layer 12 only
 
-      int pidx  = traj.getInt("pindex", i);
-      int layer = traj.getInt("layer", i);
-      if (layer != 12) continue;
+      int pidx = traj.getInt("pindex", i);
 
       double x = traj.getFloat("x", i);
       double y = traj.getFloat("y", i);
@@ -235,14 +252,12 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
       double rho = std::sqrt(x*x + y*y);
       double theta = std::atan2(rho, (z==0.0 ? 1e-9 : z)) * (180.0/M_PI);
 
-      auto itb = before_pid.find(pidx);
-      if (itb != before_pid.end() && !b_seen.count(pidx)) {
-        m_cvt_h.at(itb->second).before->Fill(phi, theta);
+      if (cvt_before.count(pidx) && !b_seen.count(pidx)) {
+        m_cvt_before->Fill(phi, theta);
         b_seen.insert(pidx);
       }
-      auto ita = after_pid.find(pidx);
-      if (ita != after_pid.end() && !a_seen.count(pidx)) {
-        m_cvt_h.at(ita->second).after->Fill(phi, theta);
+      if (cvt_after.count(pidx) && !a_seen.count(pidx)) {
+        m_cvt_after->Fill(phi, theta);
         a_seen.insert(pidx);
       }
     }
@@ -330,27 +345,24 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2()
   c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
 }
 
-void RGAFiducialFilterValidator::DrawCVTCanvas1x2(int pid, const char* title)
+void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
 {
-  if (!m_have_traj) return;
+  if (!m_have_traj || !m_cvt_before || !m_cvt_after) return;
 
-  auto it = m_cvt_h.find(pid);
-  if (it == m_cvt_h.end() || !it->second.before || !it->second.after) return;
-
-  auto* c = new TCanvas(Form("rgafid_cvt_l12_pid%d", pid), title, 1200, 600);
+  auto* c = new TCanvas("rgafid_cvt_l12_all", title, 1200, 600);
   c->Divide(2,1);
 
   c->cd(1);
   gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.08);
   gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
-  it->second.before->Draw("COLZ");
+  m_cvt_before->Draw("COLZ");
 
   c->cd(2);
   gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.08);
   gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
-  it->second.after->Draw("COLZ");
+  m_cvt_after->Draw("COLZ");
 
-  c->SaveAs(Form("%s_cvt_l12_phi_theta_pid%d.png", m_base.Data(), pid));
+  c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
 }
 
 void RGAFiducialFilterValidator::Stop()
@@ -359,12 +371,11 @@ void RGAFiducialFilterValidator::Stop()
   DrawCalCanvas(11, "PCAL lv & lw (Electrons): kept solid, cut dashed");
   DrawCalCanvas(22, "PCAL lv & lw (Photons): kept solid, cut dashed");
 
-  // Draw FT 2x2 (no explanatory legend text)
+  // Draw FT 2x2
   DrawFTCanvas2x2();
 
-  // Draw CVT L12 1x2 (phi vs theta)
-  DrawCVTCanvas1x2(11, "CVT layer 12 (Electrons): phi vs theta");
-  DrawCVTCanvas1x2(22, "CVT layer 12 (Photons): phi vs theta");
+  // Draw CVT L12 1x2 (phi vs theta) for hadrons combined
+  DrawCVTCanvas1x2("CVT layer 12 (hadrons: ±211, ±321, ±2212): phi vs theta");
 
   if (m_out) {
     m_out->Write();
