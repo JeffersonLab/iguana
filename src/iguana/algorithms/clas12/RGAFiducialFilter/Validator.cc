@@ -8,9 +8,9 @@
 #include <TStyle.h>
 #include <TString.h>
 
-#include <cmath>
 #include <set>
 #include <unordered_map>
+#include <cmath>
 
 namespace iguana::clas12 {
 
@@ -23,7 +23,7 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
 }
 
 // ----------------------------------------------------------------------------
-// No YAML reads here — hard-coded FT overlay defaults.
+// No YAML reads here - hard-coded FT overlay defaults.
 // ----------------------------------------------------------------------------
 void RGAFiducialFilterValidator::LoadFTParamsFromYAML()
 {
@@ -83,17 +83,20 @@ void RGAFiducialFilterValidator::BookIfNeeded()
     F.after->SetStats(0);
   }
 
-  // CVT: theta(deg) vs phi(deg)
-  if (!m_cvt_before)
-    m_cvt_before = new TH2F("h_cvt_before",
-                            "CVT layer12: theta vs phi (before);phi (deg);theta (deg)",
-                            180, 0.0, 360.0, 90, 0.0, 90.0);
-  if (!m_cvt_after)
-    m_cvt_after  = new TH2F("h_cvt_after",
-                            "CVT layer12: theta vs phi (after);phi (deg);theta (deg)",
-                            180, 0.0, 360.0, 90, 0.0, 90.0);
-  m_cvt_before->SetStats(0);
-  m_cvt_after->SetStats(0);
+  // CVT layer 12: phi (x) vs theta (y)
+  for (int pid : kPIDs) {
+    auto& C = m_cvt_h[pid];
+    if (!C.before)
+      C.before = new TH2F(Form("h_cvt_l12_phi_theta_before_pid%d", pid),
+                          Form("CVT layer 12 before (PID %d);phi (deg);theta (deg)", pid),
+                          180, 0, 360,  90, 0, 90);
+    if (!C.after)
+      C.after  = new TH2F(Form("h_cvt_l12_phi_theta_after_pid%d", pid),
+                          Form("CVT layer 12 after (PID %d);phi (deg);theta (deg)", pid),
+                          180, 0, 360,  90, 0, 90);
+    C.before->SetStats(0);
+    C.after->SetStats(0);
+  }
 }
 
 void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
@@ -111,6 +114,7 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
   if (banklist_has(banks, "REC::ForwardTagger")) {
     b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft=true;
   }
+  // REC::Traj for CVT plotting
   if (banklist_has(banks, "REC::Traj")) {
     b_traj = GetBankIndex(banks, "REC::Traj"); m_have_traj=true;
   }
@@ -156,14 +160,15 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
   if (m_have_calor) {
     auto& cal = GetBank(banks, b_calor, "REC::Calorimeter");
 
+    // Determine which pindices are cut: present in before but not in after
     auto is_kept = [&](int pidx){ return after_pid.find(pidx) != after_pid.end(); };
 
     const int n = cal.getRows();
     for (int i=0;i<n;++i) {
       int pidx = cal.getInt("pindex", i);
       auto itb = before_pid.find(pidx);
-      if (itb == before_pid.end()) continue;
-      if (cal.getInt("layer", i) != 1) continue; // PCAL only
+      if (itb == before_pid.end()) continue;         // not an e-/gamma before
+      if (cal.getInt("layer", i) != 1) continue;     // PCAL only
 
       int pid = itb->second;
       int sec = cal.getInt("sector", i);
@@ -203,55 +208,38 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
     }
   }
 
-  // --- Fill CVT theta vs phi at layer 12, before/after
+  // --- Fill CVT L12 before/after (phi vs theta) using REC::Traj detector==5
   if (m_have_traj) {
     auto& traj = GetBank(banks, b_traj, "REC::Traj");
 
-    // Build sets of pindices present before and after
-    std::set<int> before_idx, after_idx;
+    std::set<int> b_seen, a_seen;
 
-    // before: use "before_pid" keys
-    const int nt = traj.getRows();
-    for (int i=0; i<nt; ++i) {
-      int pidx = traj.getInt("pindex", i);
-      if (traj.getInt("detector", i) != 5) continue;
-      if (traj.getInt("layer", i) != 12) continue;
-      if (before_pid.find(pidx) == before_pid.end()) continue;
+    const int n = traj.getRows();
+    for (int i=0; i<n; ++i) {
+      if (traj.getInt("detector", i) != 5) continue; // CVT only
+
+      int pidx  = traj.getInt("pindex", i);
+      int layer = traj.getInt("layer", i);
+      if (layer != 12) continue;
 
       double x = traj.getFloat("x", i);
       double y = traj.getFloat("y", i);
       double z = traj.getFloat("z", i);
-      double r = std::sqrt(x*x + y*y + z*z);
-      if (r <= 0) continue;
 
-      double phi = std::atan2(y, x) * 180.0 / M_PI; if (phi < 0) phi += 360.0;
-      double theta = std::acos(z / r) * 180.0 / M_PI;
+      // angles in degrees
+      double phi = std::atan2(y, x) * (180.0/M_PI); if (phi < 0) phi += 360.0;
+      double rho = std::sqrt(x*x + y*y);
+      double theta = std::atan2(rho, (z==0.0 ? 1e-9 : z)) * (180.0/M_PI);
 
-      if (!before_idx.count(pidx)) {
-        m_cvt_before->Fill(phi, theta);
-        before_idx.insert(pidx);
+      auto itb = before_pid.find(pidx);
+      if (itb != before_pid.end() && !b_seen.count(pidx)) {
+        m_cvt_h.at(itb->second).before->Fill(phi, theta);
+        b_seen.insert(pidx);
       }
-    }
-
-    // after: use "after_pid" keys
-    for (int i=0; i<nt; ++i) {
-      int pidx = traj.getInt("pindex", i);
-      if (traj.getInt("detector", i) != 5) continue;
-      if (traj.getInt("layer", i) != 12) continue;
-      if (after_pid.find(pidx) == after_pid.end()) continue;
-
-      double x = traj.getFloat("x", i);
-      double y = traj.getFloat("y", i);
-      double z = traj.getFloat("z", i);
-      double r = std::sqrt(x*x + y*y + z*z);
-      if (r <= 0) continue;
-
-      double phi = std::atan2(y, x) * 180.0 / M_PI; if (phi < 0) phi += 360.0;
-      double theta = std::acos(z / r) * 180.0 / M_PI;
-
-      if (!after_idx.count(pidx)) {
-        m_cvt_after->Fill(phi, theta);
-        after_idx.insert(pidx);
+      auto ita = after_pid.find(pidx);
+      if (ita != after_pid.end() && !a_seen.count(pidx)) {
+        m_cvt_h.at(ita->second).after->Fill(phi, theta);
+        a_seen.insert(pidx);
       }
     }
   }
@@ -338,24 +326,27 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2()
   c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
 }
 
-void RGAFiducialFilterValidator::DrawCVTCanvas1x2()
+void RGAFiducialFilterValidator::DrawCVTCanvas1x2(int pid, const char* title)
 {
-  if (!m_cvt_before || !m_cvt_after) return;
+  if (!m_have_traj) return;
 
-  auto* c = new TCanvas("rgafid_cvt_phi_theta", "CVT theta vs phi, Before/After", 1200, 600);
+  auto it = m_cvt_h.find(pid);
+  if (it == m_cvt_h.end() || !it->second.before || !it->second.after) return;
+
+  auto* c = new TCanvas(Form("rgafid_cvt_l12_pid%d", pid), title, 1200, 600);
   c->Divide(2,1);
 
   c->cd(1);
-  gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.12);
+  gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.08);
   gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
-  m_cvt_before->Draw("COLZ");
+  it->second.before->Draw("COLZ");
 
   c->cd(2);
-  gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.12);
+  gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.08);
   gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
-  m_cvt_after->Draw("COLZ");
+  it->second.after->Draw("COLZ");
 
-  c->SaveAs(Form("%s_cvt_phi_theta_1x2.png", m_base.Data()));
+  c->SaveAs(Form("%s_cvt_l12_phi_theta_pid%d.png", m_base.Data(), pid));
 }
 
 void RGAFiducialFilterValidator::Stop()
@@ -364,11 +355,12 @@ void RGAFiducialFilterValidator::Stop()
   DrawCalCanvas(11, "PCAL lv & lw (Electrons): kept solid, cut dashed");
   DrawCalCanvas(22, "PCAL lv & lw (Photons): kept solid, cut dashed");
 
-  // Draw FT 2x2
+  // Draw FT 2x2 (no explanatory legend text)
   DrawFTCanvas2x2();
 
-  // Draw CVT 1x2
-  DrawCVTCanvas1x2();
+  // Draw CVT L12 1x2 (phi vs theta)
+  DrawCVTCanvas1x2(11, "CVT layer 12 (Electrons): phi vs theta");
+  DrawCVTCanvas1x2(22, "CVT layer 12 (Photons): phi vs theta)");
 
   if (m_out) {
     m_out->Write();

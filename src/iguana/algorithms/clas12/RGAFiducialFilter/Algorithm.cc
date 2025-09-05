@@ -48,6 +48,7 @@ void RGAFiducialFilter::LoadConfigFromYAML()
     return;
   }
 
+  // Helper to try two forms: bare + fully-qualified (defensive)
   auto getDoubles = [&](const char* bare, const char* qualified) -> std::vector<double> {
     try { return GetOptionVector<double>(bare, {bare}); } catch (...) {}
     try { return GetOptionVector<double>(qualified, {qualified}); } catch (...) {}
@@ -137,59 +138,6 @@ void RGAFiducialFilter::LoadConfigFromYAML()
       m_log->Info("[RGAFID][CFG] FT holes not in YAML; defaults kept.");
     }
   }
-
-  // --- cvt.edge_layers ---
-  try {
-    auto v = GetOptionVector<int>("cvt.edge_layers", {"cvt", "edge_layers"});
-    if (!v.empty()) {
-      u_cvt_params.edge_layers.assign(v.begin(), v.end());
-      m_log->Info("[RGAFID][CFG] YAML CVT edge_layers = {} entries", u_cvt_params.edge_layers.size());
-    }
-  } catch (...) {
-    auto v = getInts("clas12::RGAFiducialFilter.cvt.edge_layers",
-                     "clas12::RGAFiducialFilter.cvt.edge_layers");
-    if (!v.empty()) {
-      u_cvt_params.edge_layers.assign(v.begin(), v.end());
-      m_log->Info("[RGAFID][CFG] YAML CVT edge_layers (qualified) = {} entries",
-                  u_cvt_params.edge_layers.size());
-    }
-  }
-
-  // --- cvt.edge_min ---
-  try {
-    auto v = GetOptionVector<double>("cvt.edge_min", {"cvt", "edge_min"});
-    if (!v.empty()) {
-      u_cvt_params.edge_min = static_cast<float>(v.front());
-      m_log->Info("[RGAFID][CFG] YAML CVT edge_min = {:.3f}", u_cvt_params.edge_min);
-    }
-  } catch (...) {
-    auto v = getDoubles("clas12::RGAFiducialFilter.cvt.edge_min",
-                        "clas12::RGAFiducialFilter.cvt.edge_min");
-    if (!v.empty()) {
-      u_cvt_params.edge_min = static_cast<float>(v.front());
-      m_log->Info("[RGAFID][CFG] YAML CVT edge_min (qualified) = {:.3f}", u_cvt_params.edge_min);
-    }
-  }
-
-  // --- cvt.phi_forbidden_deg ---
-  try {
-    auto v = GetOptionVector<double>("cvt.phi_forbidden_deg", {"cvt", "phi_forbidden_deg"});
-    if (!v.empty()) {
-      u_cvt_params.phi_forbidden_deg.clear();
-      for (double d : v) u_cvt_params.phi_forbidden_deg.push_back(static_cast<float>(d));
-      m_log->Info("[RGAFID][CFG] YAML CVT phi_forbidden_deg = {} values",
-                  u_cvt_params.phi_forbidden_deg.size());
-    }
-  } catch (...) {
-    auto v = getDoubles("clas12::RGAFiducialFilter.cvt.phi_forbidden_deg",
-                        "clas12::RGAFiducialFilter.cvt.phi_forbidden_deg");
-    if (!v.empty()) {
-      u_cvt_params.phi_forbidden_deg.clear();
-      for (double d : v) u_cvt_params.phi_forbidden_deg.push_back(static_cast<float>(d));
-      m_log->Info("[RGAFID][CFG] YAML CVT phi_forbidden_deg (qualified) = {} values",
-                  u_cvt_params.phi_forbidden_deg.size());
-    }
-  }
 }
 
 void RGAFiducialFilter::SetStrictness(int s) {
@@ -218,10 +166,7 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_log->Info("[RGAFID][DEBUG] ft={} events={}", dbg_ft, dbg_events);
     m_log->Info("[RGAFID] strictness = {}", *u_strictness_user);
   }
-  if (dbg_on || dbg_ft) {
-    DumpFTParams();
-    DumpCVTParams();
-  }
+  if (dbg_on || dbg_ft) DumpFTParams();
 
   // required banks
   b_particle = GetBankIndex(banks, "REC::Particle");
@@ -236,9 +181,12 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     b_ft = GetBankIndex(banks, "REC::ForwardTagger");
     m_have_ft = true;
   }
+  // CVT trajectories come from REC::Traj with detector==5
   if (banklist_has(banks, "REC::Traj")) {
     b_traj = GetBankIndex(banks, "REC::Traj");
     m_have_traj = true;
+  } else {
+    m_have_traj = false;
   }
 }
 
@@ -300,7 +248,7 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
   });
 }
 
-// -------- filter core (PCAL) ----------
+// -------- filter core ----------
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
 {
@@ -324,7 +272,7 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
 
 bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
 {
-  if (h.L1.empty()) return true; // no PCAL association -> no PCAL cut
+  if (h.L1.empty()) return true; // no PCAL association => no PCAL cut
 
   float min_lv = std::numeric_limits<float>::infinity();
   float min_lw = std::numeric_limits<float>::infinity();
@@ -341,7 +289,6 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
   }
 }
 
-// -------- filter core (FT) ----------
 bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank) const
 {
   if (ftBank == nullptr) return true;
@@ -373,61 +320,63 @@ bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank
   return true; // no FT association -> pass
 }
 
-// -------- filter core (CVT) ----------
-bool RGAFiducialFilter::PassCVTFiducial(int track_index, const hipo::bank* trajBank, int strictness) const
+bool RGAFiducialFilter::PassCVTFiducial(int track_index, const hipo::bank* trajBank, int /*strictness*/) const
 {
-  (void)strictness; // currently unused for CVT; edges and phi wedges always applied
+  // Use REC::Traj only; require detector==5 rows for this pindex.
   if (trajBank == nullptr) return true;
 
-  // CVT rows are in REC::Traj with detector == 5
-  // We need edges for layers in u_cvt_params.edge_layers
-  // and x,y,z at layer 12 for phi computation
-  const int nrows = trajBank->getRows();
+  constexpr int kCVTDetectorID = 5;
 
-  // initialize edges as pass by default (mimic Java)
-  std::vector<float> edges(13, 1.0f); // layers 0..12, we use 1..12
-  bool have_l12 = false;
+  double edge_1 = 1.0, edge_3 = 1.0, edge_5 = 1.0, edge_7 = 1.0, edge_12 = 1.0;
   double x12 = 0.0, y12 = 0.0, z12 = 0.0;
 
+  const int nrows = trajBank->getRows();
   for (int i = 0; i < nrows; ++i) {
     if (trajBank->getInt("pindex", i) != track_index) continue;
-    if (trajBank->getInt("detector", i) != 5) continue; // 5 = CVT
+    if (trajBank->getInt("detector", i) != kCVTDetectorID) continue;
 
-    const int layer = trajBank->getInt("layer", i);
-    if (layer >= 0 && layer < static_cast<int>(edges.size())) {
-      if (trajBank->hasFloat("edge"))
-        edges[layer] = trajBank->getFloat("edge", i);
-    }
+    int layer = trajBank->getInt("layer", i);
+
+    // Edge exists in REC::Traj for CVT. If not, this will throw; schema should provide it.
+    double e = trajBank->getFloat("edge", i);
+    if      (layer == 1)  edge_1  = e;
+    else if (layer == 3)  edge_3  = e;
+    else if (layer == 5)  edge_5  = e;
+    else if (layer == 7)  edge_7  = e;
+    else if (layer == 12) edge_12 = e;
 
     if (layer == 12) {
-      if (trajBank->hasFloat("x")) x12 = trajBank->getFloat("x", i);
-      if (trajBank->hasFloat("y")) y12 = trajBank->getFloat("y", i);
-      if (trajBank->hasFloat("z")) z12 = trajBank->getFloat("z", i);
-      have_l12 = true;
+      x12 = trajBank->getFloat("x", i);
+      y12 = trajBank->getFloat("y", i);
+      z12 = trajBank->getFloat("z", i);
     }
   }
 
-  // edge test on configured layers (missing layers remain 1.0 and pass)
-  bool edge_test = true;
-  for (int L : u_cvt_params.edge_layers) {
-    if (L >= 0 && L < static_cast<int>(edges.size())) {
-      if (!(edges[L] > u_cvt_params.edge_min)) { edge_test = false; break; }
-    }
-  }
-  if (!edge_test) return false;
+  // Phi wedge veto: apply ALWAYS (all strictness levels)
+  const double phi_deg = [&](){
+    double p = std::atan2(y12, x12) * (180.0 / M_PI);
+    if (p < 0) p += 360.0;
+    return p;
+  }();
+  const bool phi_veto =
+      (phi_deg >  25.0 && phi_deg <  40.0) ||
+      (phi_deg > 143.0 && phi_deg < 158.0) ||
+      (phi_deg > 265.0 && phi_deg < 280.0);
 
-  // always apply forbidden phi wedges if we have layer 12 position
-  if (have_l12 && !u_cvt_params.phi_forbidden_deg.empty()) {
-    double phi = std::atan2(y12, x12) * 180.0 / M_PI;
-    if (phi < 0) phi += 360.0;
-    const auto& v = u_cvt_params.phi_forbidden_deg;
-    for (size_t i = 0; i + 1 < v.size(); i += 2) {
-      const double lo = v[i], hi = v[i+1]; // open interval (lo,hi)
-      if (phi > lo && phi < hi) return false;
+  if (phi_veto) {
+    if (dbg_on && g_dbg_events_seen.load() < std::max(1, dbg_events)) {
+      m_log->Info("[RGAFID][CVT] track={} -> phi wedge veto; phi12={:.2f}", track_index, phi_deg);
     }
+    return false;
   }
 
-  return true;
+  const bool edge_test = (edge_1 > 0.0 && edge_3 > 0.0 && edge_5 > 0.0 && edge_7 > 0.0 && edge_12 > 0.0);
+  if (!edge_test && dbg_on && g_dbg_events_seen.load() < std::max(1, dbg_events)) {
+    m_log->Info("[RGAFID][CVT] track={} -> edge FAIL e1={:.2f} e3={:.2f} e5={:.2f} e7={:.2f} e12={:.2f}",
+                track_index, edge_1, edge_3, edge_5, edge_7, edge_12);
+  }
+
+  return edge_test;
 }
 
 bool RGAFiducialFilter::Filter(int track_index,
@@ -436,7 +385,7 @@ bool RGAFiducialFilter::Filter(int track_index,
                                const hipo::bank* trajBank,
                                concurrent_key_t key) const
 {
-  // PCAL strictness
+  // PCAL strictness only
   if (calBank != nullptr) {
     CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
     if (h.has_any && !PassCalStrictness(h, GetCalStrictness(key))) {
@@ -463,7 +412,7 @@ bool RGAFiducialFilter::Filter(int track_index,
     return false;
   }
 
-  // CVT edge and phi wedges
+  // CVT fiducial (edges + phi wedge). Optional: if no REC::Traj, pass.
   if (!PassCVTFiducial(track_index, trajBank, GetCalStrictness(key))) {
     if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
       m_log->Info("[RGAFID][CVT] track={} -> CVT FAIL", track_index);
@@ -481,24 +430,6 @@ void RGAFiducialFilter::DumpFTParams() const {
   for (size_t i = 0; i < u_ft_params.holes.size() && i < 8; ++i) {
     const auto& h = u_ft_params.holes[i];
     m_log->Info("   hole[{}] R={:.3f} cx={:.3f} cy={:.3f}", i, h[0], h[1], h[2]);
-  }
-}
-
-void RGAFiducialFilter::DumpCVTParams() const {
-  m_log->Info("[RGAFID][CVT] edge_min={:.3f} edge_layers={}", u_cvt_params.edge_min,
-              u_cvt_params.edge_layers.size());
-  if (!u_cvt_params.edge_layers.empty()) {
-    std::string s = "   layers:";
-    for (int L : u_cvt_params.edge_layers) { s += " " + std::to_string(L); }
-    m_log->Info("{}", s);
-  }
-  if (!u_cvt_params.phi_forbidden_deg.empty()) {
-    std::string s = "   phi wedges (deg):";
-    for (size_t i = 0; i + 1 < u_cvt_params.phi_forbidden_deg.size(); i += 2) {
-      s += " (" + std::to_string((int)u_cvt_params.phi_forbidden_deg[i])
-        + "," + std::to_string((int)u_cvt_params.phi_forbidden_deg[i+1]) + ")";
-    }
-    m_log->Info("{}", s);
   }
 }
 
