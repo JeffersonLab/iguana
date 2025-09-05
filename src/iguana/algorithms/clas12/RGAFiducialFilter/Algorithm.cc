@@ -106,38 +106,8 @@ void RGAFiducialFilter::LoadConfigFromYAML()
     }
   }
 
-  // --- forward_tagger.holes_flat ---
-  try {
-    auto flat = GetOptionVector<double>("forward_tagger.holes_flat",
-                                        {"forward_tagger", "holes_flat"});
-    if (!flat.empty()) {
-      u_ft_params.holes.clear();
-      for (size_t i = 0; i + 2 < flat.size(); i += 3) {
-        u_ft_params.holes.push_back({
-          static_cast<float>(flat[i]),
-          static_cast<float>(flat[i+1]),
-          static_cast<float>(flat[i+2])
-        });
-      }
-      m_log->Info("[RGAFID][CFG] YAML FT holes set: {} holes", u_ft_params.holes.size());
-    }
-  } catch (...) {
-    auto flat = getDoubles("clas12::RGAFiducialFilter.forward_tagger.holes_flat",
-                           "clas12::RGAFiducialFilter.forward_tagger.holes_flat");
-    if (!flat.empty()) {
-      u_ft_params.holes.clear();
-      for (size_t i = 0; i + 2 < flat.size(); i += 3) {
-        u_ft_params.holes.push_back({
-          static_cast<float>(flat[i]),
-          static_cast<float>(flat[i+1]),
-          static_cast<float>(flat[i+2])
-        });
-      }
-      m_log->Info("[RGAFID][CFG] YAML FT holes set (qualified): {} holes", u_ft_params.holes.size());
-    } else {
-      m_log->Info("[RGAFID][CFG] FT holes not in YAML; defaults kept.");
-    }
-  }
+  // NOTE: We no longer attempt to read forward_tagger.holes_flat from YAML.
+  //       The compiled-in defaults are used, which also match the validator overlay.
 }
 
 void RGAFiducialFilter::SetStrictness(int s) {
@@ -328,7 +298,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int track_index, const hipo::bank* trajB
   constexpr int kCVTDetectorID = 5;
 
   double edge_1 = 1.0, edge_3 = 1.0, edge_5 = 1.0, edge_7 = 1.0, edge_12 = 1.0;
-  double x12 = 0.0, y12 = 0.0, z12 = 0.0;
+  double x12 = 0.0, y12 = 0.0;
 
   const int nrows = trajBank->getRows();
   for (int i = 0; i < nrows; ++i) {
@@ -337,7 +307,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int track_index, const hipo::bank* trajB
 
     int layer = trajBank->getInt("layer", i);
 
-    // Edge exists in REC::Traj for CVT. If not, this will throw; schema should provide it.
+    // Edge exists in REC::Traj for CVT.
     double e = trajBank->getFloat("edge", i);
     if      (layer == 1)  edge_1  = e;
     else if (layer == 3)  edge_3  = e;
@@ -348,7 +318,6 @@ bool RGAFiducialFilter::PassCVTFiducial(int track_index, const hipo::bank* trajB
     if (layer == 12) {
       x12 = trajBank->getFloat("x", i);
       y12 = trajBank->getFloat("y", i);
-      z12 = trajBank->getFloat("z", i);
     }
   }
 

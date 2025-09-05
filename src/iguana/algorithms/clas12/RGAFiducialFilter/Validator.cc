@@ -117,6 +117,10 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
   // REC::Traj for CVT plotting
   if (banklist_has(banks, "REC::Traj")) {
     b_traj = GetBankIndex(banks, "REC::Traj"); m_have_traj=true;
+  } else {
+    m_have_traj=false;
+    m_log->Info("[RGAFID][VAL] REC::Traj not provided; CVT plots disabled. "
+                "Re-run with -b REC::Traj to enable CVT before/after plots.");
   }
 
   // FT overlay params (defaults only; no YAML here to avoid crashes)
@@ -360,7 +364,7 @@ void RGAFiducialFilterValidator::Stop()
 
   // Draw CVT L12 1x2 (phi vs theta)
   DrawCVTCanvas1x2(11, "CVT layer 12 (Electrons): phi vs theta");
-  DrawCVTCanvas1x2(22, "CVT layer 12 (Photons): phi vs theta)");
+  DrawCVTCanvas1x2(22, "CVT layer 12 (Photons): phi vs theta");
 
   if (m_out) {
     m_out->Write();
