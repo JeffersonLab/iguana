@@ -348,7 +348,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int track_index, const hipo::bank* trajB
   return edge_test;
 }
 
-// --- DC fiducial: detector==6, regions at layers 6,18,36, with in/out-bending logic.
+// --- DC fiducial: detector==6, regions at layers 6,18,36, with polarity from torus only.
 bool RGAFiducialFilter::PassDCFiducial(int track_index,
                                        const hipo::bank& particleBank,
                                        const hipo::bank& configBank,
@@ -357,35 +357,21 @@ bool RGAFiducialFilter::PassDCFiducial(int track_index,
   if (trajBank == nullptr) return true; // if no trajectories, do not apply DC cut
 
   const int pid = particleBank.getInt("pid", track_index);
-  // Only defined for e± and {±211, ±321, ±2212}; otherwise fail (mirrors Java).
-  if (!(pid == 11 || pid == -11 ||
-        pid == 211 || pid == -211 ||
-        pid == 321 || pid == -321 ||
-        pid == 2212 || pid == -2212)) {
-    return false;
-  }
+  // Only defined for e± and {±211, ±321, ±2212}; otherwise fail (same behavior as before).
+  const bool isNegPid = (pid ==  11 || pid == -211 || pid == -321 || pid == -2212);
+  const bool isPosPid = (pid == -11 || pid ==  211 || pid ==  321 || pid ==  2212);
+  if (!(isNegPid || isPosPid)) return false;
 
-  const int   runnum = configBank.getInt("run", 0);
-  const float torus  = configBank.getFloat("torus", 0);
+  // Electron bending from torus polarity only
+  const float torus = configBank.getFloat("torus", 0);
+  const bool electron_outbending = (torus == 1.0f);
+  const bool electron_inbending  = !electron_outbending;
 
-  bool inbending  = false;
-  bool outbending = false;
-
-  // Default polarity meaning: torus==1 => outbending, else inbending
-  if (torus == 1) outbending = true; else inbending = true;
-
-  // Run-dependent override by PID sign (as in Java)
-  if ((runnum >= 4763 && runnum <= 5419) || (runnum >= 6616 && runnum <= 6783)) {
-    // Inbending electron torus polarity
-    if (pid == 11 || pid == -211 || pid == -321 || pid == -2212)        inbending = true;
-    else if (pid == -11 || pid == 211 || pid == 321 || pid == 2212)     outbending = true;
-  } else if (runnum >= 5423 && runnum <= 5666) {
-    // Outbending electron torus polarity
-    if (pid == 11 || pid == -211 || pid == -321 || pid == -2212)        outbending = true;
-    else if (pid == -11 || pid == 211 || pid == 321 || pid == 2212)     inbending = true;
-  } else {
-    inbending = true;
-  }
+  // Particle bending from electron polarity + charge sign
+  // electron inbending  -> negatives inbending, positives outbending
+  // electron outbending -> negatives outbending, positives inbending
+  const bool particle_inbending  = (electron_inbending  && isNegPid) || (electron_outbending && isPosPid);
+  const bool particle_outbending = !particle_inbending;
 
   // theta from px,py,pz
   const double px = particleBank.getFloat("px", track_index);
@@ -412,13 +398,13 @@ bool RGAFiducialFilter::PassDCFiducial(int track_index,
     else if (layer == 36) edge_3 = e;
   }
 
-  if (inbending) {
+  if (particle_inbending) {
     if (theta_deg < 10.0) {
       return (edge_1 > 10.0 && edge_2 > 10.0 && edge_3 > 10.0);
     } else {
-      return (edge_1 > 3.0 && edge_2 > 3.0 && edge_3 > 10.0);
+      return (edge_1 >  3.0 && edge_2 >  3.0 && edge_3 > 10.0);
     }
-  } else if (outbending) {
+  } else if (particle_outbending) {
     return (edge_1 > 3.0 && edge_2 > 3.0 && edge_3 > 10.0);
   }
 
