@@ -19,7 +19,9 @@ namespace iguana::clas12 {
 ///       kept (solid) vs cut (dashed)
 ///   - FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
 ///   - CVT layer 12 from REC::Traj (detector==5): theta (y) vs phi (x),
-///     single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before | after.
+///     single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before | after, with survive % on AFTER.
+///   - DC (detector==6): two 2x3 canvases (pos & neg). Columns=Region1/2/3 (layers 6/18/36),
+///     rows=before|after. AFTER row titles include survive %.
 class RGAFiducialFilterValidator : public Validator {
   DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
 
@@ -59,6 +61,17 @@ private:
   // CVT combined hadron hists (before/after), layer 12: phi vs theta
   TH2F* m_cvt_before = nullptr;
   TH2F* m_cvt_after  = nullptr;
+  long long m_cvt_before_n = 0;
+  long long m_cvt_after_n  = 0;
+
+  // DC edge distributions by sign (pos/neg), regions 1,2,3; before/after
+  struct DCHists {
+    TH1D* r1_before=nullptr; TH1D* r2_before=nullptr; TH1D* r3_before=nullptr;
+    TH1D* r1_after =nullptr; TH1D* r2_after =nullptr; TH1D* r3_after =nullptr;
+  };
+  DCHists m_dc_pos{}, m_dc_neg{};
+  long long m_dc_pos_before_n = 0, m_dc_pos_after_n = 0;
+  long long m_dc_neg_before_n = 0, m_dc_neg_after_n = 0;
 
   // FT overlay params (defaults match algorithm)
   struct FTDraw { float rmin=8.5f, rmax=15.5f; std::vector<std::array<float,3>> holes; };
@@ -74,6 +87,8 @@ private:
   void DrawCalCanvas(int pid, const char* title);
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
+
+  void DrawDCCanvas2x3(const DCHists& H, bool positive, double survive_pct);
 };
 
 } // namespace iguana::clas12

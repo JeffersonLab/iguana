@@ -22,6 +22,8 @@ namespace iguana::clas12 {
 ///   - Central detector (CVT) fiducial using REC::Traj (detector==5):
 ///       require positive "edge" at layers 1,3,5,7,12 AND apply the phi wedge
 ///       veto at layer 12 at all strictness levels.
+///   - Drift Chamber (DC) fiducial using REC::Traj (detector==6):
+///       three regional edge thresholds with inbending/outbending logic (see .cc).
 /// Defaults are read from Config.yaml (same dir). A caller may override
 /// strictness via SetStrictness(1|2|3) BEFORE Start().
 class RGAFiducialFilter : public Algorithm {
@@ -92,7 +94,15 @@ private:
   bool PassFTFiducial (int track_index, const hipo::bank* ftBank) const;
   bool PassCVTFiducial(int track_index, const hipo::bank* trajBank, int strictness) const;
 
+  // DC fiducial (detector==6). Uses REC::Particle for pid/px,py,pz and RUN::config for run, torus.
+  bool PassDCFiducial(int track_index,
+                      const hipo::bank& particleBank,
+                      const hipo::bank& configBank,
+                      const hipo::bank* trajBank) const;
+
   bool Filter(int track_index,
+              const hipo::bank& particleBank,
+              const hipo::bank& configBank,
               const hipo::bank* calBank,
               const hipo::bank* ftBank,
               const hipo::bank* trajBank,

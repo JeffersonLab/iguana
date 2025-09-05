@@ -151,7 +151,7 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     b_ft = GetBankIndex(banks, "REC::ForwardTagger");
     m_have_ft = true;
   }
-  // CVT trajectories come from REC::Traj with detector==5
+  // CVT / DC trajectories come from REC::Traj (detector==5 or 6)
   if (banklist_has(banks, "REC::Traj")) {
     b_traj = GetBankIndex(banks, "REC::Traj");
     m_have_traj = true;
@@ -204,9 +204,9 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
   const hipo::bank* ftBankPtr   = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
   const hipo::bank* trajBankPtr = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj") : nullptr;
 
-  particleBank.getMutableRowList().filter([this, calBankPtr, ftBankPtr, trajBankPtr, key](auto, auto row) {
+  particleBank.getMutableRowList().filter([this, &particleBank, &configBank, calBankPtr, ftBankPtr, trajBankPtr, key](auto, auto row) {
     const int track_index = row;
-    const bool accept = Filter(track_index, calBankPtr, ftBankPtr, trajBankPtr, key);
+    const bool accept = Filter(track_index, particleBank, configBank, calBankPtr, ftBankPtr, trajBankPtr, key);
 
     if (dbg_on && dbg_events > 0) {
       int seen = ++g_dbg_events_seen;
@@ -348,7 +348,86 @@ bool RGAFiducialFilter::PassCVTFiducial(int track_index, const hipo::bank* trajB
   return edge_test;
 }
 
+// --- DC fiducial: detector==6, regions at layers 6,18,36, with in/out-bending logic.
+bool RGAFiducialFilter::PassDCFiducial(int track_index,
+                                       const hipo::bank& particleBank,
+                                       const hipo::bank& configBank,
+                                       const hipo::bank* trajBank) const
+{
+  if (trajBank == nullptr) return true; // if no trajectories, do not apply DC cut
+
+  const int pid = particleBank.getInt("pid", track_index);
+  // Only defined for e± and {±211, ±321, ±2212}; otherwise fail (mirrors Java).
+  if (!(pid == 11 || pid == -11 ||
+        pid == 211 || pid == -211 ||
+        pid == 321 || pid == -321 ||
+        pid == 2212 || pid == -2212)) {
+    return false;
+  }
+
+  const int   runnum = configBank.getInt("run", 0);
+  const float torus  = configBank.getFloat("torus", 0);
+
+  bool inbending  = false;
+  bool outbending = false;
+
+  // Default polarity meaning: torus==1 => outbending, else inbending
+  if (torus == 1) outbending = true; else inbending = true;
+
+  // Run-dependent override by PID sign (as in Java)
+  if ((runnum >= 4763 && runnum <= 5419) || (runnum >= 6616 && runnum <= 6783)) {
+    // Inbending electron torus polarity
+    if (pid == 11 || pid == -211 || pid == -321 || pid == -2212)        inbending = true;
+    else if (pid == -11 || pid == 211 || pid == 321 || pid == 2212)     outbending = true;
+  } else if (runnum >= 5423 && runnum <= 5666) {
+    // Outbending electron torus polarity
+    if (pid == 11 || pid == -211 || pid == -321 || pid == -2212)        outbending = true;
+    else if (pid == -11 || pid == 211 || pid == 321 || pid == 2212)     inbending = true;
+  } else {
+    inbending = true;
+  }
+
+  // theta from px,py,pz
+  const double px = particleBank.getFloat("px", track_index);
+  const double py = particleBank.getFloat("py", track_index);
+  const double pz = particleBank.getFloat("pz", track_index);
+  const double rho = std::sqrt(px*px + py*py);
+  const double theta_deg = std::atan2(rho, (pz==0.0 ? 1e-9 : pz)) * (180.0/M_PI);
+
+  // DC edges by region (defaults 0 => fail unless overwritten)
+  constexpr int kDCDetectorID = 6;
+  double edge_1 = 0.0; // region 1 (layer 6)
+  double edge_2 = 0.0; // region 2 (layer 18)
+  double edge_3 = 0.0; // region 3 (layer 36)
+
+  const int nrows = trajBank->getRows();
+  for (int i=0; i<nrows; ++i) {
+    if (trajBank->getInt("detector", i) != kDCDetectorID) continue;
+    if (trajBank->getInt("pindex", i)   != track_index)    continue;
+
+    const int layer = trajBank->getInt("layer", i);
+    const double e  = trajBank->getFloat("edge", i);
+    if      (layer ==  6) edge_1 = e;
+    else if (layer == 18) edge_2 = e;
+    else if (layer == 36) edge_3 = e;
+  }
+
+  if (inbending) {
+    if (theta_deg < 10.0) {
+      return (edge_1 > 10.0 && edge_2 > 10.0 && edge_3 > 10.0);
+    } else {
+      return (edge_1 > 3.0 && edge_2 > 3.0 && edge_3 > 10.0);
+    }
+  } else if (outbending) {
+    return (edge_1 > 3.0 && edge_2 > 3.0 && edge_3 > 10.0);
+  }
+
+  return false; // defensive
+}
+
 bool RGAFiducialFilter::Filter(int track_index,
+                               const hipo::bank& particleBank,
+                               const hipo::bank& configBank,
                                const hipo::bank* calBank,
                                const hipo::bank* ftBank,
                                const hipo::bank* trajBank,
@@ -385,6 +464,14 @@ bool RGAFiducialFilter::Filter(int track_index,
   if (!PassCVTFiducial(track_index, trajBank, GetCalStrictness(key))) {
     if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
       m_log->Info("[RGAFID][CVT] track={} -> CVT FAIL", track_index);
+    }
+    return false;
+  }
+
+  // DC fiducial (REC::Traj detector==6); optional if REC::Traj missing.
+  if (!PassDCFiducial(track_index, particleBank, configBank, trajBank)) {
+    if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
+      m_log->Info("[RGAFID][DC] track={} -> DC FAIL", track_index);
     }
     return false;
   }
