@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <cmath>
+#include <limits>
 
 namespace iguana::clas12 {
 
@@ -122,11 +123,6 @@ void RGAFiducialFilterValidator::BookIfNeeded()
 
 void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
 {
-  // Build/Start sequence
-  m_seq = std::make_unique<AlgorithmSequence>();
-  m_seq->Add("clas12::RGAFiducialFilter");
-  m_seq->Start(banks);
-
   // Banks
   b_particle = GetBankIndex(banks, "REC::Particle");
   if (banklist_has(banks, "REC::Calorimeter")) {
@@ -135,7 +131,6 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
   if (banklist_has(banks, "REC::ForwardTagger")) {
     b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft=true;
   }
-  // REC::Traj for CVT/DC plotting
   if (banklist_has(banks, "REC::Traj")) {
     b_traj = GetBankIndex(banks, "REC::Traj"); m_have_traj=true;
   } else {
@@ -143,6 +138,7 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
     m_log->Info("[RGAFID][VAL] REC::Traj not provided; CVT/DC plots disabled. "
                 "Re-run with -b REC::Traj to enable trajectory-based plots.");
   }
+  b_config = GetBankIndex(banks, "RUN::config");
 
   // FT overlay params (defaults only; no YAML here to avoid crashes)
   LoadFTParamsFromYAML();
@@ -159,91 +155,179 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks)
   BookIfNeeded();
 }
 
+// ---- local helpers (mirror Algorithm) ----
+static bool PassCalStrictnessForPIndex(const hipo::bank& cal, int pidx, int strictness)
+{
+  float min_lv = std::numeric_limits<float>::infinity();
+  float min_lw = std::numeric_limits<float>::infinity();
+
+  const int n = cal.getRows();
+  bool saw = false;
+  for (int i=0;i<n;++i) {
+    if (cal.getInt("pindex", i) != pidx) continue;
+    if (cal.getInt("layer",  i) != 1   ) continue; // PCAL only
+    saw = true;
+    float lv = cal.getFloat("lv", i);
+    float lw = cal.getFloat("lw", i);
+    if (lv < min_lv) min_lv = lv;
+    if (lw < min_lw) min_lw = lw;
+  }
+  if (!saw) return true; // no PCAL association => pass
+
+  switch (strictness) {
+    case 1: return !(min_lw <  9.0f || min_lv <  9.0f);
+    case 2: return !(min_lw < 13.5f || min_lv < 13.5f);
+    case 3: return !(min_lw < 18.0f || min_lv < 18.0f);
+  }
+  return true;
+}
+
+static bool PassFTForPIndex(const hipo::bank& ft, int pidx,
+                            float rmin, float rmax,
+                            const std::vector<std::array<float,3>>& holes)
+{
+  const int n = ft.getRows();
+  for (int i=0;i<n;++i) {
+    if (ft.getInt("pindex", i) != pidx) continue;
+    const double x = ft.getFloat("x", i);
+    const double y = ft.getFloat("y", i);
+    const double r = std::sqrt(x*x + y*y);
+    if (r < rmin) return false;
+    if (r > rmax) return false;
+    for (auto const& h : holes) {
+      const double d = std::sqrt((x-h[1])*(x-h[1]) + (y-h[2])*(y-h[2]));
+      if (d < h[0]) return false;
+    }
+    return true; // first row decides
+  }
+  return true; // no FT association -> pass
+}
+
+static bool PassCVTForPIndex(const hipo::bank& traj, int pidx)
+{
+  const int n = traj.getRows();
+  double e1=1.0,e3=1.0,e5=1.0,e7=1.0,e12=1.0;
+  double x12=0.0,y12=0.0;
+
+  for (int i=0;i<n;++i) {
+    if (traj.getInt("pindex", i) != pidx) continue;
+    if (traj.getInt("detector", i) != 5)  continue;
+    int layer = traj.getInt("layer", i);
+    double e = traj.getFloat("edge", i);
+    if      (layer==1)  e1  = e;
+    else if (layer==3)  e3  = e;
+    else if (layer==5)  e5  = e;
+    else if (layer==7)  e7  = e;
+    else if (layer==12) { e12 = e; x12 = traj.getFloat("x", i); y12 = traj.getFloat("y", i); }
+  }
+
+  // phi wedge veto
+  double phi = std::atan2(y12, x12) * (180.0/M_PI);
+  if (phi < 0) phi += 360.0;
+  bool veto =
+      (phi >  25.0 && phi <  40.0) ||
+      (phi > 143.0 && phi < 158.0) ||
+      (phi > 265.0 && phi < 280.0);
+  if (veto) return false;
+
+  return (e1>0.0 && e3>0.0 && e5>0.0 && e7>0.0 && e12>0.0);
+}
+
+static bool PassDCForPIndex(const hipo::bank& particle,
+                            const hipo::bank& config,
+                            const hipo::bank& traj,
+                            int pidx)
+{
+  const int pid = particle.getInt("pid", pidx);
+  const bool isNeg = (pid== 11 || pid==-211 || pid==-321 || pid==-2212);
+  const bool isPos = (pid==-11 || pid== 211 || pid== 321 || pid== 2212);
+  if (!(isNeg || isPos)) return false;
+
+  const float torus = config.getFloat("torus", 0);
+  const bool electron_out = (torus == 1.0f);
+  const bool particle_inb = (electron_out ? isPos : isNeg);
+  const bool particle_out = !particle_inb;
+
+  const double px = particle.getFloat("px", pidx);
+  const double py = particle.getFloat("py", pidx);
+  const double pz = particle.getFloat("pz", pidx);
+  const double rho = std::sqrt(px*px + py*py);
+  const double theta = std::atan2(rho, (pz==0.0 ? 1e-9 : pz)) * (180.0/M_PI);
+
+  double e1=0.0, e2=0.0, e3=0.0;
+  const int n = traj.getRows();
+  for (int i=0;i<n;++i) {
+    if (traj.getInt("pindex", i) != pidx) continue;
+    if (traj.getInt("detector", i) != 6)  continue;
+    int layer = traj.getInt("layer", i);
+    double e  = traj.getFloat("edge", i);
+    if      (layer== 6) e1 = e;
+    else if (layer==18) e2 = e;
+    else if (layer==36) e3 = e;
+  }
+
+  if (particle_inb) {
+    if (theta < 10.0) return (e1>10.0 && e2>10.0 && e3>10.0);
+    return (e1>3.0 && e2>3.0 && e3>10.0);
+  } else if (particle_out) {
+    return (e1>3.0 && e2>3.0 && e3>10.0);
+  }
+  return false;
+}
+
 void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
 {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
+  auto& config   = GetBank(banks, b_config,   "RUN::config");
 
-  // --- BEFORE snapshot: electrons/photons for PCAL/FT
-  std::unordered_map<int,int> before_pid;
-  for (auto const& row : particle.getRowList()) {
-    int pid = particle.getInt("pid", row);
-    if (pid==11 || pid==22) before_pid.emplace((int)row, pid);
+  // Track torus polarity stats (so we can label DC canvases consistently)
+  {
+    bool e_out = (config.getFloat("torus", 0) == 1.0f);
+    if (e_out) const_cast<RGAFiducialFilterValidator*>(this)->m_torus_out_events++;
+    else       const_cast<RGAFiducialFilterValidator*>(this)->m_torus_in_events++;
   }
 
-  // --- BEFORE snapshot: hadrons for CVT (combined)
-  auto is_hadron = [](int pid){
-    return pid==211 || pid==321 || pid==2212 ||
-           pid==-211 || pid==-321 || pid==-2212;
-  };
-  std::unordered_set<int> cvt_before;
-  for (auto const& row : particle.getRowList()) {
-    int pid = particle.getInt("pid", row);
-    if (is_hadron(pid)) cvt_before.insert((int)row);
-  }
+  // Snapshot: pindex -> pid for FT/PCAL and -> sign for DC, also keep momenta for DC
+  std::unordered_set<int> electrons_or_photons;
+  std::unordered_set<int> hadrons;
+  std::unordered_set<int> pos_all, neg_all;
 
-  // --- BEFORE snapshot: DC-eligible pindices by sign (require REC::Traj detector==6 present)
-  std::unordered_set<int> dc_pos_before, dc_neg_before;
-  if (m_have_traj) {
-    auto& traj = GetBank(banks, b_traj, "REC::Traj");
-    std::unordered_set<int> has_dc;
-    const int n = traj.getRows();
-    for (int i=0;i<n;++i) if (traj.getInt("detector", i) == 6) has_dc.insert(traj.getInt("pindex", i));
-
-    for (auto const& row : particle.getRowList()) {
-      int pidx = (int)row;
-      if (!has_dc.count(pidx)) continue;
-
-      int pid = particle.getInt("pid", row);
-      if (pid == 22 || pid == 0) continue; // neutrals ignored
-      if (pid > 0) dc_pos_before.insert(pidx);
-      else         dc_neg_before.insert(pidx);
-    }
-  }
-
-  // Run the filter (alters REC::Particle)
-  m_seq->Run(banks);
-
-  // --- AFTER snapshot: electrons/photons
-  std::unordered_map<int,int> after_pid;
-  for (auto const& row : particle.getRowList()) {
-    int pid = particle.getInt("pid", row);
-    if (pid==11 || pid==22) after_pid.emplace((int)row, pid);
-  }
-
-  // --- AFTER snapshot: hadrons for CVT
-  std::unordered_set<int> cvt_after;
-  for (auto const& row : particle.getRowList()) {
-    int pid = particle.getInt("pid", row);
-    if (is_hadron(pid)) cvt_after.insert((int)row);
-  }
-
-  // --- AFTER snapshot: DC by sign (intersection with survivors)
-  std::unordered_set<int> dc_pos_after, dc_neg_after;
   for (auto const& row : particle.getRowList()) {
     int pidx = (int)row;
-    if (dc_pos_before.count(pidx)) dc_pos_after.insert(pidx);
-    if (dc_neg_before.count(pidx)) dc_neg_after.insert(pidx);
+    int pid  = particle.getInt("pid", row);
+    if (pid==11 || pid==22) electrons_or_photons.insert(pidx);
+    if (pid==211 || pid==321 || pid==2212 || pid==-211 || pid==-321 || pid==-2212)
+      hadrons.insert(pidx);
+    if (pid>0) pos_all.insert(pidx);
+    else if (pid<0) neg_all.insert(pidx);
   }
 
-  // --- Fill PCAL lv/lw kept vs cut (uses e/gamma only)
+  // ---------------- PCAL kept vs cut (electrons/photons), strictness s=1
   if (m_have_calor) {
     auto& cal = GetBank(banks, b_calor, "REC::Calorimeter");
-    auto is_kept = [&](int pidx){ return after_pid.find(pidx) != after_pid.end(); };
-
     const int n = cal.getRows();
+
+    // Decide pass/fail per pindex once
+    std::unordered_map<int, bool> pass_cache;
+    for (int pidx : electrons_or_photons)
+      pass_cache[pidx] = PassCalStrictnessForPIndex(cal, pidx, /*strictness*/1);
+
     for (int i=0;i<n;++i) {
       int pidx = cal.getInt("pindex", i);
-      auto itb = before_pid.find(pidx);
-      if (itb == before_pid.end()) continue;         // not an e-/gamma before
-      if (cal.getInt("layer", i) != 1) continue;     // PCAL only
+      if (!electrons_or_photons.count(pidx)) continue;
+      if (cal.getInt("layer", i) != 1) continue;
 
-      int pid = itb->second;
+      int pid = 11; // default (electron)
+      // If this pindex is a photon, show on 22 panel
+      for (auto r : particle.getRowList()) {
+        if ((int)r == pidx) { pid = particle.getInt("pid", r); break; }
+      }
       int sec = cal.getInt("sector", i);
       if (sec < 1 || sec > 6) continue;
 
       double lv = cal.getFloat("lv", i);
       double lw = cal.getFloat("lw", i);
-      bool kept = is_kept(pidx);
+      bool kept = pass_cache[pidx];
 
       auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sec];
       if (lv >= 0.0 && lv <= 27.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
@@ -251,131 +335,123 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
     }
   }
 
-  // --- Fill FT before/after x-y (uses e/gamma only)
+  // ---------------- FT before/after (e-/gamma), independent of other cuts
   if (m_have_ft) {
     auto& ft = GetBank(banks, b_ft, "REC::ForwardTagger");
 
-    std::set<int> seen_before, seen_after; // avoid double counting if >1 row/pindex
+    std::set<int> seen_b_e, seen_a_e, seen_b_g, seen_a_g;
+    std::unordered_map<int,bool> pass_cache;
+
+    for (int pidx : electrons_or_photons)
+      pass_cache[pidx] = PassFTForPIndex(ft, pidx, m_ftdraw.rmin, m_ftdraw.rmax, m_ftdraw.holes);
 
     const int n = ft.getRows();
     for (int i=0;i<n;++i) {
       int pidx = ft.getInt("pindex", i);
+      if (!electrons_or_photons.count(pidx)) continue;
 
-      auto itb = before_pid.find(pidx);
-      if (itb != before_pid.end() && !seen_before.count(pidx)) {
-        m_ft_h.at(itb->second).before->Fill(ft.getFloat("x", i), ft.getFloat("y", i));
-        seen_before.insert(pidx);
-      }
+      // figure pid
+      int pid = 11;
+      for (auto r : particle.getRowList()) if ((int)r==pidx) { pid = particle.getInt("pid", r); break; }
 
-      auto ita = after_pid.find(pidx);
-      if (ita != after_pid.end() && !seen_after.count(pidx)) {
-        m_ft_h.at(ita->second).after->Fill(ft.getFloat("x", i), ft.getFloat("y", i));
-        seen_after.insert(pidx);
+      auto& HH = const_cast<RGAFiducialFilterValidator*>(this)->m_ft_h.at(pid);
+
+      if (pid==11) {
+        if (!seen_b_e.count(pidx)) { HH.before->Fill(ft.getFloat("x", i), ft.getFloat("y", i)); seen_b_e.insert(pidx); }
+        if ( pass_cache[pidx] && !seen_a_e.count(pidx)) { HH.after ->Fill(ft.getFloat("x", i), ft.getFloat("y", i)); seen_a_e.insert(pidx); }
+      } else { // photons
+        if (!seen_b_g.count(pidx)) { HH.before->Fill(ft.getFloat("x", i), ft.getFloat("y", i)); seen_b_g.insert(pidx); }
+        if ( pass_cache[pidx] && !seen_a_g.count(pidx)) { HH.after ->Fill(ft.getFloat("x", i), ft.getFloat("y", i)); seen_a_g.insert(pidx); }
       }
     }
   }
 
-  // --- Fill CVT L12 before/after (phi vs theta) using REC::Traj detector==5, for hadrons
+  // ---------------- CVT L12 phi/theta before/after (hadrons), independent cut
   if (m_have_traj) {
     auto& traj = GetBank(banks, b_traj, "REC::Traj");
 
     std::set<int> b_seen, a_seen;
 
+    // cache pass decision per pindex
+    std::unordered_map<int,bool> pass_cache;
+    for (int pidx : hadrons) pass_cache[pidx] = PassCVTForPIndex(traj, pidx);
+
     const int n = traj.getRows();
     for (int i=0; i<n; ++i) {
-      if (traj.getInt("detector", i) != 5) continue; // CVT only
-      if (traj.getInt("layer", i) != 12) continue;   // layer 12 only
+      if (traj.getInt("detector", i) != 5) continue;
+      if (traj.getInt("layer", i) != 12) continue;
 
       int pidx = traj.getInt("pindex", i);
+      if (!hadrons.count(pidx)) continue;
 
       double x = traj.getFloat("x", i);
       double y = traj.getFloat("y", i);
       double z = traj.getFloat("z", i);
 
-      // angles in degrees
       double phi = std::atan2(y, x) * (180.0/M_PI); if (phi < 0) phi += 360.0;
       double rho = std::sqrt(x*x + y*y);
       double theta = std::atan2(rho, (z==0.0 ? 1e-9 : z)) * (180.0/M_PI);
 
-      if (cvt_before.count(pidx) && !b_seen.count(pidx)) {
-        m_cvt_before->Fill(phi, theta);
-        b_seen.insert(pidx);
-      }
-      if (cvt_after.count(pidx) && !a_seen.count(pidx)) {
-        m_cvt_after->Fill(phi, theta);
-        a_seen.insert(pidx);
-      }
+      if (!b_seen.count(pidx)) { m_cvt_before->Fill(phi, theta); b_seen.insert(pidx); }
+      if ( pass_cache[pidx] && !a_seen.count(pidx)) { m_cvt_after->Fill(phi, theta); a_seen.insert(pidx); }
     }
-    // accumulate counts (one per unique pindex per event)
-    const_cast<RGAFiducialFilterValidator*>(this)->m_cvt_before_n += (long long) (cvt_before.size());
-    const_cast<RGAFiducialFilterValidator*>(this)->m_cvt_after_n  += (long long) (cvt_after.size());
+
+    const_cast<RGAFiducialFilterValidator*>(this)->m_cvt_before_n += (long long) b_seen.size();
+    const_cast<RGAFiducialFilterValidator*>(this)->m_cvt_after_n  += (long long) a_seen.size();
   }
 
-  // --- Fill DC edges (detector==6), regions 1/2/3 (layers 6/18/36), separate pos/neg
+  // ---------------- DC edges pos/neg before/after; cut independent
   if (m_have_traj) {
     auto& traj = GetBank(banks, b_traj, "REC::Traj");
 
-    // Count survivors (per-event unique pindex by sign)
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n += (long long) dc_pos_before.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  += (long long) dc_pos_after.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n += (long long) dc_neg_before.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_after_n  += (long long) dc_neg_after.size();
+    std::set<int> pos_b1, pos_b2, pos_b3, neg_b1, neg_b2, neg_b3;
+    std::set<int> pos_a1, pos_a2, pos_a3, neg_a1, neg_a2, neg_a3;
 
-    // Avoid double filling per region
-    std::set<int> pos_seen_r1_b, pos_seen_r2_b, pos_seen_r3_b;
-    std::set<int> pos_seen_r1_a, pos_seen_r2_a, pos_seen_r3_a;
-    std::set<int> neg_seen_r1_b, neg_seen_r2_b, neg_seen_r3_b;
-    std::set<int> neg_seen_r1_a, neg_seen_r2_a, neg_seen_r3_a;
+    // precompute pass per pindex
+    std::unordered_map<int,bool> pass_cache;
+    for (int pidx : pos_all) pass_cache[pidx] = PassDCForPIndex(particle, config, traj, pidx);
+    for (int pidx : neg_all) pass_cache[pidx] = PassDCForPIndex(particle, config, traj, pidx);
 
     const int n = traj.getRows();
     for (int i=0;i<n;++i) {
       if (traj.getInt("detector", i) != 6) continue;
 
-      const int layer = traj.getInt("layer", i);
       int pidx = traj.getInt("pindex", i);
-      double edge = traj.getFloat("edge", i);
+      int pid  = 0;
+      for (auto r : particle.getRowList()) if ((int)r==pidx) { pid = particle.getInt("pid", r); break; }
+      if (pid==0 || pid==22) continue;
 
-      // map layer -> region index & hist pointers
-      auto fill_dc = [&](bool positive, bool before){
-        if (layer == 6) {
-          if (positive) {
-            if (before && !pos_seen_r1_b.count(pidx)) { m_dc_pos.r1_before->Fill(edge); pos_seen_r1_b.insert(pidx); }
-            if (!before && !pos_seen_r1_a.count(pidx) && (dc_pos_after.count(pidx))) { m_dc_pos.r1_after->Fill(edge); pos_seen_r1_a.insert(pidx); }
-          } else {
-            if (before && !neg_seen_r1_b.count(pidx)) { m_dc_neg.r1_before->Fill(edge); neg_seen_r1_b.insert(pidx); }
-            if (!before && !neg_seen_r1_a.count(pidx) && (dc_neg_after.count(pidx))) { m_dc_neg.r1_after->Fill(edge); neg_seen_r1_a.insert(pidx); }
-          }
-        } else if (layer == 18) {
-          if (positive) {
-            if (before && !pos_seen_r2_b.count(pidx)) { m_dc_pos.r2_before->Fill(edge); pos_seen_r2_b.insert(pidx); }
-            if (!before && !pos_seen_r2_a.count(pidx) && (dc_pos_after.count(pidx))) { m_dc_pos.r2_after->Fill(edge); pos_seen_r2_a.insert(pidx); }
-          } else {
-            if (before && !neg_seen_r2_b.count(pidx)) { m_dc_neg.r2_before->Fill(edge); neg_seen_r2_b.insert(pidx); }
-            if (!before && !neg_seen_r2_a.count(pidx) && (dc_neg_after.count(pidx))) { m_dc_neg.r2_after->Fill(edge); neg_seen_r2_a.insert(pidx); }
-          }
-        } else if (layer == 36) {
-          if (positive) {
-            if (before && !pos_seen_r3_b.count(pidx)) { m_dc_pos.r3_before->Fill(edge); pos_seen_r3_b.insert(pidx); }
-            if (!before && !pos_seen_r3_a.count(pidx) && (dc_pos_after.count(pidx))) { m_dc_pos.r3_after->Fill(edge); pos_seen_r3_a.insert(pidx); }
-          } else {
-            if (before && !neg_seen_r3_b.count(pidx)) { m_dc_neg.r3_before->Fill(edge); neg_seen_r3_b.insert(pidx); }
-            if (!before && !neg_seen_r3_a.count(pidx) && (dc_neg_after.count(pidx))) { m_dc_neg.r3_after->Fill(edge); neg_seen_r3_a.insert(pidx); }
-          }
-        }
+      double edge = traj.getFloat("edge", i);
+      int layer   = traj.getInt("layer", i);
+
+      auto fill = [&](DCHists& H, std::set<int>& bset, std::set<int>& aset){
+        if (!bset.count(pidx)) { H.r1_before->Fill(edge); bset.insert(pidx); }
+        if (pass_cache[pidx] && !aset.count(pidx)) { H.r1_after->Fill(edge); aset.insert(pidx); }
       };
 
-      // sign by pid sign from particle bank
-      int pid = particle.getInt("pid", pidx);
-      if (pid == 0 || pid == 22) continue;
-
-      if (pid > 0) {
-        if (dc_pos_before.count(pidx)) fill_dc(true,  true);
-        if (dc_pos_after .count(pidx)) fill_dc(true,  false);
+      if (pid>0) {
+        if (layer==6)  { if (!pos_b1.count(pidx)) { m_dc_pos.r1_before->Fill(edge); pos_b1.insert(pidx); }
+                         if (pass_cache[pidx] && !pos_a1.count(pidx)) { m_dc_pos.r1_after->Fill(edge);  pos_a1.insert(pidx); } }
+        if (layer==18) { if (!pos_b2.count(pidx)) { m_dc_pos.r2_before->Fill(edge); pos_b2.insert(pidx); }
+                         if (pass_cache[pidx] && !pos_a2.count(pidx)) { m_dc_pos.r2_after->Fill(edge);  pos_a2.insert(pidx); } }
+        if (layer==36) { if (!pos_b3.count(pidx)) { m_dc_pos.r3_before->Fill(edge); pos_b3.insert(pidx); }
+                         if (pass_cache[pidx] && !pos_a3.count(pidx)) { m_dc_pos.r3_after->Fill(edge);  pos_a3.insert(pidx); } }
       } else {
-        if (dc_neg_before.count(pidx)) fill_dc(false, true);
-        if (dc_neg_after .count(pidx)) fill_dc(false, false);
+        if (layer==6)  { if (!neg_b1.count(pidx)) { m_dc_neg.r1_before->Fill(edge); neg_b1.insert(pidx); }
+                         if (pass_cache[pidx] && !neg_a1.count(pidx)) { m_dc_neg.r1_after->Fill(edge);  neg_a1.insert(pidx); } }
+        if (layer==18) { if (!neg_b2.count(pidx)) { m_dc_neg.r2_before->Fill(edge); neg_b2.insert(pidx); }
+                         if (pass_cache[pidx] && !neg_a2.count(pidx)) { m_dc_neg.r2_after->Fill(edge);  neg_a2.insert(pidx); } }
+        if (layer==36) { if (!neg_b3.count(pidx)) { m_dc_neg.r3_before->Fill(edge); neg_b3.insert(pidx); }
+                         if (pass_cache[pidx] && !neg_a3.count(pidx)) { m_dc_neg.r3_after->Fill(edge);  neg_a3.insert(pidx); } }
       }
     }
+
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n += (long long) pos_all.size();
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n += (long long) neg_all.size();
+
+    // After counts counted once per unique pindex
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  += (long long) (pos_a1.size() + pos_a2.size() + pos_a3.size())/3;
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_after_n  += (long long) (neg_a1.size() + neg_a2.size() + neg_a3.size())/3;
   }
 }
 
@@ -395,17 +471,14 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title)
     auto& H = it->second[s];
     if (!H.lv_kept) continue;
 
-    // styles: kept = solid, cut = dashed
     H.lv_kept->SetLineColor(kBlue+1);  H.lv_kept->SetLineWidth(2);  H.lv_kept->SetLineStyle(1);
     H.lw_kept->SetLineColor(kRed+1);   H.lw_kept->SetLineWidth(2);  H.lw_kept->SetLineStyle(1);
     H.lv_cut ->SetLineColor(kBlue+1);  H.lv_cut ->SetLineWidth(2);  H.lv_cut ->SetLineStyle(2);
     H.lw_cut ->SetLineColor(kRed+1);   H.lw_cut ->SetLineWidth(2);  H.lw_cut ->SetLineStyle(2);
 
-    // explicit title on lv kept (pad title)
     H.lv_kept->SetTitle(Form("%s - Sector %d;length (cm);counts",
                       pid==11?"Electrons":"Photons", s));
 
-    // draw in order so axes come from a "kept" spectrum
     H.lv_kept->Draw("HIST");
     H.lw_kept->Draw("HISTSAME");
     H.lv_cut ->Draw("HISTSAME");
@@ -467,7 +540,6 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
   auto* c = new TCanvas("rgafid_cvt_l12_all", title, 1200, 600);
   c->Divide(2,1);
 
-  // Give the palette a bit more breathing room on the right
   const double left   = 0.12;
   const double right  = 0.16;
   const double bottom = 0.12;
@@ -482,7 +554,6 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
   gPad->SetRightMargin(right);
   gPad->SetBottomMargin(bottom);
   gPad->SetTopMargin(top);
-  // keep BEFORE title as-is
   m_cvt_before->Draw("COLZ");
 
   c->cd(2);
@@ -490,38 +561,37 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
   gPad->SetRightMargin(right);
   gPad->SetBottomMargin(bottom);
   gPad->SetTopMargin(top);
-  // decorate AFTER with survive %
   m_cvt_after->SetTitle(Form("CVT layer 12 after (hadrons: #pm211,#pm321,#pm2212)  [survive = %.1f%%];phi (deg);theta (deg)", pct));
   m_cvt_after->Draw("COLZ");
 
   c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
 }
 
-void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H, bool positive, double survive_pct)
+static void set_dc_pad_margins() {
+  gPad->SetLeftMargin(0.16);   // more padding so y-axis label not clipped
+  gPad->SetRightMargin(0.06);
+  gPad->SetBottomMargin(0.12);
+  gPad->SetTopMargin(0.08);
+}
+
+void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct)
 {
-  auto* c = new TCanvas(positive ? "rgafid_dc_pos_2x3" : "rgafid_dc_neg_2x3",
-                        positive ? "DC edges (+): before/after" : "DC edges (-): before/after",
+  auto* c = new TCanvas(Form("rgafid_dc_%s_2x3", bend),
+                        Form("DC edges (%s): before/after", bend),
                         1500, 900);
   c->Divide(3,2);
 
-  auto setpad = [](){
-    gPad->SetLeftMargin(0.12);
-    gPad->SetRightMargin(0.06);
-    gPad->SetBottomMargin(0.12);
-    gPad->SetTopMargin(0.08);
-  };
-
   // BEFORE row
-  c->cd(1); setpad(); if (H.r1_before) { H.r1_before->SetLineWidth(2); H.r1_before->Draw("HIST"); H.r1_before->SetTitle("DC Region 1 (before);edge (cm);counts"); }
-  c->cd(2); setpad(); if (H.r2_before) { H.r2_before->SetLineWidth(2); H.r2_before->Draw("HIST"); H.r2_before->SetTitle("DC Region 2 (before);edge (cm);counts"); }
-  c->cd(3); setpad(); if (H.r3_before) { H.r3_before->SetLineWidth(2); H.r3_before->Draw("HIST"); H.r3_before->SetTitle("DC Region 3 (before);edge (cm);counts"); }
+  c->cd(1); set_dc_pad_margins(); if (H.r1_before) { H.r1_before->SetLineWidth(2); H.r1_before->Draw("HIST"); H.r1_before->SetTitle(Form("DC Region 1 (before, %s);edge (cm);counts", bend)); }
+  c->cd(2); set_dc_pad_margins(); if (H.r2_before) { H.r2_before->SetLineWidth(2); H.r2_before->Draw("HIST"); H.r2_before->SetTitle(Form("DC Region 2 (before, %s);edge (cm);counts", bend)); }
+  c->cd(3); set_dc_pad_margins(); if (H.r3_before) { H.r3_before->SetLineWidth(2); H.r3_before->Draw("HIST"); H.r3_before->SetTitle(Form("DC Region 3 (before, %s);edge (cm);counts", bend)); }
 
   // AFTER row with survive %
-  c->cd(4); setpad(); if (H.r1_after)  { H.r1_after ->SetLineWidth(2); H.r1_after ->Draw("HIST"); H.r1_after ->SetTitle(Form("DC Region 1 (after)  [survive = %.1f%%];edge (cm);counts", survive_pct)); }
-  c->cd(5); setpad(); if (H.r2_after)  { H.r2_after ->SetLineWidth(2); H.r2_after ->Draw("HIST"); H.r2_after ->SetTitle(Form("DC Region 2 (after)  [survive = %.1f%%];edge (cm);counts", survive_pct)); }
-  c->cd(6); setpad(); if (H.r3_after)  { H.r3_after ->SetLineWidth(2); H.r3_after ->Draw("HIST"); H.r3_after ->SetTitle(Form("DC Region 3 (after)  [survive = %.1f%%];edge (cm);counts", survive_pct)); }
+  c->cd(4); set_dc_pad_margins(); if (H.r1_after)  { H.r1_after ->SetLineWidth(2); H.r1_after ->Draw("HIST"); H.r1_after ->SetTitle(Form("DC Region 1 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
+  c->cd(5); set_dc_pad_margins(); if (H.r2_after)  { H.r2_after ->SetLineWidth(2); H.r2_after ->Draw("HIST"); H.r2_after ->SetTitle(Form("DC Region 2 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
+  c->cd(6); set_dc_pad_margins(); if (H.r3_after)  { H.r3_after ->SetLineWidth(2); H.r3_after ->Draw("HIST"); H.r3_after ->SetTitle(Form("DC Region 3 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
 
-  c->SaveAs(Form("%s_dc_%s_2x3.png", m_base.Data(), positive ? "pos" : "neg"));
+  c->SaveAs(Form("%s_dc_%s_2x3.png", m_base.Data(), bend));
 }
 
 void RGAFiducialFilterValidator::Stop()
@@ -536,11 +606,24 @@ void RGAFiducialFilterValidator::Stop()
   // CVT L12 1x2 (combined hadrons) with survive %
   DrawCVTCanvas1x2("CVT layer 12 (Hadrons): phi vs theta");
 
-  // DC (pos & neg) 2x3 with survive %
+  // Decide bending labels based on torus majority
+  bool electron_out = (m_torus_out_events >= m_torus_in_events);
+  // electron_out: positives inbending, negatives outbending
+  const char* pos_bend = electron_out ? "inbending" : "outbending";
+  const char* neg_bend = electron_out ? "outbending" : "inbending";
+
+  // DC canvases: save as *_dc_inb_2x3.png and *_dc_out_2x3.png
   double pos_pct = (m_dc_pos_before_n>0) ? (100.0*double(m_dc_pos_after_n)/double(m_dc_pos_before_n)) : 0.0;
   double neg_pct = (m_dc_neg_before_n>0) ? (100.0*double(m_dc_neg_after_n)/double(m_dc_neg_before_n)) : 0.0;
-  DrawDCCanvas2x3(m_dc_pos, true,  pos_pct);
-  DrawDCCanvas2x3(m_dc_neg, false, neg_pct);
+
+  // Map which sign goes to which file name
+  if (std::string(pos_bend) == "inbending") {
+    DrawDCCanvas2x3(m_dc_pos, "inb", pos_pct);
+    DrawDCCanvas2x3(m_dc_neg, "out", neg_pct);
+  } else {
+    DrawDCCanvas2x3(m_dc_pos, "out", pos_pct);
+    DrawDCCanvas2x3(m_dc_neg, "inb", neg_pct);
+  }
 
   if (m_out) {
     m_out->Write();

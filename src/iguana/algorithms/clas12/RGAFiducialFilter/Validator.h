@@ -14,14 +14,16 @@
 namespace iguana::clas12 {
 
 /// Validator:
-///   - Runs RGAFiducialFilter
-///   - PCAL (lv & lw) per sector (1..6), range [0,27]:
-///       kept (solid) vs cut (dashed)
-///   - FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
-///   - CVT layer 12 from REC::Traj (detector==5): theta (y) vs phi (x),
-///     single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before | after, with survive % on AFTER.
-///   - DC (detector==6): two 2x3 canvases (pos & neg). Columns=Region1/2/3 (layers 6/18/36),
-///     rows=before|after. AFTER row titles include survive %.
+///   - Each subsystem's before/after is computed **independently** from the raw banks:
+///       * PCAL (lv & lw) per sector (1..6), range [0,27], strictness s=1:
+///           kept (solid) vs cut (dashed)
+///       * FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
+///       * CVT layer 12 from REC::Traj (detector==5): theta (y) vs phi (x),
+///           single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before | after,
+///           AFTER includes survive %.
+///       * DC (detector==6): two 2x3 canvases. Columns=Region1/2/3 (layers 6/18/36),
+///           rows=before|after. AFTER row titles include survive %, and titles include
+///           (inbending/outbending). Saved filenames are *_dc_inb_2x3.png and *_dc_out_2x3.png.
 class RGAFiducialFilterValidator : public Validator {
   DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
 
@@ -35,13 +37,11 @@ private:
   hipo::banklist::size_type b_particle{};
   hipo::banklist::size_type b_calor{};
   hipo::banklist::size_type b_ft{};
-  hipo::banklist::size_type b_traj{};  // REC::Traj
+  hipo::banklist::size_type b_traj{};   // REC::Traj
+  hipo::banklist::size_type b_config{}; // RUN::config
   bool m_have_calor = false;
   bool m_have_ft    = false;
   bool m_have_traj  = false;
-
-  // algo sequence
-  std::unique_ptr<AlgorithmSequence> m_seq;
 
   // PID rows we care about for PCAL/FT displays
   const std::array<int,2> kPIDs{11,22};
@@ -73,6 +73,10 @@ private:
   long long m_dc_pos_before_n = 0, m_dc_pos_after_n = 0;
   long long m_dc_neg_before_n = 0, m_dc_neg_after_n = 0;
 
+  // Torus polarity counters (to label DC canvases)
+  long long m_torus_in_events  = 0;
+  long long m_torus_out_events = 0;
+
   // FT overlay params (defaults match algorithm)
   struct FTDraw { float rmin=8.5f, rmax=15.5f; std::vector<std::array<float,3>> holes; };
   FTDraw m_ftdraw{};
@@ -88,7 +92,7 @@ private:
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
 
-  void DrawDCCanvas2x3(const DCHists& H, bool positive, double survive_pct);
+  void DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct);
 };
 
 } // namespace iguana::clas12
