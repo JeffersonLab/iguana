@@ -14,26 +14,15 @@
 namespace iguana::clas12 {
 
 /// Minimal RGA fiducial filter:
-///   • PCAL-only edge cuts on lv & lw with strictness thresholds:
-///       s=1 → {lv,lw} ≥  9.0 cm
-///       s=2 → {lv,lw} ≥ 13.5 cm
-///       s=3 → {lv,lw} ≥ 18.0 cm
-///   • Forward Tagger annulus + circular hole vetoes.
+///   - PCAL-only edge cuts on lv & lw with strictness thresholds:
+///       s=1 -> {lv,lw} >=  9.0 cm
+///       s=2 -> {lv,lw} >= 13.5 cm
+///       s=3 -> {lv,lw} >= 18.0 cm
+///   - Forward Tagger annulus + circular hole vetoes.
 /// Defaults are read from Config.yaml (same dir). A caller may override
 /// strictness via SetStrictness(1|2|3) BEFORE Start().
 class RGAFiducialFilter : public Algorithm {
   DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
-
-struct FTParams {
-  float rmin = 8.5f;
-  float rmax = 15.5f;
-  std::vector<std::array<float,3>> holes{
-      std::array<float,3>{1.60f, -8.42f,   9.89f},
-      std::array<float,3>{1.60f, -9.89f,  -5.33f},
-      std::array<float,3>{2.30f, -6.15f, -13.00f},
-      std::array<float,3>{2.00f,  3.70f,  -6.50f}
-  };
-};
 
 public:
   void Start(hipo::banklist& banks) override;
@@ -54,12 +43,24 @@ private:
 
   // ---- config knobs
   struct FTParams {
-    float rmin = 8.5f;
-    float rmax = 15.5f;
+    float rmin;
+    float rmax;
     std::vector<std::array<float,3>> holes; // {R,cx,cy}
+
+    // Defaults match what we draw in the validator overlays.
+    FTParams()
+      : rmin(8.5f),
+        rmax(15.5f),
+        holes{
+          std::array<float,3>{1.60f, -8.42f,  9.89f},
+          std::array<float,3>{1.60f, -9.89f, -5.33f},
+          std::array<float,3>{2.30f, -6.15f, -13.00f},
+          std::array<float,3>{2.00f,  3.70f,  -6.50f}
+        } {}
   };
-  FTParams              u_ft_params{};              // in-use FT params
-  std::optional<int>    u_strictness_user;          // if SetStrictness() used
+
+  FTParams           u_ft_params{};      // in-use FT params
+  std::optional<int> u_strictness_user;  // if SetStrictness() used
 
   // ---- concurrent / per-event state
   mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
@@ -95,7 +96,7 @@ private:
   int GetCalStrictness(concurrent_key_t key) const { return o_cal_strictness->Load(key); }
 
   // ---- YAML
-  void LoadConfigFromYAML();  // reads from this algorithm’s Config.yaml
+  void LoadConfigFromYAML();  // reads from this algorithm's Config.yaml
   void DumpFTParams() const;
 
   // ---- concurrency utils
