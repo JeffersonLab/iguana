@@ -20,11 +20,13 @@ namespace iguana::clas12 {
 
   void ZVertexFilter::Run(hipo::banklist& banks) const
   {
+    Run(
+        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_config, "RUN::config"));
+  }
 
-    // get the banks
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto& configBank = GetBank(banks, b_config, "RUN::config");
-
+  void ZVertexFilter::Run(hipo::bank& particleBank, hipo::bank const& configBank) const
+  {
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
