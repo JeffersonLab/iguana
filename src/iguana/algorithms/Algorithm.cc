@@ -304,7 +304,7 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Algorithm::ShowBanks(hipo::banklist& banks, std::string_view message, Logger::Level const level) const
+  void Algorithm::ShowBanks(hipo::banklist const& banks, std::string_view message, Logger::Level const level) const
   {
     if(m_log->GetLevel() <= level) {
       if(!message.empty())
@@ -316,7 +316,7 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Algorithm::ShowBank(hipo::bank& bank, std::string_view message, Logger::Level const level) const
+  void Algorithm::ShowBank(hipo::bank const& bank, std::string_view message, Logger::Level const level) const
   {
     if(m_log->GetLevel() <= level) {
       if(!message.empty())

@@ -10,7 +10,13 @@ namespace iguana::clas12 {
     // define options, their default values, and cache them
     ParseYAMLConfig();
     o_bankname_charged = GetOptionScalar<std::string>("bank_charged");
-    o_bankname_uncharged = GetOptionScalar<std::string>("bank_uncharged");
+    try {
+      o_bankname_neutral = GetOptionScalar<std::string>("bank_neutral");
+    } catch(std::runtime_error const& ex) {
+      m_log->Warn("searching instead for configuration parameter named 'bank_uncharged'...");
+      o_bankname_neutral = GetOptionScalar<std::string>("bank_uncharged");
+      m_log->Warn("...found 'bank_uncharged' and using it; note that 'bank_uncharged' has been renamed to 'bank_neutral', please update your configuration");
+    }
 
     bool setDefaultBanks=false;
     // get expected bank indices
@@ -27,9 +33,9 @@ namespace iguana::clas12 {
       userSpecifiedBank_charged = false;
     }
 
-    if(o_bankname_uncharged != "default") {
-      b_user_uncharged            = GetBankIndex(banks, o_bankname_uncharged);
-      userSpecifiedBank_uncharged = true;
+    if(o_bankname_neutral != "default") {
+      b_user_neutral            = GetBankIndex(banks, o_bankname_neutral);
+      userSpecifiedBank_neutral = true;
     }
     else {
       //avoid setting default banks twice
@@ -39,7 +45,7 @@ namespace iguana::clas12 {
         b_scint           = GetBankIndex(banks, "REC::Scintillator");
         setDefaultBanks = true;
       }
-      userSpecifiedBank_uncharged = false;
+      userSpecifiedBank_neutral = false;
     }
 
     // create the output bank
@@ -50,66 +56,83 @@ namespace iguana::clas12 {
 
   void SectorFinder::Run(hipo::banklist& banks) const
   {
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto& resultBank   = GetBank(banks, b_result, "REC::Particle::Sector");
+    auto includeDefaultBanks = !(userSpecifiedBank_charged && userSpecifiedBank_neutral);
+    RunImpl(
+        &GetBank(banks, b_particle, "REC::Particle"),
+        includeDefaultBanks ? &GetBank(banks, b_track, "REC::Track") : nullptr,
+        includeDefaultBanks ? &GetBank(banks, b_calorimeter, "REC::Calorimeter") : nullptr,
+        includeDefaultBanks ? &GetBank(banks, b_scint, "REC::Scintillator") : nullptr,
+        userSpecifiedBank_charged ? &GetBank(banks, b_user_charged) : nullptr,
+        userSpecifiedBank_neutral ? &GetBank(banks, b_user_neutral) : nullptr,
+        &GetBank(banks, b_result, "REC::Particle::Sector"));
+  }
 
-    std::vector<int> sectors_user_uncharged;
-    std::vector<int> pindices_user_uncharged;
-    if(userSpecifiedBank_uncharged){
-      auto const& userBank = GetBank(banks, b_user_uncharged);
-      GetListsSectorPindex(userBank,sectors_user_uncharged,pindices_user_uncharged);
-    }
-
-    std::vector<int> sectors_user_charged;
-    std::vector<int> pindices_user_charged;
-    if(userSpecifiedBank_charged){
-      auto const& userBank = GetBank(banks, b_user_charged);
-      GetListsSectorPindex(userBank,sectors_user_charged,pindices_user_charged);
-    }
+  void SectorFinder::RunImpl(
+      hipo::bank const* particleBank,
+      hipo::bank const* trackBank,
+      hipo::bank const* calBank,
+      hipo::bank const* scintBank,
+      hipo::bank const* userChargedBank,
+      hipo::bank const* userNeutralBank,
+      hipo::bank* resultBank) const
+  {
 
     std::vector<int> sectors_track;
     std::vector<int> pindices_track;
-    if(!userSpecifiedBank_charged || !userSpecifiedBank_uncharged){
-      auto const& trackBank = GetBank(banks, b_track);
-      GetListsSectorPindex(trackBank,sectors_track,pindices_track);
-    }
-
     std::vector<int> sectors_cal;
     std::vector<int> pindices_cal;
-    if(!userSpecifiedBank_charged || !userSpecifiedBank_uncharged){
-      auto const& calBank = GetBank(banks, b_calorimeter);
-      GetListsSectorPindex(calBank,sectors_cal,pindices_cal);
-    }
-
     std::vector<int> sectors_scint;
     std::vector<int> pindices_scint;
-    if(!userSpecifiedBank_charged || !userSpecifiedBank_uncharged){
-      auto const& scintBank = GetBank(banks, b_scint);
-      GetListsSectorPindex(scintBank,sectors_scint,pindices_scint);
+    std::vector<int> sectors_user_neutral;
+    std::vector<int> pindices_user_neutral;
+    std::vector<int> sectors_user_charged;
+    std::vector<int> pindices_user_charged;
+
+    if(!userSpecifiedBank_charged || !userSpecifiedBank_neutral){
+      if(trackBank!=nullptr && calBank!=nullptr && scintBank!=nullptr) {
+        GetListsSectorPindex(*trackBank,sectors_track,pindices_track);
+        GetListsSectorPindex(*calBank,sectors_cal,pindices_cal);
+        GetListsSectorPindex(*scintBank,sectors_scint,pindices_scint);
+      }
+      else
+        throw std::runtime_error("SectorFinder::RunImpl called with unexpected null pointer to either the track, calorimeter, or scintillator bank(s); please contact the maintainers");
     }
 
+    if(userSpecifiedBank_neutral){
+      if(userNeutralBank!=nullptr)
+        GetListsSectorPindex(*userNeutralBank,sectors_user_neutral,pindices_user_neutral);
+      else
+        throw std::runtime_error("SectorFinder::RunImpl called with unexpected null pointer to a user-specified bank; please contact the maintainers");
+    }
+
+    if(userSpecifiedBank_charged){
+      if(userChargedBank!=nullptr)
+        GetListsSectorPindex(*userChargedBank,sectors_user_charged,pindices_user_charged);
+      else
+        throw std::runtime_error("SectorFinder::RunImpl called with unexpected null pointer to a user-specified bank; please contact the maintainers");
+    }
 
     // sync new bank with particle bank, and fill it with zeroes
-    resultBank.setRows(particleBank.getRows());
-    resultBank.getMutableRowList().setList(particleBank.getRowList());
-    for(int row = 0; row < resultBank.getRows(); row++){
-      resultBank.putInt(i_sector, row, 0);
-      resultBank.putShort(i_pindex, row, static_cast<int16_t>(row));
+    resultBank->setRows(particleBank->getRows());
+    resultBank->getMutableRowList().setList(particleBank->getRowList());
+    for(int row = 0; row < resultBank->getRows(); row++){
+      resultBank->putInt(i_sector, row, 0);
+      resultBank->putShort(i_pindex, row, static_cast<int16_t>(row));
     }
 
 
     // some downstream algorithms may still need sector info, so obtain sector for _all_ particles,
     // not just the ones that were filtered out (use `.getRows()` rather than `.getRowList()`)
-    for(int row = 0; row < particleBank.getRows(); row++) {
+    for(int row = 0; row < particleBank->getRows(); row++) {
 
-      auto charge=particleBank.getInt("charge",row);
+      auto charge=particleBank->getInt("charge",row);
       int sect = -1;
 
       // if user-specified bank
-      if(charge==0 ? userSpecifiedBank_uncharged : userSpecifiedBank_charged)
+      if(charge==0 ? userSpecifiedBank_neutral : userSpecifiedBank_charged)
         sect = GetSector(
-            charge==0 ? sectors_user_uncharged : sectors_user_charged,
-            charge==0 ? pindices_user_uncharged : pindices_user_charged,
+            charge==0 ? sectors_user_neutral : sectors_user_charged,
+            charge==0 ? pindices_user_neutral : pindices_user_charged,
             row);
       else // if not user-specified bank, use the standard method
         sect = GetStandardSector(
@@ -122,12 +145,12 @@ namespace iguana::clas12 {
             row);
 
       if (sect!=-1){
-        resultBank.putInt(i_sector, row, sect);
-        resultBank.putShort(i_pindex, row, static_cast<int16_t>(row));
+        resultBank->putInt(i_sector, row, sect);
+        resultBank->putShort(i_pindex, row, static_cast<int16_t>(row));
       }
     }
 
-    ShowBank(resultBank, Logger::Header("CREATED BANK"));
+    ShowBank(*resultBank, Logger::Header("CREATED BANK"));
   }
 
   void SectorFinder::GetListsSectorPindex(hipo::bank const& bank, std::vector<int>& sectors, std::vector<int>& pindices) const

@@ -189,13 +189,13 @@ namespace iguana {
       /// @param banks the banks to show
       /// @param message if specified, print a header message
       /// @param level the log level
-      void ShowBanks(hipo::banklist& banks, std::string_view message = "", Logger::Level const level = Logger::trace) const;
+      void ShowBanks(hipo::banklist const& banks, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
       /// Dump a single bank
       /// @param bank the bank to show
       /// @param message if specified, print a header message
       /// @param level the log level
-      void ShowBank(hipo::bank& bank, std::string_view message = "", Logger::Level const level = Logger::trace) const;
+      void ShowBank(hipo::bank const& bank, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
       /// Get an option from the option cache
       /// @param key the key name associated with this option
