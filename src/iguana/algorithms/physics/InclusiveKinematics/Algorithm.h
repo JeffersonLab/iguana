@@ -10,7 +10,7 @@ namespace iguana::physics {
   /// @brief_algo Calculate inclusive kinematics quantities
   ///
   /// @begin_doc_algo{physics::InclusiveKinematics | Creator}
-  /// see this algorithm's Run function(s) for the input and output bank names
+  /// <tr><td>see this algorithm's Run function(s) for the input and output bank names</td></tr>
   /// @end_doc
   ///
   /// @begin_doc_config{physics/InclusiveKinematics}
