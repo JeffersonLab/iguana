@@ -56,7 +56,7 @@ seq.SetOption('clas12::EventBuilderFilter', 'pids', [11, 211, -211])
 seq.Start(banks)
 
 # get the name of newly created banks (if you don't want to look them up in the documentation)
-sector_finder_bank_name = seq.Get("clas12::SectorFinder")->GetCreatedBankName();
+sector_finder_bank_name = seq.Get("clas12::SectorFinder").GetCreatedBankName();
 
 # get bank index, for each bank we want to use after Iguana algorithms run
 # NOTE: new banks from creator algorithms are initialized by `Start`
