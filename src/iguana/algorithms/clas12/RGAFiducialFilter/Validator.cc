@@ -375,4 +375,23 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
   c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
 }
 
+void RGAFiducialFilterValidator::Stop()
+{
+  // PCAL canvases
+  DrawCalCanvas(11, "PCAL lv & lw (Electrons): kept solid, cut dashed");
+  DrawCalCanvas(22, "PCAL lv & lw (Photons): kept solid, cut dashed");
+
+  // FT 2x2
+  DrawFTCanvas2x2();
+
+  // CVT L12 1x2 (combined hadrons)
+  DrawCVTCanvas1x2("CVT layer 12 (Hadrons): phi vs theta");
+
+  if (m_out) {
+    m_out->Write();
+    m_log->Info("Wrote output file {}", m_out->GetName());
+    m_out->Close();
+  }
+}
+
 } // namespace iguana::clas12
