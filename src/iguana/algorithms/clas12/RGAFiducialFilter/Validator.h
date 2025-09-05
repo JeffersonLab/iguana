@@ -99,7 +99,6 @@ private:
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
 
-  static void set_dc_pad_margins();
   void DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct);
 };
 

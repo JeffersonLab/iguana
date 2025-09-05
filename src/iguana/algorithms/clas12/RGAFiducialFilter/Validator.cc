@@ -596,8 +596,10 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
   c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
 }
 
-static void set_dc_pad_margins() {
-  gPad->SetLeftMargin(0.16);   // more padding so y-axis label not clipped
+// Free function (not a class method) to set DC pad margins.
+// This avoids the earlier undefined-reference issue.
+static inline void SetDCPadMargins() {
+  gPad->SetLeftMargin(0.16);   // more padding so y-axis label isn't clipped
   gPad->SetRightMargin(0.06);
   gPad->SetBottomMargin(0.12);
   gPad->SetTopMargin(0.08);
@@ -611,14 +613,14 @@ void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H, const char* b
   c->Divide(3,2);
 
   // BEFORE row
-  c->cd(1); set_dc_pad_margins(); if (H.r1_before) { H.r1_before->SetLineWidth(2); H.r1_before->Draw("HIST"); H.r1_before->SetTitle(Form("DC Region 1 (before, %s);edge (cm);counts", bend)); }
-  c->cd(2); set_dc_pad_margins(); if (H.r2_before) { H.r2_before->SetLineWidth(2); H.r2_before->Draw("HIST"); H.r2_before->SetTitle(Form("DC Region 2 (before, %s);edge (cm);counts", bend)); }
-  c->cd(3); set_dc_pad_margins(); if (H.r3_before) { H.r3_before->SetLineWidth(2); H.r3_before->Draw("HIST"); H.r3_before->SetTitle(Form("DC Region 3 (before, %s);edge (cm);counts", bend)); }
+  c->cd(1); SetDCPadMargins(); if (H.r1_before) { H.r1_before->SetLineWidth(2); H.r1_before->Draw("HIST"); H.r1_before->SetTitle(Form("DC Region 1 (before, %s);edge (cm);counts", bend)); }
+  c->cd(2); SetDCPadMargins(); if (H.r2_before) { H.r2_before->SetLineWidth(2); H.r2_before->Draw("HIST"); H.r2_before->SetTitle(Form("DC Region 2 (before, %s);edge (cm);counts", bend)); }
+  c->cd(3); SetDCPadMargins(); if (H.r3_before) { H.r3_before->SetLineWidth(2); H.r3_before->Draw("HIST"); H.r3_before->SetTitle(Form("DC Region 3 (before, %s);edge (cm);counts", bend)); }
 
   // AFTER row with survive %
-  c->cd(4); set_dc_pad_margins(); if (H.r1_after)  { H.r1_after ->SetLineWidth(2); H.r1_after ->Draw("HIST"); H.r1_after ->SetTitle(Form("DC Region 1 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
-  c->cd(5); set_dc_pad_margins(); if (H.r2_after)  { H.r2_after ->SetLineWidth(2); H.r2_after ->Draw("HIST"); H.r2_after ->SetTitle(Form("DC Region 2 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
-  c->cd(6); set_dc_pad_margins(); if (H.r3_after)  { H.r3_after ->SetLineWidth(2); H.r3_after ->Draw("HIST"); H.r3_after ->SetTitle(Form("DC Region 3 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
+  c->cd(4); SetDCPadMargins(); if (H.r1_after)  { H.r1_after ->SetLineWidth(2); H.r1_after ->Draw("HIST"); H.r1_after ->SetTitle(Form("DC Region 1 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
+  c->cd(5); SetDCPadMargins(); if (H.r2_after)  { H.r2_after ->SetLineWidth(2); H.r2_after ->Draw("HIST"); H.r2_after ->SetTitle(Form("DC Region 2 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
+  c->cd(6); SetDCPadMargins(); if (H.r3_after)  { H.r3_after ->SetLineWidth(2); H.r3_after ->Draw("HIST"); H.r3_after ->SetTitle(Form("DC Region 3 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
 
   c->SaveAs(Form("%s_dc_%s_2x3.png", m_base.Data(), bend));
 }
