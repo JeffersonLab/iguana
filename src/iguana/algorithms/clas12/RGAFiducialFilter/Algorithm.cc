@@ -39,23 +39,18 @@ bool RGAFiducialFilter::banklist_has(hipo::banklist& banks, const char* name) {
 // -------- YAML (algo-local Config.yaml) ----------
 void RGAFiducialFilter::LoadConfigFromYAML()
 {
-  // Make the framework search THIS algorithm’s directory first (same as ZVertexFilter)
+  // Make the framework search THIS algorithm's directory first (same as ZVertexFilter)
   ParseYAMLConfig();
 
-  // If there’s no config at all, keep defaults and log once
+  // If there is no config at all, keep defaults and log once
   if (!GetConfig()) {
     m_log->Info("[RGAFID][CFG] No Config.yaml found for RGAFiducialFilter; using built-in defaults.");
     return;
   }
 
-  // Helper to try two forms: bare + fully-qualified (defensive)
   auto getDoubles = [&](const char* bare, const char* qualified) -> std::vector<double> {
     try { return GetOptionVector<double>(bare, {bare}); } catch (...) {}
-    try {
-      // allow explicit namespace if someone writes it that way
-      // e.g. "clas12::RGAFiducialFilter.forward_tagger.radius"
-      return GetOptionVector<double>(qualified, {qualified});
-    } catch (...) {}
+    try { return GetOptionVector<double>(qualified, {qualified}); } catch (...) {}
     return {};
   };
   auto getInts = [&](const char* bare, const char* qualified) -> std::vector<int> {
@@ -65,10 +60,6 @@ void RGAFiducialFilter::LoadConfigFromYAML()
   };
 
   // --- calorimeter.strictness ---
-  // Use an explicit node path relative to the algorithm root:
-  //   clas12::RGAFiducialFilter:
-  //     calorimeter:
-  //       strictness: [1]
   try {
     auto v = GetOptionVector<int>("calorimeter.strictness",
                                   {"calorimeter", "strictness"});
@@ -77,7 +68,6 @@ void RGAFiducialFilter::LoadConfigFromYAML()
       m_log->Info("[RGAFID][CFG] YAML strictness = {}", *u_strictness_user);
     }
   } catch (...) {
-    // try a super-defensive fully-qualified key if someone copied a pattern
     auto v = getInts("clas12::RGAFiducialFilter.calorimeter.strictness",
                      "clas12::RGAFiducialFilter.calorimeter.strictness");
     if (!v.empty()) {
@@ -147,6 +137,59 @@ void RGAFiducialFilter::LoadConfigFromYAML()
       m_log->Info("[RGAFID][CFG] FT holes not in YAML; defaults kept.");
     }
   }
+
+  // --- cvt.edge_layers ---
+  try {
+    auto v = GetOptionVector<int>("cvt.edge_layers", {"cvt", "edge_layers"});
+    if (!v.empty()) {
+      u_cvt_params.edge_layers.assign(v.begin(), v.end());
+      m_log->Info("[RGAFID][CFG] YAML CVT edge_layers = {} entries", u_cvt_params.edge_layers.size());
+    }
+  } catch (...) {
+    auto v = getInts("clas12::RGAFiducialFilter.cvt.edge_layers",
+                     "clas12::RGAFiducialFilter.cvt.edge_layers");
+    if (!v.empty()) {
+      u_cvt_params.edge_layers.assign(v.begin(), v.end());
+      m_log->Info("[RGAFID][CFG] YAML CVT edge_layers (qualified) = {} entries",
+                  u_cvt_params.edge_layers.size());
+    }
+  }
+
+  // --- cvt.edge_min ---
+  try {
+    auto v = GetOptionVector<double>("cvt.edge_min", {"cvt", "edge_min"});
+    if (!v.empty()) {
+      u_cvt_params.edge_min = static_cast<float>(v.front());
+      m_log->Info("[RGAFID][CFG] YAML CVT edge_min = {:.3f}", u_cvt_params.edge_min);
+    }
+  } catch (...) {
+    auto v = getDoubles("clas12::RGAFiducialFilter.cvt.edge_min",
+                        "clas12::RGAFiducialFilter.cvt.edge_min");
+    if (!v.empty()) {
+      u_cvt_params.edge_min = static_cast<float>(v.front());
+      m_log->Info("[RGAFID][CFG] YAML CVT edge_min (qualified) = {:.3f}", u_cvt_params.edge_min);
+    }
+  }
+
+  // --- cvt.phi_forbidden_deg ---
+  try {
+    auto v = GetOptionVector<double>("cvt.phi_forbidden_deg", {"cvt", "phi_forbidden_deg"});
+    if (!v.empty()) {
+      u_cvt_params.phi_forbidden_deg.clear();
+      for (double d : v) u_cvt_params.phi_forbidden_deg.push_back(static_cast<float>(d));
+      m_log->Info("[RGAFID][CFG] YAML CVT phi_forbidden_deg = {} values",
+                  u_cvt_params.phi_forbidden_deg.size());
+    }
+  } catch (...) {
+    auto v = getDoubles("clas12::RGAFiducialFilter.cvt.phi_forbidden_deg",
+                        "clas12::RGAFiducialFilter.cvt.phi_forbidden_deg");
+    if (!v.empty()) {
+      u_cvt_params.phi_forbidden_deg.clear();
+      for (double d : v) u_cvt_params.phi_forbidden_deg.push_back(static_cast<float>(d));
+      m_log->Info("[RGAFID][CFG] YAML CVT phi_forbidden_deg (qualified) = {} values",
+                  u_cvt_params.phi_forbidden_deg.size());
+    }
+  }
 }
 
 void RGAFiducialFilter::SetStrictness(int s) {
@@ -175,7 +218,10 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_log->Info("[RGAFID][DEBUG] ft={} events={}", dbg_ft, dbg_events);
     m_log->Info("[RGAFID] strictness = {}", *u_strictness_user);
   }
-  if (dbg_on || dbg_ft) DumpFTParams();
+  if (dbg_on || dbg_ft) {
+    DumpFTParams();
+    DumpCVTParams();
+  }
 
   // required banks
   b_particle = GetBankIndex(banks, "REC::Particle");
@@ -189,6 +235,10 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
   if (banklist_has(banks, "REC::ForwardTagger")) {
     b_ft = GetBankIndex(banks, "REC::ForwardTagger");
     m_have_ft = true;
+  }
+  if (banklist_has(banks, "REC::Traj")) {
+    b_traj = GetBankIndex(banks, "REC::Traj");
+    m_have_traj = true;
   }
 }
 
@@ -227,17 +277,18 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
   if (dbg_on) {
     static std::atomic<int> once{0};
     if (once.fetch_add(1) == 0) {
-      m_log->Info("[RGAFID] Run(): run={} have_calor={} have_ft={} strictness={}",
-                  runnum, m_have_calor, m_have_ft, GetCalStrictness(key));
+      m_log->Info("[RGAFID] Run(): run={} have_calor={} have_ft={} have_traj={} strictness={}",
+                  runnum, m_have_calor, m_have_ft, m_have_traj, GetCalStrictness(key));
     }
   }
 
-  const hipo::bank* calBankPtr = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter") : nullptr;
-  const hipo::bank* ftBankPtr  = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
+  const hipo::bank* calBankPtr  = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter") : nullptr;
+  const hipo::bank* ftBankPtr   = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
+  const hipo::bank* trajBankPtr = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj") : nullptr;
 
-  particleBank.getMutableRowList().filter([this, calBankPtr, ftBankPtr, key](auto, auto row) {
+  particleBank.getMutableRowList().filter([this, calBankPtr, ftBankPtr, trajBankPtr, key](auto, auto row) {
     const int track_index = row;
-    const bool accept = Filter(track_index, calBankPtr, ftBankPtr, key);
+    const bool accept = Filter(track_index, calBankPtr, ftBankPtr, trajBankPtr, key);
 
     if (dbg_on && dbg_events > 0) {
       int seen = ++g_dbg_events_seen;
@@ -249,7 +300,7 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
   });
 }
 
-// -------- filter core ----------
+// -------- filter core (PCAL) ----------
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
 {
@@ -273,7 +324,7 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& calBank, int pindex)
 
 bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
 {
-  if (h.L1.empty()) return true; // no PCAL association ⇒ no PCAL cut
+  if (h.L1.empty()) return true; // no PCAL association -> no PCAL cut
 
   float min_lv = std::numeric_limits<float>::infinity();
   float min_lw = std::numeric_limits<float>::infinity();
@@ -290,6 +341,7 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& h, int strictness)
   }
 }
 
+// -------- filter core (FT) ----------
 bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank) const
 {
   if (ftBank == nullptr) return true;
@@ -318,15 +370,73 @@ bool RGAFiducialFilter::PassFTFiducial(int track_index, const hipo::bank* ftBank
     return true; // first associated FT row decides
   }
 
-  return true; // no FT association → pass
+  return true; // no FT association -> pass
+}
+
+// -------- filter core (CVT) ----------
+bool RGAFiducialFilter::PassCVTFiducial(int track_index, const hipo::bank* trajBank, int strictness) const
+{
+  (void)strictness; // currently unused for CVT; edges and phi wedges always applied
+  if (trajBank == nullptr) return true;
+
+  // CVT rows are in REC::Traj with detector == 5
+  // We need edges for layers in u_cvt_params.edge_layers
+  // and x,y,z at layer 12 for phi computation
+  const int nrows = trajBank->getRows();
+
+  // initialize edges as pass by default (mimic Java)
+  std::vector<float> edges(13, 1.0f); // layers 0..12, we use 1..12
+  bool have_l12 = false;
+  double x12 = 0.0, y12 = 0.0, z12 = 0.0;
+
+  for (int i = 0; i < nrows; ++i) {
+    if (trajBank->getInt("pindex", i) != track_index) continue;
+    if (trajBank->getInt("detector", i) != 5) continue; // 5 = CVT
+
+    const int layer = trajBank->getInt("layer", i);
+    if (layer >= 0 && layer < static_cast<int>(edges.size())) {
+      if (trajBank->hasFloat("edge"))
+        edges[layer] = trajBank->getFloat("edge", i);
+    }
+
+    if (layer == 12) {
+      if (trajBank->hasFloat("x")) x12 = trajBank->getFloat("x", i);
+      if (trajBank->hasFloat("y")) y12 = trajBank->getFloat("y", i);
+      if (trajBank->hasFloat("z")) z12 = trajBank->getFloat("z", i);
+      have_l12 = true;
+    }
+  }
+
+  // edge test on configured layers (missing layers remain 1.0 and pass)
+  bool edge_test = true;
+  for (int L : u_cvt_params.edge_layers) {
+    if (L >= 0 && L < static_cast<int>(edges.size())) {
+      if (!(edges[L] > u_cvt_params.edge_min)) { edge_test = false; break; }
+    }
+  }
+  if (!edge_test) return false;
+
+  // always apply forbidden phi wedges if we have layer 12 position
+  if (have_l12 && !u_cvt_params.phi_forbidden_deg.empty()) {
+    double phi = std::atan2(y12, x12) * 180.0 / M_PI;
+    if (phi < 0) phi += 360.0;
+    const auto& v = u_cvt_params.phi_forbidden_deg;
+    for (size_t i = 0; i + 1 < v.size(); i += 2) {
+      const double lo = v[i], hi = v[i+1]; // open interval (lo,hi)
+      if (phi > lo && phi < hi) return false;
+    }
+  }
+
+  return true;
 }
 
 bool RGAFiducialFilter::Filter(int track_index,
                                const hipo::bank* calBank,
                                const hipo::bank* ftBank,
+                               const hipo::bank* trajBank,
                                concurrent_key_t key) const
 {
-  // PCAL strictness only
+  // PCAL strictness
   if (calBank != nullptr) {
     CalLayers h = CollectCalHitsForTrack(*calBank, track_index);
     if (h.has_any && !PassCalStrictness(h, GetCalStrictness(key))) {
@@ -353,6 +463,14 @@ bool RGAFiducialFilter::Filter(int track_index,
     return false;
   }
 
+  // CVT edge and phi wedges
+  if (!PassCVTFiducial(track_index, trajBank, GetCalStrictness(key))) {
+    if (dbg_on && g_dbg_events_seen.load() < dbg_events) {
+      m_log->Info("[RGAFID][CVT] track={} -> CVT FAIL", track_index);
+    }
+    return false;
+  }
+
   return true;
 }
 
@@ -363,6 +481,24 @@ void RGAFiducialFilter::DumpFTParams() const {
   for (size_t i = 0; i < u_ft_params.holes.size() && i < 8; ++i) {
     const auto& h = u_ft_params.holes[i];
     m_log->Info("   hole[{}] R={:.3f} cx={:.3f} cy={:.3f}", i, h[0], h[1], h[2]);
+  }
+}
+
+void RGAFiducialFilter::DumpCVTParams() const {
+  m_log->Info("[RGAFID][CVT] edge_min={:.3f} edge_layers={}", u_cvt_params.edge_min,
+              u_cvt_params.edge_layers.size());
+  if (!u_cvt_params.edge_layers.empty()) {
+    std::string s = "   layers:";
+    for (int L : u_cvt_params.edge_layers) { s += " " + std::to_string(L); }
+    m_log->Info("{}", s);
+  }
+  if (!u_cvt_params.phi_forbidden_deg.empty()) {
+    std::string s = "   phi wedges (deg):";
+    for (size_t i = 0; i + 1 < u_cvt_params.phi_forbidden_deg.size(); i += 2) {
+      s += " (" + std::to_string((int)u_cvt_params.phi_forbidden_deg[i])
+        + "," + std::to_string((int)u_cvt_params.phi_forbidden_deg[i+1]) + ")";
+    }
+    m_log->Info("{}", s);
   }
 }
 
