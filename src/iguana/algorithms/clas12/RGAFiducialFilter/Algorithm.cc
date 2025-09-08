@@ -1,7 +1,8 @@
-#include "Algorithm.h"  // our header in the same folder
+#include "Algorithm.h"  // our header in this folder
+
+// (No need to include iguana/hipo/BankUtils.h here; helpers are visible via existing headers)
 
 #include "iguana/services/ConcurrentParam.h"
-
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
