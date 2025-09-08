@@ -7,6 +7,7 @@
 #include <TEllipse.h>
 #include <TStyle.h>
 #include <TString.h>
+#include <TPad.h>   
 
 #include <set>
 #include <unordered_map>
@@ -614,6 +615,14 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
   m_cvt_after->Draw("COLZ");
 
   c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
+}
+
+// Free function (not a class method) to set DC pad margins.
+static inline void SetDCPadMargins() {
+  gPad->SetLeftMargin(0.16);   // y-axis label padding
+  gPad->SetRightMargin(0.06);
+  gPad->SetBottomMargin(0.12);
+  gPad->SetTopMargin(0.08);
 }
 
 // DC 2x3; survival precision now %.3f (titles already say Inb/Out)
