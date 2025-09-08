@@ -1,8 +1,5 @@
-#include "Algorithm.h"  // our header in this folder
+#include "Algorithm.h"  // local header
 
-// (No need to include iguana/hipo/BankUtils.h here; helpers are visible via existing headers)
-
-#include "iguana/services/ConcurrentParam.h"
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
@@ -55,7 +52,7 @@ int RGAFiducialFilter::EnvInt(const char* name, int def) {
   return def;
 }
 
-// ---------- CVT params kept in this TU (no header changes needed) ----------
+// ---------- CVT params kept in this TU ----------
 
 namespace {
 struct CVTParams {
@@ -242,11 +239,6 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
 
   // Require YAML and load all params
   LoadConfigFromYAML();
-
-  // Initialize concurrent params if you use them elsewhere
-  if (!o_runnum)         o_runnum         = std::make_unique<ConcurrentParam<int>>(0);
-  if (!o_cal_strictness) o_cal_strictness = std::make_unique<ConcurrentParam<int>>(u_strictness_user ? *u_strictness_user
-                                                                                                     : g_yaml_cal_strictness);
 }
 
 void RGAFiducialFilter::Run(hipo::banklist& banks) const
@@ -260,7 +252,7 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
   const int ntrk = particle.getRows();
 
   for (int i = 0; i < ntrk; ++i) {
-    const bool pass = Filter(i, particle, conf, cal, ft, traj, /*key*/0);
+    const bool pass = Filter(i, particle, conf, cal, ft, traj);
     (void)pass; // decide-only; hook removal if desired
   }
 }
@@ -425,8 +417,7 @@ bool RGAFiducialFilter::Filter(int track_index,
                                const hipo::bank& configBank,
                                const hipo::bank* calBank,
                                const hipo::bank* ftBank,
-                               const hipo::bank* trajBank,
-                               concurrent_key_t /*key*/) const
+                               const hipo::bank* trajBank) const
 {
   const int pid = particleBank.getInt("pid", track_index);
 
