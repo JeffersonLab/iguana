@@ -10,20 +10,20 @@
 
 namespace iguana::clas12 {
 
-/// RGA fiducial filter:
-///   - PCAL-only edge cuts on lv & lw with strictness thresholds:
-///       s=1 -> {lv,lw} >=  9.0 cm
-///       s=2 -> {lv,lw} >= 13.5 cm
-///       s=3 -> {lv,lw} >= 18.0 cm
-///   - Forward Tagger annulus + circular hole vetoes
-///   - Central detector (CVT) fiducial:
-///       require edge > edge_min at YAML-selected layers and apply YAML phi-wedge veto
-///   - Drift Chamber (DC) fiducial:
-///       three regional edge thresholds with separate inbending/outbending track logic 
-/// All defaults are required from Config.yaml. Users may override
-/// strictness via SetStrictness(1|2|3) before Start().
-///
-/// !!! TO DO: implement run-by-run data/MC matching for missing PMTs, etc.
+// RGA fiducial filter:
+//   - PCAL-only edge cuts on lv & lw with strictness thresholds:
+//       s=1 -> {lv,lw} >=  9.0 cm
+//       s=2 -> {lv,lw} >= 13.5 cm
+//       s=3 -> {lv,lw} >= 18.0 cm
+//   - Forward Tagger annulus + circular hole vetoes
+//   - Central detector (CVT) fiducial:
+//       require edge > edge_min at YAML-selected layers and apply YAML phi-wedge veto
+//   - Drift Chamber (DC) fiducial:
+//       three regional edge thresholds with separate inbending/outbending track logic 
+// All defaults are required from Config.yaml. Users may override
+// strictness via SetStrictness(1|2|3) before Start().
+//
+// !!! TO DO: implement run-by-run data/MC matching for missing PMTs, etc.
 
 class RGAFiducialFilter : public Algorithm {
   DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
@@ -72,23 +72,14 @@ private:
 
   bool PassFTFiducial (int track_index, const hipo::bank* ftBank) const;
   bool PassCVTFiducial(int track_index, const hipo::bank* trajBank) const;
+  bool PassDCFiducial(int track_index, const hipo::bank& particleBank,
+                      const hipo::bank& configBank, const hipo::bank* trajBank) const;
+  bool Filter(int track_index, const hipo::bank& particleBank,
+              const hipo::bank& configBank, const hipo::bank* calBank,
+              const hipo::bank* ftBank, const hipo::bank* trajBank) const;
 
-  // DC fiducial (detector==6). Uses REC::Particle for pid/px,py,pz and RUN::config for torus.
-  bool PassDCFiducial(int track_index,
-                      const hipo::bank& particleBank,
-                      const hipo::bank& configBank,
-                      const hipo::bank* trajBank) const;
-
-  bool Filter(int track_index,
-              const hipo::bank& particleBank,
-              const hipo::bank& configBank,
-              const hipo::bank* calBank,
-              const hipo::bank* ftBank,
-              const hipo::bank* trajBank) const;
-
-  // ---- YAML (required)
-  void LoadConfigFromYAML();  // reads from this algorithm's Config.yaml; throws on error
-  void DumpFTParams() const;
+  // ---- YAML 
+  void LoadConfigFromYAML(); 
 };
 
-} // namespace iguana::clas12
+} 

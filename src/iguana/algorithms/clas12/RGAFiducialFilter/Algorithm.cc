@@ -1,4 +1,4 @@
-#include "Algorithm.h"  // local header
+#include "Algorithm.h" 
 
 #include <yaml-cpp/yaml.h>
 
@@ -12,18 +12,20 @@
 #include <string>
 #include <utility>
 
-// -------------------------------------------------------------------------------------------------
-// Implementation notes
-//  * YAML is REQUIRED. We error out if the file is missing or if a required key is absent.
-//  * FT params are loaded from YAML into u_ft_params (no compiled-in defaults used anymore).
-//  * Cal strictness: default comes from YAML; a programmatic SetStrictness() still overrides it.
-//  * CVT wedges/layers are also loaded from YAML (edge_layers, edge_min, phi_forbidden_deg).
-//  * Run() calls Filter(...) for each track. We only compute the decision here.
-// -------------------------------------------------------------------------------------------------
+// Default settings defined and adjustable in Config.yaml (CAL)
+//
+// * Forward Tagger cut on annulus and missing holes for pid==11,22
+//
+// * Calorimeter cut on lv,lw>9,13.5,18 depending on SetStrictness([default = 1]) for pid==11,22; 
+//    !!! TO DO: implement run-by-run data/MC matching for missing PMTs, etc.
+//
+// * Central Detector cut on areas between 3 sectors and require tracks inside detector (edge > 0);
+//    for all charged hadrons
+// 
+// * Drift chamber cut on region 1 > 3, region 2 > 3, region3 > 10; inbending tracks also require
+//    region 1 > 10, region 2 > 10 for theta < 10, cuts for all charged leptons and hadrons
 
 namespace iguana::clas12 {
-
-// ---------- small local helpers ----------
 
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
@@ -52,7 +54,7 @@ int RGAFiducialFilter::EnvInt(const char* name, int def) {
   return def;
 }
 
-// ---------- CVT params kept in this TU ----------
+// ---------- CVT/DC params kept in this TU ----------
 
 namespace {
 struct CVTParams {
@@ -62,6 +64,18 @@ struct CVTParams {
 };
 CVTParams g_cvt;
 int g_yaml_cal_strictness = 1;
+
+struct DCParams {
+  // Thresholds (cm)
+  double theta_small_deg   = 10.0;   // theta boundary for special inbending case
+  // inbending, theta < theta_small_deg
+  double in_small_e1 = 10.0, in_small_e2 = 10.0, in_small_e3 = 10.0;
+  // inbending, theta >= theta_small_deg
+  double in_large_e1 = 3.0,  in_large_e2 = 3.0,  in_large_e3 = 10.0;
+  // outbending (any theta)
+  double out_e1      = 3.0,  out_e2      = 3.0,  out_e3      = 10.0;
+};
+DCParams g_dc;
 } // namespace
 
 // -------------------------------------------------------------------------------------------------
@@ -77,7 +91,6 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
     std::ostringstream msg;
     msg << "[RGAFID] Required Config.yaml not found or unreadable at: "
         << cfg_path << " (" << e.what() << ")";
-    if (m_log) m_log->Error("{}", msg.str());
     throw std::runtime_error(msg.str());
   }
 
@@ -86,17 +99,15 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
     std::ostringstream msg;
     msg << "[RGAFID] Missing top-level key 'clas12::RGAFiducialFilter' in "
         << cfg_path;
-    if (m_log) m_log->Error("{}", msg.str());
     throw std::runtime_error(msg.str());
   }
 
-  // ---- calorimeter.strictness (REQUIRED default unless overridden by SetStrictness)
+  // calorimeter.strictness (default == 1 unless overridden by SetStrictness)
   {
     auto cal = top["calorimeter"];
     if (!cal || !cal["strictness"] || cal["strictness"].size() < 1) {
       std::ostringstream msg;
       msg << "[RGAFID] Missing required 'calorimeter.strictness' in " << cfg_path;
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
     g_yaml_cal_strictness = cal["strictness"][0].as<int>();
@@ -104,25 +115,22 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
       std::ostringstream msg;
       msg << "[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3 (got "
           << g_yaml_cal_strictness << ")";
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
   }
 
-  // ---- forward_tagger (REQUIRED)
+  // forward_tagger 
   {
     auto ft = top["forward_tagger"];
     if (!ft) {
       std::ostringstream msg;
       msg << "[RGAFID] Missing required block 'forward_tagger' in " << cfg_path;
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
 
     if (!ft["radius"] || ft["radius"].size() != 2) {
       std::ostringstream msg;
       msg << "[RGAFID] 'forward_tagger.radius' must be a 2-element list [rmin, rmax]";
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
     float rmin = ft["radius"][0].as<float>();
@@ -131,7 +139,6 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
       std::ostringstream msg;
       msg << "[RGAFID] Invalid 'forward_tagger.radius': rmin=" << rmin
           << ", rmax=" << rmax << " (require 0 < rmin < rmax)";
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
 
@@ -140,11 +147,9 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
       std::ostringstream msg;
       msg << "[RGAFID] 'forward_tagger.holes_flat' must be non-empty with length "
              "multiple of 3: [R1,cx1,cy1, R2,cx2,cy2, ...]";
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
 
-    // commit to the instance
     u_ft_params.rmin = rmin;
     u_ft_params.rmax = rmax;
     u_ft_params.holes.clear();
@@ -157,27 +162,24 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
         std::ostringstream msg;
         msg << "[RGAFID] Invalid FT hole triple at index " << (i/3)
             << " -> (R=" << R << ", cx=" << cx << ", cy=" << cy << ")";
-        if (m_log) m_log->Error("{}", msg.str());
         throw std::runtime_error(msg.str());
       }
       u_ft_params.holes.push_back({R, cx, cy});
     }
   }
 
-  // ---- cvt (REQUIRED)
+  // central detector
   {
     auto cvt = top["cvt"];
     if (!cvt) {
       std::ostringstream msg;
       msg << "[RGAFID] Missing required block 'cvt' in " << cfg_path;
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
 
     if (!cvt["edge_layers"] || cvt["edge_layers"].size() == 0) {
       std::ostringstream msg;
       msg << "[RGAFID] 'cvt.edge_layers' must be a non-empty list";
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
     g_cvt.edge_layers.clear();
@@ -186,7 +188,6 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
     if (!cvt["edge_min"] || cvt["edge_min"].size() < 1) {
       std::ostringstream msg;
       msg << "[RGAFID] 'cvt.edge_min' must be provided";
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
     g_cvt.edge_min = cvt["edge_min"][0].as<double>();
@@ -195,22 +196,53 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
       std::ostringstream msg;
       msg << "[RGAFID] 'cvt.phi_forbidden_deg' must have an even number of values "
              "(pairs of (lo, hi) open intervals)";
-      if (m_log) m_log->Error("{}", msg.str());
       throw std::runtime_error(msg.str());
     }
     g_cvt.phi_forbidden_deg.clear();
     for (auto v : cvt["phi_forbidden_deg"]) g_cvt.phi_forbidden_deg.push_back(v.as<double>());
   }
 
-  DumpFTParams();
-}
+  // drift chamber
+  {
+    auto dc = top["dc"];
+    if (!dc) {
+      std::ostringstream msg;
+      msg << "[RGAFID] Missing required block 'dc' in " << cfg_path;
+      throw std::runtime_error(msg.str());
+    }
 
-void RGAFiducialFilter::DumpFTParams() const {
-  if (!m_log) return;
-  std::ostringstream os;
-  os << "[RGAFID] FT: rmin=" << u_ft_params.rmin << ", rmax=" << u_ft_params.rmax
-     << ", holes=" << u_ft_params.holes.size();
-  m_log->Info("{}", os.str());
+    // theta_small_deg (1 value)
+    if (!dc["theta_small_deg"] || dc["theta_small_deg"].size() < 1) {
+      std::ostringstream msg;
+      msg << "[RGAFID] 'dc.theta_small_deg' must be provided (e.g. [10.0])";
+      throw std::runtime_error(msg.str());
+    }
+    g_dc.theta_small_deg = dc["theta_small_deg"][0].as<double>();
+
+    auto need3 = [&](const char* key)->YAML::Node {
+      auto n = dc[key];
+      if (!n || n.size()!=3) {
+        std::ostringstream msg;
+        msg << "[RGAFID] 'dc." << key << "' must be a 3-element list [e1,e2,e3]";
+        throw std::runtime_error(msg.str());
+      }
+      return n;
+    };
+
+    // thresholds
+    {
+      auto n = need3("thresholds_out");
+      g_dc.out_e1 = n[0].as<double>(); g_dc.out_e2 = n[1].as<double>(); g_dc.out_e3 = n[2].as<double>();
+    }
+    {
+      auto n = need3("thresholds_in_smallTheta");
+      g_dc.in_small_e1 = n[0].as<double>(); g_dc.in_small_e2 = n[1].as<double>(); g_dc.in_small_e3 = n[2].as<double>();
+    }
+    {
+      auto n = need3("thresholds_in_largeTheta");
+      g_dc.in_large_e1 = n[0].as<double>(); g_dc.in_large_e2 = n[1].as<double>(); g_dc.in_large_e3 = n[2].as<double>();
+    }
+  }
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -403,11 +435,17 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex,
     else if (layer==36) e3 = e;
   }
 
+  auto pass3 = [](double e1, double e2, double e3, double t1, double t2, double t3)->bool {
+    return (e1>t1 && e2>t2 && e3>t3);
+  };
+
   if (particle_inb) {
-    if (theta < 10.0) return (e1>10.0 && e2>10.0 && e3>10.0);
-    return (e1>3.0 && e2>3.0 && e3>10.0);
+    if (theta < g_dc.theta_small_deg) {
+      return pass3(e1,e2,e3, g_dc.in_small_e1, g_dc.in_small_e2, g_dc.in_small_e3);
+    }
+    return pass3(e1,e2,e3, g_dc.in_large_e1, g_dc.in_large_e2, g_dc.in_large_e3);
   } else if (particle_out) {
-    return (e1>3.0 && e2>3.0 && e3>10.0);
+    return pass3(e1,e2,e3, g_dc.out_e1, g_dc.out_e2, g_dc.out_e3);
   }
   return true;
 }

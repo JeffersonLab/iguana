@@ -27,3 +27,16 @@ clas12::RGAFiducialFilter:
     # Forbidden phi wedges in degrees (open intervals). Always applied if provided.
     # Example: (25,40), (143,158), (265,280)
     phi_forbidden_deg: [25, 40, 143, 158, 265, 280]
+
+  dc:
+    # Theta boundary (degrees) for the special inbending case
+    theta_small_deg: [10.0]
+
+    # Outbending thresholds [Region1, Region2, Region3] (cm)
+    thresholds_out: [3.0, 3.0, 10.0]
+
+    # Inbending thresholds when theta < theta_small_deg (cm)
+    thresholds_in_smallTheta: [10.0, 10.0, 10.0]
+
+    # Inbending thresholds when theta >= theta_small_deg (cm)
+    thresholds_in_largeTheta: [3.0, 3.0, 10.0]
