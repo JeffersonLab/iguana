@@ -299,18 +299,16 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+
 // CORE FILTER HELPERS
-// -------------------------------------------------------------------------------------------------
 
 RGAFiducialFilter::CalLayers
-RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex)
-{
+RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   CalLayers out;
   const int n = cal.getRows();
   for (int i=0; i<n; ++i) {
     if (cal.getInt("pindex", i) != pindex) continue;
-    if (cal.getInt("layer",  i) != 1     ) continue; // PCAL only
+    if (cal.getInt("layer",  i) != 1     ) continue; // PCal only
     CalHit h;
     h.sector = cal.getInt ("sector", i);
     h.lv     = cal.getFloat("lv", i);
@@ -322,9 +320,9 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex)
   return out;
 }
 
-bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness)
-{
-  if (!H.has_any) return true; // no PCAL -> pass
+bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness) {
+  // This section still needs further implementation for dead PMTs etc.
+  if (!H.has_any) return true; // no PCal -> pass (hadrons etc.)
 
   float min_lv = std::numeric_limits<float>::infinity();
   float min_lw = std::numeric_limits<float>::infinity();
@@ -333,13 +331,12 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness)
     if (std::isfinite(hit.lw) && hit.lw < min_lw) min_lw = hit.lw;
   }
 
-  const float thr = (strictness==1 ? 9.0f : strictness==2 ? 13.5f : 18.0f);
+  const float thr = (strictness==1 ? 9.0f : strictness==2 ? 13.5f : 18.0f); // default = 1
   return !(min_lv < thr || min_lw < thr);
 }
 
-bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) const
-{
-  if (!ftBank) return true;
+bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) const {
+  if (!ftBank) return true; // no FT -> pass (DC/CVT tracks etc.)
 
   const auto& ft = *ftBank;
   const int n = ft.getRows();
@@ -363,8 +360,7 @@ bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) con
   return true; // no FT association -> pass
 }
 
-bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) const
-{
+bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) const {
   if (!trajBank) return true;
 
   const auto& traj = *trajBank;
@@ -380,7 +376,8 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
     const int layer = traj.getInt("layer", i);
     const double e  = traj.getFloat("edge", i);
 
-    if (std::find(g_cvt.edge_layers.begin(), g_cvt.edge_layers.end(), layer) != g_cvt.edge_layers.end()) {
+    if (std::find(g_cvt.edge_layers.begin(), g_cvt.edge_layers.end(), layer) != 
+      g_cvt.edge_layers.end()) {
       edge_at_layer[layer] = e;
     }
     if (layer == 12) {
@@ -392,7 +389,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 
   for (int L : g_cvt.edge_layers) {
     auto it = edge_at_layer.find(L);
-    if (it == edge_at_layer.end()) continue; // missing layer -> pass
+    if (it == edge_at_layer.end()) continue; // no CVT -> pass (leptons, photons)
     if (!(it->second > g_cvt.edge_min)) return false;
   }
 
@@ -409,20 +406,18 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
   return true;
 }
 
-bool RGAFiducialFilter::PassDCFiducial(int pindex,
-                                       const hipo::bank& particleBank,
-                                       const hipo::bank& configBank,
-                                       const hipo::bank* trajBank) const
-{
+bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBank,
+  const hipo::bank& configBank, const hipo::bank* trajBank) const {
   if (!trajBank) return true;
 
   const int pid = particleBank.getInt("pid", pindex);
+  // cuts are defined for inbending and outbending particles separately
   const bool isNeg = (pid== 11 || pid==-211 || pid==-321 || pid==-2212);
   const bool isPos = (pid==-11 || pid== 211 || pid== 321 || pid== 2212);
   if (!(isNeg || isPos)) return true;
 
   const float torus = configBank.getFloat("torus", 0);
-  const bool electron_out = (torus == 1.0f);
+  const bool electron_out = (torus == 1.0);
   const bool particle_inb = (electron_out ? isPos : isNeg);
   const bool particle_out = !particle_inb;
 
@@ -437,7 +432,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex,
   const int n = traj.getRows();
   for (int i=0; i<n; ++i) {
     if (traj.getInt("pindex", i) != pindex) continue;
-    if (traj.getInt("detector", i) != 6)    continue; // DC
+    if (traj.getInt("detector", i) != 6)    continue; // DC, detector == 5 is CVT
     const int layer = traj.getInt("layer", i);
     const double e  = traj.getFloat("edge", i);
     if      (layer== 6) e1 = e;
@@ -460,13 +455,9 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex,
   return true;
 }
 
-bool RGAFiducialFilter::Filter(int track_index,
-                               const hipo::bank& particleBank,
-                               const hipo::bank& configBank,
-                               const hipo::bank* calBank,
-                               const hipo::bank* ftBank,
-                               const hipo::bank* trajBank) const
-{
+bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
+  const hipo::bank& configBank, const hipo::bank* calBank, const hipo::bank* ftBank, 
+  const hipo::bank* trajBank) const {
   const int pid = particleBank.getInt("pid", track_index);
 
   const int strictness = u_strictness_user.value_or(g_yaml_cal_strictness);
@@ -474,6 +465,7 @@ bool RGAFiducialFilter::Filter(int track_index,
   bool pass = true;
 
   if (pid == 11 || pid == 22) {
+    // photons and electrons are detected in either (exclusive) FT or FD
     if (calBank) {
       auto calhits = CollectCalHitsForTrack(*calBank, track_index);
       pass = pass && PassCalStrictness(calhits, strictness);
