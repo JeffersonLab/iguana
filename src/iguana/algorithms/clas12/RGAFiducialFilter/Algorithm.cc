@@ -1,6 +1,5 @@
 #include "Algorithm.h"  // our header in the same folder
 
-#include "iguana/hipo/BankUtils.h"   // GetBank / GetBankIndex helpers
 #include "iguana/services/ConcurrentParam.h"
 
 #include <yaml-cpp/yaml.h>
