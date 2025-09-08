@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <cmath>
 #include <limits>
+#include <algorithm>
 
 namespace iguana::clas12 {
 
@@ -466,10 +467,21 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
       }
     }
 
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n += (long long) pos_all.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  += (long long) (pos_a1.size() + pos_a2.size() + pos_a3.size())/3;
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n += (long long) neg_all.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_after_n  += (long long) (neg_a1.size() + neg_a2.size() + neg_a3.size())/3;
+    // helper: size of A ∩ B ∩ C
+    auto inter3 = [](const std::set<int>& A, const std::set<int>& B, const std::set<int>& C)->size_t{
+      const std::set<int>* smallest = &A;
+      if (B.size() < smallest->size()) smallest = &B;
+      if (C.size() < smallest->size()) smallest = &C;
+      size_t cnt=0;
+      for (int v : *smallest) if (A.count(v) && B.count(v) && C.count(v)) ++cnt;
+      return cnt;
+    };
+
+    // accumulate to totals using the INTERSECTION across regions
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n += (long long) inter3(pos_b1, pos_b2, pos_b3);
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  += (long long) inter3(pos_a1, pos_a2, pos_a3);
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n += (long long) inter3(neg_b1, neg_b2, neg_b3);
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_after_n  += (long long) inter3(neg_a1, neg_a2, neg_a3);
   }
 }
 
@@ -597,7 +609,6 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
 }
 
 // Free function (not a class method) to set DC pad margins.
-// This avoids the earlier undefined-reference issue.
 static inline void SetDCPadMargins() {
   gPad->SetLeftMargin(0.16);   // more padding so y-axis label isn't clipped
   gPad->SetRightMargin(0.06);
@@ -607,20 +618,23 @@ static inline void SetDCPadMargins() {
 
 void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct)
 {
+  // bend is "inb" or "out" for filename; Title uses "Inb"/"Out"
+  TString bendTitle = (TString(bend)=="inb") ? "Inb" : "Out";
+
   auto* c = new TCanvas(Form("rgafid_dc_%s_2x3", bend),
-                        Form("DC edges (%s): before/after", bend),
+                        Form("%s DC edges: before/after", bendTitle.Data()),
                         1500, 900);
   c->Divide(3,2);
 
   // BEFORE row
-  c->cd(1); SetDCPadMargins(); if (H.r1_before) { H.r1_before->SetLineWidth(2); H.r1_before->Draw("HIST"); H.r1_before->SetTitle(Form("DC Region 1 (before, %s);edge (cm);counts", bend)); }
-  c->cd(2); SetDCPadMargins(); if (H.r2_before) { H.r2_before->SetLineWidth(2); H.r2_before->Draw("HIST"); H.r2_before->SetTitle(Form("DC Region 2 (before, %s);edge (cm);counts", bend)); }
-  c->cd(3); SetDCPadMargins(); if (H.r3_before) { H.r3_before->SetLineWidth(2); H.r3_before->Draw("HIST"); H.r3_before->SetTitle(Form("DC Region 3 (before, %s);edge (cm);counts", bend)); }
+  c->cd(1); SetDCPadMargins(); if (H.r1_before) { H.r1_before->SetLineWidth(2); H.r1_before->Draw("HIST"); H.r1_before->SetTitle(Form("%s DC Region 1 (before);edge (cm);counts", bendTitle.Data())); }
+  c->cd(2); SetDCPadMargins(); if (H.r2_before) { H.r2_before->SetLineWidth(2); H.r2_before->Draw("HIST"); H.r2_before->SetTitle(Form("%s DC Region 2 (before);edge (cm);counts", bendTitle.Data())); }
+  c->cd(3); SetDCPadMargins(); if (H.r3_before) { H.r3_before->SetLineWidth(2); H.r3_before->Draw("HIST"); H.r3_before->SetTitle(Form("%s DC Region 3 (before);edge (cm);counts", bendTitle.Data())); }
 
   // AFTER row with survive %
-  c->cd(4); SetDCPadMargins(); if (H.r1_after)  { H.r1_after ->SetLineWidth(2); H.r1_after ->Draw("HIST"); H.r1_after ->SetTitle(Form("DC Region 1 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
-  c->cd(5); SetDCPadMargins(); if (H.r2_after)  { H.r2_after ->SetLineWidth(2); H.r2_after ->Draw("HIST"); H.r2_after ->SetTitle(Form("DC Region 2 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
-  c->cd(6); SetDCPadMargins(); if (H.r3_after)  { H.r3_after ->SetLineWidth(2); H.r3_after ->Draw("HIST"); H.r3_after ->SetTitle(Form("DC Region 3 (after, %s)  [survive = %.1f%%];edge (cm);counts", bend, survive_pct)); }
+  c->cd(4); SetDCPadMargins(); if (H.r1_after)  { H.r1_after ->SetLineWidth(2); H.r1_after ->Draw("HIST"); H.r1_after ->SetTitle(Form("%s DC Region 1 (after)  [survive = %.1f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
+  c->cd(5); SetDCPadMargins(); if (H.r2_after)  { H.r2_after ->SetLineWidth(2); H.r2_after ->Draw("HIST"); H.r2_after ->SetTitle(Form("%s DC Region 2 (after)  [survive = %.1f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
+  c->cd(6); SetDCPadMargins(); if (H.r3_after)  { H.r3_after ->SetLineWidth(2); H.r3_after ->Draw("HIST"); H.r3_after ->SetTitle(Form("%s DC Region 3 (after)  [survive = %.1f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
 
   c->SaveAs(Form("%s_dc_%s_2x3.png", m_base.Data(), bend));
 }
@@ -640,14 +654,14 @@ void RGAFiducialFilterValidator::Stop()
   // Decide bending labels based on torus majority
   bool electron_out = (m_torus_out_events >= m_torus_in_events);
   // electron_out: positives inbending, negatives outbending
-  const char* pos_bend = electron_out ? "inb" : "out";
-  const char* neg_bend = electron_out ? "out" : "inb";
+  const char* pos_bend_id = electron_out ? "inb" : "out";
+  const char* neg_bend_id = electron_out ? "out" : "inb";
 
-  // DC canvases
+  // DC canvases with corrected survival %
   double pos_pct = (m_dc_pos_before_n>0) ? (100.0*double(m_dc_pos_after_n)/double(m_dc_pos_before_n)) : 0.0;
   double neg_pct = (m_dc_neg_before_n>0) ? (100.0*double(m_dc_neg_after_n)/double(m_dc_neg_before_n)) : 0.0;
-  DrawDCCanvas2x3(m_dc_pos, pos_bend, pos_pct);
-  DrawDCCanvas2x3(m_dc_neg, neg_bend, neg_pct);
+  DrawDCCanvas2x3(m_dc_pos, pos_bend_id, pos_pct);
+  DrawDCCanvas2x3(m_dc_neg, neg_bend_id, neg_pct);
 
   if (m_out) {
     m_out->Write();

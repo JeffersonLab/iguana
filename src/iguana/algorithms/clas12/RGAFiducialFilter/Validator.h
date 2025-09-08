@@ -22,9 +22,9 @@ namespace iguana::clas12 {
 ///       * CVT layer 12 from REC::Traj (detector==5): theta (y) vs phi (x),
 ///           single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before | after,
 ///           **After** includes survive %.
-///       * DC (detector==6): two 2x3 canvases. Columns=Region1/2/3 (layers 6/18/36),
-///           rows=before|after. **After** row titles include survive %, and titles are
-///           tagged with (inb/out). Saved filenames: *_dc_inb_2x3.png and *_dc_out_2x3.png.
+///       * DC (detector==6): two 2x3 canvases (Inb/Out). Columns=Region1/2/3 (layers 6/18/36),
+///           rows=before|after. **Survival % now uses intersection across regions**:
+///           (# with R1∩R2∩R3 AND pass) / (# with R1∩R2∩R3).
 class RGAFiducialFilterValidator : public Validator {
   DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
 
@@ -99,6 +99,7 @@ private:
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
 
+  // bend is "inb" or "out" (file id). Titles show "Inb"/"Out".
   void DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct);
 };
 
