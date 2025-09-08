@@ -43,7 +43,7 @@ void RGAFiducialFilterValidator::LoadFTParamsFromYAML()
 void RGAFiducialFilterValidator::BookIfNeeded()
 {
   // PCAL: range 0..27 cm, 0.5 cm bins
-  const int nb=54; const double lo=0.0, hi=27.0;
+  const int nb=54; const double lo=0.0, hi=80.0;
 
   for (int pid : kPIDs) {
     auto& P = m_cal[pid];
@@ -333,8 +333,10 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
       bool kept = pass_cache[pidx];
 
       auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sec];
-      if (lv >= 0.0 && lv <= 27.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
-      if (lw >= 0.0 && lw <= 27.0) (kept ? H.lw_kept : H.lw_cut)->Fill(lw);
+      // if (lv >= 0.0 && lv <= 27.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
+      // if (lw >= 0.0 && lw <= 27.0) (kept ? H.lw_kept : H.lw_cut)->Fill(lw);
+      if (lv >= 0.0 && lv <= 80.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
+      if (lw >= 0.0 && lw <= 80.0) (kept ? H.lw_kept : H.lw_cut)->Fill(lw);
 
       // count once per (pid,sector,pindex)
       if (pid==11) {
