@@ -39,7 +39,7 @@ static inline std::string GetAlgConfigPath() {
   return os.str();
 }
 
-// ---------- optional env toggles (debug) ----------
+// ---------- optional env toggles (for debug) ----------
 
 bool RGAFiducialFilter::EnvOn(const char* name) {
   if (const char* v = std::getenv(name)) {
@@ -78,9 +78,8 @@ struct DCParams {
 DCParams g_dc;
 } // namespace
 
-// -------------------------------------------------------------------------------------------------
+
 // YAML LOADING (REQUIRED)
-// -------------------------------------------------------------------------------------------------
 void RGAFiducialFilter::LoadConfigFromYAML() {
   const std::string cfg_path = GetAlgConfigPath();
 
@@ -232,49 +231,60 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
     // thresholds
     {
       auto n = need3("thresholds_out");
-      g_dc.out_e1 = n[0].as<double>(); g_dc.out_e2 = n[1].as<double>(); g_dc.out_e3 = n[2].as<double>();
+      g_dc.out_e1 = n[0].as<double>(); 
+      g_dc.out_e2 = n[1].as<double>(); 
+      g_dc.out_e3 = n[2].as<double>();
     }
     {
       auto n = need3("thresholds_in_smallTheta");
-      g_dc.in_small_e1 = n[0].as<double>(); g_dc.in_small_e2 = n[1].as<double>(); g_dc.in_small_e3 = n[2].as<double>();
+      g_dc.in_small_e1 = n[0].as<double>(); 
+      g_dc.in_small_e2 = n[1].as<double>(); 
+      g_dc.in_small_e3 = n[2].as<double>();
     }
     {
       auto n = need3("thresholds_in_largeTheta");
-      g_dc.in_large_e1 = n[0].as<double>(); g_dc.in_large_e2 = n[1].as<double>(); g_dc.in_large_e3 = n[2].as<double>();
+      g_dc.in_large_e1 = n[0].as<double>(); 
+      g_dc.in_large_e2 = n[1].as<double>(); 
+      g_dc.in_large_e3 = n[2].as<double>();
     }
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+
 // USER OVERRIDE
-// -------------------------------------------------------------------------------------------------
 void RGAFiducialFilter::SetStrictness(int strictness) {
   u_strictness_user = strictness;
 }
 
-// -------------------------------------------------------------------------------------------------
+
 // LIFECYCLE
-// -------------------------------------------------------------------------------------------------
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   // Bank presence
   b_particle = GetBankIndex(banks, "REC::Particle");
-  if (banklist_has(banks, "RUN::config"))        b_config = GetBankIndex(banks, "RUN::config");
-  if (banklist_has(banks, "REC::Calorimeter")) { b_calor  = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor = true; }
-  if (banklist_has(banks, "REC::ForwardTagger")){ b_ft    = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft = true; }
-  if (banklist_has(banks, "REC::Traj"))         { b_traj  = GetBankIndex(banks, "REC::Traj"); m_have_traj = true; }
+  if (banklist_has(banks, "RUN::config")) {
+    b_config = GetBankIndex(banks, "RUN::config");
+  }
+  if (banklist_has(banks, "REC::Calorimeter")) { 
+    b_calor  = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor = true; 
+  }
+  if (banklist_has(banks, "REC::ForwardTagger")) { 
+    b_ft    = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft = true; 
+  }
+  if (banklist_has(banks, "REC::Traj")) { 
+    b_traj  = GetBankIndex(banks, "REC::Traj"); m_have_traj = true; 
+  }
 
   // Debug toggles (optional)
   dbg_on     = EnvOn("IGUANA_RGAFID_DBG");
   dbg_ft     = EnvOn("IGUANA_RGAFID_DBG_FT");
   dbg_events = EnvInt("IGUANA_RGAFID_N", 0);
 
-  // Require YAML and load all params
+  // load parameters from YAML
   LoadConfigFromYAML();
 }
 
-void RGAFiducialFilter::Run(hipo::banklist& banks) const
-{
+void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto* cal  = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter") : nullptr;
   auto* ft   = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
@@ -480,4 +490,4 @@ bool RGAFiducialFilter::Filter(int track_index,
   return pass;
 }
 
-} // namespace iguana::clas12
+} 
