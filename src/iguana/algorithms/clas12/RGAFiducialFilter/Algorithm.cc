@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <fstream>
 
 // Default settings defined and adjustable in Config.yaml (CAL)
 //
