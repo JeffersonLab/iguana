@@ -321,7 +321,7 @@ bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) con
   return true; // no FT association -> pass
 }
 
-bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank, int /*strictness*/) const
+bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) const
 {
   if (!trajBank) return true;
 
@@ -435,7 +435,7 @@ bool RGAFiducialFilter::Filter(int track_index,
 
   if (pid== 211 || pid== 321 || pid== 2212 ||
       pid==-211 || pid==-321 || pid==-2212) {
-    pass = pass && PassCVTFiducial(track_index, trajBank, strictness);
+    pass = pass && PassCVTFiducial(track_index, trajBank);
     pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
   }
 
