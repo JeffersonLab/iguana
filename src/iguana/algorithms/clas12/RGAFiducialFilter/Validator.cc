@@ -55,7 +55,7 @@ static inline std::string GetAlgConfigPath() {
   return local;
 }
 
-// REQUIRED YAML loader (same schema as Algorithm)
+// REQUIRED YAML loader 
 void RGAFiducialFilterValidator::LoadConfigFromYAML()
 {
   const std::string cfg_path = GetAlgConfigPath();
@@ -215,18 +215,27 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML()
       e2 = dc[key][1].as<double>();
       e3 = dc[key][2].as<double>();
     };
-    req3("thresholds_in_smallTheta",  m_dc_params.in_small_e1,  m_dc_params.in_small_e2,  m_dc_params.in_small_e3);
-    req3("thresholds_in_largeTheta",  m_dc_params.in_large_e1,  m_dc_params.in_large_e2,  m_dc_params.in_large_e3);
-    req3("thresholds_out",            m_dc_params.out_e1,       m_dc_params.out_e2,       m_dc_params.out_e3);
+    req3("thresholds_in_smallTheta",  
+      m_dc_params.in_small_e1,  
+      m_dc_params.in_small_e2,  
+      m_dc_params.in_small_e3);
+    req3("thresholds_in_largeTheta",  
+      m_dc_params.in_large_e1,  
+      m_dc_params.in_large_e2,  
+      m_dc_params.in_large_e3);
+    req3("thresholds_out",            
+      m_dc_params.out_e1,       
+      m_dc_params.out_e2,       
+      m_dc_params.out_e3);
   }
 }
 
 // Book PCAL/FT/CVT/DC histograms.
-// PCAL now uses 0..45 cm with 0.5 cm bins (nb=90).
+// PCAL uses 0-45 cm with 4.5 cm bins (nb=10).
 void RGAFiducialFilterValidator::BookIfNeeded()
 {
-  // PCAL: range 0..45 cm, 0.5 cm bins
-  const int nb = 90; 
+  // PCAL: range 0-45 cm, 4.5 cm bins
+  const int nb = 10; 
   const double lo = 0.0, hi = 45.0;
 
   for (int pid : kPIDs) {

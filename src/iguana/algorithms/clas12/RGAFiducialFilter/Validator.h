@@ -19,8 +19,7 @@ namespace iguana::clas12 {
 ///           kept (solid) vs cut (dashed). 
 ///       * FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
 ///       * CVT layer 12 (detector==5): theta (y) vs phi (x),
-///           single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before and after,
-///           **After** includes survive %.
+///           single combined plot for hadron PIDs +/-{211, 321, 2212}, 1x2: before and after,
 ///       * DC (detector==6): two 2x3 canvases (Inb/Out). Columns=Region1/2/3 (layers 6/18/36),
 ///           rows=before and after.
 class RGAFiducialFilterValidator : public Validator {
@@ -109,7 +108,7 @@ private:
 
   // helpers
   void BookIfNeeded();
-  void LoadConfigFromYAML(); // REQUIRED: read all params for overlays and cuts
+  void LoadConfigFromYAML(); // read all params for overlays and cuts
   void DrawCalCanvas(int pid, const char* title);
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
