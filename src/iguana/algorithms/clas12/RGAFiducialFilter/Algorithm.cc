@@ -1,4 +1,4 @@
-#include "RGAFiducialFilter.h"
+#include "Algorithm.h"
 
 #include "iguana/core/Logging.h"
 #include "iguana/hipo/BankUtils.h"   // GetBank / GetBankIndex helpers
@@ -8,6 +8,9 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <algorithm>
+#include <limits>
+#include <map> 
 #include <sstream>
 #include <stdexcept>
 #include <string>
