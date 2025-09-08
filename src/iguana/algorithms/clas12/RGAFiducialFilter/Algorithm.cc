@@ -1,16 +1,15 @@
-#include "Algorithm.h"  // NOTE: include the file's actual name
+#include "Algorithm.h"  // our header in the same folder
 
-#include "iguana/core/Logging.h"
 #include "iguana/hipo/BankUtils.h"   // GetBank / GetBankIndex helpers
 #include "iguana/services/ConcurrentParam.h"
 
 #include <yaml-cpp/yaml.h>
 
-#include <algorithm>   // std::find
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <limits>      // std::numeric_limits
-#include <map>         // std::map
+#include <limits>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -22,9 +21,7 @@
 //  * FT params are loaded from YAML into u_ft_params (no compiled-in defaults used anymore).
 //  * Cal strictness: default comes from YAML; a programmatic SetStrictness() still overrides it.
 //  * CVT wedges/layers are also loaded from YAML (edge_layers, edge_min, phi_forbidden_deg).
-//  * Run() calls Filter(...) for each track. This skeleton leaves the action-on-fail to the caller
-//    (i.e., we just compute the decision; if your pipeline expects active removal/flagging, hook
-//    that up where indicated by the TODO comment).
+//  * Run() calls Filter(...) for each track. We only compute the decision here.
 // -------------------------------------------------------------------------------------------------
 
 namespace iguana::clas12 {
@@ -264,23 +261,14 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
 
   for (int i = 0; i < ntrk; ++i) {
     const bool pass = Filter(i, particle, conf, cal, ft, traj, /*key*/0);
-
-    // TODO: If your pipeline expects active removal/flagging, do it here.
-    // For example (pseudo):
-    // if (!pass) MarkTrackAsRemoved(i);
-    (void)pass; // silence unused warning if not acting on it
+    (void)pass; // decide-only; hook removal if desired
   }
 }
-
-//
-// Stop() is empty by design (header already has inline {}), so no definition here.
-//
 
 // -------------------------------------------------------------------------------------------------
 // CORE FILTER HELPERS
 // -------------------------------------------------------------------------------------------------
 
-// --- calorimeter: gather PCAL L1 hits for a given pindex
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex)
 {
@@ -300,7 +288,6 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex)
   return out;
 }
 
-// --- calorimeter strictness decision (s=1/2/3)
 bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness)
 {
   if (!H.has_any) return true; // no PCAL -> pass
@@ -316,7 +303,6 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness)
   return !(min_lv < thr || min_lw < thr);
 }
 
-// --- Forward Tagger annulus + hole veto using YAML-loaded u_ft_params
 bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) const
 {
   if (!ftBank) return true;
@@ -343,7 +329,6 @@ bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) con
   return true; // no FT association -> pass
 }
 
-// --- CVT fiducial using YAML-loaded wedges/layers
 bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank, int /*strictness*/) const
 {
   if (!trajBank) return true;
@@ -351,7 +336,6 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank, 
   const auto& traj = *trajBank;
   const int n = traj.getRows();
 
-  // Track edge per requested layers; also remember (x,y) at layer 12 for phi
   std::map<int, double> edge_at_layer;
   double x12 = 0.0, y12 = 0.0; bool saw12 = false;
 
@@ -363,7 +347,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank, 
     const double e  = traj.getFloat("edge", i);
 
     if (std::find(g_cvt.edge_layers.begin(), g_cvt.edge_layers.end(), layer) != g_cvt.edge_layers.end()) {
-      edge_at_layer[layer] = e; // last entry wins; fine for our use
+      edge_at_layer[layer] = e;
     }
     if (layer == 12) {
       x12 = traj.getFloat("x", i);
@@ -372,14 +356,12 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank, 
     }
   }
 
-  // edge > edge_min for all requested layers (missing layer -> pass)
   for (int L : g_cvt.edge_layers) {
     auto it = edge_at_layer.find(L);
-    if (it == edge_at_layer.end()) continue; // treat as pass if missing
+    if (it == edge_at_layer.end()) continue; // missing layer -> pass
     if (!(it->second > g_cvt.edge_min)) return false;
   }
 
-  // phi wedge veto (open intervals)
   if (saw12 && !g_cvt.phi_forbidden_deg.empty()) {
     double phi = std::atan2(y12, x12) * (180.0/M_PI);
     if (phi < 0) phi += 360.0;
@@ -393,7 +375,6 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank, 
   return true;
 }
 
-// --- DC fiducial (detector==6), region-dependent thresholds, inb/out logic
 bool RGAFiducialFilter::PassDCFiducial(int pindex,
                                        const hipo::bank& particleBank,
                                        const hipo::bank& configBank,
@@ -404,21 +385,19 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex,
   const int pid = particleBank.getInt("pid", pindex);
   const bool isNeg = (pid== 11 || pid==-211 || pid==-321 || pid==-2212);
   const bool isPos = (pid==-11 || pid== 211 || pid== 321 || pid== 2212);
-  if (!(isNeg || isPos)) return true; // not a charged track we care about
+  if (!(isNeg || isPos)) return true;
 
   const float torus = configBank.getFloat("torus", 0);
   const bool electron_out = (torus == 1.0f);
   const bool particle_inb = (electron_out ? isPos : isNeg);
   const bool particle_out = !particle_inb;
 
-  // theta (deg)
   const double px = particleBank.getFloat("px", pindex);
   const double py = particleBank.getFloat("py", pindex);
   const double pz = particleBank.getFloat("pz", pindex);
   const double rho = std::hypot(px, py);
   const double theta = std::atan2(rho, (pz==0.0 ? 1e-9 : pz)) * (180.0/M_PI);
 
-  // edges at R1/R2/R3 (layers 6/18/36)
   double e1=0.0, e2=0.0, e3=0.0;
   const auto& traj = *trajBank;
   const int n = traj.getRows();
@@ -441,7 +420,6 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex,
   return true;
 }
 
-// --- Compose the whole decision for a track index
 bool RGAFiducialFilter::Filter(int track_index,
                                const hipo::bank& particleBank,
                                const hipo::bank& configBank,
@@ -452,12 +430,10 @@ bool RGAFiducialFilter::Filter(int track_index,
 {
   const int pid = particleBank.getInt("pid", track_index);
 
-  // Default strictness from YAML unless user overrode
   const int strictness = u_strictness_user.value_or(g_yaml_cal_strictness);
 
   bool pass = true;
 
-  // Electrons/photons: PCAL + FT
   if (pid == 11 || pid == 22) {
     if (calBank) {
       auto calhits = CollectCalHitsForTrack(*calBank, track_index);
@@ -466,7 +442,6 @@ bool RGAFiducialFilter::Filter(int track_index,
     pass = pass && PassFTFiducial(track_index, ftBank);
   }
 
-  // Hadrons: CVT + DC
   if (pid== 211 || pid== 321 || pid== 2212 ||
       pid==-211 || pid==-321 || pid==-2212) {
     pass = pass && PassCVTFiducial(track_index, trajBank, strictness);
