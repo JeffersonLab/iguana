@@ -1,4 +1,4 @@
-#include "Algorithm.h"
+#include "Algorithm.h"  // NOTE: include the file's actual name
 
 #include "iguana/core/Logging.h"
 #include "iguana/hipo/BankUtils.h"   // GetBank / GetBankIndex helpers
@@ -6,11 +6,11 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <algorithm>   // std::find
 #include <cmath>
 #include <cstdlib>
-#include <algorithm>
-#include <limits>
-#include <map> 
+#include <limits>      // std::numeric_limits
+#include <map>         // std::map
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -233,10 +233,10 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   // Bank presence
   b_particle = GetBankIndex(banks, "REC::Particle");
-  if (banklist_has(banks, "RUN::config"))       b_config = GetBankIndex(banks, "RUN::config");
+  if (banklist_has(banks, "RUN::config"))        b_config = GetBankIndex(banks, "RUN::config");
   if (banklist_has(banks, "REC::Calorimeter")) { b_calor  = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor = true; }
   if (banklist_has(banks, "REC::ForwardTagger")){ b_ft    = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft = true; }
-  if (banklist_has(banks, "REC::Traj"))        { b_traj   = GetBankIndex(banks, "REC::Traj"); m_have_traj = true; }
+  if (banklist_has(banks, "REC::Traj"))         { b_traj  = GetBankIndex(banks, "REC::Traj"); m_have_traj = true; }
 
   // Debug toggles (optional)
   dbg_on     = EnvOn("IGUANA_RGAFID_DBG");
@@ -247,9 +247,9 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
   LoadConfigFromYAML();
 
   // Initialize concurrent params if you use them elsewhere
-  if (!o_runnum)        o_runnum        = std::make_unique<ConcurrentParam<int>>(0);
-  if (!o_cal_strictness)o_cal_strictness= std::make_unique<ConcurrentParam<int>>(u_strictness_user ? *u_strictness_user
-                                                                                                   : g_yaml_cal_strictness);
+  if (!o_runnum)         o_runnum         = std::make_unique<ConcurrentParam<int>>(0);
+  if (!o_cal_strictness) o_cal_strictness = std::make_unique<ConcurrentParam<int>>(u_strictness_user ? *u_strictness_user
+                                                                                                     : g_yaml_cal_strictness);
 }
 
 void RGAFiducialFilter::Run(hipo::banklist& banks) const
@@ -261,9 +261,6 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const
   auto& conf = GetBank(banks, b_config, "RUN::config");
 
   const int ntrk = particle.getRows();
-  const int strictness = u_strictness_user.value_or(g_yaml_cal_strictness);
-
-  // If you need to record/run-wise state, set it here via o_runnum/o_cal_strictness.
 
   for (int i = 0; i < ntrk; ++i) {
     const bool pass = Filter(i, particle, conf, cal, ft, traj, /*key*/0);
@@ -375,7 +372,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank, 
     }
   }
 
-  // edge > edge_min for all requested layers (missing layer -> pass by design in your doc)
+  // edge > edge_min for all requested layers (missing layer -> pass)
   for (int L : g_cvt.edge_layers) {
     auto it = edge_at_layer.find(L);
     if (it == edge_at_layer.end()) continue; // treat as pass if missing
