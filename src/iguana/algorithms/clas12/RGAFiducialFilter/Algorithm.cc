@@ -277,11 +277,6 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     b_traj  = GetBankIndex(banks, "REC::Traj"); m_have_traj = true; 
   }
 
-  // Debug toggles (optional)
-  dbg_on     = EnvOn("IGUANA_RGAFID_DBG");
-  dbg_ft     = EnvOn("IGUANA_RGAFID_DBG_FT");
-  dbg_events = EnvInt("IGUANA_RGAFID_N", 0);
-
   // load parameters from YAML
   LoadConfigFromYAML();
 }
