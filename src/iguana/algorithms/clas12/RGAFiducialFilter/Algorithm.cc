@@ -23,17 +23,16 @@
 // * Central Detector cut on areas between 3 sectors and require tracks inside detector (edge > 0);
 //    for all charged hadrons
 // 
-// * Drift chamber cut on region 1 > 3, region 2 > 3, region3 > 10; inbending tracks also require
-//    region 1 > 10, region 2 > 10 for theta < 10, cuts for all charged leptons and hadrons
+// * Drift chamber cut on region 1 > 3 cm, region 2 > 3, region3 > 10; inbending tracks also require
+//    region 1 > 10, region 2 > 10 for theta < 10; cuts for all charged leptons and hadrons
 
 namespace iguana::clas12 {
-
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
 
-// Build path to this algorithm's YAML (installed under IGUANA_ETCDIR).
+// Build path to YAML 
 static inline std::string GetAlgConfigPath() {
   // 1) Prefer a Config.yaml sitting next to this source file 
   std::string here = __FILE__;                       
@@ -54,27 +53,11 @@ static inline std::string GetAlgConfigPath() {
     std::ifstream f(p);
     if (f.good()) return p;
   }
-  // If none exist, return the highest-priority path so the existing error message reports it.
+  // If none exist, return the highest-priority path
   return local;
 }
 
-// ---------- optional env toggles (for debug) ----------
-
-bool RGAFiducialFilter::EnvOn(const char* name) {
-  if (const char* v = std::getenv(name)) {
-    return std::string(v) == "1" || std::string(v) == "true";
-  }
-  return false;
-}
-int RGAFiducialFilter::EnvInt(const char* name, int def) {
-  if (const char* v = std::getenv(name)) {
-    try { return std::stoi(v); } catch (...) { return def; }
-  }
-  return def;
-}
-
-// ---------- CVT/DC params kept in this TU ----------
-
+// CVT/DC params 
 namespace {
 struct CVTParams {
   std::vector<int>    edge_layers;        // e.g. {1,3,5,7,12}
@@ -314,7 +297,7 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const {
 
   for (int i = 0; i < ntrk; ++i) {
     const bool pass = Filter(i, particle, conf, cal, ft, traj);
-    (void)pass; // decide-only; hook removal if desired
+    (void)pass;
   }
 }
 
@@ -390,7 +373,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 
   for (int i=0; i<n; ++i) {
     if (traj.getInt("pindex", i)   != pindex) continue;
-    if (traj.getInt("detector", i) != 5     ) continue; // CVT
+    if (traj.getInt("detector", i) != 5     ) continue; // CVT is detector == 5
 
     const int layer = traj.getInt("layer", i);
     const double e  = traj.getFloat("edge", i);
