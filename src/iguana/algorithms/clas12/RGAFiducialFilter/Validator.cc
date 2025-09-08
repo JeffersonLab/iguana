@@ -264,17 +264,17 @@ void RGAFiducialFilterValidator::BookIfNeeded()
     }
   }
 
-  // FT: generous range for x,y
+  // FT: range for x,y
   for (int pid : kPIDs) {
     auto& F = m_ft_h[pid];
     if (!F.before)
       F.before = new TH2F(Form("h_ft_before_pid%d", pid),
                           Form("FT x-y before (PID %d);x (cm);y (cm)", pid),
-                          120, -30, 30, 120, -30, 30);
+                          120, -20, 20, 120, -20, 20);
     if (!F.after)
       F.after  = new TH2F(Form("h_ft_after_pid%d", pid),
                           Form("FT x-y after (PID %d);x (cm);y (cm)", pid),
-                          120, -30, 30, 120, -30, 30);
+                          120, -20, 20, 120, -20, 20);
     F.before->SetStats(0);
     F.after->SetStats(0);
   }
@@ -282,16 +282,16 @@ void RGAFiducialFilterValidator::BookIfNeeded()
   // CVT layer 12: combined hadrons, phi (x) vs theta (y)
   if (!m_cvt_before)
     m_cvt_before = new TH2F("h_cvt_l12_phi_theta_before_all",
-                            "CVT layer 12 before (hadrons: #pm211,#pm321,#pm2212);phi (deg);theta (deg)",
-                            180, 0, 360,  90, 0, 90);
+      "CVT layer 12 before (hadrons: #pm211,#pm321,#pm2212);phi (deg);theta (deg)",
+      180, 0, 360,  90, 0, 90);
   if (!m_cvt_after)
     m_cvt_after  = new TH2F("h_cvt_l12_phi_theta_after_all",
-                            "CVT layer 12 after (hadrons: #pm211,#pm321,#pm2212);phi (deg);theta (deg)",
-                            180, 0, 360,  90, 0, 90);
+      "CVT layer 12 after (hadrons: #pm211,#pm321,#pm2212);phi (deg);theta (deg)",
+      180, 0, 360,  90, 0, 90);
   m_cvt_before->SetStats(0);
   m_cvt_after->SetStats(0);
 
-  // DC edge distributions (range 0..30 cm, 0.3 cm bins)
+  // DC edge distributions (range 0-30 cm, 0.3 cm bins)
   auto mk = [](const char* name, const char* title){
     auto* h = new TH1D(name, title, 100, 0.0, 30.0);
     h->SetStats(0);
