@@ -14,17 +14,15 @@
 namespace iguana::clas12 {
 
 /// Validator:
-///   - Each subsystem's before/after is computed **independently** from the raw banks:
-///       * PCAL (lv & lw) per sector (1..6), range [0,27], strictness s=1:
-///           kept (solid) vs cut (dashed). **Sector titles include survive %.**
+///   - Each subsystem's before/after is computed independently from the raw banks:
+///       * PCAL (lv & lw) per sector (1-6), range [0,45], strictness s=1:
+///           kept (solid) vs cut (dashed). 
 ///       * FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
-///           **After** titles include survive % (per PID).
-///       * CVT layer 12 from REC::Traj (detector==5): theta (y) vs phi (x),
-///           single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before | after,
+///       * CVT layer 12 (detector==5): theta (y) vs phi (x),
+///           single combined plot for hadron PIDs {±211, ±321, ±2212}, 1x2: before and after,
 ///           **After** includes survive %.
 ///       * DC (detector==6): two 2x3 canvases (Inb/Out). Columns=Region1/2/3 (layers 6/18/36),
-///           rows=before|after. **Survival % now uses intersection across regions**:
-///           (# with R1∩R2∩R3 AND pass) / (# with R1∩R2∩R3).
+///           rows=before and after.
 class RGAFiducialFilterValidator : public Validator {
   DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
 
@@ -38,13 +36,13 @@ private:
   hipo::banklist::size_type b_particle{};
   hipo::banklist::size_type b_calor{};
   hipo::banklist::size_type b_ft{};
-  hipo::banklist::size_type b_traj{};   // REC::Traj
-  hipo::banklist::size_type b_config{}; // RUN::config
+  hipo::banklist::size_type b_traj{};   
+  hipo::banklist::size_type b_config{}; 
   bool m_have_calor = false;
   bool m_have_ft    = false;
   bool m_have_traj  = false;
 
-  // PID rows we care about for PCAL/FT displays
+  // PID rows relevant for PCAL/FT displays
   const std::array<int,2> kPIDs{11,22};
 
   // PCAL hists per PID & sector
@@ -52,10 +50,10 @@ private:
     TH1D* lv_kept=nullptr; TH1D* lv_cut=nullptr;
     TH1D* lw_kept=nullptr; TH1D* lw_cut=nullptr;
   };
-  using PerPIDCal = std::array<SecHists, 7>; // index 1..6
+  using PerPIDCal = std::array<SecHists, 7>; // index 1-6
   std::unordered_map<int, PerPIDCal> m_cal;
 
-  // PCAL per-PID, per-sector counts for survive %
+  // PCAL per-PID, per-sector counts for survival %
   struct SecCounts { long long before=0, after=0; };
   using PerPIDCalCounts = std::array<SecCounts, 7>;
   std::unordered_map<int, PerPIDCalCounts> m_cal_counts;
@@ -80,13 +78,30 @@ private:
   long long m_dc_pos_before_n = 0, m_dc_pos_after_n = 0;
   long long m_dc_neg_before_n = 0, m_dc_neg_after_n = 0;
 
-  // Torus polarity counters (to label DC canvases)
+  // Torus polarity counters 
   long long m_torus_in_events  = 0;
   long long m_torus_out_events = 0;
 
-  // FT overlay params (defaults match algorithm)
-  struct FTDraw { float rmin=8.5f, rmax=15.5f; std::vector<std::array<float,3>> holes; };
+  // FT overlay params 
+  struct FTDraw { float rmin=0.f, rmax=0.f; std::vector<std::array<float,3>> holes; };
   FTDraw m_ftdraw{};
+
+  // CVT/DC parameters loaded from YAML
+  struct CVTParams {
+    std::vector<int>    edge_layers;
+    double              edge_min = 0.0;
+    std::vector<double> phi_forbidden_deg;  // flattened pairs (open intervals)
+  } m_cvt_params;
+
+  struct DCParams {
+    double theta_small_deg   = 0.0;
+    double in_small_e1 = 0.0, in_small_e2 = 0.0, in_small_e3 = 0.0;
+    double in_large_e1 = 0.0, in_large_e2 = 0.0, in_large_e3 = 0.0;
+    double out_e1      = 0.0, out_e2      = 0.0, out_e3      = 0.0;
+  } m_dc_params;
+
+  // Cal strictness for validator’s before/after split
+  int m_cal_strictness = 1;
 
   // output
   TString m_base;
@@ -94,13 +109,11 @@ private:
 
   // helpers
   void BookIfNeeded();
-  void LoadFTParamsFromYAML(); // guarded, optional
+  void LoadConfigFromYAML(); // REQUIRED: read all params for overlays and cuts
   void DrawCalCanvas(int pid, const char* title);
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
-
-  // bend is "inb" or "out" (file id). Titles show "Inb"/"Out".
   void DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct);
 };
 
-} // namespace iguana::clas12
+}
