@@ -34,9 +34,27 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
 
 // Build path to this algorithm's YAML (installed under IGUANA_ETCDIR).
 static inline std::string GetAlgConfigPath() {
-  std::ostringstream os;
-  os << IGUANA_ETCDIR << "/clas12/RGAFiducialFilter/Config.yaml";
-  return os.str();
+  // 1) Prefer a Config.yaml sitting next to this source file 
+  std::string here = __FILE__;                       
+  auto slash = here.find_last_of("/\\");
+  std::string src_dir = (slash == std::string::npos) ? "." : here.substr(0, slash);
+  const std::string local = src_dir + "/Config.yaml";
+
+  // 2) Fallback: repo-relative path (running from build tree)
+  const std::string repo_rel = "src/iguana/algorithms/clas12/RGAFiducialFilter/Config.yaml";
+
+  // 3) Fallback: install-time etc path (production)
+  const char* env_etc = std::getenv("IGUANA_ETCDIR");
+  const std::string base_etc = env_etc ? std::string(env_etc) : std::string(IGUANA_ETCDIR);
+  const std::string install = base_etc + "/clas12/RGAFiducialFilter/Config.yaml";
+
+  // Try candidates in order
+  for (const auto& p : {local, repo_rel, install}) {
+    std::ifstream f(p);
+    if (f.good()) return p;
+  }
+  // If none exist, return the highest-priority path so the existing error message reports it.
+  return local;
 }
 
 // ---------- optional env toggles (for debug) ----------
