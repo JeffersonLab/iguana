@@ -215,9 +215,9 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML()
       e2 = dc[key][1].as<double>();
       e3 = dc[key][2].as<double>();
     };
-    req3("in_small",  m_dc_params.in_small_e1,  m_dc_params.in_small_e2,  m_dc_params.in_small_e3);
-    req3("in_large",  m_dc_params.in_large_e1,  m_dc_params.in_large_e2,  m_dc_params.in_large_e3);
-    req3("out",       m_dc_params.out_e1,       m_dc_params.out_e2,       m_dc_params.out_e3);
+    req3("thresholds_in_smallTheta",  m_dc_params.in_small_e1,  m_dc_params.in_small_e2,  m_dc_params.in_small_e3);
+    req3("thresholds_in_largeTheta",  m_dc_params.in_large_e1,  m_dc_params.in_large_e2,  m_dc_params.in_large_e3);
+    req3("thresholds_out",            m_dc_params.out_e1,       m_dc_params.out_e2,       m_dc_params.out_e3);
   }
 }
 

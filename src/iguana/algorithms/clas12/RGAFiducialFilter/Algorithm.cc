@@ -220,43 +220,52 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
     for (auto v : cvt["phi_forbidden_deg"]) g_cvt.phi_forbidden_deg.push_back(v.as<double>());
   }
 
-  // drift chamber (DC)
+  // drift chamber
   {
     auto dc = top["dc"];
     if (!dc) {
       std::ostringstream msg;
-      msg << "[RGAFID][VAL] Missing required block 'dc' in " << cfg_path;
-      if (m_log) m_log->Error("{}", msg.str());
+      msg << "[RGAFID] Missing required block 'dc' in " << cfg_path;
       throw std::runtime_error(msg.str());
     }
 
-    if (!dc["theta_small_deg"] || dc["theta_small_deg"].size()<1) {
+    // theta_small_deg (1 value)
+    if (!dc["theta_small_deg"] || dc["theta_small_deg"].size() < 1) {
       std::ostringstream msg;
-      msg << "[RGAFID][VAL] 'dc.theta_small_deg' must be provided";
-      if (m_log) m_log->Error("{}", msg.str());
+      msg << "[RGAFID] 'dc.theta_small_deg' must be provided (e.g. [10.0])";
       throw std::runtime_error(msg.str());
     }
-    m_dc_params.theta_small_deg = dc["theta_small_deg"][0].as<double>();
+    g_dc.theta_small_deg = dc["theta_small_deg"][0].as<double>();
 
-    auto req3 = [&](const char* key, double& e1, double& e2, double& e3){
-      if (!dc[key] || dc[key].size()!=3) {
+    auto need3 = [&](const char* key)->YAML::Node {
+      auto n = dc[key];
+      if (!n || n.size()!=3) {
         std::ostringstream msg;
-        msg << "[RGAFID][VAL] 'dc."<<key<<"' must be 3 numbers [e1,e2,e3]";
-        if (m_log) m_log->Error("{}", msg.str());
+        msg << "[RGAFID] 'dc." << key << "' must be a 3-element list [e1,e2,e3]";
         throw std::runtime_error(msg.str());
       }
-      e1 = dc[key][0].as<double>();
-      e2 = dc[key][1].as<double>();
-      e3 = dc[key][2].as<double>();
+      return n;
     };
 
-    // align with Config.yaml and Algorithm.cc
-    req3("thresholds_in_smallTheta",
-         m_dc_params.in_small_e1, m_dc_params.in_small_e2, m_dc_params.in_small_e3);
-    req3("thresholds_in_largeTheta",
-         m_dc_params.in_large_e1, m_dc_params.in_large_e2, m_dc_params.in_large_e3);
-    req3("thresholds_out",
-         m_dc_params.out_e1,      m_dc_params.out_e2,      m_dc_params.out_e3);
+    // thresholds
+    {
+      auto n = need3("thresholds_out");
+      g_dc.out_e1 = n[0].as<double>(); 
+      g_dc.out_e2 = n[1].as<double>(); 
+      g_dc.out_e3 = n[2].as<double>();
+    }
+    {
+      auto n = need3("thresholds_in_smallTheta");
+      g_dc.in_small_e1 = n[0].as<double>(); 
+      g_dc.in_small_e2 = n[1].as<double>(); 
+      g_dc.in_small_e3 = n[2].as<double>();
+    }
+    {
+      auto n = need3("thresholds_in_largeTheta");
+      g_dc.in_large_e1 = n[0].as<double>(); 
+      g_dc.in_large_e2 = n[1].as<double>(); 
+      g_dc.in_large_e3 = n[2].as<double>();
+    }
   }
 }
 
