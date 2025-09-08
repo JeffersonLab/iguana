@@ -6,6 +6,7 @@
 
 #include <array>
 #include <atomic>
+#include <memory>   // for std::unique_ptr
 #include <mutex>
 #include <optional>
 #include <string>
@@ -19,13 +20,15 @@ namespace iguana::clas12 {
 ///       s=2 -> {lv,lw} >= 13.5 cm
 ///       s=3 -> {lv,lw} >= 18.0 cm
 ///   - Forward Tagger annulus + circular hole vetoes.
-///   - Central detector (CVT) fiducial using REC::Traj (detector==5):
-///       require positive "edge" at layers 1,3,5,7,12 AND apply the phi wedge
-///       veto at layer 12 at all strictness levels.
-///   - Drift Chamber (DC) fiducial using REC::Traj (detector==6):
+///   - Central detector (CVT) fiducial:
+///       require edge > edge_min at YAML-selected layers and apply YAML phi-wedge veto
+///   - Drift Chamber (DC) fiducial:
 ///       three regional edge thresholds with inbending/outbending logic (torus-based).
-/// Defaults are read from Config.yaml (same dir). A caller may override
-/// strictness via SetStrictness(1|2|3) BEFORE Start().
+/// All defaults are required from Config.yaml. Users may override
+/// strictness via SetStrictness(1|2|3) before Start().
+///
+/// !!!! TO DO: Addition of run-by-run data/MC matching cuts (dead PMTs, etc.)
+///
 class RGAFiducialFilter : public Algorithm {
   DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
@@ -34,39 +37,27 @@ public:
   void Run  (hipo::banklist& banks) const override;
   void Stop () override {}
 
-  /// Programmatic override (takes precedence over YAML). Call before Start().
+  /// User controlled override (takes precedence over YAML). Call before Start().
   void SetStrictness(int strictness);
 
 private:
-  // ---- bank indices / presence
+  // ---- bank indices and presence flags
   hipo::banklist::size_type b_particle{};
   hipo::banklist::size_type b_config{};
   hipo::banklist::size_type b_calor{};
   hipo::banklist::size_type b_ft{};
-  hipo::banklist::size_type b_traj{};   // REC::Traj
+  hipo::banklist::size_type b_traj{};
   bool m_have_calor = false;
   bool m_have_ft    = false;
-  bool m_have_traj  = false;            // true if REC::Traj present
+  bool m_have_traj  = false;
 
-  // ---- config knobs
+  // ---- FT params (values loaded from YAML at Start; no compiled-in defaults)
   struct FTParams {
-    float rmin;
-    float rmax;
+    float rmin = 0.f;
+    float rmax = 0.f;
     std::vector<std::array<float,3>> holes; // {R,cx,cy}
-
-    // Defaults match what we draw in the validator overlays.
-    FTParams()
-      : rmin(8.5f),
-        rmax(15.5f),
-        holes{
-          std::array<float,3>{1.60f, -8.42f,  9.89f},
-          std::array<float,3>{1.60f, -9.89f, -5.33f},
-          std::array<float,3>{2.30f, -6.15f, -13.00f},
-          std::array<float,3>{2.00f,  3.70f,  -6.50f}
-        } {}
   };
-
-  FTParams           u_ft_params{};      // in-use FT params
+  FTParams           u_ft_params{};      // in-use FT params from YAML
   std::optional<int> u_strictness_user;  // if SetStrictness() used
 
   // ---- concurrent / per-event state
@@ -79,10 +70,6 @@ private:
   int  dbg_events = 0;
   static bool EnvOn(const char* name);
   static int  EnvInt(const char* name, int def);
-
-  // ---- lifecycle helpers
-  void   Reload(int runnum, concurrent_key_t key) const;
-  static bool banklist_has(hipo::banklist& banks, const char* name);
 
   // ---- filter core
   struct CalHit { int sector=0; float lv=0, lw=0, lu=0; };
@@ -112,12 +99,12 @@ private:
   int GetRunNum(concurrent_key_t key) const { return o_runnum->Load(key); }
   int GetCalStrictness(concurrent_key_t key) const { return o_cal_strictness->Load(key); }
 
-  // ---- YAML
-  void LoadConfigFromYAML();  // reads from this algorithm's Config.yaml
+  // ---- YAML (required)
+  void LoadConfigFromYAML();  // reads from this algorithm's Config.yaml; throws on error
   void DumpFTParams() const;
 
-  // ---- concurrency utils
-  concurrent_key_t PrepareEvent(int runnum) const;
+  // NOTE: Removed declarations for Reload(), banklist_has(), and PrepareEvent()
+  // since they are not implemented/used in the YAML-required version.
 };
 
 } // namespace iguana::clas12
