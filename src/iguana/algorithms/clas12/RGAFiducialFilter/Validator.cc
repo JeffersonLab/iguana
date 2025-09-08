@@ -40,10 +40,13 @@ void RGAFiducialFilterValidator::LoadFTParamsFromYAML()
   m_ftdraw.holes.push_back({2.00f,  3.70f,  -6.50f});
 }
 
+// Book PCAL/FT/CVT/DC histograms.
+// PCAL now uses 0..45 cm with 0.5 cm bins (nb=90).
 void RGAFiducialFilterValidator::BookIfNeeded()
 {
-  // PCAL: range 0..27 cm, 0.5 cm bins
-  const int nb=54; const double lo=0.0, hi=80.0;
+  // PCAL: range 0..45 cm, 0.5 cm bins
+  const int nb = 90; 
+  const double lo = 0.0, hi = 45.0;
 
   for (int pid : kPIDs) {
     auto& P = m_cal[pid];
@@ -276,6 +279,7 @@ static bool PassDCForPIndex(const hipo::bank& particle,
   return false;
 }
 
+// Full Run() including PCAL fill clipping updated to 0..45 cm
 void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
 {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
@@ -333,10 +337,9 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
       bool kept = pass_cache[pidx];
 
       auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sec];
-      // if (lv >= 0.0 && lv <= 27.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
-      // if (lw >= 0.0 && lw <= 27.0) (kept ? H.lw_kept : H.lw_cut)->Fill(lw);
-      if (lv >= 0.0 && lv <= 80.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
-      if (lw >= 0.0 && lw <= 80.0) (kept ? H.lw_kept : H.lw_cut)->Fill(lw);
+      // Updated clipping to 0..45 cm
+      if (lv >= 0.0 && lv <= 45.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
+      if (lw >= 0.0 && lw <= 45.0) (kept ? H.lw_kept : H.lw_cut)->Fill(lw);
 
       // count once per (pid,sector,pindex)
       if (pid==11) {
@@ -487,6 +490,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const
   }
 }
 
+// Draw PCAL canvases; survival precision now %.3f
 void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title)
 {
   auto it = m_cal.find(pid);
@@ -513,7 +517,7 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title)
     long long a = m_cal_counts[pid][s].after;
     double pct = (b>0) ? (100.0*double(a)/double(b)) : 0.0;
 
-    H.lv_kept->SetTitle(Form("%s - Sector %d  [survive = %.1f%%];length (cm);counts",
+    H.lv_kept->SetTitle(Form("%s - Sector %d  [survive = %.3f%%];length (cm);counts",
                       pid==11?"Electrons":"Photons", s, pct));
 
     H.lv_kept->Draw("HIST");
@@ -533,6 +537,7 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title)
   c->SaveAs(Form("%s_pcal_lv_lw_pid%d.png", m_base.Data(), pid));
 }
 
+// FT 2x2; survival precision now %.3f
 void RGAFiducialFilterValidator::DrawFTCanvas2x2()
 {
   if (!m_have_ft) return;
@@ -567,15 +572,16 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2()
 
   // electrons row
   draw_pad(1, m_ft_h.at(11).before, "Electrons (before cuts);x (cm);y (cm)");
-  draw_pad(2, m_ft_h.at(11).after,  Form("Electrons (after cuts)  [survive = %.1f%%];x (cm);y (cm)", pct(11)));
+  draw_pad(2, m_ft_h.at(11).after,  Form("Electrons (after cuts)  [survive = %.3f%%];x (cm);y (cm)", pct(11)));
 
   // photons row
   draw_pad(3, m_ft_h.at(22).before, "Photons (before cuts);x (cm);y (cm)");
-  draw_pad(4, m_ft_h.at(22).after,  Form("Photons (after cuts)  [survive = %.1f%%];x (cm);y (cm)", pct(22)));
+  draw_pad(4, m_ft_h.at(22).after,  Form("Photons (after cuts)  [survive = %.3f%%];x (cm);y (cm)", pct(22)));
 
   c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
 }
 
+// CVT 1x2; survival precision now %.3f
 void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
 {
   if (!m_have_traj || !m_cvt_before || !m_cvt_after) return;
@@ -604,20 +610,13 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title)
   gPad->SetRightMargin(right);
   gPad->SetBottomMargin(bottom);
   gPad->SetTopMargin(top);
-  m_cvt_after->SetTitle(Form("CVT layer 12 after (hadrons: #pm211,#pm321,#pm2212)  [survive = %.1f%%];phi (deg);theta (deg)", pct));
+  m_cvt_after->SetTitle(Form("CVT layer 12 after (hadrons: #pm211,#pm321,#pm2212)  [survive = %.3f%%];phi (deg);theta (deg)", pct));
   m_cvt_after->Draw("COLZ");
 
   c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
 }
 
-// Free function (not a class method) to set DC pad margins.
-static inline void SetDCPadMargins() {
-  gPad->SetLeftMargin(0.16);   // more padding so y-axis label isn't clipped
-  gPad->SetRightMargin(0.06);
-  gPad->SetBottomMargin(0.12);
-  gPad->SetTopMargin(0.08);
-}
-
+// DC 2x3; survival precision now %.3f (titles already say Inb/Out)
 void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct)
 {
   // bend is "inb" or "out" for filename; Title uses "Inb"/"Out"
@@ -634,9 +633,9 @@ void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H, const char* b
   c->cd(3); SetDCPadMargins(); if (H.r3_before) { H.r3_before->SetLineWidth(2); H.r3_before->Draw("HIST"); H.r3_before->SetTitle(Form("%s DC Region 3 (before);edge (cm);counts", bendTitle.Data())); }
 
   // AFTER row with survive %
-  c->cd(4); SetDCPadMargins(); if (H.r1_after)  { H.r1_after ->SetLineWidth(2); H.r1_after ->Draw("HIST"); H.r1_after ->SetTitle(Form("%s DC Region 1 (after)  [survive = %.1f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
-  c->cd(5); SetDCPadMargins(); if (H.r2_after)  { H.r2_after ->SetLineWidth(2); H.r2_after ->Draw("HIST"); H.r2_after ->SetTitle(Form("%s DC Region 2 (after)  [survive = %.1f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
-  c->cd(6); SetDCPadMargins(); if (H.r3_after)  { H.r3_after ->SetLineWidth(2); H.r3_after ->Draw("HIST"); H.r3_after ->SetTitle(Form("%s DC Region 3 (after)  [survive = %.1f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
+  c->cd(4); SetDCPadMargins(); if (H.r1_after)  { H.r1_after ->SetLineWidth(2); H.r1_after ->Draw("HIST"); H.r1_after ->SetTitle(Form("%s DC Region 1 (after)  [survive = %.3f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
+  c->cd(5); SetDCPadMargins(); if (H.r2_after)  { H.r2_after ->SetLineWidth(2); H.r2_after ->Draw("HIST"); H.r2_after ->SetTitle(Form("%s DC Region 2 (after)  [survive = %.3f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
+  c->cd(6); SetDCPadMargins(); if (H.r3_after)  { H.r3_after ->SetLineWidth(2); H.r3_after ->Draw("HIST"); H.r3_after ->SetTitle(Form("%s DC Region 3 (after)  [survive = %.3f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
 
   c->SaveAs(Form("%s_dc_%s_2x3.png", m_base.Data(), bend));
 }
