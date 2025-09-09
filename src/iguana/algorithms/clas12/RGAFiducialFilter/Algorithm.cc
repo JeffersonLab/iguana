@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <fstream>
+#include <vector>
 
 // Default settings defined and adjustable in Config.yaml (CAL)
 //
@@ -36,27 +37,60 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
 
 // Build path to YAML 
 static inline std::string GetAlgConfigPath() {
-  // 1) Prefer a Config.yaml sitting next to this source file 
-  std::string here = __FILE__;                       
+  // 1) Prefer a Config.yaml sitting next to this source file
+  std::string here = __FILE__;
   auto slash = here.find_last_of("/\\");
   std::string src_dir = (slash == std::string::npos) ? "." : here.substr(0, slash);
   const std::string local = src_dir + "/Config.yaml";
 
   // 2) Fallback: repo-relative path (running from build tree)
-  const std::string repo_rel = "src/iguana/algorithms/clas12/RGAFiducialFilter/Config.yaml";
+  const std::string repo_rel =
+      "src/iguana/algorithms/clas12/RGAFiducialFilter/Config.yaml";
 
-  // 3) Fallback: install-time etc path (production)
-  const char* env_etc = std::getenv("IGUANA_ETCDIR");
-  const std::string base_etc = env_etc ? std::string(env_etc) : std::string(IGUANA_ETCDIR);
-  const std::string install = base_etc + "/clas12/RGAFiducialFilter/Config.yaml";
+  // Helper to add candidate paths safely
+  auto add = [](std::vector<std::string>& v, const std::string& base) {
+    if (base.empty()) return;
+    v.push_back(base + "/algorithms/clas12/RGAFiducialFilter/Config.yaml");   // current
+  };
+
+  std::vector<std::string> candidates;
+  candidates.push_back(local);
+  candidates.push_back(repo_rel);
+
+  // 3) IGUANA_CONFIG_PATH: colon-separated search roots 
+  if (const char* icp = std::getenv("IGUANA_CONFIG_PATH")) {
+    std::string s(icp);
+    size_t start = 0;
+    while (true) {
+      size_t sep = s.find(':', start);
+      std::string dir = (sep == std::string::npos) ? s.substr(start) : s.substr(start, sep - start);
+      add(candidates, dir);
+      if (sep == std::string::npos) break;
+      start = sep + 1;
+    }
+  }
+
+  // 4) IGUANA_ETCDIR: env var or compiled-in default (meson defines IGUANA_ETCDIR)
+  std::string base_etc;
+  if (const char* env_etc = std::getenv("IGUANA_ETCDIR")) {
+    base_etc = env_etc;
+  } else {
+#ifdef IGUANA_ETCDIR
+    base_etc = IGUANA_ETCDIR;  // e.g. "/prefix/etc/iguana"
+#endif
+  }
+  add(candidates, base_etc);
 
   // Try candidates in order
-  for (const auto& p : {local, repo_rel, install}) {
+  for (const auto& p : candidates) {
     std::ifstream f(p);
     if (f.good()) return p;
   }
-  // If none exist, return the highest-priority path
-  return local;
+
+  // If none exist, return the most likely install path for a clear error message
+  return !base_etc.empty()
+           ? (base_etc + "/algorithms/clas12/RGAFiducialFilter/Config.yaml")
+           : local;
 }
 
 // CVT/DC params; loaded from Config.yaml (below are defaults which get overwritten)
@@ -454,31 +488,64 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   return true;
 }
 
-bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
-  const hipo::bank& configBank, const hipo::bank* calBank, const hipo::bank* ftBank, 
-  const hipo::bank* trajBank) const {
+bool RGAFiducialFilter::Filter(
+  int track_index,
+  const hipo::bank& particleBank,
+  const hipo::bank& configBank,
+  const hipo::bank* calBank,
+  const hipo::bank* ftBank,
+  const hipo::bank* trajBank) const
+{
   const int pid = particleBank.getInt("pid", track_index);
-
   const int strictness = u_strictness_user.value_or(g_yaml_cal_strictness);
+
+  auto has_assoc = [&](const hipo::bank* b)->bool {
+    if (!b) return false;
+    const int n = b->getRows();
+    for (int i=0;i<n;++i) if (b->getInt("pindex", i) == track_index) return true;
+    return false;
+  };
+
+  const bool hasCal = has_assoc(calBank);
+  const bool hasFT  = has_assoc(ftBank);
 
   bool pass = true;
 
-  if (pid == 11 || pid == 22) {
-    // photons and electrons are detected in either (exclusive) FT or FD
-    if (calBank) {
+  if (pid == 11) {
+    // Electron: FT topology -> FT cut; else -> CAL + DC
+    if (hasFT) {
+      pass = pass && PassFTFiducial(track_index, ftBank);
+    } else {
+      if (hasCal) {
+        auto calhits = CollectCalHitsForTrack(*calBank, track_index);
+        pass = pass && PassCalStrictness(calhits, strictness);
+      }
+      pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
+    }
+    return pass;
+  }
+
+  if (pid == 22) {
+    // Photon: FT or CAL, whichever is associated (don’t AND them)
+    if (hasFT) {
+      pass = pass && PassFTFiducial(track_index, ftBank);
+    } else if (hasCal) {
       auto calhits = CollectCalHitsForTrack(*calBank, track_index);
       pass = pass && PassCalStrictness(calhits, strictness);
     }
-    pass = pass && PassFTFiducial(track_index, ftBank);
+    return pass;
   }
 
+  // Charged hadrons
   if (pid== 211 || pid== 321 || pid== 2212 ||
       pid==-211 || pid==-321 || pid==-2212) {
     pass = pass && PassCVTFiducial(track_index, trajBank);
     pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
+    return pass;
   }
 
-  return pass;
+  // neutrals/others
+  return true;
 }
 
 } 
