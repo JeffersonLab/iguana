@@ -11,13 +11,13 @@
 namespace iguana::clas12 {
 
   // RGA fiducial filter:
-  //   - PCAL-only edge cuts on lv & lw with strictness thresholds:
+  //   - PCal-only edge cuts on lv & lw with strictness thresholds:
   //       s=1 -> {lv,lw} >=  9.0 cm (bars are width of 4.5cm)
   //       s=2 -> {lv,lw} >= 13.5 cm
   //       s=3 -> {lv,lw} >= 18.0 cm
-  //   - Forward Tagger annulus + circular hole vetoes
+  //   - Forward Tagger annulus + low efficiency hole vetoes
   //   - Central detector (CVT) fiducial:
-  //       require edge > edge_min (default 0) and wedge vetoes between CVT sectors
+  //       require edge > edge_min (default 0) and vetoes on gaps between CVT sectors
   //   - Drift Chamber (DC) fiducial:
   //       three region edge thresholds with separate inbending/outbending track logic 
   // All defaults are required from Config.yaml. Users may override
@@ -54,14 +54,8 @@ namespace iguana::clas12 {
       std::vector<std::array<float,3>> holes; // {R,cx,cy}
     };
     FTParams           u_ft_params{};      // in-use FT params from YAML
-    std::optional<int> u_strictness_user;  // if SetStrictness() used
 
-    // debug flags
-    bool dbg_on     = false;
-    bool dbg_ft     = false;
-    int  dbg_events = 0;
-    static bool EnvOn(const char* name);
-    static int  EnvInt(const char* name, int def);
+    std::optional<int> u_strictness_user;  // if SetStrictness() used
 
     // core filter functions
     struct CalHit { int sector=0; float lv=0, lw=0, lu=0; };
