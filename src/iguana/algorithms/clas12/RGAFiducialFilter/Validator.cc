@@ -55,7 +55,7 @@ static inline std::string GetAlgConfigPath() {
   return local;
 }
 
-// REQUIRED YAML loader 
+// YAML loader 
 void RGAFiducialFilterValidator::LoadConfigFromYAML() {
   const std::string cfg_path = GetAlgConfigPath();
 
@@ -229,9 +229,9 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML() {
   }
 }
 
-// Book PCAL/FT/CVT/DC histograms.
+// Book PCal/FT/CVT/DC histograms.
 void RGAFiducialFilterValidator::BookIfNeeded() {
-  // PCAL: range 0-45 cm, 4.5 cm bins
+  // PCal: range 0-45 cm, 4.5 cm bins (width of single bar)
   const int nb = 10; 
   const double lo = 0.0, hi = 45.0;
 
@@ -476,7 +476,7 @@ static inline void SetDCPadMargins() {
   gPad->SetTopMargin(0.08);
 }
 
-// Full Run() including PCAL fill clipping updated to 0..45 cm
+// Full Run() including PCal 
 void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto& config   = GetBank(banks, b_config,   "RUN::config");
@@ -503,7 +503,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     else if (pid<0) neg_all.insert(pidx);
   }
 
-  // PCAL kept vs cut (electrons/photons), strictness from YAML
+  // PCal kept vs cut (electrons/photons), strictness from YAML
   if (m_have_calor) {
     auto& cal = GetBank(banks, b_calor, "REC::Calorimeter");
     const int n = cal.getRows();
@@ -665,28 +665,22 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       int layer   = traj.getInt("layer", i);
 
       if (pid>0) {
-        if (layer==6)  { if (!pos_b1.count(pidx)) 
-          { 
+        if (layer==6)  { if (!pos_b1.count(pidx)) { 
             m_dc_pos.r1_before->Fill(edge); pos_b1.insert(pidx); 
           }
-        if (pass_cache[pidx] && !pos_a1.count(pidx)) 
-          { 
+        if (pass_cache[pidx] && !pos_a1.count(pidx)) { 
             m_dc_pos.r1_after->Fill(edge);  pos_a1.insert(pidx); } 
           }
-        if (layer==18) { if (!pos_b2.count(pidx)) 
-          { 
+        if (layer==18) { if (!pos_b2.count(pidx)) { 
             m_dc_pos.r2_before->Fill(edge); pos_b2.insert(pidx); 
           }
-        if (pass_cache[pidx] && !pos_a2.count(pidx)) 
-          { 
+        if (pass_cache[pidx] && !pos_a2.count(pidx)) { 
             m_dc_pos.r2_after->Fill(edge);  pos_a2.insert(pidx); } 
           }
-        if (layer==36) { if (!pos_b3.count(pidx)) 
-          { 
+        if (layer==36) { if (!pos_b3.count(pidx)) { 
             m_dc_pos.r3_before->Fill(edge); pos_b3.insert(pidx); 
           }
-        if (pass_cache[pidx] && !pos_a3.count(pidx)) 
-          { 
+        if (pass_cache[pidx] && !pos_a3.count(pidx)) { 
             m_dc_pos.r3_after->Fill(edge);  pos_a3.insert(pidx); 
           } 
         }
@@ -727,7 +721,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       return cnt;
     };
 
-    // accumulate to totals using the intersection across regions
+    // accumulate the totals using the intersection across regions
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n += 
       (long long) inter3(pos_b1, pos_b2, pos_b3);
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  += 
@@ -799,7 +793,7 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
     h->SetTitle(ttl);
     h->Draw("COLZ");
 
-    // overlays: annulus + holes (no legend text)
+    // overlays: annulus + holes 
     auto* outer = new TEllipse(0,0, m_ftdraw.rmax, m_ftdraw.rmax);
     auto* inner = new TEllipse(0,0, m_ftdraw.rmin, m_ftdraw.rmin);
     outer->SetFillStyle(0); inner->SetFillStyle(0);
@@ -819,11 +813,13 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
 
   // electrons row
   draw_pad(1, m_ft_h.at(11).before, "Electrons (before cuts);x (cm);y (cm)");
-  draw_pad(2, m_ft_h.at(11).after,  Form("Electrons (after cuts)  [survive = %.3f%%];x (cm);y (cm)", pct(11)));
+  draw_pad(2, m_ft_h.at(11).after,  
+    Form("Electrons (after cuts)  [survive = %.3f%%];x (cm);y (cm)", pct(11)));
 
   // photons row
   draw_pad(3, m_ft_h.at(22).before, "Photons (before cuts);x (cm);y (cm)");
-  draw_pad(4, m_ft_h.at(22).after,  Form("Photons (after cuts)  [survive = %.3f%%];x (cm);y (cm)", pct(22)));
+  draw_pad(4, m_ft_h.at(22).after,  
+    Form("Photons (after cuts)  [survive = %.3f%%];x (cm);y (cm)", pct(22)));
 
   c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
 }
@@ -921,8 +917,10 @@ void RGAFiducialFilterValidator::Stop() {
   const char* neg_bend_id = electron_out ? "out" : "inb";
 
   // DC canvases 
-  double pos_pct = (m_dc_pos_before_n>0) ? (100.0*double(m_dc_pos_after_n)/double(m_dc_pos_before_n)) : 0.0;
-  double neg_pct = (m_dc_neg_before_n>0) ? (100.0*double(m_dc_neg_after_n)/double(m_dc_neg_before_n)) : 0.0;
+  double pos_pct = 
+    (m_dc_pos_before_n>0) ? (100.0*double(m_dc_pos_after_n)/double(m_dc_pos_before_n)) : 0.0;
+  double neg_pct = 
+    (m_dc_neg_before_n>0) ? (100.0*double(m_dc_neg_after_n)/double(m_dc_neg_before_n)) : 0.0;
   DrawDCCanvas2x3(m_dc_pos, pos_bend_id, pos_pct);
   DrawDCCanvas2x3(m_dc_neg, neg_bend_id, neg_pct);
 

@@ -15,7 +15,7 @@ namespace iguana::clas12 {
 
 /// Validator:
 ///   - Each subsystem's before/after is computed independently from the raw banks:
-///       * PCAL (lv & lw) per sector (1-6), range [0,45], strictness s=1:
+///       * PCal (lv & lw) per sector (1-6), range [0,45], strictness s=1:
 ///           kept (solid) vs cut (dashed). 
 ///       * FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
 ///       * CVT layer 12 (detector==5): theta (y) vs phi (x),
@@ -41,7 +41,7 @@ private:
   bool m_have_ft    = false;
   bool m_have_traj  = false;
 
-  // PID rows relevant for PCAL/FT displays
+  // PID rows relevant for PCal/FT displays
   const std::array<int,2> kPIDs{11,22};
 
   // PCAL hists per PID & sector
@@ -68,7 +68,7 @@ private:
   long long m_cvt_before_n = 0;
   long long m_cvt_after_n  = 0;
 
-  // DC edge distributions by sign (pos/neg), regions 1,2,3; before/after
+  // DC edge distributions by sign (pos/neg tracks), regions 1,2,3; before/after
   struct DCHists {
     TH1D* r1_before=nullptr; TH1D* r2_before=nullptr; TH1D* r3_before=nullptr;
     TH1D* r1_after =nullptr; TH1D* r2_after =nullptr; TH1D* r3_after =nullptr;

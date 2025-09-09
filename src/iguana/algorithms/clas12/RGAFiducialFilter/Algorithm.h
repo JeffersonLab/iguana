@@ -63,7 +63,6 @@ namespace iguana::clas12 {
 
     static CalLayers CollectCalHitsForTrack(const hipo::bank& cal, int pindex);
     static bool PassCalStrictness(const CalLayers& h, int strictness);
-
     bool PassFTFiducial (int track_index, const hipo::bank* ftBank) const;
     bool PassCVTFiducial(int track_index, const hipo::bank* trajBank) const;
     bool PassDCFiducial(int track_index, const hipo::bank& particleBank,

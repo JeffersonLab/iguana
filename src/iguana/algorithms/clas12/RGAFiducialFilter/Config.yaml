@@ -4,12 +4,14 @@ clas12::RGAFiducialFilter:
     # s=1 -> lv,lw >=  9.0 cm
     # s=2 -> lv,lw >= 13.5 cm
     # s=3 -> lv,lw >= 18.0 cm
+    #
+    # s=1 loosely recommended for spin-asymmetries
     strictness: [1] # default
 
   forward_tagger:
     # Allowed radial window (cm)
     radius: [8.5, 15.5]
-    # Circular holes (radius, x, y) flattened
+    # Circular holes (radius, x, y) 
     holes_flat:
       [ 1.60, -8.42,  9.89,
         1.60, -9.89, -5.33,

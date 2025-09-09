@@ -18,6 +18,8 @@
 // * Forward Tagger cut on annulus and missing holes for pid==11,22
 //
 // * Calorimeter cut on lv,lw>9,13.5,18 depending on SetStrictness([default = 1]) for pid==11,22; 
+//    Strictness 1 loosely recommended for spin-asymmetries, cross sections may want to consider
+//    higher strictness as well as ...
 //    !!! TO DO: implement run-by-run data/MC matching for missing PMTs, etc.
 //
 // * Central Detector cut on areas between 3 sectors and require tracks inside detector (edge > 0);
@@ -57,7 +59,7 @@ static inline std::string GetAlgConfigPath() {
   return local;
 }
 
-// CVT/DC params 
+// CVT/DC params; loaded from Config.yaml (below are defaults which get overwritten)
 namespace {
 struct CVTParams {
   std::vector<int>    edge_layers;        // e.g. {1,3,5,7,12}
@@ -66,7 +68,6 @@ struct CVTParams {
 };
 CVTParams g_cvt;
 int g_yaml_cal_strictness = 1;
-
 struct DCParams {
   // Thresholds (cm)
   double theta_small_deg   = 10.0;   // theta boundary for special inbending case
@@ -81,7 +82,7 @@ DCParams g_dc;
 } // namespace
 
 
-// YAML LOADING (REQUIRED)
+// YAML loading (required)
 void RGAFiducialFilter::LoadConfigFromYAML() {
   const std::string cfg_path = GetAlgConfigPath();
 
@@ -212,7 +213,7 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
       throw std::runtime_error(msg.str());
     }
 
-    // theta_small_deg (1 value)
+    // theta_small_deg (tigher cut on inbending lower angle tracks)
     if (!dc["theta_small_deg"] || dc["theta_small_deg"].size() < 1) {
       std::ostringstream msg;
       msg << "[RGAFID] 'dc.theta_small_deg' must be provided (e.g. [10.0])";
@@ -253,13 +254,13 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
 }
 
 
-// USER OVERRIDE
+// user override for strictness
 void RGAFiducialFilter::SetStrictness(int strictness) {
   u_strictness_user = strictness;
 }
 
 
-// LIFECYCLE
+// start main filter
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   // Bank presence
@@ -282,23 +283,22 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
 }
 
 void RGAFiducialFilter::Run(hipo::banklist& banks) const {
+  // Grab the banks needed for this event
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
-  auto* cal  = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter") : nullptr;
-  auto* ft   = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
-  auto* traj = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj") : nullptr;
-  auto& conf = GetBank(banks, b_config, "RUN::config");
+  auto& conf     = GetBank(banks, b_config,   "RUN::config");
+  auto* cal      = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter")   : nullptr;
+  auto* ft       = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
+  auto* traj     = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj")          : nullptr;
 
-  const int ntrk = particle.getRows();
-
-  for (int i = 0; i < ntrk; ++i) {
-    const bool pass = Filter(i, particle, conf, cal, ft, traj);
-    (void)pass;
-  }
+  // Prune in place: keep only rows that pass fiducial logic
+  particle.getMutableRowList().filter([&](auto /*bank*/, auto row) {
+    const bool keep = Filter(static_cast<int>(row), particle, conf, cal, ft, traj);
+    return keep ? 1 : 0;   // 1 = keep row, 0 = drop row
+  });
 }
 
 
-// CORE FILTER HELPERS
-
+// core helpers
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   CalLayers out;
@@ -319,7 +319,7 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
 
 bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness) {
   // This section still needs further implementation for dead PMTs etc.
-  if (!H.has_any) return true; // no PCal -> pass (hadrons etc.)
+  if (!H.has_any) return true; // no PCal track -> pass (hadrons etc.)
 
   float min_lv = std::numeric_limits<float>::infinity();
   float min_lw = std::numeric_limits<float>::infinity();
@@ -333,7 +333,7 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness) {
 }
 
 bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) const {
-  if (!ftBank) return true; // no FT -> pass (DC/CVT tracks etc.)
+  if (!ftBank) return true; // no FT track -> pass (DC/CVT tracks etc.)
 
   const auto& ft = *ftBank;
   const int n = ft.getRows();
@@ -386,7 +386,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 
   for (int L : g_cvt.edge_layers) {
     auto it = edge_at_layer.find(L);
-    if (it == edge_at_layer.end()) continue; // no CVT -> pass (leptons, photons)
+    if (it == edge_at_layer.end()) continue; // no CVT track -> pass (leptons, CAL photons)
     if (!(it->second > g_cvt.edge_min)) return false;
   }
 
@@ -409,9 +409,11 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
 
   const int pid = particleBank.getInt("pid", pindex);
   // cuts are defined for inbending and outbending particles separately
+  // the CLAS convention is to call the torus polarity inbending or outbending depending on the
+  // curvature of electrons, e.g. in "inbending" data pi+ is an outbending track
   const bool isNeg = (pid== 11 || pid==-211 || pid==-321 || pid==-2212);
   const bool isPos = (pid==-11 || pid== 211 || pid== 321 || pid== 2212);
-  if (!(isNeg || isPos)) return true;
+  if (!(isNeg || isPos)) return true; // photon, neutron or unassigned by EventBuilder
 
   const float torus = configBank.getFloat("torus", 0);
   const bool electron_out = (torus == 1.0);
@@ -429,7 +431,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const int n = traj.getRows();
   for (int i=0; i<n; ++i) {
     if (traj.getInt("pindex", i) != pindex) continue;
-    if (traj.getInt("detector", i) != 6)    continue; // DC, detector == 5 is CVT
+    if (traj.getInt("detector", i) != 6)    continue; // DC, detector == 5 would be CVT
     const int layer = traj.getInt("layer", i);
     const double e  = traj.getFloat("edge", i);
     if      (layer== 6) e1 = e;
