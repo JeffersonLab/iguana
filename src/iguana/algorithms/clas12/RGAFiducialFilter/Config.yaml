@@ -8,7 +8,8 @@ clas12::RGAFiducialFilter:
 
   forward_tagger:
     # Allowed radial window (cm)
-    radius: [8.5, 15.5]
+    # radius: [8.5, 15.5]
+    radius: [8.5, 10.5]
     # Circular holes (radius, cx, cy) flattened
     holes_flat:
       [ 1.60, -8.42,  9.89,
