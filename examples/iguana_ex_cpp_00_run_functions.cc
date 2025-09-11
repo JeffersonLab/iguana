@@ -61,7 +61,7 @@ int main(int argc, char** argv)
   seq.Start(banks);
 
   // get the name of newly created banks (or you can just get them from the documentation)
-  auto sector_finder_bank_name = seq.Get<iguana::Algorithm>("clas12::SectorFinder")->GetCreatedBankName();
+  auto sector_finder_bank_name = seq.GetCreatedBankName("clas12::SectorFinder");
 
   // get bank index, for each bank we want to use after Iguana algorithms run
   // NOTE: new banks from creator algorithms are initialized by `Start`
