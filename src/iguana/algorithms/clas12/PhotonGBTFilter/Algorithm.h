@@ -29,7 +29,7 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;   
 
       /// Applies forward detector cut using REC::Particle Theta

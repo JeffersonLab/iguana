@@ -59,7 +59,7 @@ namespace iguana::example {
   // # - try to avoid expensive operations here; instead, put them in the `Start` method
   // #   if it is reasonable to do so
   // ############################################################################
-  void ExampleAlgorithm::Run(hipo::banklist& banks) const
+  bool ExampleAlgorithm::Run(hipo::banklist& banks) const
   {
     // ############################################################################
     // # get the banks; here we just need `REC::Particle`
@@ -98,6 +98,11 @@ namespace iguana::example {
     // # dump the modified bank (only if the log level is low enough); this is also optional
     // ############################################################################
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+
+    // ############################################################################
+    // # return true or false, used as an event-level filter
+    // ############################################################################
+    return true;
   }
 
 

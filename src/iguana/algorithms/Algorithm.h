@@ -66,7 +66,10 @@ namespace iguana {
 
       /// @brief Run this algorithm for an event.
       /// @param banks the list of banks to process
-      virtual void Run(hipo::banklist& banks) const = 0;
+      /// @returns a boolean value, which is typically used to decide whether or not to continue analyzing an event, _i.e._, it can be used
+      /// as an _event-level_ filter; not all algorithms use or need this feature; see the algorithm's more specialized `Run` functions,
+      /// which have `hipo::bank` parameters
+      virtual bool Run(hipo::banklist& banks) const = 0;
 
       /// @brief Finalize this algorithm after all events are processed.
       virtual void Stop() = 0;

@@ -26,7 +26,7 @@ namespace iguana::clas12 {
     i_r3_z             = result_schema.getEntryOrder("r3_z");
   }
 
-  void TrajLinker::Run(hipo::banklist& banks) const
+  bool TrajLinker::Run(hipo::banklist& banks) const
   {
     auto& bank_particle = GetBank(banks, b_particle, "REC::Particle");
     auto& bank_traj     = GetBank(banks, b_traj, "REC::Traj");
@@ -107,6 +107,7 @@ namespace iguana::clas12 {
       bank_result.putFloat(i_r3_z,    row_particle, link_particle.r3_z);
     }
     ShowBank(bank_result, Logger::Header("CREATED BANK"));
+    return true;
   }
 
   void TrajLinker::Stop()

@@ -7,7 +7,8 @@ namespace iguana {
   /// @brief An algorithm that can run a sequence of algorithms
   ///
   /// The `Start`, `Run`, and `Stop` methods will sequentially call the corresponding algorithms' methods,
-  /// in the order the algorithms were added to the sequence by `AlgorithmSequence::Add`.
+  /// in the order the algorithms were added to the sequence by `AlgorithmSequence::Add`. If an algorithm's
+  /// `Run` function returns false, then `AlgorithmSequence`'s `Run` function will stop and return `false`.
   class AlgorithmSequence : public Algorithm
   {
 
@@ -16,7 +17,7 @@ namespace iguana {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
       /// Create and add an algorithm to the sequence, by name.

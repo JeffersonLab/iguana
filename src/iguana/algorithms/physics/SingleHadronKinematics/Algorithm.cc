@@ -34,7 +34,7 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void SingleHadronKinematics::Run(hipo::banklist& banks) const
+  bool SingleHadronKinematics::Run(hipo::banklist& banks) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& inc_kin_bank  = GetBank(banks, b_inc_kin, "physics::InclusiveKinematics");
@@ -43,7 +43,7 @@ namespace iguana::physics {
 
     if(particle_bank.getRowList().empty() || inc_kin_bank.getRowList().empty()) {
       m_log->Debug("skip this event, since not all required banks have entries");
-      return;
+      return false;
     }
 
     // get beam and target momenta
@@ -159,6 +159,7 @@ namespace iguana::physics {
     result_bank.getMutableRowList().setList(result_bank_rowlist);
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
+    return true;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

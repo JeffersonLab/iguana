@@ -28,7 +28,7 @@ namespace iguana::clas12 {
 
   //////////////////////////////////////////////////////////////////////////////////
 
-  void FiducialFilter::Run(hipo::banklist& banks) const {
+  bool FiducialFilter::Run(hipo::banklist& banks) const {
 
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
     auto& configBank   = GetBank(banks, b_config, "RUN::config");
@@ -74,6 +74,7 @@ namespace iguana::clas12 {
     }
 
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+    return true;
   }
 
   //////////////////////////////////////////////////////////////////////////////////

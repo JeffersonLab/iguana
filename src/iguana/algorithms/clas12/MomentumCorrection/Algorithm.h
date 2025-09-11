@@ -22,14 +22,15 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// run function
+      /// @run_function
       /// @param [in,out] particleBank `REC::Particle`; the momenta will be corrected
       /// @param [in] sectorBank `REC::Particle::Sector`, from `SectorFinder`
       /// @param [in] configBank `RUN::config`
-      void Run(
+      /// @run_function_returns_true
+      bool Run(
           hipo::bank& particleBank,
           hipo::bank const& sectorBank,
           hipo::bank const& configBank) const;

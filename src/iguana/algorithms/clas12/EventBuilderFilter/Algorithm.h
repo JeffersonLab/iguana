@@ -21,12 +21,13 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// run function
+      /// @run_function
       /// @param [in,out] particleBank `REC::Particle`, which will be filtered
-      void Run(hipo::bank& particleBank) const;
+      /// @run_function_returns_true
+      bool Run(hipo::bank& particleBank) const;
 
       /// @action_function{scalar filter} checks if the PDG `pid` is a part of the list of user-specified PDGs
       /// @param pid the particle PDG to check

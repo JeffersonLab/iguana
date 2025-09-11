@@ -54,10 +54,10 @@ namespace iguana::clas12 {
     i_pindex = result_schema.getEntryOrder("pindex");
   }
 
-  void SectorFinder::Run(hipo::banklist& banks) const
+  bool SectorFinder::Run(hipo::banklist& banks) const
   {
     auto includeDefaultBanks = !(userSpecifiedBank_charged && userSpecifiedBank_neutral);
-    RunImpl(
+    return RunImpl(
         &GetBank(banks, b_particle, "REC::Particle"),
         includeDefaultBanks ? &GetBank(banks, b_track, "REC::Track") : nullptr,
         includeDefaultBanks ? &GetBank(banks, b_calorimeter, "REC::Calorimeter") : nullptr,
@@ -67,7 +67,7 @@ namespace iguana::clas12 {
         &GetBank(banks, b_result, "REC::Particle::Sector"));
   }
 
-  void SectorFinder::RunImpl(
+  bool SectorFinder::RunImpl(
       hipo::bank const* particleBank,
       hipo::bank const* trackBank,
       hipo::bank const* calBank,
@@ -151,6 +151,7 @@ namespace iguana::clas12 {
     }
 
     ShowBank(*resultBank, Logger::Header("CREATED BANK"));
+    return true;
   }
 
   void SectorFinder::GetListsSectorPindex(hipo::bank const& bank, std::vector<int>& sectors, std::vector<int>& pindices) const

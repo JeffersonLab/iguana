@@ -93,7 +93,7 @@ namespace iguana::physics {
   }
 
 
-  void DepolarizationValidator::Run(hipo::banklist& banks) const
+  bool DepolarizationValidator::Run(hipo::banklist& banks) const
   {
     // calculate kinematics
     m_algo_seq->Run(banks);
@@ -103,7 +103,7 @@ namespace iguana::physics {
     // skip events with empty bank(s)
     if(inc_kin_bank.getRowList().size() == 0 || depol_bank.getRowList().size() == 0) {
       m_log->Debug("skip this event, since it has no kinematics results");
-      return;
+      return false;
     }
 
     // lock mutex and fill the plots
@@ -116,6 +116,7 @@ namespace iguana::physics {
       for(auto& plot : plots_vs_y)
         plot.hist->Fill(inc_kin_bank.getDouble("y", row), plot.get_val(depol_bank, row));
     }
+    return true;
   }
 
 

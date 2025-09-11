@@ -26,7 +26,7 @@ namespace iguana::clas12 {
     InitializeHistograms();
   }
 
-  void PhotonGBTFilterValidator::Run(hipo::banklist& banks) const
+  bool PhotonGBTFilterValidator::Run(hipo::banklist& banks) const
   {
     // get the particle bank
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -63,6 +63,7 @@ namespace iguana::clas12 {
     FillHistograms(photons, 0);
     FillHistograms(filtered_photons, 1);
 
+    return true;
   }
     
   void PhotonGBTFilterValidator::InitializeHistograms() {
