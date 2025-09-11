@@ -38,7 +38,7 @@ int main(int argc, char** argv)
   hipo::dictionary dict;
   reader.readDictionary(dict);
   hipo::bank bank_config(dict.getSchema("RUN::config"));
-  hipo::bank bank_particle(dict.getSchema("RUN::Particle"));
+  hipo::bank bank_particle(dict.getSchema("REC::Particle"));
   hipo::bank bank_calorimeter(dict.getSchema("REC::Calorimeter"));
   hipo::bank bank_track(dict.getSchema("REC::Track"));
   hipo::bank bank_scintillator(dict.getSchema("REC::Scintillator"));
