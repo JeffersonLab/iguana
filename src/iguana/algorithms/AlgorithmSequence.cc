@@ -23,14 +23,14 @@ namespace iguana {
       algo->Stop();
   }
 
-  void AlgorithmSequence::Add(std::string const& class_name, std::string const& instance_name)
+  void AlgorithmSequence::Add(std::string const& algo_class_name, std::string const& algo_instance_name)
   {
-    auto algo = AlgorithmFactory::Create(class_name);
+    auto algo = AlgorithmFactory::Create(algo_class_name);
     if(algo == nullptr) {
-      m_log->Error("algorithm '{}' does not exist", class_name);
+      m_log->Error("algorithm '{}' does not exist", algo_class_name);
       throw std::runtime_error("AlgorithmFactory cannot create non-existent algorithm");
     }
-    algo->SetName(instance_name == "" ? class_name : instance_name);
+    algo->SetName(algo_instance_name == "" ? algo_class_name : algo_instance_name);
     Add(std::move(algo));
   }
 
@@ -61,6 +61,22 @@ namespace iguana {
     }
     // then change the object name
     Algorithm::SetName(name);
+  }
+
+  std::vector<std::string> AlgorithmSequence::GetCreatedBankNames(std::string const& algo_instance_name) const noexcept(false)
+  {
+    if(auto it{m_algo_names.find(algo_instance_name)}; it != m_algo_names.end())
+      return m_sequence[it->second]->GetCreatedBankNames();
+    m_log->Error("cannot find algorithm '{}' in sequence", algo_instance_name);
+    throw std::runtime_error("GetCreatedBankNames failed");
+  }
+
+  std::string AlgorithmSequence::GetCreatedBankName(std::string const& algo_instance_name) const noexcept(false)
+  {
+    if(auto it{m_algo_names.find(algo_instance_name)}; it != m_algo_names.end())
+      return m_sequence[it->second]->GetCreatedBankName();
+    m_log->Error("cannot find algorithm '{}' in sequence", algo_instance_name);
+    throw std::runtime_error("GetCreatedBankName failed");
   }
 
   void AlgorithmSequence::PrintSequence(Logger::Level level) const
