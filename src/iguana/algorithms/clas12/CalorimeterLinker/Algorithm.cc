@@ -31,7 +31,7 @@ namespace iguana::clas12 {
     i_ecout_energy     = result_schema.getEntryOrder("ecout_energy");
   }
 
-  void CalorimeterLinker::Run(hipo::banklist& banks) const
+  bool CalorimeterLinker::Run(hipo::banklist& banks) const
   {
     auto& bank_particle    = GetBank(banks, b_particle, "REC::Particle");
     auto& bank_calorimeter = GetBank(banks, b_calorimeter, "REC::Calorimeter");
@@ -124,6 +124,7 @@ namespace iguana::clas12 {
       bank_result.putFloat(i_ecout_energy, row_particle, link_particle.ecout_energy);
     }
     ShowBank(bank_result, Logger::Header("CREATED BANK"));
+    return true;
   }
 
   void CalorimeterLinker::Stop()

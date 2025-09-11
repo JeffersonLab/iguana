@@ -52,7 +52,7 @@ namespace iguana::clas12 {
 
   }
 
-  void SectorFinderValidator::Run(hipo::banklist& banks) const
+  bool SectorFinderValidator::Run(hipo::banklist& banks) const
   {
     
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -101,6 +101,7 @@ namespace iguana::clas12 {
       u_YvsX.at(pdg).at(sector - 1)->Fill(x, y);
     }
 
+    return true;
   }
 
 

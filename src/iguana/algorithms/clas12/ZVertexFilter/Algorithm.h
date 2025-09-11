@@ -22,13 +22,14 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// run function
+      /// @run_function
       /// @param [in,out] particleBank `REC::Particle`, which will be filtered
       /// @param [in] configBank `RUN::config`
-      void Run(hipo::bank& particleBank, hipo::bank const& configBank) const;
+      /// @run_function_returns_true
+      bool Run(hipo::bank& particleBank, hipo::bank const& configBank) const;
 
       /// @action_function{reload} prepare the event
       /// @when_to_call{for each event}

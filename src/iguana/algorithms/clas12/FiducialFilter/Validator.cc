@@ -83,7 +83,7 @@ namespace iguana::clas12 {
   }
 
 
-  void FiducialFilterValidator::Run(hipo::banklist& banks) const
+  bool FiducialFilterValidator::Run(hipo::banklist& banks) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& traj_bank     = GetBank(banks, b_traj, "REC::Particle::Traj");
@@ -119,6 +119,7 @@ namespace iguana::clas12 {
       if(traj_bank.getByte("r3_found", row) == 1)
         u_DC3_after.at(pid)->Fill(traj_bank.getFloat("r3_x", row), traj_bank.getFloat("r3_y", row));
     }
+    return true;
   }
 
 

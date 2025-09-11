@@ -13,16 +13,16 @@ namespace iguana::clas12 {
   }
 
 
-  void MomentumCorrection::Run(hipo::banklist& banks) const
+  bool MomentumCorrection::Run(hipo::banklist& banks) const
   {
-    Run(
+    return Run(
         GetBank(banks, b_particle, "REC::Particle"),
         GetBank(banks, b_sector, "REC::Particle::Sector"),
         GetBank(banks, b_config, "RUN::config"));
   }
 
 
-  void MomentumCorrection::Run(
+  bool MomentumCorrection::Run(
       hipo::bank& particleBank,
       hipo::bank const& sectorBank,
       hipo::bank const& configBank) const
@@ -46,6 +46,7 @@ namespace iguana::clas12 {
     }
 
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+    return true;
   }
 
 

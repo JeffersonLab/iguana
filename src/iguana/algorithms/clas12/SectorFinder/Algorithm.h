@@ -37,27 +37,30 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// @brief run function, using track, calorimeter, and scintillator banks for both charged and neutral particles
+      /// @run_function
+      /// uses track, calorimeter, and scintillator banks for both charged and neutral particles
       /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
       /// @param [in] particleBank `REC::Particle`
       /// @param [in] trackBank `REC::Track`
       /// @param [in] calBank `REC::Calorimeter`
       /// @param [in] scintBank `REC::Scintillator`
       /// @param [out] resultBank the output `REC::Particle::Sector` bank
-      void Run(
+      /// @run_function_returns_true
+      bool Run(
           hipo::bank const& particleBank,
           hipo::bank const& trackBank,
           hipo::bank const& calBank,
           hipo::bank const& scintBank,
           hipo::bank& resultBank) const
       {
-        RunImpl(&particleBank, &trackBank, &calBank, &scintBank, nullptr, nullptr, &resultBank);
+        return RunImpl(&particleBank, &trackBank, &calBank, &scintBank, nullptr, nullptr, &resultBank);
       }
 
-      /// @brief run function, using track, calorimeter, and scintillator banks for charged particles, and a custom bank for neutral particles
+      /// @run_function
+      /// uses track, calorimeter, and scintillator banks for charged particles, and a custom bank for neutral particles
       /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
       /// @param [in] particleBank `REC::Particle`
       /// @param [in] trackBank `REC::Track`
@@ -65,7 +68,8 @@ namespace iguana::clas12 {
       /// @param [in] scintBank `REC::Scintillator`
       /// @param [in] userChargedBank custom bank used to obtain charged-particles' sectors
       /// @param [out] resultBank the output `REC::Particle::Sector` bank
-      void RunWithCustomChargedBank(
+      /// @run_function_returns_true
+      bool RunWithCustomChargedBank(
           hipo::bank const& particleBank,
           hipo::bank const& trackBank,
           hipo::bank const& calBank,
@@ -73,10 +77,11 @@ namespace iguana::clas12 {
           hipo::bank const& userChargedBank,
           hipo::bank& resultBank) const
       {
-        RunImpl(&particleBank, &trackBank, &calBank, &scintBank, &userChargedBank, nullptr, &resultBank);
+        return RunImpl(&particleBank, &trackBank, &calBank, &scintBank, &userChargedBank, nullptr, &resultBank);
       }
 
-      /// @brief run function, using track, calorimeter, and scintillator banks for neutral particles, and a custom bank for charged particles
+      /// @run_function
+      /// uses track, calorimeter, and scintillator banks for neutral particles, and a custom bank for charged particles
       /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
       /// @param [in] particleBank `REC::Particle`
       /// @param [in] trackBank `REC::Track`
@@ -84,7 +89,8 @@ namespace iguana::clas12 {
       /// @param [in] scintBank `REC::Scintillator`
       /// @param [in] userNeutralBank custom bank used to obtain neutral-particles' sectors
       /// @param [out] resultBank the output `REC::Particle::Sector` bank
-      void RunWithCustomNeutralBank(
+      /// @run_function_returns_true
+      bool RunWithCustomNeutralBank(
           hipo::bank const& particleBank,
           hipo::bank const& trackBank,
           hipo::bank const& calBank,
@@ -92,22 +98,24 @@ namespace iguana::clas12 {
           hipo::bank const& userNeutralBank,
           hipo::bank& resultBank) const
       {
-        RunImpl(&particleBank, &trackBank, &calBank, &scintBank, nullptr, &userNeutralBank, &resultBank);
+        return RunImpl(&particleBank, &trackBank, &calBank, &scintBank, nullptr, &userNeutralBank, &resultBank);
       }
 
-      /// @brief run function, using custom banks for both charged and neutral particles
+      /// @run_function
+      /// uses custom banks for both charged and neutral particles
       /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
       /// @param [in] particleBank `REC::Particle`
       /// @param [in] userChargedBank custom bank used to obtain charged-particles' sectors
       /// @param [in] userNeutralBank custom bank used to obtain neutral-particles' sectors
       /// @param [out] resultBank the output `REC::Particle::Sector` bank
-      void RunWithCustomBanks(
+      /// @run_function_returns_true
+      bool RunWithCustomBanks(
           hipo::bank const& particleBank,
           hipo::bank const& userChargedBank,
           hipo::bank const& userNeutralBank,
           hipo::bank& resultBank) const
       {
-        RunImpl(&particleBank, nullptr, nullptr, nullptr, &userChargedBank, &userNeutralBank, &resultBank);
+        return RunImpl(&particleBank, nullptr, nullptr, nullptr, &userChargedBank, &userNeutralBank, &resultBank);
       }
 
       /// @action_function{scalar creator} for a given particle with index `pindex_particle`, get its sector from
@@ -227,7 +235,8 @@ namespace iguana::clas12 {
       /// @param [in] userChargedBank custom bank used to obtain charged-particles' sectors
       /// @param [in] userNeutralBank custom bank used to obtain neutral-particles' sectors
       /// @param [out] resultBank the output `REC::Particle::Sector` bank
-      void RunImpl(
+      /// @run_function_returns_true
+      bool RunImpl(
           hipo::bank const* particleBank,
           hipo::bank const* trackBank,
           hipo::bank const* calBank,

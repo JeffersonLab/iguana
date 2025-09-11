@@ -30,14 +30,16 @@ namespace iguana::physics {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
-      /// run function
+      /// @run_function
       /// @param [in] particle_bank `REC::Particle`
       /// @param [in] config_bank `RUN::config`
       /// @param [out] result_bank `%physics::InclusiveKinematics`
-      void Run(
+      /// @returns `true` if the kinematics were calculated, _e.g._, if the calculations are performed using
+      /// the scattered lepton, and no scattered lepton was found, `false` will be returned
+      bool Run(
           hipo::bank const& particle_bank,
           hipo::bank const& config_bank,
           hipo::bank& result_bank) const;

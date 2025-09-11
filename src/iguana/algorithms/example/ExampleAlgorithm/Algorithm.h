@@ -63,7 +63,7 @@ namespace iguana::example {
       // # - each algorithm must have these methods (even if they do nothing)
       // ############################################################################
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
       // ############################################################################

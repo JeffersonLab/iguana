@@ -8,7 +8,7 @@ namespace iguana::clas12 {
     electron_mass = particle::mass.at(particle::electron);
   }
 
-  void FTEnergyCorrection::Run(hipo::banklist& banks) const {
+  bool FTEnergyCorrection::Run(hipo::banklist& banks) const {
     auto& ftParticleBank = GetBank(banks, b_ft_particle, "RECFT::Particle");
     ShowBank(ftParticleBank, Logger::Header("INPUT FT PARTICLES"));
     for(auto const& row : ftParticleBank.getRowList()) {
@@ -24,6 +24,7 @@ namespace iguana::clas12 {
       }
     }
     ShowBank(ftParticleBank, Logger::Header("OUTPUT FT PARTICLES"));
+    return true;
   }
 
   Momentum4 FTEnergyCorrection::Transform(

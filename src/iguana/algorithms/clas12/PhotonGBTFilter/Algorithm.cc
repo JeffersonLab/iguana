@@ -45,7 +45,7 @@ namespace iguana::clas12 {
 
 
     
-  void PhotonGBTFilter::Run(hipo::banklist& banks) const
+  bool PhotonGBTFilter::Run(hipo::banklist& banks) const
   {
       
     auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
@@ -70,7 +70,7 @@ namespace iguana::clas12 {
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
-      
+    return true;
   }
 
   bool PhotonGBTFilter::PidPurityPhotonFilter(float const E, float const Epcal, float const theta) const

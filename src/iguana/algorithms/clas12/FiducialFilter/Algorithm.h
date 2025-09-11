@@ -40,7 +40,7 @@ namespace iguana::clas12 {
       };
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
       /// @action_function{scalar filter} top-level fiducial cut for RG-A Pass 1
