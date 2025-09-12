@@ -287,8 +287,6 @@ ALIASES =
 # algorithm properties
 ALIASES += brief_algo="@brief **%Algorithm:** "
 ALIASES += begin_doc_algo{2|}="\par %Algorithm Name:^^&emsp;&emsp;&emsp;`%\1`\xrefitem algo \"Algorithm Type:\" \"List of all Algorithms\" \2 \par %Algorithm Inputs and Outputs:^^<table>"
-ALIASES += input_banks{1}="<tr><td>**Input Banks**</td><td>`\1`</td></tr>"
-ALIASES += output_banks{1}="<tr><td>**Output Banks**</td><td>`\1`</td></tr>"
 ALIASES += end_doc="</table>"
 # configuration options
 ALIASES += begin_doc_config{1}="\par Configuration Options:^^YAML configuration, which includes the default option values:^^@include \1/Config.yaml ^^Table of options and descriptions:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"

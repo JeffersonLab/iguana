@@ -29,7 +29,7 @@ namespace iguana::clas12 {
       /// @run_function
       /// @param [in] bank_particle `REC::Particle`
       /// @param [in] bank_calorimeter `REC::Calorimeter`
-      /// @param [out] bank_result `REC::Particle::Calorimeter`
+      /// @param [out] bank_result `REC::Particle::Calorimeter`, which will be created
       /// @run_function_returns_true
       bool Run(
           hipo::bank const& bank_particle,

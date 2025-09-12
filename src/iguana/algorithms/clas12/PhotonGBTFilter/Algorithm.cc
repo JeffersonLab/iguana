@@ -43,14 +43,19 @@ namespace iguana::clas12 {
     o_threshold = GetOptionScalar<double>("threshold");
   }
 
-
-    
   bool PhotonGBTFilter::Run(hipo::banklist& banks) const
   {
-      
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto& caloBank     = GetBank(banks, b_calorimeter, "REC::Calorimeter");
-    auto& configBank = GetBank(banks,b_config,"RUN::config");
+    return Run(
+        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_calorimeter, "REC::Calorimeter"),
+        GetBank(banks,b_config,"RUN::config"));
+  }
+
+  bool PhotonGBTFilter::Run(
+      hipo::bank& particleBank,
+      hipo::bank const& caloBank,
+      hipo::bank const& configBank) const
+  {
     int runnum = configBank.getInt("run",0);
        
     // Get CaloMap for the event
