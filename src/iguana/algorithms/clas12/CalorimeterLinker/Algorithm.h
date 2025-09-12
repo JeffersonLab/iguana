@@ -7,8 +7,6 @@ namespace iguana::clas12 {
   /// @brief_algo Link particle bank to bank `REC::Calorimeter`
   ///
   /// @begin_doc_algo{clas12::CalorimeterLinker | Creator}
-  /// @input_banks{REC::Particle, REC::Calorimeter}
-  /// @output_banks{%REC::Particle::Calorimeter}
   /// @end_doc
   ///
   /// This algorithm reads `REC::Calorimeter` and produces a new bank, `REC::Particle::Calorimeter`,
@@ -27,6 +25,16 @@ namespace iguana::clas12 {
       void Start(hipo::banklist& banks) override;
       bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in] bank_particle `REC::Particle`
+      /// @param [in] bank_calorimeter `REC::Calorimeter`
+      /// @param [out] bank_result `REC::Particle::Calorimeter`
+      /// @run_function_returns_true
+      bool Run(
+          hipo::bank const& bank_particle,
+          hipo::bank const& bank_calorimeter,
+          hipo::bank& bank_result) const;
 
     private:
 

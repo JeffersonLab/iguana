@@ -9,6 +9,7 @@ namespace iguana {
     for(auto const& algo : m_sequence)
       algo->Start(banks);
   }
+
   bool AlgorithmSequence::Run(hipo::banklist& banks) const
   {
     for(auto const& algo : m_sequence) {
@@ -17,6 +18,7 @@ namespace iguana {
     }
     return true;
   }
+
   void AlgorithmSequence::Stop()
   {
     for(auto const& algo : m_sequence)

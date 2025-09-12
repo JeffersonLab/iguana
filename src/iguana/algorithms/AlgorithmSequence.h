@@ -9,6 +9,10 @@ namespace iguana {
   /// The `Start`, `Run`, and `Stop` methods will sequentially call the corresponding algorithms' methods,
   /// in the order the algorithms were added to the sequence by `AlgorithmSequence::Add`. If an algorithm's
   /// `Run` function returns false, then `AlgorithmSequence`'s `Run` function will stop and return `false`.
+  ///
+  /// This algorithm requires the use of `hipo::banklist`; there are neither `Run` functions which take
+  /// individual `hipo::bank` parameters nor action functions. If you do not use `hipo::banklist`, you
+  /// should use individual algorithms instead of this sequencing algorithm.
   class AlgorithmSequence : public Algorithm
   {
 
