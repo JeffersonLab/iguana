@@ -21,6 +21,11 @@ namespace iguana::clas12 {
       bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
+      /// @run_function
+      /// @param [in,out] ftParticleBank `RECFT::Particle`, which will have the correction applied
+      /// @run_function_returns_true
+      bool Run(hipo::bank& ftParticleBank) const;
+
       /// @action_function{scalar transformer}
       /// Transformation function that returns 4-vector of electron with corrected energy for the Forward Tagger.
       /// Currently only validated for Fall 2018 outbending data.

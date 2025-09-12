@@ -9,8 +9,6 @@ namespace iguana::clas12 {
   /// Currently these are the "legacy" Pass 1 fiducial cuts tuned for Run Group A.
   ///
   /// @begin_doc_algo{clas12::FiducialFilter | Filter}
-  /// @input_banks{REC::Particle, RUN::config, and others (see below)}
-  /// @output_banks{REC::Particle}
   /// @end_doc
   ///
   /// The following **additional banks** are needed:
@@ -42,6 +40,18 @@ namespace iguana::clas12 {
       void Start(hipo::banklist& banks) override;
       bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in,out] particleBank `REC::Particle`, which will be filtered
+      /// @param [in] configBank `RUN::config`
+      /// @param [in] trajBank `REC::Particle::Traj`, created by algorithm `clas12::TrajLinker`
+      /// @param [in] calBank `REC::Particle::Calorimeter`, created by algorithm `clas12::CalorimeterLinker`
+      /// @run_function_returns_true
+      bool Run(
+          hipo::bank& particleBank,
+          hipo::bank const& configBank,
+          hipo::bank const& trajBank,
+          hipo::bank const& calBank) const;
 
       /// @action_function{scalar filter} top-level fiducial cut for RG-A Pass 1
       /// @param pcal_sector PCAL sector
@@ -169,7 +179,6 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_config;
 
       // options
-      int o_pass = 1;
       CutLevel o_pcal_electron_cut_level;
       CutLevel o_pcal_photon_cut_level;
       bool o_enable_pcal_cuts;

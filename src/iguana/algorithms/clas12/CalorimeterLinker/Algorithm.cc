@@ -33,9 +33,17 @@ namespace iguana::clas12 {
 
   bool CalorimeterLinker::Run(hipo::banklist& banks) const
   {
-    auto& bank_particle    = GetBank(banks, b_particle, "REC::Particle");
-    auto& bank_calorimeter = GetBank(banks, b_calorimeter, "REC::Calorimeter");
-    auto& bank_result      = GetBank(banks, b_result, "REC::Particle::Calorimeter");
+    return Run(
+        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_calorimeter, "REC::Calorimeter"),
+        GetBank(banks, b_result, "REC::Particle::Calorimeter"));
+  }
+
+  bool CalorimeterLinker::Run(
+      hipo::bank const& bank_particle,
+      hipo::bank const& bank_calorimeter,
+      hipo::bank& bank_result) const
+  {
 
     ShowBank(bank_particle, Logger::Header("INPUT PARTICLE BANK"));
     ShowBank(bank_calorimeter, Logger::Header("INPUT CALORIMETER BANK"));

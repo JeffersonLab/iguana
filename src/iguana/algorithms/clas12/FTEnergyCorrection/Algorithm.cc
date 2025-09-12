@@ -8,8 +8,13 @@ namespace iguana::clas12 {
     electron_mass = particle::mass.at(particle::electron);
   }
 
-  bool FTEnergyCorrection::Run(hipo::banklist& banks) const {
-    auto& ftParticleBank = GetBank(banks, b_ft_particle, "RECFT::Particle");
+  bool FTEnergyCorrection::Run(hipo::banklist& banks) const
+  {
+    return Run(GetBank(banks, b_ft_particle, "RECFT::Particle"));
+  }
+
+  bool FTEnergyCorrection::Run(hipo::bank& ftParticleBank) const
+  {
     ShowBank(ftParticleBank, Logger::Header("INPUT FT PARTICLES"));
     for(auto const& row : ftParticleBank.getRowList()) {
       if(ftParticleBank.getInt("pid", row) == particle::PDG::electron) {
