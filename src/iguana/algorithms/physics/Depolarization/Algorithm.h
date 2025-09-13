@@ -11,8 +11,6 @@ namespace iguana::physics {
   /// - https://arxiv.org/pdf/1408.5721
   ///
   /// @begin_doc_algo{physics::Depolarization | Creator}
-  /// @input_banks{%physics::InclusiveKinematics}
-  /// @output_banks{%physics::Depolarization}
   /// @end_doc
   ///
   /// @creator_note
@@ -26,6 +24,14 @@ namespace iguana::physics {
       void Start(hipo::banklist& banks) override;
       bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm
+      /// @param [out] result_bank `%physics::Depolarization`, which will be created
+      /// @run_function_returns_true
+      bool Run(
+          hipo::bank const& inc_kin_bank,
+          hipo::bank& result_bank) const;
 
       /// @action_function{scalar creator} compute depolarization factors
       /// @param Q2 @latex{Q^2}, from `iguana::physics::InclusiveKinematics`

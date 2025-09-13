@@ -27,9 +27,9 @@ namespace iguana::clas12 {
       void Stop() override;
 
       /// @run_function
-      /// @param bank_particle [in] `REC::Particle`
-      /// @param bank_traj [in] `REC::Traj`
-      /// @param bank_result [out] `REC::Particle::Traj`, which will be created
+      /// @param [in] bank_particle `REC::Particle`
+      /// @param [in] bank_traj `REC::Traj`
+      /// @param [out] bank_result `REC::Particle::Traj`, which will be created
       /// @run_function_returns_true
       bool Run(
           hipo::bank const& bank_particle,
