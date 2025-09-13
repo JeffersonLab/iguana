@@ -20,11 +20,17 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Depolarization::Run(hipo::banklist& banks) const
+  bool Depolarization::Run(hipo::banklist& banks) const
   {
-    auto& inc_kin_bank = GetBank(banks, b_inc_kin, "physics::InclusiveKinematics");
-    auto& result_bank  = GetBank(banks, b_result, GetClassName());
+    return Run(
+        GetBank(banks, b_inc_kin, "physics::InclusiveKinematics"),
+        GetBank(banks, b_result, GetClassName()));
+  }
 
+  bool Depolarization::Run(
+      hipo::bank const& inc_kin_bank,
+      hipo::bank& result_bank) const
+  {
     ShowBank(inc_kin_bank, Logger::Header("INPUT INCLUSIVE KINEMATICS"));
 
     // set `result_bank` rows and rowlist to match those of `inc_kin_bank`
@@ -59,6 +65,7 @@ namespace iguana::physics {
     }
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
+    return true;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

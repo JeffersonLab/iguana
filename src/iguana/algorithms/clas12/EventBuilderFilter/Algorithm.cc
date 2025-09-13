@@ -16,12 +16,13 @@ namespace iguana::clas12 {
   }
 
 
-  void EventBuilderFilter::Run(hipo::banklist& banks) const
+  bool EventBuilderFilter::Run(hipo::banklist& banks) const
   {
+    return Run(GetBank(banks, b_particle, "REC::Particle"));
+  }
 
-    // get the banks
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-
+  bool EventBuilderFilter::Run(hipo::bank& particleBank) const
+  {
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
@@ -35,6 +36,7 @@ namespace iguana::clas12 {
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+    return true;
   }
 
 

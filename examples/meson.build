@@ -5,6 +5,7 @@ install_subdir('config', install_dir: example_config_files_prefix, strip_directo
 # example source information
 example_sources = {
   'iguana_ex_cpp_00_run_functions': {'sources': [ 'iguana_ex_cpp_00_run_functions.cc' ]},
+  'iguana_ex_cpp_00_run_functions_with_banks': {'sources': [ 'iguana_ex_cpp_00_run_functions_with_banks.cc' ]},
   'iguana_ex_cpp_01_action_functions': {'sources': [ 'iguana_ex_cpp_01_action_functions.cc' ]},
   'iguana_ex_cpp_dataframes': {
     'sources': [ 'iguana_ex_cpp_dataframes.cc' ],

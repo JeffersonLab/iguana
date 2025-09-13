@@ -26,12 +26,19 @@ namespace iguana::clas12 {
     i_r3_z             = result_schema.getEntryOrder("r3_z");
   }
 
-  void TrajLinker::Run(hipo::banklist& banks) const
+  bool TrajLinker::Run(hipo::banklist& banks) const
   {
-    auto& bank_particle = GetBank(banks, b_particle, "REC::Particle");
-    auto& bank_traj     = GetBank(banks, b_traj, "REC::Traj");
-    auto& bank_result   = GetBank(banks, b_result, "REC::Particle::Traj");
+    return Run(
+        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_traj, "REC::Traj"),
+        GetBank(banks, b_result, "REC::Particle::Traj"));
+  }
 
+  bool TrajLinker::Run(
+      hipo::bank const& bank_particle,
+      hipo::bank const& bank_traj,
+      hipo::bank& bank_result) const
+  {
     ShowBank(bank_particle, Logger::Header("INPUT PARTICLE BANK"));
     ShowBank(bank_traj, Logger::Header("INPUT TRAJECTORY BANK"));
 
@@ -107,6 +114,7 @@ namespace iguana::clas12 {
       bank_result.putFloat(i_r3_z,    row_particle, link_particle.r3_z);
     }
     ShowBank(bank_result, Logger::Header("CREATED BANK"));
+    return true;
   }
 
   void TrajLinker::Stop()

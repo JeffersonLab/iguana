@@ -13,11 +13,20 @@ namespace iguana::clas12 {
   }
 
 
-  void MomentumCorrection::Run(hipo::banklist& banks) const
+  bool MomentumCorrection::Run(hipo::banklist& banks) const
   {
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto& sectorBank   = GetBank(banks, b_sector, "REC::Particle::Sector");
-    auto& configBank   = GetBank(banks, b_config, "RUN::config");
+    return Run(
+        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_sector, "REC::Particle::Sector"),
+        GetBank(banks, b_config, "RUN::config"));
+  }
+
+
+  bool MomentumCorrection::Run(
+      hipo::bank& particleBank,
+      hipo::bank const& sectorBank,
+      hipo::bank const& configBank) const
+  {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     auto torus   = configBank.getFloat("torus", 0);
@@ -37,6 +46,7 @@ namespace iguana::clas12 {
     }
 
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+    return true;
   }
 
 
