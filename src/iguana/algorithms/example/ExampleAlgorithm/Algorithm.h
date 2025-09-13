@@ -67,6 +67,25 @@ namespace iguana::example {
       void Stop() override;
 
       // ############################################################################
+      // # define an additional `Run` function which takes `hipo::bank` parameters
+      // # - the parameters should be lvalue references, i.e., `hipo::bank&`, to avoid copying the banks
+      // # - if a bank is ONLY read, and not modified, you should use `const`, i.e., `hipo::bank const&`
+      // # - in this example, `particleBank` will be modified, so we use `hipo::bank&`
+      // # - be sure the function itself is also marked `const`
+      // # - you'll also need to write Doxygen docstrings for this function
+      // #   - use `@run_function`, so the documentation understands this is a `Run` function
+      // #   - use `@param [in]` for a bank that is only read (type should be `hipo::bank const&`)
+      // #   - use `@param [out]` for a bank that is newly created (type should be `hipo::bank&`)
+      // #   - use `@param [in,out]` for a bank that is read and mutated (type should be `hipo::bank&`)
+      // #   - use `@run_function_returns_true` if the function does not use the `bool` return value, otherwise
+      // #     use `@returns` and explain why the return value could be `false`
+      // ############################################################################
+      /// @run_function
+      /// @param [in,out] particleBank `REC::Particle` bank
+      /// @run_function_returns_true
+      bool Run(hipo::bank& particleBank) const;
+
+      // ############################################################################
       // # additional public functions go here
       // # - typically these are "action functions", which expose the primary operation of an algorithm
       // # - these functions are _unique_ to each algorithm, and therefore are not defined in the

@@ -36,9 +36,17 @@ namespace iguana::physics {
 
   bool SingleHadronKinematics::Run(hipo::banklist& banks) const
   {
-    auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
-    auto& inc_kin_bank  = GetBank(banks, b_inc_kin, "physics::InclusiveKinematics");
-    auto& result_bank   = GetBank(banks, b_result, GetClassName());
+    return Run(
+        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_inc_kin, "physics::InclusiveKinematics"),
+        GetBank(banks, b_result, GetClassName()));
+  }
+
+  bool SingleHadronKinematics::Run(
+      hipo::bank const& particle_bank,
+      hipo::bank const& inc_kin_bank,
+      hipo::bank& result_bank) const
+  {
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
     if(particle_bank.getRowList().empty() || inc_kin_bank.getRowList().empty()) {

@@ -10,8 +10,6 @@ namespace iguana::physics {
   /// @brief_algo Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`
   ///
   /// @begin_doc_algo{physics::DihadronKinematics | Creator}
-  /// @input_banks{REC::Particle, %physics::InclusiveKinematics}
-  /// @output_banks{%physics::DihadronKinematics}
   /// @end_doc
   ///
   /// @begin_doc_config{physics/DihadronKinematics}
@@ -48,6 +46,16 @@ namespace iguana::physics {
       void Start(hipo::banklist& banks) override;
       bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in] particle_bank `REC::Particle`
+      /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm
+      /// @param [out] result_bank `%physics::DihadronKinematics`, which will be created
+      /// @run_function_returns_true
+      bool Run(
+          hipo::bank const& particle_bank,
+          hipo::bank const& inc_kin_bank,
+          hipo::bank& result_bank) const;
 
       /// @brief form dihadrons by pairing hadrons
       /// @param particle_bank the particle bank (`REC::Particle`)

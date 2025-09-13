@@ -10,7 +10,6 @@ namespace iguana::physics {
   /// @brief_algo Calculate inclusive kinematics quantities
   ///
   /// @begin_doc_algo{physics::InclusiveKinematics | Creator}
-  /// <tr><td>see this algorithm's Run function(s) for the input and output bank names</td></tr>
   /// @end_doc
   ///
   /// @begin_doc_config{physics/InclusiveKinematics}
@@ -36,7 +35,7 @@ namespace iguana::physics {
       /// @run_function
       /// @param [in] particle_bank `REC::Particle`
       /// @param [in] config_bank `RUN::config`
-      /// @param [out] result_bank `%physics::InclusiveKinematics`
+      /// @param [out] result_bank `%physics::InclusiveKinematics`, which will be created
       /// @returns `true` if the kinematics were calculated, _e.g._, if the calculations are performed using
       /// the scattered lepton, and no scattered lepton was found, `false` will be returned
       bool Run(
