@@ -127,46 +127,48 @@ namespace iguana::clas12 {
     // forward_tagger.{radius, holes_flat}
     // ---------------------------
     {
-      // radius must be [rmin, rmax]
-      auto radius = GetOptionVector<float>("forward_tagger.radius", 
+      // radius must be [rmin, rmax]  (read as double; cast to float to avoid missing float instantiation)
+      auto radius_d = GetOptionVector<double>("forward_tagger.radius",
         {TOP, "forward_tagger", "radius"});
-      if (radius.size() != 2) {
+      if (radius_d.size() != 2) {
         throw std::runtime_error(
             "[RGAFID] 'forward_tagger.radius' must be a 2-element list [rmin, rmax]");
       }
-      float rmin = radius[0];
-      float rmax = radius[1];
-      if (!(std::isfinite(rmin) && std::isfinite(rmax)) || !(rmin > 0.f && rmax > rmin)) {
+      double rmin_d = radius_d[0];
+      double rmax_d = radius_d[1];
+      if (!(std::isfinite(rmin_d) && std::isfinite(rmax_d)) || !(rmin_d > 0.0 && rmax_d > rmin_d)) {
         std::ostringstream msg;
-        msg << "[RGAFID] Invalid 'forward_tagger.radius': rmin=" << rmin
-            << ", rmax=" << rmax << " (require 0 < rmin < rmax)";
+        msg << "[RGAFID] Invalid 'forward_tagger.radius': rmin=" << rmin_d
+            << ", rmax=" << rmax_d << " (require 0 < rmin < rmax)";
         throw std::runtime_error(msg.str());
       }
 
       // holes_flat must be length multiple of 3: [R1, cx1, cy1, R2, cx2, cy2, ...]
-      auto holes_flat = GetOptionVector<float>("forward_tagger.holes_flat",
-                                               {TOP, "forward_tagger", "holes_flat"});
-      if (holes_flat.empty() || (holes_flat.size() % 3) != 0) {
+      auto holes_flat_d = GetOptionVector<double>("forward_tagger.holes_flat",
+                                                  {TOP, "forward_tagger", "holes_flat"});
+      if (holes_flat_d.empty() || (holes_flat_d.size() % 3) != 0) {
         throw std::runtime_error(
             "[RGAFID] 'forward_tagger.holes_flat' must be non-empty with length multiple of 3: "
             "[R1,cx1,cy1, R2,cx2,cy2, ...]");
       }
 
-      u_ft_params.rmin = rmin;
-      u_ft_params.rmax = rmax;
+      u_ft_params.rmin = static_cast<float>(rmin_d);
+      u_ft_params.rmax = static_cast<float>(rmax_d);
       u_ft_params.holes.clear();
-      u_ft_params.holes.reserve(holes_flat.size() / 3);
-      for (std::size_t i = 0; i < holes_flat.size(); i += 3) {
-        float R  = holes_flat[i + 0];
-        float cx = holes_flat[i + 1];
-        float cy = holes_flat[i + 2];
-        if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R <= 0.f) {
+      u_ft_params.holes.reserve(holes_flat_d.size() / 3);
+      for (std::size_t i = 0; i < holes_flat_d.size(); i += 3) {
+        double R  = holes_flat_d[i + 0];
+        double cx = holes_flat_d[i + 1];
+        double cy = holes_flat_d[i + 2];
+        if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R <= 0.0) {
           std::ostringstream msg;
           msg << "[RGAFID] Invalid FT hole triple at index " << (i / 3)
               << " -> (R=" << R << ", cx=" << cx << ", cy=" << cy << ")";
           throw std::runtime_error(msg.str());
         }
-        u_ft_params.holes.push_back({R, cx, cy});
+        u_ft_params.holes.push_back({static_cast<float>(R),
+                                     static_cast<float>(cx),
+                                     static_cast<float>(cy)});
       }
     }
 
