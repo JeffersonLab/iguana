@@ -72,6 +72,28 @@ namespace iguana::clas12 {
 
     // ---- YAML 
     void LoadConfigFromYAML(); 
+
+    // CVT/DC params; loaded from Config.yaml (below are defaults which get overwritten)
+    int m_cal_strictness = 1;
+
+    struct CVTParams {
+      std::vector<int>    edge_layers;        // e.g. {1,3,5,7,12}
+      double              edge_min = 0.0;     // > edge_min
+      std::vector<double> phi_forbidden_deg;  // flattened pairs (open intervals)
+    };
+    CVTParams m_cvt{};
+
+    struct DCParams {
+      // Thresholds (cm)
+      double theta_small_deg   = 10.0;   // theta boundary for special inbending case
+      // inbending, theta < theta_small_deg
+      double in_small_e1 = 10.0, in_small_e2 = 10.0, in_small_e3 = 10.0;
+      // inbending, theta >= theta_small_deg
+      double in_large_e1 = 3.0,  in_large_e2 = 3.0,  in_large_e3 = 10.0;
+      // outbending (any theta)
+      double out_e1      = 3.0,  out_e2      = 3.0,  out_e3      = 10.0;
+    };
+    DCParams m_dc{};
   };
 
-} 
+}

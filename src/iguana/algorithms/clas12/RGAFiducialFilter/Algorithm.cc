@@ -95,29 +95,6 @@ namespace iguana::clas12 {
              : local;
   }
 
-  // CVT/DC params; loaded from Config.yaml (below are defaults which get overwritten)
-  namespace {
-  struct CVTParams {
-    std::vector<int>    edge_layers;        // e.g. {1,3,5,7,12}
-    double              edge_min = 0.0;     // > edge_min
-    std::vector<double> phi_forbidden_deg;  // flattened pairs (open intervals)
-  };
-  CVTParams g_cvt;
-  int g_yaml_cal_strictness = 1;
-  struct DCParams {
-    // Thresholds (cm)
-    double theta_small_deg   = 10.0;   // theta boundary for special inbending case
-    // inbending, theta < theta_small_deg
-    double in_small_e1 = 10.0, in_small_e2 = 10.0, in_small_e3 = 10.0;
-    // inbending, theta >= theta_small_deg
-    double in_large_e1 = 3.0,  in_large_e2 = 3.0,  in_large_e3 = 10.0;
-    // outbending (any theta)
-    double out_e1      = 3.0,  out_e2      = 3.0,  out_e3      = 10.0;
-  };
-  DCParams g_dc;
-  } // namespace
-
-
   // YAML loading (required)
   void RGAFiducialFilter::LoadConfigFromYAML() {
 
@@ -130,14 +107,13 @@ namespace iguana::clas12 {
     // calorimeter.strictness
     // ---------------------------
     // Expect a 1-element list
-    g_yaml_cal_strictness =
-        GetOptionScalar<int>("calorimeter.strictness",
-                             {TOP, "calorimeter", "strictness", 0},
-                             /*fallback*/ 1);
-    if (g_yaml_cal_strictness < 1 || g_yaml_cal_strictness > 3) {
+    m_cal_strictness =
+        GetOptionScalar<int>("calorimeter.strictness", {TOP, "calorimeter", "strictness", 0},
+          /*fallback*/ 1);
+    if (m_cal_strictness < 1 || m_cal_strictness > 3) {
       std::ostringstream msg;
       msg << "[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3 (got "
-          << g_yaml_cal_strictness << ")";
+          << m_cal_strictness << ")";
       throw std::runtime_error(msg.str());
     }
 
@@ -197,10 +173,10 @@ namespace iguana::clas12 {
       if (edge_layers.empty()) {
         throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be a non-empty list");
       }
-      g_cvt.edge_layers = edge_layers;
+      m_cvt.edge_layers = edge_layers;
 
       // edge_min provided as a 1-element list; read element 0
-      g_cvt.edge_min = GetOptionScalar<double>("cvt.edge_min",
+      m_cvt.edge_min = GetOptionScalar<double>("cvt.edge_min",
                                                {TOP, "cvt", "edge_min", 0});
 
       // phi_forbidden_deg must be an even-length list of (lo,hi) pairs
@@ -211,7 +187,7 @@ namespace iguana::clas12 {
             "[RGAFID] 'cvt.phi_forbidden_deg' must have an even number of values "
             "(pairs of (lo, hi) open intervals)");
       }
-      g_cvt.phi_forbidden_deg = std::move(phi_forbidden);
+      m_cvt.phi_forbidden_deg = std::move(phi_forbidden);
     }
 
     // ---------------------------
@@ -219,7 +195,7 @@ namespace iguana::clas12 {
     // ---------------------------
     {
       // theta_small_deg is a 1-element list; read element 0
-      g_dc.theta_small_deg = GetOptionScalar<double>("dc.theta_small_deg",
+      m_dc.theta_small_deg = GetOptionScalar<double>("dc.theta_small_deg",
                                                      {TOP, "dc", "theta_small_deg", 0});
 
       auto need3 = [&](const char* key) -> std::vector<double> {
@@ -234,15 +210,15 @@ namespace iguana::clas12 {
 
       {
         auto thr = need3("thresholds_out");
-        g_dc.out_e1 = thr[0]; g_dc.out_e2 = thr[1]; g_dc.out_e3 = thr[2];
+        m_dc.out_e1 = thr[0]; m_dc.out_e2 = thr[1]; m_dc.out_e3 = thr[2];
       }
       {
         auto thr = need3("thresholds_in_smallTheta");
-        g_dc.in_small_e1 = thr[0]; g_dc.in_small_e2 = thr[1]; g_dc.in_small_e3 = thr[2];
+        m_dc.in_small_e1 = thr[0]; m_dc.in_small_e2 = thr[1]; m_dc.in_small_e3 = thr[2];
       }
       {
         auto thr = need3("thresholds_in_largeTheta");
-        g_dc.in_large_e1 = thr[0]; g_dc.in_large_e2 = thr[1]; g_dc.in_large_e3 = thr[2];
+        m_dc.in_large_e1 = thr[0]; m_dc.in_large_e2 = thr[1]; m_dc.in_large_e3 = thr[2];
       }
     }
   }
@@ -367,8 +343,8 @@ namespace iguana::clas12 {
       const int layer = traj.getInt("layer", i);
       const double e  = traj.getFloat("edge", i);
 
-      if (std::find(g_cvt.edge_layers.begin(), g_cvt.edge_layers.end(), layer) != 
-        g_cvt.edge_layers.end()) {
+      if (std::find(m_cvt.edge_layers.begin(), m_cvt.edge_layers.end(), layer) != 
+        m_cvt.edge_layers.end()) {
         edge_at_layer[layer] = e;
       }
       if (layer == 12) {
@@ -378,18 +354,18 @@ namespace iguana::clas12 {
       }
     }
 
-    for (int L : g_cvt.edge_layers) {
+    for (int L : m_cvt.edge_layers) {
       auto it = edge_at_layer.find(L);
       if (it == edge_at_layer.end()) continue; // no CVT track -> pass (leptons, CAL photons)
-      if (!(it->second > g_cvt.edge_min)) return false;
+      if (!(it->second > m_cvt.edge_min)) return false;
     }
 
-    if (saw12 && !g_cvt.phi_forbidden_deg.empty()) {
+    if (saw12 && !m_cvt.phi_forbidden_deg.empty()) {
       double phi = std::atan2(y12, x12) * (180.0/M_PI);
       if (phi < 0) phi += 360.0;
-      for (std::size_t i=0; i+1<g_cvt.phi_forbidden_deg.size(); i+=2) {
-        const double lo = g_cvt.phi_forbidden_deg[i];
-        const double hi = g_cvt.phi_forbidden_deg[i+1];
+      for (std::size_t i=0; i+1<m_cvt.phi_forbidden_deg.size(); i+=2) {
+        const double lo = m_cvt.phi_forbidden_deg[i];
+        const double hi = m_cvt.phi_forbidden_deg[i+1];
         if (phi > lo && phi < hi) return false;
       }
     }
@@ -438,12 +414,12 @@ namespace iguana::clas12 {
     };
 
     if (particle_inb) {
-      if (theta < g_dc.theta_small_deg) {
-        return pass3(e1,e2,e3, g_dc.in_small_e1, g_dc.in_small_e2, g_dc.in_small_e3);
+      if (theta < m_dc.theta_small_deg) {
+        return pass3(e1,e2,e3, m_dc.in_small_e1, m_dc.in_small_e2, m_dc.in_small_e3);
       }
-      return pass3(e1,e2,e3, g_dc.in_large_e1, g_dc.in_large_e2, g_dc.in_large_e3);
+      return pass3(e1,e2,e3, m_dc.in_large_e1, m_dc.in_large_e2, m_dc.in_large_e3);
     } else if (particle_out) {
-      return pass3(e1,e2,e3, g_dc.out_e1, g_dc.out_e2, g_dc.out_e3);
+      return pass3(e1,e2,e3, m_dc.out_e1, m_dc.out_e2, m_dc.out_e3);
     }
     return true;
   }
@@ -457,7 +433,7 @@ namespace iguana::clas12 {
     const hipo::bank* trajBank) const
   {
     const int pid = particleBank.getInt("pid", track_index);
-    const int strictness = u_strictness_user.value_or(g_yaml_cal_strictness);
+    const int strictness = u_strictness_user.value_or(m_cal_strictness);
 
     auto has_assoc = [&](const hipo::bank* b)->bool {
       if (!b) return false;
