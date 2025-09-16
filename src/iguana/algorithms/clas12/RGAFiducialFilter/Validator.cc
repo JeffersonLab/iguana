@@ -32,7 +32,7 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
 
 // ---- Config loader (from Algorithm/ConfigFileReader helpers, not yaml-cpp)
 void RGAFiducialFilterValidator::LoadConfigFromYAML() {
-  if (!GetConfig()) ParseYAMLConfig(); // ensure YAML is parsed once
+  ParseYAMLConfig(); 
   const char* TOP = "clas12::RGAFiducialFilter";
 
   // PCal strictness (used only to split before/after in plots)
