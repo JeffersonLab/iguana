@@ -81,11 +81,11 @@ private:
   long long m_torus_in_events  = 0;
   long long m_torus_out_events = 0;
 
-  // FT overlay params
+  // FT overlay params (for drawing only)
   struct FTDraw { float rmin=0.f, rmax=0.f; std::vector<std::array<float,3>> holes; };
   FTDraw m_ftdraw{};
 
-  // CVT/DC parameters loaded from config
+  // CVT/DC parameters loaded from config (for drawing & pass/fail)
   struct CVTParams {
     std::vector<int>    edge_layers;
     double              edge_min = 0.0;
@@ -108,10 +108,11 @@ private:
 
   // helpers
   void BookIfNeeded();
+  void LoadConfigFromYAML(); // read all params for overlays and cuts
   void DrawCalCanvas(int pid, const char* title);
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
   void DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct);
 };
 
-} 
+} // namespace iguana::clas12

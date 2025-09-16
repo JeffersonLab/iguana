@@ -1,8 +1,7 @@
-#include "Algorithm.h" 
-
-#include <yaml-cpp/yaml.h>
+#include "Algorithm.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
@@ -11,25 +10,10 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
-#include <fstream>
 #include <vector>
 
-// Default settings defined and adjustable in Config.yaml (CAL)
-//
-// * Forward Tagger cut on annulus and missing holes for pid==11,22
-//
-// * Calorimeter cut on lv,lw>9,13.5,18 depending on SetStrictness([default = 1]) for pid==11,22; 
-//    Strictness 1 loosely recommended for spin-asymmetries, cross sections may want to consider
-//    higher strictness as well as ...
-//    !!! TO DO: implement run-by-run data/MC matching for missing PMTs, etc.
-//
-// * Central Detector cut on areas between 3 sectors and require tracks inside detector (edge > 0);
-//    for all charged hadrons
-// 
-// * Drift chamber cut on region 1 > 3 cm, region 2 > 3, region3 > 10; inbending tracks also require
-//    region 1 > 10, region 2 > 10 for theta < 10; cuts for all charged leptons and hadrons
-
 namespace iguana::clas12 {
+
   REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
 
   static bool banklist_has(hipo::banklist& banks, const char* name) {
@@ -37,11 +21,101 @@ namespace iguana::clas12 {
     return false;
   }
 
+  // ---- Config loader (from Algorithm/ConfigFileReader helpers, not yaml-cpp)
+  void RGAFiducialFilter::LoadConfigFromYAML() {
+    if (!GetConfig()) ParseYAMLConfig(); // ensure YAML is parsed once
+    const char* TOP = "clas12::RGAFiducialFilter";
+
+    // --- Calorimeter strictness
+    {
+      auto v = GetOptionVector<int>("rgafid.cal.strictness",
+                                    {TOP, "calorimeter", "strictness"});
+      if (v.empty()) throw std::runtime_error("[RGAFID] Missing 'calorimeter.strictness'");
+      m_cal_strictness = v.at(0);
+      if (m_cal_strictness < 1 || m_cal_strictness > 3)
+        throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1,2,3");
+    }
+
+    // --- Forward Tagger
+    {
+      auto radius = GetOptionVector<double>("rgafid.ft.radius",
+                                            {TOP, "forward_tagger", "radius"});
+      if (radius.size() != 2)
+        throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin,rmax]");
+      u_ft_params.rmin = static_cast<float>(radius[0]);
+      u_ft_params.rmax = static_cast<float>(radius[1]);
+      if (!(std::isfinite(u_ft_params.rmin) && std::isfinite(u_ft_params.rmax)) ||
+          !(u_ft_params.rmin > 0.f && u_ft_params.rmax > u_ft_params.rmin))
+        throw std::runtime_error("[RGAFID] invalid forward_tagger.radius values");
+
+      auto holes_flat = GetOptionVector<double>("rgafid.ft.holes_flat",
+                                                {TOP, "forward_tagger", "holes_flat"});
+      if (!holes_flat.empty() && (holes_flat.size()%3)!=0)
+        throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
+      u_ft_params.holes.clear();
+      u_ft_params.holes.reserve(holes_flat.size()/3);
+      for (std::size_t i=0;i<holes_flat.size();i+=3) {
+        float R  = static_cast<float>(holes_flat[i+0]);
+        float cx = static_cast<float>(holes_flat[i+1]);
+        float cy = static_cast<float>(holes_flat[i+2]);
+        if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R<=0.f)
+          throw std::runtime_error("[RGAFID] invalid FT hole triple in 'holes_flat'");
+        u_ft_params.holes.push_back({R,cx,cy});
+      }
+    }
+
+    // --- CVT
+    {
+      m_cvt.edge_layers =
+        GetOptionVector<int>("rgafid.cvt.edge_layers", {TOP, "cvt", "edge_layers"});
+      if (m_cvt.edge_layers.empty())
+        throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
+
+      auto v_edge_min =
+        GetOptionVector<double>("rgafid.cvt.edge_min", {TOP, "cvt", "edge_min"});
+      if (v_edge_min.empty())
+        throw std::runtime_error("[RGAFID] 'cvt.edge_min' must be provided as [value]");
+      m_cvt.edge_min = v_edge_min.at(0);
+
+      m_cvt.phi_forbidden_deg =
+        GetOptionVector<double>("rgafid.cvt.phi_forbidden_deg",
+                                {TOP, "cvt", "phi_forbidden_deg"});
+      if (!m_cvt.phi_forbidden_deg.empty() &&
+          (m_cvt.phi_forbidden_deg.size()%2)!=0)
+        throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
+    }
+
+    // --- DC
+    {
+      auto v_theta_small =
+        GetOptionVector<double>("rgafid.dc.theta_small_deg", {TOP, "dc", "theta_small_deg"});
+      if (v_theta_small.empty())
+        throw std::runtime_error("[RGAFID] 'dc.theta_small_deg' must be provided as [value]");
+      m_dc.theta_small_deg = v_theta_small.at(0);
+
+      auto need3 = [&](const char* key) -> std::array<double,3> {
+        auto vv = GetOptionVector<double>(std::string("rgafid.dc.") + key, {TOP, "dc", key});
+        if (vv.size() != 3) {
+          std::ostringstream msg; msg << "[RGAFID] 'dc." << key << "' must be [e1,e2,e3]";
+          throw std::runtime_error(msg.str());
+        }
+        return {vv[0], vv[1], vv[2]};
+      };
+
+      auto out  = need3("thresholds_out");
+      auto in_s = need3("thresholds_in_smallTheta");
+      auto in_l = need3("thresholds_in_largeTheta");
+
+      m_dc.out_e1 = out[0];  m_dc.out_e2 = out[1];  m_dc.out_e3 = out[2];
+      m_dc.in_small_e1 = in_s[0]; m_dc.in_small_e2 = in_s[1]; m_dc.in_small_e3 = in_s[2];
+      m_dc.in_large_e1 = in_l[0]; m_dc.in_large_e2 = in_l[1]; m_dc.in_large_e3 = in_l[2];
+    }
+  }
+
   // user override for strictness
   void RGAFiducialFilter::SetStrictness(int strictness) {
     u_strictness_user = strictness;
   }
-
 
   // start main filter
   void RGAFiducialFilter::Start(hipo::banklist& banks)
@@ -51,17 +125,17 @@ namespace iguana::clas12 {
     if (banklist_has(banks, "RUN::config")) {
       b_config = GetBankIndex(banks, "RUN::config");
     }
-    if (banklist_has(banks, "REC::Calorimeter")) { 
-      b_calor  = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor = true; 
+    if (banklist_has(banks, "REC::Calorimeter")) {
+      b_calor  = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor = true;
     }
-    if (banklist_has(banks, "REC::ForwardTagger")) { 
-      b_ft    = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft = true; 
+    if (banklist_has(banks, "REC::ForwardTagger")) {
+      b_ft    = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft = true;
     }
-    if (banklist_has(banks, "REC::Traj")) { 
-      b_traj  = GetBankIndex(banks, "REC::Traj"); m_have_traj = true; 
+    if (banklist_has(banks, "REC::Traj")) {
+      b_traj  = GetBankIndex(banks, "REC::Traj"); m_have_traj = true;
     }
 
-    // load parameters from YAML
+    // load parameters from config
     LoadConfigFromYAML();
   }
 
@@ -79,7 +153,6 @@ namespace iguana::clas12 {
       return keep ? 1 : 0;   // 1 = keep row, 0 = drop row
     });
   }
-
 
   // core helpers
   RGAFiducialFilter::CalLayers
@@ -101,7 +174,6 @@ namespace iguana::clas12 {
   }
 
   bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness) {
-    // This section still needs further implementation for dead PMTs etc.
     if (!H.has_any) return true; // no PCal track -> pass (hadrons etc.)
 
     float min_lv = std::numeric_limits<float>::infinity();
@@ -156,8 +228,8 @@ namespace iguana::clas12 {
       const int layer = traj.getInt("layer", i);
       const double e  = traj.getFloat("edge", i);
 
-      if (std::find(m_cvt.edge_layers.begin(), m_cvt.edge_layers.end(), layer) != 
-        m_cvt.edge_layers.end()) {
+      if (std::find(m_cvt.edge_layers.begin(), m_cvt.edge_layers.end(), layer) !=
+          m_cvt.edge_layers.end()) {
         edge_at_layer[layer] = e;
       }
       if (layer == 12) {
@@ -169,7 +241,7 @@ namespace iguana::clas12 {
 
     for (int L : m_cvt.edge_layers) {
       auto it = edge_at_layer.find(L);
-      if (it == edge_at_layer.end()) continue; // no CVT track -> pass (leptons, CAL photons)
+      if (it == edge_at_layer.end()) continue; // missing layer -> pass
       if (!(it->second > m_cvt.edge_min)) return false;
     }
 
@@ -192,8 +264,6 @@ namespace iguana::clas12 {
 
     const int pid = particleBank.getInt("pid", pindex);
     // cuts are defined for inbending and outbending particles separately
-    // the CLAS convention is to call the torus polarity inbending or outbending depending on the
-    // curvature of electrons, e.g. in "inbending" data pi+ is an outbending track
     const bool isNeg = (pid== 11 || pid==-211 || pid==-321 || pid==-2212);
     const bool isPos = (pid==-11 || pid== 211 || pid== 321 || pid== 2212);
     if (!(isNeg || isPos)) return true; // photon, neutron or unassigned by EventBuilder
@@ -214,7 +284,7 @@ namespace iguana::clas12 {
     const int n = traj.getRows();
     for (int i=0; i<n; ++i) {
       if (traj.getInt("pindex", i) != pindex) continue;
-      if (traj.getInt("detector", i) != 6)    continue; // DC == 6, detector == 5 would be CVT
+      if (traj.getInt("detector", i) != 6)    continue; // DC == 6
       const int layer = traj.getInt("layer", i);
       const double e  = traj.getFloat("edge", i);
       if      (layer== 6) e1 = e;
@@ -297,4 +367,4 @@ namespace iguana::clas12 {
     return true;
   }
 
-} 
+} // namespace iguana::clas12

@@ -19,7 +19,7 @@ namespace iguana::clas12 {
   //   - Central detector (CVT) fiducial:
   //       require edge > edge_min (default 0) and vetoes on gaps between CVT sectors
   //   - Drift Chamber (DC) fiducial:
-  //       three region edge thresholds with separate inbending/outbending track logic 
+  //       three region edge thresholds with separate inbending/outbending track logic
   // All defaults are required from Config.yaml. Users may override
   // strictness via SetStrictness(1|2|3) before Start().
   //
@@ -47,7 +47,7 @@ namespace iguana::clas12 {
     bool m_have_ft    = false;
     bool m_have_traj  = false;
 
-    // FT params 
+    // FT params
     struct FTParams {
       float rmin = 0;
       float rmax = 0;
@@ -67,11 +67,11 @@ namespace iguana::clas12 {
     bool PassCVTFiducial(int track_index, const hipo::bank* trajBank) const;
     bool PassDCFiducial(int track_index, const hipo::bank& particleBank,
       const hipo::bank& configBank, const hipo::bank* trajBank) const;
-    bool Filter(int track_index, const hipo::bank& particleBank, const hipo::bank& configBank, 
+    bool Filter(int track_index, const hipo::bank& particleBank, const hipo::bank& configBank,
         const hipo::bank* calBank, const hipo::bank* ftBank, const hipo::bank* trajBank) const;
 
-    // ---- YAML 
-    void LoadConfigFromYAML(); 
+    // ---- Config loading (from ConfigFileReader helpers)
+    void LoadConfigFromYAML();
 
     // CVT/DC params; loaded from Config.yaml (below are defaults which get overwritten)
     int m_cal_strictness = 1;
@@ -96,4 +96,4 @@ namespace iguana::clas12 {
     DCParams m_dc{};
   };
 
-}
+} 
