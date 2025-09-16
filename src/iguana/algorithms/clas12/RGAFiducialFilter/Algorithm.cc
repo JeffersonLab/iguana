@@ -98,7 +98,8 @@ namespace iguana::clas12 {
   // YAML loading (required)
   void RGAFiducialFilter::LoadConfigFromYAML() {
 
-    if (!GetConfig() || GetConfig()->IsEmpty()) {
+    // Ensure YAML parsed at least once (older API: no IsEmpty())
+    if (!GetConfig()) {
       ParseYAMLConfig();
     }
     const char* TOP = "clas12::RGAFiducialFilter";
@@ -107,9 +108,14 @@ namespace iguana::clas12 {
     // calorimeter.strictness
     // ---------------------------
     // Expect a 1-element list
-    m_cal_strictness =
-        GetOptionScalar<int>("calorimeter.strictness", {TOP, "calorimeter", "strictness", 0},
-          /*fallback*/ 1);
+    {
+      auto v = GetOptionVector<int>("calorimeter.strictness",
+        {TOP, "calorimeter", "strictness"});
+      if (v.empty()) {
+        throw std::runtime_error("[RGAFID] Missing 'calorimeter.strictness' (need [1|2|3])");
+      }
+      m_cal_strictness = v[0];
+    }
     if (m_cal_strictness < 1 || m_cal_strictness > 3) {
       std::ostringstream msg;
       msg << "[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3 (got "
@@ -176,8 +182,13 @@ namespace iguana::clas12 {
       m_cvt.edge_layers = edge_layers;
 
       // edge_min provided as a 1-element list; read element 0
-      m_cvt.edge_min = GetOptionScalar<double>("cvt.edge_min",
-                                               {TOP, "cvt", "edge_min", 0});
+      {
+        auto v = GetOptionVector<double>("cvt.edge_min", {TOP, "cvt", "edge_min"});
+        if (v.empty()) {
+          throw std::runtime_error("[RGAFID] 'cvt.edge_min' must be provided as [value]");
+        }
+        m_cvt.edge_min = v[0];
+      }
 
       // phi_forbidden_deg must be an even-length list of (lo,hi) pairs
       auto phi_forbidden = GetOptionVector<double>("cvt.phi_forbidden_deg",
@@ -195,8 +206,14 @@ namespace iguana::clas12 {
     // ---------------------------
     {
       // theta_small_deg is a 1-element list; read element 0
-      m_dc.theta_small_deg = GetOptionScalar<double>("dc.theta_small_deg",
-                                                     {TOP, "dc", "theta_small_deg", 0});
+      {
+        auto v = GetOptionVector<double>("dc.theta_small_deg",
+                                         {TOP, "dc", "theta_small_deg"});
+        if (v.empty()) {
+          throw std::runtime_error("[RGAFID] 'dc.theta_small_deg' must be provided as [value]");
+        }
+        m_dc.theta_small_deg = v[0];
+      }
 
       auto need3 = [&](const char* key) -> std::vector<double> {
         auto v = GetOptionVector<double>(std::string("dc.") + key, {TOP, "dc", key});
