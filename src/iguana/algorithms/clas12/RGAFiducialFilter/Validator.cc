@@ -32,23 +32,51 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
 
 // ---- Config loader (from Algorithm/ConfigFileReader helpers, not yaml-cpp)
 void RGAFiducialFilterValidator::LoadConfigFromYAML() {
-  ParseYAMLConfig(); 
-  const char* TOP = "clas12::RGAFiducialFilter";
+  // Always parse; the reader caches internally.
+  ParseYAMLConfig();
 
-  // PCal strictness (used only to split before/after in plots)
+  // Alternate absolute root we’ll try if the file is rooted at the algorithm name
+  constexpr const char* ALT_TOP = "clas12::RGAFiducialFilter";
+
+  // Little helpers: try path P1 first; on failure, retry P2 (absolute) if provided.
+  auto getD = [&](const char* dbg,
+                  std::initializer_list<const char*> p1,
+                  std::initializer_list<const char*> p2 = {})
+                  -> std::vector<double> {
+    try { return GetOptionVector<double>(dbg, p1); }
+    catch (...) {
+      if (p2.size()) return GetOptionVector<double>(dbg, p2);
+      throw;
+    }
+  };
+  auto getI = [&](const char* dbg,
+                  std::initializer_list<const char*> p1,
+                  std::initializer_list<const char*> p2 = {})
+                  -> std::vector<int> {
+    try { return GetOptionVector<int>(dbg, p1); }
+    catch (...) {
+      if (p2.size()) return GetOptionVector<int>(dbg, p2);
+      throw;
+    }
+  };
+
+  // ---------- PCal strictness (for plotting split only)
   {
-    auto v = GetOptionVector<int>("rgafid.cal.strictness",
-                                  {TOP, "calorimeter", "strictness"});
-    if (v.empty()) throw std::runtime_error("[RGAFID][VAL] Missing 'calorimeter.strictness'");
+    auto v = getI("rgafid.cal.strictness",
+                  {"calorimeter","strictness"},
+                  {ALT_TOP,"calorimeter","strictness"});
+    if (v.empty())
+      throw std::runtime_error("[RGAFID][VAL] Missing 'calorimeter.strictness'");
     m_cal_strictness = v.at(0);
     if (m_cal_strictness < 1 || m_cal_strictness > 3)
       throw std::runtime_error("[RGAFID][VAL] 'calorimeter.strictness' must be 1,2,3");
   }
 
-  // FT overlays + pass logic
+  // ---------- FT overlays + pass logic
   {
-    auto radius = GetOptionVector<double>("rgafid.ft.radius",
-                                          {TOP, "forward_tagger", "radius"});
+    auto radius = getD("rgafid.ft.radius",
+                       {"forward_tagger","radius"},
+                       {ALT_TOP,"forward_tagger","radius"});
     if (radius.size() != 2)
       throw std::runtime_error("[RGAFID][VAL] 'forward_tagger.radius' must be [rmin,rmax]");
     m_ftdraw.rmin = static_cast<float>(radius[0]);
@@ -57,8 +85,9 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML() {
         !(m_ftdraw.rmin > 0.f && m_ftdraw.rmax > m_ftdraw.rmin))
       throw std::runtime_error("[RGAFID][VAL] invalid forward_tagger.radius values");
 
-    auto holes_flat = GetOptionVector<double>("rgafid.ft.holes_flat",
-                                              {TOP, "forward_tagger", "holes_flat"});
+    auto holes_flat = getD("rgafid.ft.holes_flat",
+                           {"forward_tagger","holes_flat"},
+                           {ALT_TOP,"forward_tagger","holes_flat"});
     if (holes_flat.empty() || (holes_flat.size() % 3) != 0)
       throw std::runtime_error("[RGAFID][VAL] 'forward_tagger.holes_flat' must have 3N values");
     m_ftdraw.holes.clear();
@@ -73,37 +102,43 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML() {
     }
   }
 
-  // CVT parameters
+  // ---------- CVT parameters
   {
     m_cvt_params.edge_layers =
-      GetOptionVector<int>("rgafid.cvt.edge_layers", {TOP, "cvt", "edge_layers"});
+      getI("rgafid.cvt.edge_layers",
+           {"cvt","edge_layers"},
+           {ALT_TOP,"cvt","edge_layers"});
     if (m_cvt_params.edge_layers.empty())
       throw std::runtime_error("[RGAFID][VAL] 'cvt.edge_layers' must be non-empty");
 
-    auto v_edge_min =
-      GetOptionVector<double>("rgafid.cvt.edge_min", {TOP, "cvt", "edge_min"});
+    auto v_edge_min = getD("rgafid.cvt.edge_min",
+                           {"cvt","edge_min"},
+                           {ALT_TOP,"cvt","edge_min"});
     if (v_edge_min.empty())
       throw std::runtime_error("[RGAFID][VAL] 'cvt.edge_min' must be provided as [value]");
     m_cvt_params.edge_min = v_edge_min.at(0);
 
     m_cvt_params.phi_forbidden_deg =
-      GetOptionVector<double>("rgafid.cvt.phi_forbidden_deg",
-                              {TOP, "cvt", "phi_forbidden_deg"});
+      getD("rgafid.cvt.phi_forbidden_deg",
+           {"cvt","phi_forbidden_deg"},
+           {ALT_TOP,"cvt","phi_forbidden_deg"});
     if (!m_cvt_params.phi_forbidden_deg.empty() &&
         (m_cvt_params.phi_forbidden_deg.size() % 2) != 0)
       throw std::runtime_error("[RGAFID][VAL] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
   }
 
-  // DC parameters
+  // ---------- DC parameters
   {
-    auto v_theta_small =
-      GetOptionVector<double>("rgafid.dc.theta_small_deg", {TOP, "dc", "theta_small_deg"});
+    auto v_theta_small = getD("rgafid.dc.theta_small_deg",
+                              {"dc","theta_small_deg"},
+                              {ALT_TOP,"dc","theta_small_deg"});
     if (v_theta_small.empty())
       throw std::runtime_error("[RGAFID][VAL] 'dc.theta_small_deg' must be provided as [value]");
     m_dc_params.theta_small_deg = v_theta_small.at(0);
 
     auto need3 = [&](const char* key) -> std::array<double,3> {
-      auto vv = GetOptionVector<double>(std::string("rgafid.dc.") + key, {TOP, "dc", key});
+      auto vv = getD((std::string("rgafid.dc.")+key).c_str(),
+                     {"dc",key}, {ALT_TOP,"dc",key});
       if (vv.size() != 3) {
         std::ostringstream msg; msg << "[RGAFID][VAL] 'dc." << key << "' must be [e1,e2,e3]";
         throw std::runtime_error(msg.str());
