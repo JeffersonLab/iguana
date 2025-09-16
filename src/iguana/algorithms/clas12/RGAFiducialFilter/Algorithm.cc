@@ -120,59 +120,40 @@ namespace iguana::clas12 {
 
   // YAML loading (required)
   void RGAFiducialFilter::LoadConfigFromYAML() {
-    const std::string cfg_path = GetAlgConfigPath();
 
-    YAML::Node root;
-    try {
-      root = YAML::LoadFile(cfg_path);
-    } catch (const std::exception& e) {
+    if (!GetConfig() || GetConfig()->IsEmpty()) {
+      ParseYAMLConfig();
+    }
+    const char* TOP = "clas12::RGAFiducialFilter";
+
+    // ---------------------------
+    // calorimeter.strictness
+    // ---------------------------
+    // Expect a 1-element list
+    g_yaml_cal_strictness =
+        GetOptionScalar<int>("calorimeter.strictness",
+                             {TOP, "calorimeter", "strictness", 0},
+                             /*fallback*/ 1);
+    if (g_yaml_cal_strictness < 1 || g_yaml_cal_strictness > 3) {
       std::ostringstream msg;
-      msg << "[RGAFID] Required Config.yaml not found or unreadable at: "
-          << cfg_path << " (" << e.what() << ")";
+      msg << "[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3 (got "
+          << g_yaml_cal_strictness << ")";
       throw std::runtime_error(msg.str());
     }
 
-    auto top = root["clas12::RGAFiducialFilter"];
-    if (!top) {
-      std::ostringstream msg;
-      msg << "[RGAFID] Missing top-level key 'clas12::RGAFiducialFilter' in "
-          << cfg_path;
-      throw std::runtime_error(msg.str());
-    }
-
-    // calorimeter.strictness (default == 1 unless overridden by SetStrictness)
+    // ---------------------------
+    // forward_tagger.{radius, holes_flat}
+    // ---------------------------
     {
-      auto cal = top["calorimeter"];
-      if (!cal || !cal["strictness"] || cal["strictness"].size() < 1) {
-        std::ostringstream msg;
-        msg << "[RGAFID] Missing required 'calorimeter.strictness' in " << cfg_path;
-        throw std::runtime_error(msg.str());
+      // radius must be [rmin, rmax]
+      auto radius = GetOptionVector<float>("forward_tagger.radius", 
+        {TOP, "forward_tagger", "radius"});
+      if (radius.size() != 2) {
+        throw std::runtime_error(
+            "[RGAFID] 'forward_tagger.radius' must be a 2-element list [rmin, rmax]");
       }
-      g_yaml_cal_strictness = cal["strictness"][0].as<int>();
-      if (g_yaml_cal_strictness < 1 || g_yaml_cal_strictness > 3) {
-        std::ostringstream msg;
-        msg << "[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3 (got "
-            << g_yaml_cal_strictness << ")";
-        throw std::runtime_error(msg.str());
-      }
-    }
-
-    // forward_tagger 
-    {
-      auto ft = top["forward_tagger"];
-      if (!ft) {
-        std::ostringstream msg;
-        msg << "[RGAFID] Missing required block 'forward_tagger' in " << cfg_path;
-        throw std::runtime_error(msg.str());
-      }
-
-      if (!ft["radius"] || ft["radius"].size() != 2) {
-        std::ostringstream msg;
-        msg << "[RGAFID] 'forward_tagger.radius' must be a 2-element list [rmin, rmax]";
-        throw std::runtime_error(msg.str());
-      }
-      float rmin = ft["radius"][0].as<float>();
-      float rmax = ft["radius"][1].as<float>();
+      float rmin = radius[0];
+      float rmax = radius[1];
       if (!(std::isfinite(rmin) && std::isfinite(rmax)) || !(rmin > 0.f && rmax > rmin)) {
         std::ostringstream msg;
         msg << "[RGAFID] Invalid 'forward_tagger.radius': rmin=" << rmin
@@ -180,25 +161,26 @@ namespace iguana::clas12 {
         throw std::runtime_error(msg.str());
       }
 
-      auto hf = ft["holes_flat"];
-      if (!hf || hf.size() == 0 || (hf.size() % 3) != 0) {
-        std::ostringstream msg;
-        msg << "[RGAFID] 'forward_tagger.holes_flat' must be non-empty with length "
-               "multiple of 3: [R1,cx1,cy1, R2,cx2,cy2, ...]";
-        throw std::runtime_error(msg.str());
+      // holes_flat must be length multiple of 3: [R1, cx1, cy1, R2, cx2, cy2, ...]
+      auto holes_flat = GetOptionVector<float>("forward_tagger.holes_flat",
+                                               {TOP, "forward_tagger", "holes_flat"});
+      if (holes_flat.empty() || (holes_flat.size() % 3) != 0) {
+        throw std::runtime_error(
+            "[RGAFID] 'forward_tagger.holes_flat' must be non-empty with length multiple of 3: "
+            "[R1,cx1,cy1, R2,cx2,cy2, ...]");
       }
 
       u_ft_params.rmin = rmin;
       u_ft_params.rmax = rmax;
       u_ft_params.holes.clear();
-      u_ft_params.holes.reserve(hf.size()/3);
-      for (std::size_t i = 0; i < hf.size(); i += 3) {
-        float R  = hf[i+0].as<float>();
-        float cx = hf[i+1].as<float>();
-        float cy = hf[i+2].as<float>();
+      u_ft_params.holes.reserve(holes_flat.size() / 3);
+      for (std::size_t i = 0; i < holes_flat.size(); i += 3) {
+        float R  = holes_flat[i + 0];
+        float cx = holes_flat[i + 1];
+        float cy = holes_flat[i + 2];
         if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R <= 0.f) {
           std::ostringstream msg;
-          msg << "[RGAFID] Invalid FT hole triple at index " << (i/3)
+          msg << "[RGAFID] Invalid FT hole triple at index " << (i / 3)
               << " -> (R=" << R << ", cx=" << cx << ", cy=" << cy << ")";
           throw std::runtime_error(msg.str());
         }
@@ -206,85 +188,61 @@ namespace iguana::clas12 {
       }
     }
 
-    // central detector
+    // ---------------------------
+    // cvt.{edge_layers, edge_min[0], phi_forbidden_deg}
+    // ---------------------------
     {
-      auto cvt = top["cvt"];
-      if (!cvt) {
-        std::ostringstream msg;
-        msg << "[RGAFID] Missing required block 'cvt' in " << cfg_path;
-        throw std::runtime_error(msg.str());
+      auto edge_layers = GetOptionVector<int>("cvt.edge_layers",
+                                              {TOP, "cvt", "edge_layers"});
+      if (edge_layers.empty()) {
+        throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be a non-empty list");
       }
+      g_cvt.edge_layers = edge_layers;
 
-      if (!cvt["edge_layers"] || cvt["edge_layers"].size() == 0) {
-        std::ostringstream msg;
-        msg << "[RGAFID] 'cvt.edge_layers' must be a non-empty list";
-        throw std::runtime_error(msg.str());
-      }
-      g_cvt.edge_layers.clear();
-      for (auto v : cvt["edge_layers"]) g_cvt.edge_layers.push_back(v.as<int>());
+      // edge_min provided as a 1-element list; read element 0
+      g_cvt.edge_min = GetOptionScalar<double>("cvt.edge_min",
+                                               {TOP, "cvt", "edge_min", 0});
 
-      if (!cvt["edge_min"] || cvt["edge_min"].size() < 1) {
-        std::ostringstream msg;
-        msg << "[RGAFID] 'cvt.edge_min' must be provided";
-        throw std::runtime_error(msg.str());
+      // phi_forbidden_deg must be an even-length list of (lo,hi) pairs
+      auto phi_forbidden = GetOptionVector<double>("cvt.phi_forbidden_deg",
+                                                   {TOP, "cvt", "phi_forbidden_deg"});
+      if ((phi_forbidden.size() % 2) != 0) {
+        throw std::runtime_error(
+            "[RGAFID] 'cvt.phi_forbidden_deg' must have an even number of values "
+            "(pairs of (lo, hi) open intervals)");
       }
-      g_cvt.edge_min = cvt["edge_min"][0].as<double>();
-
-      if (!cvt["phi_forbidden_deg"] || (cvt["phi_forbidden_deg"].size() % 2) != 0) {
-        std::ostringstream msg;
-        msg << "[RGAFID] 'cvt.phi_forbidden_deg' must have an even number of values "
-               "(pairs of (lo, hi) open intervals)";
-        throw std::runtime_error(msg.str());
-      }
-      g_cvt.phi_forbidden_deg.clear();
-      for (auto v : cvt["phi_forbidden_deg"]) g_cvt.phi_forbidden_deg.push_back(v.as<double>());
+      g_cvt.phi_forbidden_deg = std::move(phi_forbidden);
     }
 
-    // drift chamber
+    // ---------------------------
+    // dc.{theta_small_deg[0], thresholds_*}
+    // ---------------------------
     {
-      auto dc = top["dc"];
-      if (!dc) {
-        std::ostringstream msg;
-        msg << "[RGAFID] Missing required block 'dc' in " << cfg_path;
-        throw std::runtime_error(msg.str());
-      }
+      // theta_small_deg is a 1-element list; read element 0
+      g_dc.theta_small_deg = GetOptionScalar<double>("dc.theta_small_deg",
+                                                     {TOP, "dc", "theta_small_deg", 0});
 
-      // theta_small_deg (tigher cut on inbending lower angle tracks)
-      if (!dc["theta_small_deg"] || dc["theta_small_deg"].size() < 1) {
-        std::ostringstream msg;
-        msg << "[RGAFID] 'dc.theta_small_deg' must be provided (e.g. [10.0])";
-        throw std::runtime_error(msg.str());
-      }
-      g_dc.theta_small_deg = dc["theta_small_deg"][0].as<double>();
-
-      auto need3 = [&](const char* key)->YAML::Node {
-        auto n = dc[key];
-        if (!n || n.size()!=3) {
+      auto need3 = [&](const char* key) -> std::vector<double> {
+        auto v = GetOptionVector<double>(std::string("dc.") + key, {TOP, "dc", key});
+        if (v.size() != 3) {
           std::ostringstream msg;
           msg << "[RGAFID] 'dc." << key << "' must be a 3-element list [e1,e2,e3]";
           throw std::runtime_error(msg.str());
         }
-        return n;
+        return v;
       };
 
-      // thresholds
       {
-        auto n = need3("thresholds_out");
-        g_dc.out_e1 = n[0].as<double>(); 
-        g_dc.out_e2 = n[1].as<double>(); 
-        g_dc.out_e3 = n[2].as<double>();
+        auto thr = need3("thresholds_out");
+        g_dc.out_e1 = thr[0]; g_dc.out_e2 = thr[1]; g_dc.out_e3 = thr[2];
       }
       {
-        auto n = need3("thresholds_in_smallTheta");
-        g_dc.in_small_e1 = n[0].as<double>(); 
-        g_dc.in_small_e2 = n[1].as<double>(); 
-        g_dc.in_small_e3 = n[2].as<double>();
+        auto thr = need3("thresholds_in_smallTheta");
+        g_dc.in_small_e1 = thr[0]; g_dc.in_small_e2 = thr[1]; g_dc.in_small_e3 = thr[2];
       }
       {
-        auto n = need3("thresholds_in_largeTheta");
-        g_dc.in_large_e1 = n[0].as<double>(); 
-        g_dc.in_large_e2 = n[1].as<double>(); 
-        g_dc.in_large_e3 = n[2].as<double>();
+        auto thr = need3("thresholds_in_largeTheta");
+        g_dc.in_large_e1 = thr[0]; g_dc.in_large_e2 = thr[1]; g_dc.in_large_e3 = thr[2];
       }
     }
   }
@@ -467,7 +425,7 @@ namespace iguana::clas12 {
     const int n = traj.getRows();
     for (int i=0; i<n; ++i) {
       if (traj.getInt("pindex", i) != pindex) continue;
-      if (traj.getInt("detector", i) != 6)    continue; // DC, detector == 5 would be CVT
+      if (traj.getInt("detector", i) != 6)    continue; // DC == 6, detector == 5 would be CVT
       const int layer = traj.getInt("layer", i);
       const double e  = traj.getFloat("edge", i);
       if      (layer== 6) e1 = e;
