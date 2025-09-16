@@ -13,15 +13,6 @@
 
 namespace iguana::clas12 {
 
-/// Validator:
-///   - Each subsystem's before/after is computed independently from the raw banks:
-///       * PCal (lv & lw) per sector (1-6), range [0,45], strictness s=1:
-///           kept (solid) vs cut (dashed).
-///       * FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
-///       * CVT layer 12 (detector==5): theta (y) vs phi (x),
-///           single combined plot for hadron PIDs +/-{211, 321, 2212}, 1x2: before and after,
-///       * DC (detector==6): two 2x3 canvases (Inb/Out). Columns=Region1/2/3 (layers 6/18/36),
-///           rows=before and after.
 class RGAFiducialFilterValidator : public Validator {
   DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
 

@@ -1,4 +1,5 @@
 #include "Validator.h"
+#include "iguana/services/YAMLReader.h"  // for YAMLReader::node_path_t
 
 #include <TCanvas.h>
 #include <TLegend.h>
@@ -30,6 +31,14 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
   return false;
 }
 
+// helper to build YAML node paths
+using NodePath = iguana::YAMLReader::node_path_t;
+static inline NodePath Path(std::initializer_list<const char*> keys) {
+  NodePath p;
+  for (auto* k : keys) p.emplace_back(std::string(k));
+  return p;
+}
+
 // ---- Config loader (from Algorithm/ConfigFileReader helpers, not yaml-cpp)
 void RGAFiducialFilterValidator::LoadConfigFromYAML() {
   // Always parse; the reader caches internally.
@@ -39,23 +48,19 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML() {
   constexpr const char* ALT_TOP = "clas12::RGAFiducialFilter";
 
   // Little helpers: try path P1 first; on failure, retry P2 (absolute) if provided.
-  auto getD = [&](const char* dbg,
-                  std::initializer_list<const char*> p1,
-                  std::initializer_list<const char*> p2 = {})
+  auto getD = [&](const char* dbg, const NodePath& p1, const NodePath& p2 = NodePath{})
                   -> std::vector<double> {
     try { return GetOptionVector<double>(dbg, p1); }
     catch (...) {
-      if (p2.size()) return GetOptionVector<double>(dbg, p2);
+      if (!p2.empty()) return GetOptionVector<double>(dbg, p2);
       throw;
     }
   };
-  auto getI = [&](const char* dbg,
-                  std::initializer_list<const char*> p1,
-                  std::initializer_list<const char*> p2 = {})
+  auto getI = [&](const char* dbg, const NodePath& p1, const NodePath& p2 = NodePath{})
                   -> std::vector<int> {
     try { return GetOptionVector<int>(dbg, p1); }
     catch (...) {
-      if (p2.size()) return GetOptionVector<int>(dbg, p2);
+      if (!p2.empty()) return GetOptionVector<int>(dbg, p2);
       throw;
     }
   };
@@ -63,8 +68,8 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML() {
   // ---------- PCal strictness (for plotting split only)
   {
     auto v = getI("rgafid.cal.strictness",
-                  {"calorimeter","strictness"},
-                  {ALT_TOP,"calorimeter","strictness"});
+                  Path({"calorimeter","strictness"}),
+                  Path({ALT_TOP,"calorimeter","strictness"}));
     if (v.empty())
       throw std::runtime_error("[RGAFID][VAL] Missing 'calorimeter.strictness'");
     m_cal_strictness = v.at(0);
@@ -75,8 +80,8 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML() {
   // ---------- FT overlays + pass logic
   {
     auto radius = getD("rgafid.ft.radius",
-                       {"forward_tagger","radius"},
-                       {ALT_TOP,"forward_tagger","radius"});
+                       Path({"forward_tagger","radius"}),
+                       Path({ALT_TOP,"forward_tagger","radius"}));
     if (radius.size() != 2)
       throw std::runtime_error("[RGAFID][VAL] 'forward_tagger.radius' must be [rmin,rmax]");
     m_ftdraw.rmin = static_cast<float>(radius[0]);
@@ -86,8 +91,8 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML() {
       throw std::runtime_error("[RGAFID][VAL] invalid forward_tagger.radius values");
 
     auto holes_flat = getD("rgafid.ft.holes_flat",
-                           {"forward_tagger","holes_flat"},
-                           {ALT_TOP,"forward_tagger","holes_flat"});
+                           Path({"forward_tagger","holes_flat"}),
+                           Path({ALT_TOP,"forward_tagger","holes_flat"}));
     if (holes_flat.empty() || (holes_flat.size() % 3) != 0)
       throw std::runtime_error("[RGAFID][VAL] 'forward_tagger.holes_flat' must have 3N values");
     m_ftdraw.holes.clear();
@@ -106,22 +111,22 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML() {
   {
     m_cvt_params.edge_layers =
       getI("rgafid.cvt.edge_layers",
-           {"cvt","edge_layers"},
-           {ALT_TOP,"cvt","edge_layers"});
+           Path({"cvt","edge_layers"}),
+           Path({ALT_TOP,"cvt","edge_layers"}));
     if (m_cvt_params.edge_layers.empty())
       throw std::runtime_error("[RGAFID][VAL] 'cvt.edge_layers' must be non-empty");
 
     auto v_edge_min = getD("rgafid.cvt.edge_min",
-                           {"cvt","edge_min"},
-                           {ALT_TOP,"cvt","edge_min"});
+                           Path({"cvt","edge_min"}),
+                           Path({ALT_TOP,"cvt","edge_min"}));
     if (v_edge_min.empty())
       throw std::runtime_error("[RGAFID][VAL] 'cvt.edge_min' must be provided as [value]");
     m_cvt_params.edge_min = v_edge_min.at(0);
 
     m_cvt_params.phi_forbidden_deg =
       getD("rgafid.cvt.phi_forbidden_deg",
-           {"cvt","phi_forbidden_deg"},
-           {ALT_TOP,"cvt","phi_forbidden_deg"});
+           Path({"cvt","phi_forbidden_deg"}),
+           Path({ALT_TOP,"cvt","phi_forbidden_deg"}));
     if (!m_cvt_params.phi_forbidden_deg.empty() &&
         (m_cvt_params.phi_forbidden_deg.size() % 2) != 0)
       throw std::runtime_error("[RGAFID][VAL] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
@@ -130,15 +135,15 @@ void RGAFiducialFilterValidator::LoadConfigFromYAML() {
   // ---------- DC parameters
   {
     auto v_theta_small = getD("rgafid.dc.theta_small_deg",
-                              {"dc","theta_small_deg"},
-                              {ALT_TOP,"dc","theta_small_deg"});
+                              Path({"dc","theta_small_deg"}),
+                              Path({ALT_TOP,"dc","theta_small_deg"}));
     if (v_theta_small.empty())
       throw std::runtime_error("[RGAFID][VAL] 'dc.theta_small_deg' must be provided as [value]");
     m_dc_params.theta_small_deg = v_theta_small.at(0);
 
     auto need3 = [&](const char* key) -> std::array<double,3> {
       auto vv = getD((std::string("rgafid.dc.")+key).c_str(),
-                     {"dc",key}, {ALT_TOP,"dc",key});
+                     Path({"dc",key}), Path({ALT_TOP,"dc",key}));
       if (vv.size() != 3) {
         std::ostringstream msg; msg << "[RGAFID][VAL] 'dc." << key << "' must be [e1,e2,e3]";
         throw std::runtime_error(msg.str());
@@ -851,4 +856,4 @@ void RGAFiducialFilterValidator::Stop() {
   }
 }
 
-}
+} 
