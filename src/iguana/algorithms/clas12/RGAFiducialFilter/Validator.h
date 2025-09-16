@@ -16,7 +16,7 @@ namespace iguana::clas12 {
 /// Validator:
 ///   - Each subsystem's before/after is computed independently from the raw banks:
 ///       * PCal (lv & lw) per sector (1-6), range [0,45], strictness s=1:
-///           kept (solid) vs cut (dashed). 
+///           kept (solid) vs cut (dashed).
 ///       * FT x-y: 2x2 grid (rows=e-/gamma, cols=before/after), with annulus & holes drawn.
 ///       * CVT layer 12 (detector==5): theta (y) vs phi (x),
 ///           single combined plot for hadron PIDs +/-{211, 321, 2212}, 1x2: before and after,
@@ -35,8 +35,8 @@ private:
   hipo::banklist::size_type b_particle{};
   hipo::banklist::size_type b_calor{};
   hipo::banklist::size_type b_ft{};
-  hipo::banklist::size_type b_traj{};   
-  hipo::banklist::size_type b_config{}; 
+  hipo::banklist::size_type b_traj{};
+  hipo::banklist::size_type b_config{};
   bool m_have_calor = false;
   bool m_have_ft    = false;
   bool m_have_traj  = false;
@@ -77,15 +77,15 @@ private:
   long long m_dc_pos_before_n = 0, m_dc_pos_after_n = 0;
   long long m_dc_neg_before_n = 0, m_dc_neg_after_n = 0;
 
-  // Torus polarity counters 
+  // Torus polarity counters
   long long m_torus_in_events  = 0;
   long long m_torus_out_events = 0;
 
-  // FT overlay params 
+  // FT overlay params
   struct FTDraw { float rmin=0.f, rmax=0.f; std::vector<std::array<float,3>> holes; };
   FTDraw m_ftdraw{};
 
-  // CVT/DC parameters loaded from YAML
+  // CVT/DC parameters loaded from config
   struct CVTParams {
     std::vector<int>    edge_layers;
     double              edge_min = 0.0;
@@ -108,11 +108,10 @@ private:
 
   // helpers
   void BookIfNeeded();
-  void LoadConfigFromYAML(); // read all params for overlays and cuts
   void DrawCalCanvas(int pid, const char* title);
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
   void DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct);
 };
 
-}
+} 
