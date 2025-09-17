@@ -19,7 +19,9 @@ namespace iguana::clas12 {
 
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
 
-
+// ------------------------------
+// small util
+// ------------------------------
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
@@ -48,18 +50,7 @@ static std::string RGAFID_ListKeys(const YAML::Node& n) {
   return os.str();
 }
 
-// reload the YAML file fresh and return the effective algorithm root.
-// ---- Strict loader: require the "clas12::RGAFiducialFilter" wrapper
-static std::string RGAFID_ListKeys(const YAML::Node& n) {
-  if (!n.IsMap()) return "<non-map>";
-  std::string s;
-  for (auto it = n.begin(); it != n.end(); ++it) {
-    if (!s.empty()) s += ", ";
-    s += it->first.as<std::string>();
-  }
-  return s;
-}
-
+// Strict loader: require the "clas12::RGAFiducialFilter" wrapper
 static YAML::Node RGAFID_LoadRootYAML() {
   // Resolve base directory for algorithms
   std::string base;
@@ -75,6 +66,7 @@ static YAML::Node RGAFID_LoadRootYAML() {
   }
 
   const std::string path = base + "/clas12/RGAFiducialFilter/Config.yaml";
+  RGAFID_ConfigPathRef() = path;
 
   YAML::Node doc;
   try {
@@ -88,11 +80,11 @@ static YAML::Node RGAFID_LoadRootYAML() {
   if (!root.IsDefined() || !root.IsMap()) {
     std::ostringstream msg;
     msg << "[RGAFID] Expected top-level key 'clas12::RGAFiducialFilter' in "
-           << path << " ; file has keys: '" << RGAFID_ListKeys(doc) << "'";
+        << path << " ; file has keys: '" << RGAFID_ListKeys(doc) << "'";
     throw std::runtime_error(msg.str());
   }
 
-  // Optional: enforce required sections early
+  // Early sanity check for required sections
   for (const char* k : {"calorimeter","forward_tagger","cvt","dc"}) {
     if (!root[k].IsDefined()) {
       std::ostringstream msg;
@@ -107,7 +99,7 @@ static YAML::Node RGAFID_LoadRootYAML() {
 // Walk to a node under the (fresh) root; never mutates global state.
 static YAML::Node RGAFID_GetNode(std::initializer_list<const char*> keys,
                                  const char* dbgkey_for_errors) {
-  const YAML::Node root = RGAFID_LoadRootYAML_fresh();
+  const YAML::Node root = RGAFID_LoadRootYAML();
   YAML::Node node = root;
   for (auto* k : keys) {
     YAML::Node next = node[k]; // const lookup; no insertion
@@ -191,7 +183,7 @@ void RGAFiducialFilter::LoadConfig() {
       throw std::runtime_error("[RGAFID] invalid forward_tagger.radius values");
 
     u_ft_params.holes.clear();
-    YAML::Node hf = RGAFID_LoadRootYAML_fresh()["forward_tagger"]["holes_flat"];
+    YAML::Node hf = RGAFID_LoadRootYAML()["forward_tagger"]["holes_flat"];
     if (hf.IsDefined()) {
       auto holes_flat = RGAFID_ReadVector<double>({"forward_tagger","holes_flat"},
                                                   "forward_tagger.holes_flat");
@@ -218,7 +210,7 @@ void RGAFiducialFilter::LoadConfig() {
     m_cvt.edge_min = RGAFID_ReadScalar<double>({"cvt","edge_min"}, "cvt.edge_min");
 
     m_cvt.phi_forbidden_deg.clear();
-    YAML::Node pf = RGAFID_LoadRootYAML_fresh()["cvt"]["phi_forbidden_deg"];
+    YAML::Node pf = RGAFID_LoadRootYAML()["cvt"]["phi_forbidden_deg"];
     if (pf.IsDefined()) {
       m_cvt.phi_forbidden_deg =
         RGAFID_ReadVector<double>({"cvt","phi_forbidden_deg"}, "cvt.phi_forbidden_deg");
@@ -274,7 +266,7 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_have_traj = true;
   }
 
-  // Read config from YAML (wrapped or flat supported)
+  // Read config from YAML (strict wrapper required)
   LoadConfig();
 }
 
