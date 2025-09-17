@@ -29,12 +29,53 @@ namespace iguana::clas12 {
     DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
   public:
+    // ---- Public param types (exposed so Validator can read them via getters)
+    struct FTParams {
+      float rmin = 0;
+      float rmax = 0;
+      std::vector<std::array<float,3>> holes; // {R,cx,cy}
+    };
+    struct CVTParams {
+      std::vector<int>    edge_layers;        // e.g. {1,3,5,7,12}
+      double              edge_min = 0.0;     // > edge_min
+      std::vector<double> phi_forbidden_deg;  // flattened pairs (open intervals)
+    };
+    struct DCParams {
+      // Thresholds (cm)
+      double theta_small_deg   = 10.0;   // theta boundary for special inbending case
+      // inbending, theta < theta_small_deg
+      double in_small_e1 = 10.0, in_small_e2 = 10.0, in_small_e3 = 10.0;
+      // inbending, theta >= theta_small_deg
+      double in_large_e1 = 3.0,  in_large_e2 = 3.0,  in_large_e3 = 10.0;
+      // outbending (any theta)
+      double out_e1      = 3.0,  out_e2      = 3.0,  out_e3      = 10.0;
+    };
+
+    // ---- Algorithm API
     void Start(hipo::banklist& banks) override;
     void Run  (hipo::banklist& banks) const override;
     void Stop () override {}
 
     // User controlled override (takes precedence over YAML). Call before Start().
     void SetStrictness(int strictness);
+
+    // ---- Read-only accessors for Validator (single source of truth)
+    int                  CalStrictness() const { return m_cal_strictness; }
+    const FTParams&      FT()            const { return u_ft_params; }
+    const CVTParams&     CVT()           const { return m_cvt; }
+    const DCParams&      DC()            const { return m_dc; }
+
+    // Public helper so Validator can delegate "keep?" if desired
+    bool ShouldKeepRow(
+      int track_index,
+      const hipo::bank& particleBank,
+      const hipo::bank& configBank,
+      const hipo::bank* calBank,
+      const hipo::bank* ftBank,
+      const hipo::bank* trajBank) const
+    {
+      return Filter(track_index, particleBank, configBank, calBank, ftBank, trajBank);
+    }
 
   private:
     // bank indices and presence flags
@@ -47,14 +88,8 @@ namespace iguana::clas12 {
     bool m_have_ft    = false;
     bool m_have_traj  = false;
 
-    // FT params
-    struct FTParams {
-      float rmin = 0;
-      float rmax = 0;
-      std::vector<std::array<float,3>> holes; // {R,cx,cy}
-    };
+    // FT params (loaded from YAML)
     FTParams           u_ft_params{};      // in-use FT params from YAML
-
     std::optional<int> u_strictness_user;  // if SetStrictness() used
 
     // core filter functions
@@ -74,26 +109,9 @@ namespace iguana::clas12 {
     void LoadConfigFromYAML();
 
     // CVT/DC params; loaded from Config.yaml (below are defaults which get overwritten)
-    int m_cal_strictness = 1;
-
-    struct CVTParams {
-      std::vector<int>    edge_layers;        // e.g. {1,3,5,7,12}
-      double              edge_min = 0.0;     // > edge_min
-      std::vector<double> phi_forbidden_deg;  // flattened pairs (open intervals)
-    };
+    int       m_cal_strictness = 1;
     CVTParams m_cvt{};
-
-    struct DCParams {
-      // Thresholds (cm)
-      double theta_small_deg   = 10.0;   // theta boundary for special inbending case
-      // inbending, theta < theta_small_deg
-      double in_small_e1 = 10.0, in_small_e2 = 10.0, in_small_e3 = 10.0;
-      // inbending, theta >= theta_small_deg
-      double in_large_e1 = 3.0,  in_large_e2 = 3.0,  in_large_e3 = 10.0;
-      // outbending (any theta)
-      double out_e1      = 3.0,  out_e2      = 3.0,  out_e3      = 10.0;
-    };
-    DCParams m_dc{};
+    DCParams  m_dc{};
   };
 
-}
+} // namespace iguana::clas12

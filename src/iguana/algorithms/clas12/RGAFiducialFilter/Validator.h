@@ -2,6 +2,7 @@
 
 #include "iguana/algorithms/Validator.h"
 #include "iguana/algorithms/TypeDefs.h"
+#include "Algorithm.h"  // RGAFiducialFilter (we'll delegate config to it)
 
 #include <TH1.h>
 #include <TH2.h>
@@ -31,6 +32,9 @@ private:
   bool m_have_calor = false;
   bool m_have_ft    = false;
   bool m_have_traj  = false;
+
+  // We delegate config to the algorithm (single source of truth)
+  RGAFiducialFilter m_algo;
 
   // PID rows relevant for PCal/FT displays
   const std::array<int,2> kPIDs{11,22};
@@ -76,7 +80,7 @@ private:
   struct FTDraw { float rmin=0.f, rmax=0.f; std::vector<std::array<float,3>> holes; };
   FTDraw m_ftdraw{};
 
-  // CVT/DC parameters loaded from config (for drawing & pass/fail)
+  // CVT/DC parameters loaded from Algorithm (for drawing & pass/fail)
   struct CVTParams {
     std::vector<int>    edge_layers;
     double              edge_min = 0.0;
@@ -99,7 +103,6 @@ private:
 
   // helpers
   void BookIfNeeded();
-  void LoadConfigFromYAML(); // read all params for overlays and cuts, with algorithm-root fallback
   void DrawCalCanvas(int pid, const char* title);
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
