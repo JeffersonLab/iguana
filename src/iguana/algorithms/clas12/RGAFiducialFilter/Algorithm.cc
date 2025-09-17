@@ -7,7 +7,6 @@
 #include <array>
 #include <cmath>
 #include <cstdlib>
-#include <iostream>
 #include <limits>
 #include <map>
 #include <sstream>
@@ -28,6 +27,14 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
   return false;
 }
 
+// ------------------------------
+// Robust, stateless YAML helpers
+// ------------------------------
+static std::string& RGAFID_ConfigPathRef() {
+  static std::string g_path;
+  return g_path;
+}
+
 static std::string RGAFID_ListKeys(const YAML::Node& n) {
   if (!n.IsDefined()) return "(node not defined)";
   if (!n.IsMap())     return "(node is not a map)";
@@ -36,68 +43,75 @@ static std::string RGAFID_ListKeys(const YAML::Node& n) {
   for (auto it = n.begin(); it != n.end(); ++it) {
     if (!first) os << ", ";
     first = false;
-    try { os << it->first.as<std::string>(); } catch (...) { os << "(non-scalar-key)"; }
+    try { os << it->first.as<std::string>(); }
+    catch (...) { os << "(non-scalar-key)"; }
   }
   if (first) return "(empty map)";
   return os.str();
 }
 
-// ------------------------------
-// YAML loader (safe; prints good diagnostics)
-// ------------------------------
-static std::string& RGAFID_ConfigPathRef() {
-  static std::string g_path;
-  return g_path;
-}
-
-static YAML::Node RGAFID_LoadRootYAML() {
-  static YAML::Node root;
-  static bool loaded = false;
-  if (!loaded) {
-    std::string base;
-    if (const char* env = std::getenv("IGUANA_ETCDIR")) {
-      base = env;
-      // tolerate IGUANA_ETCDIR being ".../etc/iguana" or ".../etc/iguana/algorithms"
-      const std::string tail = "/algorithms";
-      if (base.size() < tail.size() ||
-          base.compare(base.size() - tail.size(), tail.size(), tail) != 0) {
-        base += "/algorithms";
-      }
-    } else {
-      base = std::string(IGUANA_ETCDIR) + "/algorithms";
+// Always reload the YAML file fresh and return the effective algorithm root.
+// Supports either a wrapped document (top key "clas12::RGAFiducialFilter")
+// or a flat document with the expected sections at the top level.
+static YAML::Node RGAFID_LoadRootYAML_fresh() {
+  // Determine base directory for algorithms
+  std::string base;
+  if (const char* env = std::getenv("IGUANA_ETCDIR")) {
+    base = env; // user env often points directly to ".../etc/iguana/algorithms"
+    const std::string tail = "/algorithms";
+    if (base.size() < tail.size() ||
+        base.compare(base.size() - tail.size(), tail.size(), tail) != 0) {
+      base += "/algorithms";
     }
-    const std::string path = base + "/clas12/RGAFiducialFilter/Config.yaml";
-    RGAFID_ConfigPathRef() = path;
-
-    YAML::Node doc;
-    try {
-      doc = YAML::LoadFile(path);
-    } catch (const std::exception& e) {
-      throw std::runtime_error(std::string("[RGAFID] Could not load Config.yaml at ") +
-                               path + " : " + e.what());
-    }
-
-    // Prefer wrapped subtree; else flat root; else single-key wrapper fallback
-    YAML::Node choose = doc["clas12::RGAFiducialFilter"];
-    if (!choose.IsDefined()) {
-      if (doc.IsMap() && doc.size() == 1) {
-        auto it = doc.begin();
-        if (it->second.IsMap()) choose = it->second;
-      }
-    }
-    root = (choose.IsDefined() ? choose : doc);
-    loaded = true;
+  } else {
+    base = std::string(IGUANA_ETCDIR) + "/algorithms";
   }
+
+  const std::string path = base + "/clas12/RGAFiducialFilter/Config.yaml";
+  RGAFID_ConfigPathRef() = path;
+
+  YAML::Node doc;
+  try {
+    doc = YAML::LoadFile(path);
+  } catch (const std::exception& e) {
+    throw std::runtime_error(std::string("[RGAFID] Could not load Config.yaml at ") +
+                             path + " : " + e.what());
+  }
+
+  // Choose wrapped or flat root
+  YAML::Node root = doc["clas12::RGAFiducialFilter"];
+  if (!root.IsDefined()) {
+    // If the document is a single-key wrapper, use its value.
+    if (doc.IsMap() && doc.size() == 1) {
+      auto it = doc.begin();
+      if (it->second.IsMap()) root = it->second;
+    }
+  }
+  if (!root.IsDefined()) root = doc;
+
+  // Sanity-check the root contains expected sections
+  if (!(root["calorimeter"].IsDefined() &&
+        root["forward_tagger"].IsDefined() &&
+        root["cvt"].IsDefined() &&
+        root["dc"].IsDefined())) {
+    std::ostringstream msg;
+    msg << "[RGAFID] Config root is missing one or more required sections "
+           "(need calorimeter, forward_tagger, cvt, dc)"
+           " ; file = " << path
+        << " ; top-level keys = '" << RGAFID_ListKeys(root) << "'";
+    throw std::runtime_error(msg.str());
+  }
+
   return root;
 }
 
+// Walk to a node under the (fresh) root; never mutates global state.
 static YAML::Node RGAFID_GetNode(std::initializer_list<const char*> keys,
                                  const char* dbgkey_for_errors) {
-  const YAML::Node root = RGAFID_LoadRootYAML();
-  const YAML::Node* cur = &root;
-  YAML::Node current = root;
+  const YAML::Node root = RGAFID_LoadRootYAML_fresh();
+  YAML::Node node = root;
   for (auto* k : keys) {
-    YAML::Node next = (*cur)[k];   // const lookup; no insertion
+    YAML::Node next = node[k]; // const lookup; no insertion
     if (!next.IsDefined()) {
       std::ostringstream msg;
       msg << "[RGAFID] Missing key '" << k << "' while reading " << dbgkey_for_errors
@@ -105,12 +119,12 @@ static YAML::Node RGAFID_GetNode(std::initializer_list<const char*> keys,
           << " ; top-level keys = '" << RGAFID_ListKeys(root) << "'";
       throw std::runtime_error(msg.str());
     }
-    current = next;
-    cur = &current;
+    node = next;
   }
-  return current;
+  return node;
 }
 
+// Scalar reader
 template <typename T>
 static T RGAFID_ReadScalar(std::initializer_list<const char*> keys,
                            const char* dbgkey_for_errors) {
@@ -125,6 +139,7 @@ static T RGAFID_ReadScalar(std::initializer_list<const char*> keys,
   }
 }
 
+// Vector reader (accepts scalar as single-element vector)
 template <typename T>
 static std::vector<T> RGAFID_ReadVector(std::initializer_list<const char*> keys,
                                         const char* dbgkey_for_errors) {
@@ -155,16 +170,16 @@ static std::vector<T> RGAFID_ReadVector(std::initializer_list<const char*> keys,
 }
 
 // ------------------------------
-// Config loader
+// Config loader (uses the helpers above)
 // ------------------------------
 void RGAFiducialFilter::LoadConfig() {
-  // calorimeter.strictness
+  // Calorimeter strictness
   m_cal_strictness = RGAFID_ReadScalar<int>({"calorimeter","strictness"},
                                             "calorimeter.strictness");
   if (m_cal_strictness < 1 || m_cal_strictness > 3)
     throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1,2,3");
 
-  // FT
+  // Forward Tagger
   {
     auto radius = RGAFID_ReadVector<double>({"forward_tagger","radius"},
                                             "forward_tagger.radius");
@@ -177,19 +192,10 @@ void RGAFiducialFilter::LoadConfig() {
       throw std::runtime_error("[RGAFID] invalid forward_tagger.radius values");
 
     u_ft_params.holes.clear();
-    // IMPORTANT: optional lookup without throwing
-    const YAML::Node root = RGAFID_LoadRootYAML();
-    YAML::Node hf = root["forward_tagger"]["holes_flat"];
+    YAML::Node hf = RGAFID_LoadRootYAML_fresh()["forward_tagger"]["holes_flat"];
     if (hf.IsDefined()) {
-      std::vector<double> holes_flat;
-      if (hf.IsSequence()) {
-        holes_flat.reserve(hf.size());
-        for (auto const& item : hf) holes_flat.push_back(item.as<double>());
-      } else if (hf.IsScalar()) {
-        holes_flat.push_back(hf.as<double>());
-      } else {
-        throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must be a sequence or scalar");
-      }
+      auto holes_flat = RGAFID_ReadVector<double>({"forward_tagger","holes_flat"},
+                                                  "forward_tagger.holes_flat");
       if (!holes_flat.empty() && (holes_flat.size() % 3) != 0)
         throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
       u_ft_params.holes.reserve(holes_flat.size()/3);
@@ -213,16 +219,10 @@ void RGAFiducialFilter::LoadConfig() {
     m_cvt.edge_min = RGAFID_ReadScalar<double>({"cvt","edge_min"}, "cvt.edge_min");
 
     m_cvt.phi_forbidden_deg.clear();
-    const YAML::Node root = RGAFID_LoadRootYAML();
-    YAML::Node pf = root["cvt"]["phi_forbidden_deg"];
+    YAML::Node pf = RGAFID_LoadRootYAML_fresh()["cvt"]["phi_forbidden_deg"];
     if (pf.IsDefined()) {
-      if (pf.IsSequence()) {
-        for (auto const& item : pf) m_cvt.phi_forbidden_deg.push_back(item.as<double>());
-      } else if (pf.IsScalar()) {
-        m_cvt.phi_forbidden_deg.push_back(pf.as<double>());
-      } else {
-        throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must be a sequence or scalar");
-      }
+      m_cvt.phi_forbidden_deg =
+        RGAFID_ReadVector<double>({"cvt","phi_forbidden_deg"}, "cvt.phi_forbidden_deg");
       if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0)
         throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
     }
@@ -275,7 +275,7 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_have_traj = true;
   }
 
-  // Read config from YAML (wrapped, flat, or single-key-wrapped)
+  // Read config from YAML (wrapped or flat supported)
   LoadConfig();
 }
 
@@ -286,6 +286,7 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   auto* ft       = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
   auto* traj     = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj")          : nullptr;
 
+  // Prune in place
   particle.getMutableRowList().filter([&](auto /*bank*/, auto row) {
     const bool keep = Filter(static_cast<int>(row), particle, conf, cal, ft, traj);
     return keep ? 1 : 0;
@@ -300,7 +301,7 @@ void RGAFiducialFilter::SetStrictness(int s) {
 }
 
 // ------------------------------
-// Core helpers (unchanged below)
+// Core helpers
 // ------------------------------
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
