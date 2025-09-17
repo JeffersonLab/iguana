@@ -13,7 +13,9 @@
 #include <array>
 #include <cmath>
 #include <cstdlib>
+#include <deque>
 #include <fstream>
+#include <functional>
 #include <limits>
 #include <map>
 #include <set>
@@ -22,6 +24,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
 #include <vector>
 
 namespace iguana::clas12 {
@@ -61,11 +64,20 @@ static std::vector<T> GetFromAlgoFallback(const NodePath& p) {
   static YAML::Node algoRoot = LoadAlgoRootFromFile(); // load once
   std::vector<T> out;
   if (!algoRoot) return out;
+
   YAML::Node n = algoRoot;
   for (const auto& key : p) {
-    n = n[key];
-    if (!n) return out;
+    // Visit variant<string, function<Node(Node)>>
+    if (const auto* s = std::get_if<std::string>(&key)) {
+      n = n[*s];
+    } else if (const auto* f = std::get_if<std::function<YAML::Node(YAML::Node)>>(&key)) {
+      try { n = (*f)(n); } catch (...) { return {}; }
+    } else {
+      return {};
+    }
+    if (!n) return {};
   }
+
   if (n.IsSequence()) {
     out.reserve(n.size());
     for (auto it : n) out.push_back(it.as<T>());
