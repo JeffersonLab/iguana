@@ -5,11 +5,8 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Find the sector for all rows in `REC::Particle`
-  ///
-  /// @begin_doc_algo{clas12::SectorFinder | Creator}
-  /// <tr><td>see this algorithm's Run function(s) for the input and output bank names</td></tr>
-  /// @end_doc
+  /// @algo_brief{Find the sector for all rows in `REC::Particle`}
+  /// @algo_type_creator
   ///
   /// @begin_doc_config{clas12/SectorFinder}
   /// @config_param{bank_charged | string | if not `default`, use this bank for sector finding of charged particles}
@@ -27,8 +24,6 @@ namespace iguana::clas12 {
   /// The action function ::GetStandardSector identifies the sector(s) using these banks in a priority order, whereas
   /// the action function ::GetSector uses a single bank's data.
   /// Note: rows that have been filtered out of `REC::Particle` will still have their sectors determined.
-  ///
-  /// @creator_note
   class SectorFinder : public Algorithm
   {
 

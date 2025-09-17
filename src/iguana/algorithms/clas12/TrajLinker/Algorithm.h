@@ -4,17 +4,13 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Link particle bank to bank `REC::Traj`
-  ///
-  /// @begin_doc_algo{clas12::TrajLinker | Creator}
-  /// @end_doc
+  /// @algo_brief{Link particle bank to bank `REC::Traj`}
+  /// @algo_type_creator
   ///
   /// This algorithm reads `REC::Traj` and produces a new bank, `REC::Particle::Traj`,
   /// to make it easier to access commonly used `REC::Traj` information for each particle.
   ///
   /// If this algorithm does not provide information you need, ask the maintainers or open a pull request.
-  ///
-  /// @creator_note
   class TrajLinker : public Algorithm
   {
 

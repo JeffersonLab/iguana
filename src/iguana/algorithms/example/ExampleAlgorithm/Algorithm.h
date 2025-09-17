@@ -26,14 +26,10 @@ namespace iguana::example {
   // #   - see Doxygen documentation for more details, or see other algorithms
   // ############################################################################
   ///
-  /// @brief_algo This is a template algorithm, used as an example showing how to write an algorithm.
+  /// @algo_brief{This is a template algorithm, used as an example showing how to write an algorithm.}
+  /// @algo_type_filter
   ///
   /// Provide a more detailed description of your algorithm here.
-  ///
-  /// @begin_doc_algo{example::ExampleAlgorithm | Filter}
-  /// @input_banks{REC::Particle}
-  /// @output_banks{REC::Particle}
-  /// @end_doc
   ///
   /// @begin_doc_config{example/ExampleAlgorithm}
   /// @config_param{exampleInt | int | an example `integer` configuration parameter}

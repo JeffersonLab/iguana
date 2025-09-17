@@ -4,11 +4,8 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` (or similar) bank by PID from the Event Builder
-  ///
-  /// @begin_doc_algo{clas12::EventBuilderFilter | Filter}
-  /// <tr><td>see this algorithm's Run function(s) for the input and output bank names</td></tr>
-  /// @end_doc
+  /// @algo_brief{Filter the `REC::Particle` (or similar) bank by PID from the Event Builder}
+  /// @algo_type_filter
   ///
   /// @begin_doc_config{clas12/EventBuilderFilter}
   /// @config_param{pids | list[int] | list of PDG codes to filter}

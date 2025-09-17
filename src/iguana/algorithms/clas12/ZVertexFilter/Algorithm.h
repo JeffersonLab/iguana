@@ -5,11 +5,8 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex
-  ///
-  /// @begin_doc_algo{clas12::ZVertexFilter | Filter}
-  /// <tr><td>see this algorithm's Run function(s) for the input and output bank names</td></tr>
-  /// @end_doc
+  /// @algo_brief{Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex}
+  /// @algo_type_filter
   ///
   /// @begin_doc_config{clas12/ZVertexFilter}
   /// @config_param{electron_vz | list[double] | lower and upper electron @f$z@f$-vertex cuts; run-range dependent; cuts are not applied to FT electrons (FD and CD only)}
