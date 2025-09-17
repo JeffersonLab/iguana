@@ -4,16 +4,12 @@
 
 namespace iguana::physics {
 
-  /// @brief_algo Calculate depolarization factors
+  /// @algo_brief{Calculate depolarization factors}
+  /// @algo_type_creator
   ///
   /// @par References
   /// - https://arxiv.org/pdf/hep-ph/0611265
   /// - https://arxiv.org/pdf/1408.5721
-  ///
-  /// @begin_doc_algo{physics::Depolarization | Creator}
-  /// @end_doc
-  ///
-  /// @creator_note
   class Depolarization : public Algorithm
   {
 

@@ -4,12 +4,10 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` bank by applying DC (drift chamber) and ECAL (electromagnetic calorimeter) fiducial cuts
+  /// @algo_brief{Filter the `REC::Particle` bank by applying DC (drift chamber) and ECAL (electromagnetic calorimeter) fiducial cuts}
+  /// @algo_type_filter
   ///
   /// Currently these are the "legacy" Pass 1 fiducial cuts tuned for Run Group A.
-  ///
-  /// @begin_doc_algo{clas12::FiducialFilter | Filter}
-  /// @end_doc
   ///
   /// The following **additional banks** are needed:
   /// - if configuration option `pass` is `1`:

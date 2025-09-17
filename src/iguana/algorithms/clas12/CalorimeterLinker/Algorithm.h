@@ -4,17 +4,13 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Link particle bank to bank `REC::Calorimeter`
-  ///
-  /// @begin_doc_algo{clas12::CalorimeterLinker | Creator}
-  /// @end_doc
+  /// @algo_brief{Link particle bank to bank `REC::Calorimeter`}
+  /// @algo_type_creator
   ///
   /// This algorithm reads `REC::Calorimeter` and produces a new bank, `REC::Particle::Calorimeter`,
   /// to make it easier to access commonly used `REC::Calorimeter` information for each particle.
   ///
   /// If this algorithm does not provide information you need, ask the maintainers or open a pull request.
-  ///
-  /// @creator_note
   class CalorimeterLinker : public Algorithm
   {
 

@@ -7,10 +7,8 @@
 
 namespace iguana::physics {
 
-  /// @brief_algo Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`
-  ///
-  /// @begin_doc_algo{physics::DihadronKinematics | Creator}
-  /// @end_doc
+  /// @algo_brief{Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`}
+  /// @algo_type_creator
   ///
   /// @begin_doc_config{physics/DihadronKinematics}
   /// @config_param{hadron_a_list | list[int] | list of "hadron A" PDGs}
@@ -34,8 +32,6 @@ namespace iguana::physics {
   ///
   /// @par theta calculation methods
   /// - `"hadron_a"`: use hadron A's "decay angle" in the dihadron rest frame
-  ///
-  /// @creator_note
   class DihadronKinematics : public Algorithm
   {
 

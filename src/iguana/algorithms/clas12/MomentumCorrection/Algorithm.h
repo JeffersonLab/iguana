@@ -5,15 +5,9 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Momentum Corrections
-  ///
+  /// @algo_brief{Momentum Corrections}
+  /// @algo_type_transformer
   /// Adapted from <https://clasweb.jlab.org/wiki/index.php/CLAS12_Momentum_Corrections#tab=Correction_Code>
-  ///
-  /// @begin_doc_algo{clas12::MomentumCorrection | Transformer}
-  /// <tr><td>see this algorithm's Run function(s) for the input and output bank names</td></tr>
-  /// @input_banks{RUN::config, REC::Particle, REC::Particle::Sector}
-  /// @output_banks{REC::Particle}
-  /// @end_doc
   class MomentumCorrection : public Algorithm
   {
 

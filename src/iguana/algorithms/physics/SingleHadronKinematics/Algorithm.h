@@ -6,10 +6,8 @@
 
 namespace iguana::physics {
 
-  /// @brief_algo Calculate semi-inclusive hadron kinematic quantities
-  ///
-  /// @begin_doc_algo{physics::SingleHadronKinematics | Creator}
-  /// @end_doc
+  /// @algo_brief{Calculate semi-inclusive hadron kinematic quantities}
+  /// @algo_type_creator
   ///
   /// @begin_doc_config{physics/SingleHadronKinematics}
   /// @config_param{hadron_list | list[int] | calculate kinematics for these hadron PDGs}
@@ -23,8 +21,6 @@ namespace iguana::physics {
   ///   corresponding row in the output bank will be zeroed, since no calculations are performed for
   ///   those particles
   /// - particles which are not listed in the configuration parameter `hadron_list` will also be filtered out and zeroed
-  ///
-  /// @creator_note
   class SingleHadronKinematics : public Algorithm
   {
 
