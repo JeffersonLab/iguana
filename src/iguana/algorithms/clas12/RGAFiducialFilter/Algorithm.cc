@@ -1,5 +1,6 @@
+// src/iguana/algorithms/clas12/RGAFiducialFilter/Algorithm.cc
+
 #include "Algorithm.h"
-#include "iguana/services/YAMLReader.h"   // YAMLReader::node_path_t for GetOptionVector
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
@@ -18,21 +19,41 @@ namespace iguana::clas12 {
 
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
 
-// Build YAML node paths for GetOptionVector (expects node_path_t)
-using NodePath = iguana::YAMLReader::node_path_t;
-static inline NodePath Path(std::initializer_list<const char*> keys) {
-  NodePath p;
-  for (auto* k : keys) p.emplace_back(std::string(k));
-  return p;
-}
-
+// ------------------------------------------------------------
+// Utilities
+// ------------------------------------------------------------
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
 
-// Load the RGAFiducialFilter YAML once and return the effective root:
-// --- keep the existing includes and RGAFID_LoadRootYAML() ---
+static YAML::Node RGAFID_LoadRootYAML() {
+  static YAML::Node root;
+  static bool loaded = false;
+  if (!loaded) {
+    // If IGUANA_ETCDIR env var is set to ".../etc/iguana/algorithms", use it.
+    // Otherwise fall back to the compiled-in IGUANA_ETCDIR and append "/algorithms".
+    std::string base;
+    if (const char* env = std::getenv("IGUANA_ETCDIR")) {
+      base = env; // expected to already end with /algorithms
+    } else {
+      base = std::string(IGUANA_ETCDIR) + "/algorithms";
+    }
+    const std::string path = base + "/clas12/RGAFiducialFilter/Config.yaml";
+
+    try {
+      root = YAML::LoadFile(path);
+    } catch (const std::exception& e) {
+      throw std::runtime_error(std::string("[RGAFID] Could not load Config.yaml at ") +
+                               path + " : " + e.what());
+    }
+
+    // Support both wrapped and flat styles.
+    if (root["clas12::RGAFiducialFilter"]) root = root["clas12::RGAFiducialFilter"];
+    loaded = true;
+  }
+  return root;
+}
 
 // Walk to a node under the RGAFiducialFilter root; throw with a helpful key name.
 static YAML::Node RGAFID_GetNode(std::initializer_list<const char*> keys,
@@ -49,7 +70,22 @@ static YAML::Node RGAFID_GetNode(std::initializer_list<const char*> keys,
   return node;
 }
 
-// Read a vector<T>. If the YAML provides a scalar, accept it as {value} (1-element vector).
+// Read a scalar T at a given YAML path.
+template <typename T>
+static T RGAFID_ReadScalar(std::initializer_list<const char*> keys,
+                           const char* dbgkey_for_errors) {
+  YAML::Node node = RGAFID_GetNode(keys, dbgkey_for_errors);
+  if (!node.IsScalar()) {
+    throw std::runtime_error(std::string("[RGAFID] Expected scalar for ") + dbgkey_for_errors);
+  }
+  try { return node.as<T>(); }
+  catch (const std::exception& e) {
+    throw std::runtime_error(std::string("[RGAFID] Scalar conversion failed for ") +
+                             dbgkey_for_errors + ": " + e.what());
+  }
+}
+
+// Read a vector<T>. If the YAML provides a scalar, accept it as {value}.
 template <typename T>
 static std::vector<T> RGAFID_ReadVector(std::initializer_list<const char*> keys,
                                         const char* dbgkey_for_errors) {
@@ -79,9 +115,11 @@ static std::vector<T> RGAFID_ReadVector(std::initializer_list<const char*> keys,
   throw std::runtime_error(msg.str());
 }
 
-// ---- Config loader (yaml-cpp only)
+// ------------------------------------------------------------
+// Config loader
+// ------------------------------------------------------------
 void RGAFiducialFilter::LoadConfigFromYAML() {
-  // Optional: keep this if other Iguana machinery expects it, but we won't use GetOptionVector.
+  // Keep Iguana's config system engaged if other parts rely on it.
   ParseYAMLConfig();
 
   // --- Calorimeter (strictness is a SCALAR)
@@ -110,7 +148,7 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
       throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
     u_ft_params.holes.clear();
     u_ft_params.holes.reserve(holes_flat.size()/3);
-    for (std::size_t i=0;i+2<holes_flat.size();i+=3) {
+    for (std::size_t i=0; i+2<holes_flat.size(); i+=3) {
       float R  = static_cast<float>(holes_flat[i+0]);
       float cx = static_cast<float>(holes_flat[i+1]);
       float cy = static_cast<float>(holes_flat[i+2]);
@@ -159,10 +197,14 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
   }
 }
 
+// ------------------------------------------------------------
+// Lifecycle
+// ------------------------------------------------------------
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   // Discover available banks
   b_particle = GetBankIndex(banks, "REC::Particle");
+
   if (banklist_has(banks, "RUN::config")) {
     b_config = GetBankIndex(banks, "RUN::config");
   }
@@ -179,12 +221,11 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_have_traj = true;
   }
 
-  // Load configuration (scalar+vector logic above)
+  // Load configuration
   LoadConfigFromYAML();
 }
 
 void RGAFiducialFilter::Run(hipo::banklist& banks) const {
-  // Grab the banks needed for this event
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto& conf     = GetBank(banks, b_config,   "RUN::config");
   auto* cal      = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter")   : nullptr;
@@ -198,7 +239,9 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   });
 }
 
-// core helpers
+// ------------------------------------------------------------
+// Core helpers
+// ------------------------------------------------------------
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   CalLayers out;
@@ -227,7 +270,7 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness) {
     if (std::isfinite(hit.lw) && hit.lw < min_lw) min_lw = hit.lw;
   }
 
-  const float thr = (strictness==1 ? 9.0f : strictness==2 ? 13.5f : 18.0f); // default = 1
+  const float thr = (strictness==1 ? 9.0f : strictness==2 ? 13.5f : 18.0f);
   return !(min_lv < thr || min_lw < thr);
 }
 
@@ -289,8 +332,9 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
     if (!(it->second > m_cvt.edge_min)) return false;
   }
 
+  constexpr double kPI = 3.14159265358979323846;
   if (saw12 && !m_cvt.phi_forbidden_deg.empty()) {
-    double phi = std::atan2(y12, x12) * (180.0/M_PI);
+    double phi = std::atan2(y12, x12) * (180.0 / kPI);
     if (phi < 0) phi += 360.0;
     for (std::size_t i=0; i+1<m_cvt.phi_forbidden_deg.size(); i+=2) {
       const double lo = m_cvt.phi_forbidden_deg[i];
@@ -303,7 +347,8 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 }
 
 bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBank,
-  const hipo::bank& configBank, const hipo::bank* trajBank) const {
+                                       const hipo::bank& configBank,
+                                       const hipo::bank* trajBank) const {
   if (!trajBank) return true;
 
   const int pid = particleBank.getInt("pid", pindex);
@@ -313,7 +358,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   if (!(isNeg || isPos)) return true; // photon, neutron or unassigned by EventBuilder
 
   const float torus = configBank.getFloat("torus", 0);
-  const bool electron_out = (torus == 1.0);
+  const bool electron_out = (torus == 1.0f);
   const bool particle_inb = (electron_out ? isPos : isNeg);
   const bool particle_out = !particle_inb;
 
@@ -321,7 +366,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const double py = particleBank.getFloat("py", pindex);
   const double pz = particleBank.getFloat("pz", pindex);
   const double rho = std::hypot(px, py);
-  const double theta = std::atan2(rho, (pz==0.0 ? 1e-9 : pz)) * (180.0/M_PI);
+  const double theta = std::atan2(rho, (pz==0.0 ? 1e-12 : pz)) * (180.0 / 3.14159265358979323846);
 
   double e1=0.0, e2=0.0, e3=0.0;
   const auto& traj = *trajBank;
@@ -336,8 +381,8 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
     else if (layer==36) e3 = e;
   }
 
-  auto pass3 = [](double e1, double e2, double e3, double t1, double t2, double t3)->bool {
-    return (e1>t1 && e2>t2 && e3>t3);
+  auto pass3 = [](double a1, double a2, double a3, double t1, double t2, double t3)->bool {
+    return (a1>t1 && a2>t2 && a3>t3);
   };
 
   if (particle_inb) {
@@ -351,13 +396,15 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   return true;
 }
 
-bool RGAFiducialFilter::Filter(
-  int track_index,
-  const hipo::bank& particleBank,
-  const hipo::bank& configBank,
-  const hipo::bank* calBank,
-  const hipo::bank* ftBank,
-  const hipo::bank* trajBank) const
+// ------------------------------------------------------------
+// Filter (per-track)
+// ------------------------------------------------------------
+bool RGAFiducialFilter::Filter(int track_index,
+                               const hipo::bank& particleBank,
+                               const hipo::bank& configBank,
+                               const hipo::bank* calBank,
+                               const hipo::bank* ftBank,
+                               const hipo::bank* trajBank) const
 {
   const int pid = particleBank.getInt("pid", track_index);
   const int strictness = u_strictness_user.value_or(m_cal_strictness);
@@ -410,6 +457,5 @@ bool RGAFiducialFilter::Filter(
   // neutrals/others
   return true;
 }
-
 
 } // namespace iguana::clas12
