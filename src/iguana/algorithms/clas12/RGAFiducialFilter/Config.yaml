@@ -6,7 +6,7 @@ clas12::RGAFiducialFilter:
     # s=3 -> lv,lw >= 18.0 cm
     #
     # s=1 loosely recommended for spin-asymmetries
-    strictness: [1] # default
+    strictness: 1 # default
 
   forward_tagger:
     # Allowed radial window (cm)
