@@ -2,16 +2,12 @@
 
 #include <TCanvas.h>
 #include <TLegend.h>
-#include <TEllipse.h>
-#include <TStyle.h>
 #include <TString.h>
 #include <TPad.h>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <cstdlib>
-#include <map>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -22,45 +18,45 @@ namespace iguana::clas12 {
 
 REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
 
-// small util
+// tiny util
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
 
-// ---- Booking
+// ---------- Book plots (no config read; pure visualization)
 void RGAFiducialFilterValidator::BookIfNeeded() {
-  // PCal: range 0-45 cm, 4.5 cm bins (width of single bar)
+  // PCAL: 0–45 cm with 4.5 cm bins (bar width)
   const int nb = 10;
   const double lo = 0.0, hi = 45.0;
 
   for (int pid : kPIDs) {
     auto& P = m_cal[pid];
     for (int s=1; s<=6; ++s) {
-      if (!P[s].lv_kept) {
-        P[s].lv_kept = new TH1D(Form("h_pcal_lv_kept_pid%d_s%d", pid, s),
-                                Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
-        P[s].lv_kept->SetStats(0);
+      if (!P[s].lv_before) {
+        P[s].lv_before = new TH1D(Form("h_pcal_lv_before_pid%d_s%d", pid, s),
+                                  Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+        P[s].lv_before->SetStats(0);
       }
-      if (!P[s].lv_cut) {
-        P[s].lv_cut = new TH1D(Form("h_pcal_lv_cut_pid%d_s%d", pid, s),
-                               Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
-        P[s].lv_cut->SetStats(0);
+      if (!P[s].lv_after) {
+        P[s].lv_after = new TH1D(Form("h_pcal_lv_after_pid%d_s%d", pid, s),
+                                 Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+        P[s].lv_after->SetStats(0);
       }
-      if (!P[s].lw_kept) {
-        P[s].lw_kept = new TH1D(Form("h_pcal_lw_kept_pid%d_s%d", pid, s),
-                                Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
-        P[s].lw_kept->SetStats(0);
+      if (!P[s].lw_before) {
+        P[s].lw_before = new TH1D(Form("h_pcal_lw_before_pid%d_s%d", pid, s),
+                                  Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+        P[s].lw_before->SetStats(0);
       }
-      if (!P[s].lw_cut) {
-        P[s].lw_cut = new TH1D(Form("h_pcal_lw_cut_pid%d_s%d", pid, s),
-                               Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
-        P[s].lw_cut->SetStats(0);
+      if (!P[s].lw_after) {
+        P[s].lw_after = new TH1D(Form("h_pcal_lw_after_pid%d_s%d", pid, s),
+                                 Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+        P[s].lw_after->SetStats(0);
       }
     }
   }
 
-  // FT: range for x,y
+  // FT: x,y in ±20 cm
   for (int pid : kPIDs) {
     auto& F = m_ft_h[pid];
     if (!F.before)
@@ -75,7 +71,7 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
     F.after->SetStats(0);
   }
 
-  // CVT layer 12: combined hadrons, phi (x) vs theta (y)
+  // CVT layer 12: phi (deg) vs theta (deg), hadrons only
   if (!m_cvt_before)
     m_cvt_before = new TH2F("h_cvt_l12_phi_theta_before_all",
       "CVT layer 12 before (hadrons: #pm211,#pm321,#pm2212);phi (deg);theta (deg)",
@@ -87,7 +83,7 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
   m_cvt_before->SetStats(0);
   m_cvt_after->SetStats(0);
 
-  // DC edge distributions (range 0-30 cm, 0.3 cm bins)
+  // DC edges: 0–30 cm in 0.3 cm bins
   auto mk = [](const char* name, const char* title){
     auto* h = new TH1D(name, title, 100, 0.0, 30.0);
     h->SetStats(0);
@@ -112,126 +108,29 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
 }
 
 void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
-  // ---- Banks / presence flags
+  // Banks present?
   b_particle = GetBankIndex(banks, "REC::Particle");
-
   if (banklist_has(banks, "REC::Calorimeter")) {
-    b_calor = GetBankIndex(banks, "REC::Calorimeter");
-    m_have_calor = true;
+    b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor=true;
   }
   if (banklist_has(banks, "REC::ForwardTagger")) {
-    b_ft = GetBankIndex(banks, "REC::ForwardTagger");
-    m_have_ft = true;
+    b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft=true;
   }
   if (banklist_has(banks, "REC::Traj")) {
-    b_traj = GetBankIndex(banks, "REC::Traj");
-    m_have_traj = true;
+    b_traj = GetBankIndex(banks, "REC::Traj"); m_have_traj=true;
   } else {
-    m_have_traj = false;
     m_log->Info("[RGAFID][VAL] REC::Traj not provided; CVT/DC plots disabled. "
                 "Re-run with -b REC::Traj to enable trajectory-based plots.");
   }
   b_config = GetBankIndex(banks, "RUN::config");
 
-  // ---- Parse YAML at *this* validator's root.
-  // Because you symlinked .../RGAFiducialFilterValidator -> .../RGAFiducialFilter,
-  // this reads the SAME Config.yaml as the algorithm.
-  ParseYAMLConfig();
+  // Define algorithm sequence with the single algorithm we’re validating.
+  m_algo_seq = std::make_unique<AlgorithmSequence>();
+  m_algo_seq->Add("clas12::RGAFiducialFilter");
+  // No per-validator options — the algorithm will read its own Config.yaml.
+  m_algo_seq->Start(banks);
 
-  // tiny helpers to build node paths & fetch options
-  using NodePath = iguana::YAMLReader::node_path_t;
-  auto Path = [](std::initializer_list<const char*> keys) -> NodePath {
-    NodePath p;
-    for (auto* k : keys) p.emplace_back(std::string(k));
-    return p;
-  };
-  auto getD = [&](const char* dbg, const NodePath& p) -> std::vector<double> {
-    return GetOptionVector<double>(dbg, p);
-  };
-  auto getI = [&](const char* dbg, const NodePath& p) -> std::vector<int> {
-    return GetOptionVector<int>(dbg, p);
-  };
-
-  // ---- Calorimeter strictness (for splitting kept/cut in plots)
-  {
-    auto v = getI("rgafid.cal.strictness", Path({"calorimeter","strictness"}));
-    if (v.empty())
-      throw std::runtime_error("[RGAFID][VAL] Missing 'calorimeter.strictness'");
-    m_cal_strictness = v.at(0);
-    if (m_cal_strictness < 1 || m_cal_strictness > 3)
-      throw std::runtime_error("[RGAFID][VAL] 'calorimeter.strictness' must be 1,2,3");
-  }
-
-  // ---- Forward Tagger overlays & pass logic
-  {
-    auto radius = getD("rgafid.ft.radius", Path({"forward_tagger","radius"}));
-    if (radius.size() != 2)
-      throw std::runtime_error("[RGAFID][VAL] 'forward_tagger.radius' must be [rmin,rmax]");
-    m_ftdraw.rmin = static_cast<float>(radius[0]);
-    m_ftdraw.rmax = static_cast<float>(radius[1]);
-    if (!(std::isfinite(m_ftdraw.rmin) && std::isfinite(m_ftdraw.rmax)) ||
-        !(m_ftdraw.rmin > 0.f && m_ftdraw.rmax > m_ftdraw.rmin))
-      throw std::runtime_error("[RGAFID][VAL] invalid forward_tagger.radius values");
-
-    auto holes_flat = getD("rgafid.ft.holes_flat", Path({"forward_tagger","holes_flat"}));
-    if (!holes_flat.empty() && (holes_flat.size()%3)!=0)
-      throw std::runtime_error("[RGAFID][VAL] 'forward_tagger.holes_flat' must have 3N values");
-    m_ftdraw.holes.clear();
-    m_ftdraw.holes.reserve(holes_flat.size()/3);
-    for (std::size_t i=0;i<holes_flat.size();i+=3) {
-      float R  = static_cast<float>(holes_flat[i+0]);
-      float cx = static_cast<float>(holes_flat[i+1]);
-      float cy = static_cast<float>(holes_flat[i+2]);
-      if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R<=0.f)
-        throw std::runtime_error("[RGAFID][VAL] invalid FT hole triple in 'holes_flat'");
-      m_ftdraw.holes.push_back({R,cx,cy});
-    }
-  }
-
-  // ---- CVT parameters
-  {
-    m_cvt_params.edge_layers = getI("rgafid.cvt.edge_layers", Path({"cvt","edge_layers"}));
-    if (m_cvt_params.edge_layers.empty())
-      throw std::runtime_error("[RGAFID][VAL] 'cvt.edge_layers' must be non-empty");
-
-    auto v_edge_min = getD("rgafid.cvt.edge_min", Path({"cvt","edge_min"}));
-    if (v_edge_min.empty())
-      throw std::runtime_error("[RGAFID][VAL] 'cvt.edge_min' must be provided as [value]");
-    m_cvt_params.edge_min = v_edge_min.at(0);
-
-    m_cvt_params.phi_forbidden_deg =
-      getD("rgafid.cvt.phi_forbidden_deg", Path({"cvt","phi_forbidden_deg"}));
-    if (!m_cvt_params.phi_forbidden_deg.empty() &&
-        (m_cvt_params.phi_forbidden_deg.size()%2)!=0)
-      throw std::runtime_error("[RGAFID][VAL] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
-  }
-
-  // ---- DC parameters
-  {
-    auto v_theta_small = getD("rgafid.dc.theta_small_deg", Path({"dc","theta_small_deg"}));
-    if (v_theta_small.empty())
-      throw std::runtime_error("[RGAFID][VAL] 'dc.theta_small_deg' must be provided as [value]");
-    m_dc_params.theta_small_deg = v_theta_small.at(0);
-
-    auto need3 = [&](const char* key) -> std::array<double,3> {
-      auto vv = getD((std::string("rgafid.dc.")+key).c_str(), Path({"dc",key}));
-      if (vv.size() != 3) {
-        std::ostringstream msg; msg << "[RGAFID][VAL] 'dc." << key << "' must be [e1,e2,e3]";
-        throw std::runtime_error(msg.str());
-      }
-      return {vv[0], vv[1], vv[2]};
-    };
-
-    auto out  = need3("thresholds_out");
-    auto in_s = need3("thresholds_in_smallTheta");
-    auto in_l = need3("thresholds_in_largeTheta");
-
-    m_dc_params.out_e1 = out[0];  m_dc_params.out_e2 = out[1];  m_dc_params.out_e3 = out[2];
-    m_dc_params.in_small_e1 = in_s[0]; m_dc_params.in_small_e2 = in_s[1]; m_dc_params.in_small_e3 = in_s[2];
-    m_dc_params.in_large_e1 = in_l[0]; m_dc_params.in_large_e2 = in_l[1]; m_dc_params.in_large_e3 = in_l[2];
-  }
-
-  // ---- Output file/dir
+  // Output
   if (auto dir = GetOutputDirectory()) {
     m_base.Form("%s/rga_fiducial", dir->c_str());
     m_out  = new TFile(Form("%s.root", m_base.Data()), "RECREATE");
@@ -240,134 +139,10 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
     m_out  = nullptr;
   }
 
-  // ---- Book histograms
   BookIfNeeded();
 }
 
-// ---- Local helpers (pass/fail tests) — use params copied from Algorithm
-static bool PassCalStrictnessForPIndex(const hipo::bank& cal, int pidx, int strictness) {
-  float min_lv = std::numeric_limits<float>::infinity();
-  float min_lw = std::numeric_limits<float>::infinity();
-
-  const int n = cal.getRows();
-  bool saw = false;
-  for (int i=0;i<n;++i) {
-    if (cal.getInt("pindex", i) != pidx) continue;
-    if (cal.getInt("layer",  i) != 1   ) continue; // PCal only
-    saw = true;
-    float lv = cal.getFloat("lv", i);
-    float lw = cal.getFloat("lw", i);
-    if (lv < min_lv) min_lv = lv;
-    if (lw < min_lw) min_lw = lw;
-  }
-  if (!saw) return true; // no PCal association -> pass
-
-  switch (strictness) {
-    case 1: return !(min_lw <  9.0f || min_lv <  9.0f);
-    case 2: return !(min_lw < 13.5f || min_lv < 13.5f);
-    case 3: return !(min_lw < 18.0f || min_lv < 18.0f);
-  }
-  return true;
-}
-
-static bool PassFTForPIndex(const hipo::bank& ft, int pidx,
-    float rmin, float rmax, const std::vector<std::array<float,3>>& holes) {
-  const int n = ft.getRows();
-  for (int i=0;i<n;++i) {
-    if (ft.getInt("pindex", i) != pidx) continue;
-    const double x = ft.getFloat("x", i);
-    const double y = ft.getFloat("y", i);
-    const double r = std::sqrt(x*x + y*y);
-    if (r < rmin) return false;
-    if (r > rmax) return false;
-    for (auto const& h : holes) {
-      const double d = std::sqrt((x-h[1])*(x-h[1]) + (y-h[2])*(y-h[2]));
-      if (d < h[0]) return false;
-    }
-    return true; // first row decides
-  }
-  return true; // no FT association -> pass
-}
-
-static bool PassCVTForPIndex(const hipo::bank& traj, int pidx,
-    const std::vector<int>& edge_layers, double edge_min,
-    const std::vector<double>& phi_forbidden_deg) {
-  const int n = traj.getRows();
-  std::map<int,double> edge_at_layer;
-  double x12=0.0, y12=0.0; bool saw12=false;
-
-  for (int i=0; i<n; ++i) {
-    if (traj.getInt("pindex", i) != pidx) continue;
-    if (traj.getInt("detector", i) != 5)  continue;
-    int layer = traj.getInt("layer", i);
-    double e = traj.getFloat("edge", i);
-
-    if (std::find(edge_layers.begin(), edge_layers.end(), layer) != edge_layers.end())
-      edge_at_layer[layer] = e;
-
-    if (layer==12) { x12 = traj.getFloat("x", i); y12 = traj.getFloat("y", i); saw12=true; }
-  }
-
-  for (int L : edge_layers) {
-    auto it = edge_at_layer.find(L);
-    if (it==edge_at_layer.end()) continue; // missing layer -> pass
-    if (!(it->second > edge_min)) return false;
-  }
-
-  if (saw12 && !phi_forbidden_deg.empty()) {
-    double phi = std::atan2(y12, x12)*(180.0/M_PI);
-    if (phi<0) phi += 360.0;
-    for (std::size_t i=0;i+1<phi_forbidden_deg.size();i+=2) {
-      double lo=phi_forbidden_deg[i], hi=phi_forbidden_deg[i+1];
-      if (phi>lo && phi<hi) return false;
-    }
-  }
-  return true;
-}
-
-static bool PassDCForPIndex(const hipo::bank& particle, const hipo::bank& config,
-    const hipo::bank& traj, int pidx, double theta_small_deg,
-    double in_small_e1, double in_small_e2, double in_small_e3,
-    double in_large_e1, double in_large_e2, double in_large_e3,
-    double out_e1, double out_e2, double out_e3) {
-  const int pid = particle.getInt("pid", pidx);
-  const bool isNeg = (pid== 11 || pid==-211 || pid==-321 || pid==-2212);
-  const bool isPos = (pid==-11 || pid== 211 || pid== 321 || pid== 2212);
-  if (!(isNeg || isPos)) return false;
-
-  const float torus = config.getFloat("torus", 0);
-  const bool electron_out = (torus == 1.0f);
-  const bool particle_inb = (electron_out ? isPos : isNeg);
-  const bool particle_out = !particle_inb;
-
-  const double px = particle.getFloat("px", pidx);
-  const double py = particle.getFloat("py", pidx);
-  const double pz = particle.getFloat("pz", pidx);
-  const double rho = std::sqrt(px*px + py*py);
-  const double theta = std::atan2(rho, (pz==0.0 ? 1e-9 : pz)) * (180.0/M_PI);
-
-  double e1=0.0, e2=0.0, e3=0.0;
-  const int n = traj.getRows();
-  for (int i=0;i<n;++i) {
-    if (traj.getInt("pindex", i) != pidx) continue;
-    if (traj.getInt("detector", i) != 6)  continue;
-    int layer = traj.getInt("layer", i);
-    double e  = traj.getFloat("edge", i);
-    if      (layer== 6) e1 = e;
-    else if (layer==18) e2 = e;
-    else if (layer==36) e3 = e;
-  }
-
-  if (particle_inb) {
-    if (theta < theta_small_deg) return (e1>in_small_e1 && e2>in_small_e2 && e3>in_small_e3);
-    return (e1>in_large_e1 && e2>in_large_e2 && e3>in_large_e3);
-  } else if (particle_out) {
-    return (e1>out_e1 && e2>out_e2 && e3>out_e3);
-  }
-  return false;
-}
-
-// Free function (not a class method) to set DC pad margins.
+// DC pad margins
 static inline void SetDCPadMargins() {
   gPad->SetLeftMargin(0.16);
   gPad->SetRightMargin(0.06);
@@ -375,113 +150,134 @@ static inline void SetDCPadMargins() {
   gPad->SetTopMargin(0.08);
 }
 
-// ---- Full Run() including PCal
 void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto& config   = GetBank(banks, b_config,   "RUN::config");
 
-  // Track torus polarity stats (for DC labels)
+  // Track torus polarity stats (labels for DC summary)
   {
     bool e_out = (config.getFloat("torus", 0) == 1.0f);
     if (e_out) const_cast<RGAFiducialFilterValidator*>(this)->m_torus_out_events++;
     else       const_cast<RGAFiducialFilterValidator*>(this)->m_torus_in_events++;
   }
 
-  // Snapshot: pindex sets
-  std::unordered_set<int> electrons_or_photons;
-  std::unordered_set<int> hadrons;
-  std::unordered_set<int> pos_all, neg_all;
+  // Snapshot BEFORE sets of pindex
+  std::unordered_set<int> eorg_before;   // electrons or photons
+  std::unordered_set<int> had_before;
+  std::unordered_set<int> pos_before, neg_before;
 
   for (auto const& row : particle.getRowList()) {
     int pidx = (int)row;
     int pid  = particle.getInt("pid", row);
-    if (pid==11 || pid==22) electrons_or_photons.insert(pidx);
+    if (pid==11 || pid==22) eorg_before.insert(pidx);
     if (pid==211 || pid==321 || pid==2212 || pid==-211 || pid==-321 || pid==-2212)
-      hadrons.insert(pidx);
-    if (pid>0) pos_all.insert(pidx);
-    else if (pid<0) neg_all.insert(pidx);
+      had_before.insert(pidx);
+    if (pid>0) pos_before.insert(pidx);
+    else if (pid<0) neg_before.insert(pidx);
   }
 
-  // PCal kept vs cut (electrons/photons), strictness from Algorithm
+  // ---------- Run the algorithm (this will prune REC::Particle in place)
+  m_algo_seq->Run(banks);
+
+  // Snapshot AFTER sets
+  std::unordered_set<int> eorg_after;
+  std::unordered_set<int> had_after;
+  std::unordered_set<int> pos_after, neg_after;
+
+  for (auto const& row : particle.getRowList()) {
+    int pidx = (int)row;
+    int pid  = particle.getInt("pid", row);
+    if (pid==11 || pid==22) eorg_after.insert(pidx);
+    if (pid==211 || pid==321 || pid==2212 || pid==-211 || pid==-321 || pid==-2212)
+      had_after.insert(pidx);
+    if (pid>0) pos_after.insert(pidx);
+    else if (pid<0) neg_after.insert(pidx);
+  }
+
+  // From here on, we fill *both* before & after by iterating current banks
+  // and checking membership in BEFORE/AFTER pindex sets.
+
+  std::scoped_lock<std::mutex> lock(m_mutex);
+
+  // ---------- PCAL before/after (electrons, photons)
   if (m_have_calor) {
     auto& cal = GetBank(banks, b_calor, "REC::Calorimeter");
+
+    // unique pindex counters per sector (for survival % on titles)
+    std::array<std::set<int>,7> be_e, af_e, be_g, af_g;
+
     const int n = cal.getRows();
-
-    std::unordered_map<int, bool> pass_cache;
-    for (int pidx : electrons_or_photons)
-      pass_cache[pidx] = PassCalStrictnessForPIndex(cal, pidx, m_cal_strictness);
-
-    std::array<std::set<int>,7> b_e, a_e, b_g, a_g;
-
     for (int i=0;i<n;++i) {
+      if (cal.getInt("layer", i) != 1) continue; // PCAL only
       int pidx = cal.getInt("pindex", i);
-      if (!electrons_or_photons.count(pidx)) continue;
-      if (cal.getInt("layer", i) != 1) continue;
+      if (!eorg_before.count(pidx)) continue;
 
-      int pid = 11;
-      for (auto r : particle.getRowList()) { if ((int)r == pidx) {
-        pid = particle.getInt("pid", r); break; } }
-
-      int sec = cal.getInt("sector", i);
-      if (sec < 1 || sec > 6) continue;
+      int sector = cal.getInt("sector", i);
+      if (sector < 1 || sector > 6) continue;
 
       double lv = cal.getFloat("lv", i);
       double lw = cal.getFloat("lw", i);
-      bool kept = pass_cache[pidx];
 
-      auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sec];
-      if (lv >= 0.0 && lv <= 45.0) (kept ? H.lv_kept : H.lv_cut)->Fill(lv);
-      if (lw >= 0.0 && lw <= 45.0) (kept ? H.lw_kept : H.lw_cut)->Fill(lw);
+      // PID for this pindex (from current particle bank — still fine)
+      int pid = 11;
+      for (auto r : particle.getRowList()) if ((int)r==pidx) { pid = particle.getInt("pid", r); break; }
+      if (pid!=11 && pid!=22) continue;
 
+      auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sector];
+
+      if (lv >= 0.0 && lv <= 45.0) H.lv_before->Fill(lv);
+      if (lw >= 0.0 && lw <= 45.0) H.lw_before->Fill(lw);
+
+      const bool survived = eorg_after.count(pidx);
+
+      if (survived) {
+        if (lv >= 0.0 && lv <= 45.0) H.lv_after->Fill(lv);
+        if (lw >= 0.0 && lw <= 45.0) H.lw_after->Fill(lw);
+      }
+
+      // unique pindex per sector (counts)
       if (pid==11) {
-        if (!b_e[sec].count(pidx)) b_e[sec].insert(pidx);
-        if (kept && !a_e[sec].count(pidx)) a_e[sec].insert(pidx);
+        be_e[sector].insert(pidx);
+        if (survived) af_e[sector].insert(pidx);
       } else {
-        if (!b_g[sec].count(pidx)) b_g[sec].insert(pidx);
-        if (kept && !a_g[sec].count(pidx)) a_g[sec].insert(pidx);
+        be_g[sector].insert(pidx);
+        if (survived) af_g[sector].insert(pidx);
       }
     }
 
     for (int s=1;s<=6;++s) {
-      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[11][s].before += b_e[s].size();
-      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[11][s].after  += a_e[s].size();
-      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[22][s].before += b_g[s].size();
-      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[22][s].after  += a_g[s].size();
+      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[11][s].before += be_e[s].size();
+      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[11][s].after  += af_e[s].size();
+      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[22][s].before += be_g[s].size();
+      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[22][s].after  += af_g[s].size();
     }
   }
 
-  // FT before/after (e-/gamma)
+  // ---------- FT XY before/after (e-/gamma)
   if (m_have_ft) {
     auto& ft = GetBank(banks, b_ft, "REC::ForwardTagger");
 
     std::set<int> seen_b_e, seen_a_e, seen_b_g, seen_a_g;
-    std::unordered_map<int,bool> pass_cache;
-
-    for (int pidx : electrons_or_photons)
-      pass_cache[pidx] = PassFTForPIndex(ft, pidx, m_ftdraw.rmin, m_ftdraw.rmax, m_ftdraw.holes);
 
     const int n = ft.getRows();
     for (int i=0;i<n;++i) {
       int pidx = ft.getInt("pindex", i);
-      if (!electrons_or_photons.count(pidx)) continue;
+      if (!eorg_before.count(pidx)) continue;
 
       int pid = 11;
-      for (auto r : particle.getRowList()) if ((int)r==pidx) {
-        pid = particle.getInt("pid", r); break;
-      }
+      for (auto r : particle.getRowList()) if ((int)r==pidx) { pid = particle.getInt("pid", r); break; }
+      if (pid!=11 && pid!=22) continue;
 
       auto& HH = const_cast<RGAFiducialFilterValidator*>(this)->m_ft_h.at(pid);
 
+      double x = ft.getFloat("x", i);
+      double y = ft.getFloat("y", i);
       if (pid==11) {
-        if (!seen_b_e.count(pidx)) {
-          HH.before->Fill(ft.getFloat("x", i), ft.getFloat("y", i)); seen_b_e.insert(pidx); }
-        if ( pass_cache[pidx] && !seen_a_e.count(pidx)) {
-          HH.after ->Fill(ft.getFloat("x", i), ft.getFloat("y", i)); seen_a_e.insert(pidx); }
+        if (!seen_b_e.count(pidx)) { HH.before->Fill(x, y); seen_b_e.insert(pidx); }
+        if (eorg_after.count(pidx) && !seen_a_e.count(pidx)) { HH.after->Fill(x, y); seen_a_e.insert(pidx); }
       } else {
-        if (!seen_b_g.count(pidx)) {
-          HH.before->Fill(ft.getFloat("x", i), ft.getFloat("y", i)); seen_b_g.insert(pidx); }
-        if ( pass_cache[pidx] && !seen_a_g.count(pidx)) {
-          HH.after ->Fill(ft.getFloat("x", i), ft.getFloat("y", i)); seen_a_g.insert(pidx); }
+        if (!seen_b_g.count(pidx)) { HH.before->Fill(x, y); seen_b_g.insert(pidx); }
+        if (eorg_after.count(pidx) && !seen_a_g.count(pidx)) { HH.after->Fill(x, y); seen_a_g.insert(pidx); }
       }
     }
 
@@ -491,24 +287,19 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     const_cast<RGAFiducialFilterValidator*>(this)->m_ft_after_n [22] += seen_a_g.size();
   }
 
-  // CVT layer12 phi/theta before/after (hadrons)
+  // ---------- CVT layer 12 phi/theta before/after (hadrons)
   if (m_have_traj) {
     auto& traj = GetBank(banks, b_traj, "REC::Traj");
 
     std::set<int> b_seen, a_seen;
 
-    std::unordered_map<int,bool> pass_cache;
-    for (int pidx : hadrons)
-      pass_cache[pidx] = PassCVTForPIndex(traj, pidx, m_cvt_params.edge_layers,
-        m_cvt_params.edge_min, m_cvt_params.phi_forbidden_deg);
-
     const int n = traj.getRows();
     for (int i=0; i<n; ++i) {
-      if (traj.getInt("detector", i) != 5) continue;
-      if (traj.getInt("layer", i) != 12) continue;
+      if (traj.getInt("detector", i) != 5) continue; // CVT
+      if (traj.getInt("layer", i)    != 12) continue;
 
       int pidx = traj.getInt("pindex", i);
-      if (!hadrons.count(pidx)) continue;
+      if (!had_before.count(pidx)) continue;
 
       double x = traj.getFloat("x", i);
       double y = traj.getFloat("y", i);
@@ -519,7 +310,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       double theta = std::atan2(rho, (z==0.0 ? 1e-9 : z)) * (180.0/M_PI);
 
       if (!b_seen.count(pidx)) { m_cvt_before->Fill(phi, theta); b_seen.insert(pidx); }
-      if ( pass_cache[pidx] && !a_seen.count(pidx)) {
+      if (had_after.count(pidx) && !a_seen.count(pidx)) {
         m_cvt_after->Fill(phi, theta); a_seen.insert(pidx);
       }
     }
@@ -528,90 +319,50 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     const_cast<RGAFiducialFilterValidator*>(this)->m_cvt_after_n  += (long long) a_seen.size();
   }
 
-  // DC edges pos/neg before/after
+  // ---------- DC edges pos/neg before/after
   if (m_have_traj) {
     auto& traj = GetBank(banks, b_traj, "REC::Traj");
 
     std::set<int> pos_b1, pos_b2, pos_b3, neg_b1, neg_b2, neg_b3;
     std::set<int> pos_a1, pos_a2, pos_a3, neg_a1, neg_a2, neg_a3;
 
-    std::unordered_map<int,bool> pass_cache;
-    for (int pidx : pos_all)
-      pass_cache[pidx] = PassDCForPIndex(particle, config, traj, pidx,
-        m_dc_params.theta_small_deg, m_dc_params.in_small_e1,
-        m_dc_params.in_small_e2, m_dc_params.in_small_e3,
-        m_dc_params.in_large_e1, m_dc_params.in_large_e2, m_dc_params.in_large_e3,
-        m_dc_params.out_e1, m_dc_params.out_e2, m_dc_params.out_e3);
-    for (int pidx : neg_all)
-      pass_cache[pidx] = PassDCForPIndex(particle, config, traj, pidx,
-        m_dc_params.theta_small_deg, m_dc_params.in_small_e1,
-        m_dc_params.in_small_e2, m_dc_params.in_small_e3,
-        m_dc_params.in_large_e1, m_dc_params.in_large_e2, m_dc_params.in_large_e3,
-        m_dc_params.out_e1, m_dc_params.out_e2, m_dc_params.out_e3);
-
     const int n = traj.getRows();
     for (int i=0;i<n;++i) {
-      if (traj.getInt("detector", i) != 6) continue;
+      if (traj.getInt("detector", i) != 6) continue; // DC
 
       int pidx = traj.getInt("pindex", i);
-      int pid  = 0;
-      for (auto r : particle.getRowList()) if ((int)r==pidx) {
-        pid = particle.getInt("pid", r); break;
-      }
-      if (pid==0 || pid==22) continue;
-
       double edge = traj.getFloat("edge", i);
       int layer   = traj.getInt("layer", i);
 
-      if (pid>0) {
-        if (layer==6)  { if (!pos_b1.count(pidx)) {
-            m_dc_pos.r1_before->Fill(edge); pos_b1.insert(pidx);
-          }
-          if (pass_cache[pidx] && !pos_a1.count(pidx)) {
-            m_dc_pos.r1_after->Fill(edge);  pos_a1.insert(pidx); }
-        }
-        if (layer==18) { if (!pos_b2.count(pidx)) {
-            m_dc_pos.r2_before->Fill(edge); pos_b2.insert(pidx);
-          }
-          if (pass_cache[pidx] && !pos_a2.count(pidx)) {
-            m_dc_pos.r2_after->Fill(edge);  pos_a2.insert(pidx); }
-        }
-        if (layer==36) { if (!pos_b3.count(pidx)) {
-            m_dc_pos.r3_before->Fill(edge); pos_b3.insert(pidx);
-          }
-          if (pass_cache[pidx] && !pos_a3.count(pidx)) {
-            m_dc_pos.r3_after->Fill(edge);  pos_a3.insert(pidx);
-          }
-        }
+      // Sign from BEFORE sets (status from Particle)
+      bool is_pos_before = pos_before.count(pidx);
+      bool is_neg_before = neg_before.count(pidx);
+      if (!is_pos_before && !is_neg_before) continue;
+
+      bool survived_pos = pos_after.count(pidx);
+      bool survived_neg = neg_after.count(pidx);
+
+      if (is_pos_before) {
+        if (layer==6)  { if (!pos_b1.count(pidx)) { m_dc_pos.r1_before->Fill(edge); pos_b1.insert(pidx); }
+                         if (survived_pos && !pos_a1.count(pidx)) { m_dc_pos.r1_after->Fill(edge); pos_a1.insert(pidx); } }
+        if (layer==18) { if (!pos_b2.count(pidx)) { m_dc_pos.r2_before->Fill(edge); pos_b2.insert(pidx); }
+                         if (survived_pos && !pos_a2.count(pidx)) { m_dc_pos.r2_after->Fill(edge); pos_a2.insert(pidx); } }
+        if (layer==36) { if (!pos_b3.count(pidx)) { m_dc_pos.r3_before->Fill(edge); pos_b3.insert(pidx); }
+                         if (survived_pos && !pos_a3.count(pidx)) { m_dc_pos.r3_after->Fill(edge); pos_a3.insert(pidx); } }
       } else {
-        if (layer==6)  { if (!neg_b1.count(pidx)) {
-            m_dc_neg.r1_before->Fill(edge); neg_b1.insert(pidx);
-          }
-          if (pass_cache[pidx] && !neg_a1.count(pidx)) {
-            m_dc_neg.r1_after->Fill(edge);  neg_a1.insert(pidx);
-          }
-        }
-        if (layer==18) { if (!neg_b2.count(pidx)) {
-            m_dc_neg.r2_before->Fill(edge); neg_b2.insert(pidx);
-          }
-          if (pass_cache[pidx] && !neg_a2.count(pidx)) {
-            m_dc_neg.r2_after->Fill(edge);  neg_a2.insert(pidx);
-          }
-        }
-        if (layer==36) { if (!neg_b3.count(pidx)) {
-            m_dc_neg.r3_before->Fill(edge); neg_b3.insert(pidx);
-          }
-          if (pass_cache[pidx] && !neg_a3.count(pidx)) {
-            m_dc_neg.r3_after->Fill(edge);  neg_a3.insert(pidx);
-          }
-        }
+        if (layer==6)  { if (!neg_b1.count(pidx)) { m_dc_neg.r1_before->Fill(edge); neg_b1.insert(pidx); }
+                         if (survived_neg && !neg_a1.count(pidx)) { m_dc_neg.r1_after->Fill(edge); neg_a1.insert(pidx); } }
+        if (layer==18) { if (!neg_b2.count(pidx)) { m_dc_neg.r2_before->Fill(edge); neg_b2.insert(pidx); }
+                         if (survived_neg && !neg_a2.count(pidx)) { m_dc_neg.r2_after->Fill(edge); neg_a2.insert(pidx); } }
+        if (layer==36) { if (!neg_b3.count(pidx)) { m_dc_neg.r3_before->Fill(edge); neg_b3.insert(pidx); }
+                         if (survived_neg && !neg_a3.count(pidx)) { m_dc_neg.r3_after->Fill(edge); neg_a3.insert(pidx); } }
       }
     }
 
     // helper: size of triple intersection
     auto inter3 = [](const std::set<int>& A,
-        const std::set<int>& B,
-        const std::set<int>& C)->size_t {
+                     const std::set<int>& B,
+                     const std::set<int>& C)->size_t {
       const std::set<int>* smallest = &A;
       if (B.size() < smallest->size()) smallest = &B;
       if (C.size() < smallest->size()) smallest = &C;
@@ -620,19 +371,14 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       return cnt;
     };
 
-    // accumulate totals using the intersection across regions
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n +=
-      (long long) inter3(pos_b1, pos_b2, pos_b3);
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  +=
-      (long long) inter3(pos_a1, pos_a2, pos_a3);
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n +=
-      (long long) inter3(neg_b1, neg_b2, neg_b3);
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_after_n  +=
-      (long long) inter3(neg_a1, neg_a2, neg_a3);
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n += (long long) inter3(pos_b1, pos_b2, pos_b3);
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  += (long long) inter3(pos_a1, pos_a2, pos_a3);
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n += (long long) inter3(neg_b1, neg_b2, neg_b3);
+    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_after_n  += (long long) inter3(neg_a1, neg_a2, neg_a3);
   }
 }
 
-// ---- Drawing helpers
+// ---------- Drawing
 void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title) {
   auto it = m_cal.find(pid);
   if (it == m_cal.end()) return;
@@ -646,32 +392,32 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title) {
     gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
 
     auto& H = it->second[s];
-    if (!H.lv_kept) continue;
+    if (!H.lv_before) continue;
 
-    H.lv_kept->SetLineColor(kBlue+1);  H.lv_kept->SetLineWidth(2);  H.lv_kept->SetLineStyle(1);
-    H.lw_kept->SetLineColor(kRed+1);   H.lw_kept->SetLineWidth(2);  H.lw_kept->SetLineStyle(1);
-    H.lv_cut ->SetLineColor(kBlue+1);  H.lv_cut ->SetLineWidth(2);  H.lv_cut ->SetLineStyle(2);
-    H.lw_cut ->SetLineColor(kRed+1);   H.lw_cut ->SetLineWidth(2);  H.lw_cut ->SetLineStyle(2);
+    H.lv_before->SetLineColor(kBlue+1);  H.lv_before->SetLineWidth(2);
+    H.lw_before->SetLineColor(kRed+1);   H.lw_before->SetLineWidth(2);
+    H.lv_after ->SetLineColor(kBlue+1);  H.lv_after ->SetLineWidth(2);  H.lv_after ->SetLineStyle(2);
+    H.lw_after ->SetLineColor(kRed+1);   H.lw_after ->SetLineWidth(2);  H.lw_after ->SetLineStyle(2);
 
-    // survival % for this PID/sector
+    // survival % for this PID/sector (unique pindex)
     long long b = m_cal_counts[pid][s].before;
     long long a = m_cal_counts[pid][s].after;
     double pct = (b>0) ? (100.0*double(a)/double(b)) : 0.0;
 
-    H.lv_kept->SetTitle(Form("%s - Sector %d  [survive = %.3f%%];length (cm);counts",
+    H.lv_before->SetTitle(Form("%s - Sector %d  [survive = %.3f%%];length (cm);counts",
       pid==11?"Electrons":"Photons", s, pct));
 
-    H.lv_kept->Draw("HIST");
-    H.lw_kept->Draw("HISTSAME");
-    H.lv_cut ->Draw("HISTSAME");
-    H.lw_cut ->Draw("HISTSAME");
+    H.lv_before->Draw("HIST");
+    H.lw_before->Draw("HISTSAME");
+    H.lv_after ->Draw("HISTSAME");
+    H.lw_after ->Draw("HISTSAME");
 
     auto* leg = new TLegend(0.55, 0.72, 0.88, 0.90);
     leg->SetBorderSize(0); leg->SetFillStyle(0);
-    leg->AddEntry(H.lv_kept, "lv kept", "l");
-    leg->AddEntry(H.lw_kept, "lw kept", "l");
-    leg->AddEntry(H.lv_cut , "lv cut",  "l");
-    leg->AddEntry(H.lw_cut , "lw cut",  "l");
+    leg->AddEntry(H.lv_before, "lv before", "l");
+    leg->AddEntry(H.lw_before, "lw before", "l");
+    leg->AddEntry(H.lv_after , "lv after",  "l");
+    leg->AddEntry(H.lw_after , "lw after",  "l");
     leg->Draw();
   }
 
@@ -690,17 +436,6 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
     gPad->SetBottomMargin(0.12); gPad->SetTopMargin(0.08);
     h->SetTitle(ttl);
     h->Draw("COLZ");
-
-    // overlays: annulus + holes
-    auto* outer = new TEllipse(0,0, m_ftdraw.rmax, m_ftdraw.rmax);
-    auto* inner = new TEllipse(0,0, m_ftdraw.rmin, m_ftdraw.rmin);
-    outer->SetFillStyle(0); inner->SetFillStyle(0);
-    outer->SetLineStyle(2); inner->SetLineStyle(2);
-    outer->Draw(); inner->Draw();
-    for (auto const& H : m_ftdraw.holes) {
-      auto* e = new TEllipse(H[1], H[2], H[0], H[0]);
-      e->SetFillStyle(0); e->SetLineColor(kBlack); e->SetLineStyle(7); e->Draw();
-    }
   };
 
   auto pct = [&](int pid)->double{
@@ -709,13 +444,13 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
     return (b>0) ? (100.0*double(a)/double(b)) : 0.0;
   };
 
-  draw_pad(1, m_ft_h.at(11).before, "Electrons (before cuts);x (cm);y (cm)");
+  draw_pad(1, m_ft_h.at(11).before, "Electrons (before);x (cm);y (cm)");
   draw_pad(2, m_ft_h.at(11).after,
-    Form("Electrons (after cuts)  [survive = %.3f%%];x (cm);y (cm)", pct(11)));
+    Form("Electrons (after)  [survive = %.3f%%];x (cm);y (cm)", pct(11)));
 
-  draw_pad(3, m_ft_h.at(22).before, "Photons (before cuts);x (cm);y (cm)");
+  draw_pad(3, m_ft_h.at(22).before, "Photons (before);x (cm);y (cm)");
   draw_pad(4, m_ft_h.at(22).after,
-    Form("Photons (after cuts)  [survive = %.3f%%];x (cm);y (cm)", pct(22)));
+    Form("Photons (after)  [survive = %.3f%%];x (cm);y (cm)", pct(22)));
 
   c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
 }
@@ -746,7 +481,7 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title) {
   gPad->SetRightMargin(right);
   gPad->SetBottomMargin(bottom);
   gPad->SetTopMargin(top);
-  m_cvt_after->SetTitle(Form("CVT layer 12 after (hadrons: #pm211,#pm321,#pm2212)  [survive = %.3f%%];phi (deg);theta (deg)", pct));
+  m_cvt_after->SetTitle(Form("CVT layer 12 after (hadrons)  [survive = %.3f%%];phi (deg);theta (deg)", pct));
   m_cvt_after->Draw("COLZ");
 
   c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
@@ -793,17 +528,17 @@ void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H,
 }
 
 void RGAFiducialFilterValidator::Stop() {
-  // PCal canvases
-  DrawCalCanvas(11, "PCal lv & lw (Electrons): kept solid, cut dashed");
-  DrawCalCanvas(22, "PCal lv & lw (Photons): kept solid, cut dashed");
+  // PCAL canvases
+  DrawCalCanvas(11, "PCAL lv & lw (Electrons): before solid, after dashed");
+  DrawCalCanvas(22, "PCAL lv & lw (Photons): before solid, after dashed");
 
   // FT 2x2
   DrawFTCanvas2x2();
 
-  // CVT layer 12 1x2 (combined hadrons) with survive %
+  // CVT 1x2 (combined hadrons) with survive %
   DrawCVTCanvas1x2("CVT layer 12 (Hadrons): phi vs theta");
 
-  // Decide torus labels
+  // Torus labels for DC summaries
   bool electron_out = (m_torus_out_events >= m_torus_in_events);
   const char* pos_bend_id = electron_out ? "inb" : "out";
   const char* neg_bend_id = electron_out ? "out" : "inb";
