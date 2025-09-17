@@ -32,13 +32,30 @@ namespace iguana::clas12 {
 
   // ---- Config loader (read relative to this algorithm's YAML root)
   void RGAFiducialFilter::LoadConfigFromYAML() {
-    ParseYAMLConfig(); 
+    // Load (or reload) the YAML for this algorithm
+    ParseYAMLConfig();
 
-    // --- Calorimeter strictness
+    // Helpers: try flat path first; if missing, try wrapped under "clas12::RGAFiducialFilter"
+    auto getD = [&](const char* dbg_key,
+                    std::initializer_list<const char*> flat,
+                    std::initializer_list<const char*> wrapped) -> std::vector<double> {
+      try { return GetOptionVector<double>(dbg_key, Path(flat)); }
+      catch (...) { return GetOptionVector<double>(dbg_key, Path(wrapped)); }
+    };
+    auto getI = [&](const char* dbg_key,
+                    std::initializer_list<const char*> flat,
+                    std::initializer_list<const char*> wrapped) -> std::vector<int> {
+      try { return GetOptionVector<int>(dbg_key, Path(flat)); }
+      catch (...) { return GetOptionVector<int>(dbg_key, Path(wrapped)); }
+    };
+
+    // --- Calorimeter strictness (scalar OK; GetOptionVector accepts scalars as [value])
     {
-      auto v = GetOptionVector<int>("rgafid.cal.strictness",
-                                    Path({"calorimeter", "strictness"}));
-      if (v.empty()) throw std::runtime_error("[RGAFID] Missing 'calorimeter.strictness'");
+      auto v = getI("rgafid.cal.strictness",
+                    /*flat   */ {"calorimeter", "strictness"},
+                    /*wrapped*/ {"clas12::RGAFiducialFilter", "calorimeter", "strictness"});
+      if (v.empty())
+        throw std::runtime_error("[RGAFID] Missing 'calorimeter.strictness'");
       m_cal_strictness = v.at(0);
       if (m_cal_strictness < 1 || m_cal_strictness > 3)
         throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1,2,3");
@@ -46,8 +63,9 @@ namespace iguana::clas12 {
 
     // --- Forward Tagger
     {
-      auto radius = GetOptionVector<double>("rgafid.ft.radius",
-                                            Path({"forward_tagger", "radius"}));
+      auto radius = getD("rgafid.ft.radius",
+                         {"forward_tagger", "radius"},
+                         {"clas12::RGAFiducialFilter", "forward_tagger", "radius"});
       if (radius.size() != 2)
         throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin,rmax]");
       u_ft_params.rmin = static_cast<float>(radius[0]);
@@ -56,53 +74,62 @@ namespace iguana::clas12 {
           !(u_ft_params.rmin > 0.f && u_ft_params.rmax > u_ft_params.rmin))
         throw std::runtime_error("[RGAFID] invalid forward_tagger.radius values");
 
-      auto holes_flat = GetOptionVector<double>("rgafid.ft.holes_flat",
-                                                Path({"forward_tagger", "holes_flat"}));
-      if (!holes_flat.empty() && (holes_flat.size()%3)!=0)
+      auto holes_flat = getD("rgafid.ft.holes_flat",
+                             {"forward_tagger", "holes_flat"},
+                             {"clas12::RGAFiducialFilter", "forward_tagger", "holes_flat"});
+      if (!holes_flat.empty() && (holes_flat.size() % 3) != 0)
         throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
       u_ft_params.holes.clear();
-      u_ft_params.holes.reserve(holes_flat.size()/3);
-      for (std::size_t i=0;i<holes_flat.size();i+=3) {
-        float R  = static_cast<float>(holes_flat[i+0]);
-        float cx = static_cast<float>(holes_flat[i+1]);
-        float cy = static_cast<float>(holes_flat[i+2]);
-        if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R<=0.f)
+      u_ft_params.holes.reserve(holes_flat.size() / 3);
+      for (std::size_t i = 0; i < holes_flat.size(); i += 3) {
+        float R  = static_cast<float>(holes_flat[i + 0]);
+        float cx = static_cast<float>(holes_flat[i + 1]);
+        float cy = static_cast<float>(holes_flat[i + 2]);
+        if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R <= 0.f)
           throw std::runtime_error("[RGAFID] invalid FT hole triple in 'holes_flat'");
-        u_ft_params.holes.push_back({R,cx,cy});
+        u_ft_params.holes.push_back({R, cx, cy});
       }
     }
 
     // --- CVT
     {
-      m_cvt.edge_layers =
-        GetOptionVector<int>("rgafid.cvt.edge_layers", Path({"cvt", "edge_layers"}));
+      m_cvt.edge_layers = getI("rgafid.cvt.edge_layers",
+                               {"cvt", "edge_layers"},
+                               {"clas12::RGAFiducialFilter", "cvt", "edge_layers"});
       if (m_cvt.edge_layers.empty())
         throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
 
-      auto v_edge_min =
-        GetOptionVector<double>("rgafid.cvt.edge_min", Path({"cvt", "edge_min"}));
+      auto v_edge_min = getD("rgafid.cvt.edge_min",
+                             {"cvt", "edge_min"},
+                             {"clas12::RGAFiducialFilter", "cvt", "edge_min"});
       if (v_edge_min.empty())
         throw std::runtime_error("[RGAFID] 'cvt.edge_min' must be provided as [value]");
       m_cvt.edge_min = v_edge_min.at(0);
 
-      m_cvt.phi_forbidden_deg =
-        GetOptionVector<double>("rgafid.cvt.phi_forbidden_deg",
-                                Path({"cvt", "phi_forbidden_deg"}));
-      if (!m_cvt.phi_forbidden_deg.empty() &&
-          (m_cvt.phi_forbidden_deg.size()%2)!=0)
+      m_cvt.phi_forbidden_deg = getD("rgafid.cvt.phi_forbidden_deg",
+                                     {"cvt", "phi_forbidden_deg"},
+                                     {"clas12::RGAFiducialFilter", "cvt", "phi_forbidden_deg"});
+      if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0)
         throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
     }
 
     // --- DC
     {
-      auto v_theta_small =
-        GetOptionVector<double>("rgafid.dc.theta_small_deg", Path({"dc", "theta_small_deg"}));
+      auto v_theta_small = getD("rgafid.dc.theta_small_deg",
+                                {"dc", "theta_small_deg"},
+                                {"clas12::RGAFiducialFilter", "dc", "theta_small_deg"});
       if (v_theta_small.empty())
         throw std::runtime_error("[RGAFID] 'dc.theta_small_deg' must be provided as [value]");
       m_dc.theta_small_deg = v_theta_small.at(0);
 
-      auto need3 = [&](const char* key) -> std::array<double,3> {
-        auto vv = GetOptionVector<double>(std::string("rgafid.dc.") + key, Path({"dc", key}));
+      auto need3 = [&](const char* key) -> std::array<double, 3> {
+        std::vector<double> vv;
+        try {
+          vv = GetOptionVector<double>(std::string("rgafid.dc.") + key, Path({"dc", key}));
+        } catch (...) {
+          vv = GetOptionVector<double>(std::string("rgafid.dc.") + key,
+                                       Path({"clas12::RGAFiducialFilter", "dc", key}));
+        }
         if (vv.size() != 3) {
           std::ostringstream msg; msg << "[RGAFID] 'dc." << key << "' must be [e1,e2,e3]";
           throw std::runtime_error(msg.str());
@@ -118,33 +145,6 @@ namespace iguana::clas12 {
       m_dc.in_small_e1 = in_s[0]; m_dc.in_small_e2 = in_s[1]; m_dc.in_small_e3 = in_s[2];
       m_dc.in_large_e1 = in_l[0]; m_dc.in_large_e2 = in_l[1]; m_dc.in_large_e3 = in_l[2];
     }
-  }
-
-  // user override for strictness
-  void RGAFiducialFilter::SetStrictness(int strictness) {
-    u_strictness_user = strictness;
-  }
-
-  // start main filter
-  void RGAFiducialFilter::Start(hipo::banklist& banks)
-  {
-    // Bank presence
-    b_particle = GetBankIndex(banks, "REC::Particle");
-    if (banklist_has(banks, "RUN::config")) {
-      b_config = GetBankIndex(banks, "RUN::config");
-    }
-    if (banklist_has(banks, "REC::Calorimeter")) {
-      b_calor  = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor = true;
-    }
-    if (banklist_has(banks, "REC::ForwardTagger")) {
-      b_ft    = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft = true;
-    }
-    if (banklist_has(banks, "REC::Traj")) {
-      b_traj  = GetBankIndex(banks, "REC::Traj"); m_have_traj = true;
-    }
-
-    // load parameters from config
-    LoadConfigFromYAML();
   }
 
   void RGAFiducialFilter::Run(hipo::banklist& banks) const {
