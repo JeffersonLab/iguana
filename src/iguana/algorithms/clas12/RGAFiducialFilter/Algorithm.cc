@@ -1,7 +1,7 @@
 // src/iguana/algorithms/clas12/RGAFiducialFilter/Algorithm.cc
 
 #include "Algorithm.h"
-#include "iguana/services/YAMLReader.h"
+#include <yaml-cpp/yaml.h>
 
 #include <algorithm>
 #include <array>
@@ -17,28 +17,194 @@
 
 namespace iguana::clas12 {
 
-REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter);
+REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
 
-// ------------------------------------------------------------
-// Small helpers
-// ------------------------------------------------------------
+// ------------------------------
+// tiny util
+// ------------------------------
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
 
+// ------------------------------
+// YAML loader (safe: no accidental insertion)
+// ------------------------------
+static YAML::Node RGAFID_LoadRootYAML() {
+  static YAML::Node root;
+  static bool loaded = false;
+  if (!loaded) {
+    std::string base;
+    if (const char* env = std::getenv("IGUANA_ETCDIR")) {
+      base = env; // should already end with /algorithms
+    } else {
+      base = std::string(IGUANA_ETCDIR) + "/algorithms";
+    }
+    const std::string path = base + "/clas12/RGAFiducialFilter/Config.yaml";
+
+    YAML::Node doc;
+    try {
+      doc = YAML::LoadFile(path);
+    } catch (const std::exception& e) {
+      throw std::runtime_error(std::string("[RGAFID] Could not load Config.yaml at ") +
+                               path + " : " + e.what());
+    }
+
+    // If wrapped, use that subtree; otherwise use the whole document.
+    const YAML::Node wrapped = doc["clas12::RGAFiducialFilter"];
+    root = (wrapped.IsDefined() ? wrapped : doc);
+    loaded = true;
+  }
+  return root;
+}
+
+static YAML::Node RGAFID_GetNode(std::initializer_list<const char*> keys,
+                                 const char* dbgkey_for_errors) {
+  const YAML::Node doc = RGAFID_LoadRootYAML(); // keep const to use const operator[]
+  const YAML::Node* cur = &doc;
+  YAML::Node current = doc;
+  for (auto* k : keys) {
+    YAML::Node next = (*cur)[k];   // const indexing: no insertion
+    if (!next.IsDefined()) {
+      std::ostringstream msg;
+      msg << "[RGAFID] Missing key '" << k << "' while reading " << dbgkey_for_errors;
+      throw std::runtime_error(msg.str());
+    }
+    current = next;
+    cur = &current;
+  }
+  return current;
+}
+
+template <typename T>
+static T RGAFID_ReadScalar(std::initializer_list<const char*> keys,
+                           const char* dbgkey_for_errors) {
+  YAML::Node node = RGAFID_GetNode(keys, dbgkey_for_errors);
+  if (!node.IsScalar()) {
+    throw std::runtime_error(std::string("[RGAFID] Expected scalar for ") + dbgkey_for_errors);
+  }
+  try { return node.as<T>(); }
+  catch (const std::exception& e) {
+    throw std::runtime_error(std::string("[RGAFID] Scalar conversion failed for ") +
+                             dbgkey_for_errors + ": " + e.what());
+  }
+}
+
+template <typename T>
+static std::vector<T> RGAFID_ReadVector(std::initializer_list<const char*> keys,
+                                        const char* dbgkey_for_errors) {
+  YAML::Node node = RGAFID_GetNode(keys, dbgkey_for_errors);
+  std::vector<T> out;
+  if (node.IsSequence()) {
+    out.reserve(node.size());
+    for (auto const& item : node) {
+      try { out.push_back(item.as<T>()); }
+      catch (const std::exception& e) {
+        std::ostringstream msg; msg << "[RGAFID] Vector conversion failed for "
+                                    << dbgkey_for_errors << ": " << e.what();
+        throw std::runtime_error(msg.str());
+      }
+    }
+    return out;
+  }
+  if (node.IsScalar()) {
+    try { out.push_back(node.as<T>()); return out; }
+    catch (const std::exception& e) {
+      std::ostringstream msg; msg << "[RGAFID] Scalar-as-vector conversion failed for "
+                                  << dbgkey_for_errors << ": " << e.what();
+      throw std::runtime_error(msg.str());
+    }
+  }
+  std::ostringstream msg; msg << "[RGAFID] Expected sequence (or scalar) for " << dbgkey_for_errors;
+  throw std::runtime_error(msg.str());
+}
+
+// ------------------------------
+// Config loader
+// ------------------------------
+void RGAFiducialFilter::LoadConfig() {
+  // m_cal_strictness
+  m_cal_strictness = RGAFID_ReadScalar<int>({"calorimeter","strictness"},
+                                            "calorimeter.strictness");
+  if (m_cal_strictness < 1 || m_cal_strictness > 3)
+    throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1,2,3");
+
+  // FT
+  {
+    auto radius = RGAFID_ReadVector<double>({"forward_tagger","radius"},
+                                            "forward_tagger.radius");
+    if (radius.size() != 2)
+      throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin,rmax]");
+    u_ft_params.rmin = static_cast<float>(radius[0]);
+    u_ft_params.rmax = static_cast<float>(radius[1]);
+    if (!(std::isfinite(u_ft_params.rmin) && std::isfinite(u_ft_params.rmax)) ||
+        !(u_ft_params.rmin > 0.f && u_ft_params.rmax > u_ft_params.rmin))
+      throw std::runtime_error("[RGAFID] invalid forward_tagger.radius values");
+
+    u_ft_params.holes.clear();
+    if (RGAFID_GetNode({"forward_tagger","holes_flat"}, "forward_tagger.holes_flat").IsDefined()) {
+      auto holes_flat = RGAFID_ReadVector<double>({"forward_tagger","holes_flat"},
+                                                  "forward_tagger.holes_flat");
+      if (!holes_flat.empty() && (holes_flat.size() % 3) != 0)
+        throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
+      u_ft_params.holes.reserve(holes_flat.size()/3);
+      for (std::size_t i=0; i+2<holes_flat.size(); i+=3) {
+        float R  = static_cast<float>(holes_flat[i+0]);
+        float cx = static_cast<float>(holes_flat[i+1]);
+        float cy = static_cast<float>(holes_flat[i+2]);
+        if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R<=0.f)
+          throw std::runtime_error("[RGAFID] invalid FT hole triple in 'holes_flat'");
+        u_ft_params.holes.push_back({R,cx,cy});
+      }
+    }
+  }
+
+  // CVT
+  {
+    m_cvt.edge_layers = RGAFID_ReadVector<int>({"cvt","edge_layers"}, "cvt.edge_layers");
+    if (m_cvt.edge_layers.empty())
+      throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
+
+    m_cvt.edge_min = RGAFID_ReadScalar<double>({"cvt","edge_min"}, "cvt.edge_min");
+
+    m_cvt.phi_forbidden_deg.clear();
+    if (RGAFID_GetNode({"cvt","phi_forbidden_deg"}, "cvt.phi_forbidden_deg").IsDefined()) {
+      m_cvt.phi_forbidden_deg =
+        RGAFID_ReadVector<double>({"cvt","phi_forbidden_deg"}, "cvt.phi_forbidden_deg");
+      if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0)
+        throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
+    }
+  }
+
+  // DC
+  {
+    m_dc.theta_small_deg = RGAFID_ReadScalar<double>({"dc","theta_small_deg"},
+                                                     "dc.theta_small_deg");
+
+    auto need3 = [&](const char* key) -> std::array<double,3> {
+      auto vv = RGAFID_ReadVector<double>({"dc", key}, (std::string("dc.") + key).c_str());
+      if (vv.size() != 3) {
+        std::ostringstream msg; msg << "[RGAFID] 'dc." << key << "' must be [e1,e2,e3]";
+        throw std::runtime_error(msg.str());
+      }
+      return {vv[0], vv[1], vv[2]};
+    };
+
+    auto out  = need3("thresholds_out");
+    auto in_s = need3("thresholds_in_smallTheta");
+    auto in_l = need3("thresholds_in_largeTheta");
+
+    m_dc.out_e1 = out[0];  m_dc.out_e2 = out[1];  m_dc.out_e3 = out[2];
+    m_dc.in_small_e1 = in_s[0]; m_dc.in_small_e2 = in_s[1]; m_dc.in_small_e3 = in_s[2];
+    m_dc.in_large_e1 = in_l[0]; m_dc.in_large_e2 = in_l[1]; m_dc.in_large_e3 = in_l[2];
+  }
+}
+
+// ------------------------------
+// Lifecycle
+// ------------------------------
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
-  // Get configuration using Iguana's system
-  ParseYAMLConfig();
-  
-  // Create concurrent parameters
-  o_cal_strictness = ConcurrentParamFactory::Create<int>();
-  o_ft_params = ConcurrentParamFactory::Create<FTParams>();
-  o_cvt_params = ConcurrentParamFactory::Create<CVTParams>();
-  o_dc_params = ConcurrentParamFactory::Create<DCParams>();
-
-  // Discover available banks
   b_particle = GetBankIndex(banks, "REC::Particle");
 
   if (banklist_has(banks, "RUN::config")) {
@@ -57,108 +223,34 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_have_traj = true;
   }
 
-  // Load initial configuration
-  Reload(0, 0);
+  // Read config from YAML (wrapped or flat supported)
+  LoadConfig();
 }
 
-void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const {
-  std::lock_guard<std::mutex> const lock(m_mutex);
-  
-  // Load configuration values
-  o_cal_strictness->Save(GetOption<int>("calorimeter/strictness"), key);
-  
-  // Load FT parameters
-  FTParams ft_params;
-  auto radius = GetOptionVector<double>("forward_tagger/radius");
-  if (radius.size() != 2)
-    throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin,rmax]");
-  
-  ft_params.rmin = static_cast<float>(radius[0]);
-  ft_params.rmax = static_cast<float>(radius[1]);
-  
-  if (HasOption("forward_tagger/holes_flat")) {
-    auto holes_flat = GetOptionVector<double>("forward_tagger/holes_flat");
-    if (!holes_flat.empty() && (holes_flat.size() % 3) != 0)
-      throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
-    
-    ft_params.holes.clear();
-    ft_params.holes.reserve(holes_flat.size()/3);
-    for (std::size_t i=0; i+2<holes_flat.size(); i+=3) {
-      float R  = static_cast<float>(holes_flat[i+0]);
-      float cx = static_cast<float>(holes_flat[i+1]);
-      float cy = static_cast<float>(holes_flat[i+2]);
-      if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R<=0.f)
-        throw std::runtime_error("[RGAFID] invalid FT hole triple in 'holes_flat'");
-      ft_params.holes.push_back({R,cx,cy});
-    }
-  }
-  o_ft_params->Save(ft_params, key);
-  
-  // Load CVT parameters
-  CVTParams cvt_params;
-  cvt_params.edge_layers = GetOptionVector<int>("cvt/edge_layers");
-  if (cvt_params.edge_layers.empty())
-    throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
-
-  cvt_params.edge_min = GetOption<double>("cvt/edge_min");
-
-  if (HasOption("cvt/phi_forbidden_deg")) {
-    cvt_params.phi_forbidden_deg = GetOptionVector<double>("cvt/phi_forbidden_deg");
-    if (!cvt_params.phi_forbidden_deg.empty() && (cvt_params.phi_forbidden_deg.size() % 2) != 0)
-      throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
-  }
-  o_cvt_params->Save(cvt_params, key);
-  
-  // Load DC parameters
-  DCParams dc_params;
-  dc_params.theta_small_deg = GetOption<double>("dc/theta_small_deg");
-
-  auto read_thresholds = [&](const std::string& key) -> std::array<double, 3> {
-    auto v = GetOptionVector<double>(key);
-    if (v.size() != 3) {
-      throw std::runtime_error("[RGAFID] 'dc." + key + "' must be [e1,e2,e3]");
-    }
-    return {v[0], v[1], v[2]};
-  };
-
-  auto out = read_thresholds("dc/thresholds_out");
-  auto in_s = read_thresholds("dc/thresholds_in_smallTheta");
-  auto in_l = read_thresholds("dc/thresholds_in_largeTheta");
-
-  dc_params.out_e1 = out[0];  dc_params.out_e2 = out[1];  dc_params.out_e3 = out[2];
-  dc_params.in_small_e1 = in_s[0]; dc_params.in_small_e2 = in_s[1]; dc_params.in_small_e3 = in_s[2];
-  dc_params.in_large_e1 = in_l[0]; dc_params.in_large_e2 = in_l[1]; dc_params.in_large_e3 = in_l[2];
-  o_dc_params->Save(dc_params, key);
-}
-
-bool RGAFiducialFilter::Filter(int track_index,
-                               const hipo::bank& particleBank,
-                               const hipo::bank& configBank,
-                               const hipo::bank* calBank,
-                               const hipo::bank* ftBank,
-                               const hipo::bank* trajBank) const
-{
-  // Get current configuration
-  auto strictness = o_cal_strictness->Load(0);
-  auto ft_params = o_ft_params->Load(0);
-  auto cvt_params = o_cvt_params->Load(0);
-  auto dc_params = o_dc_params->Load(0);
+void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto& conf     = GetBank(banks, b_config,   "RUN::config");
   auto* cal      = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter")   : nullptr;
   auto* ft       = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
   auto* traj     = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj")          : nullptr;
 
-  // Prune in place: keep only rows that pass fiducial logic
+  // Prune in place
   particle.getMutableRowList().filter([&](auto /*bank*/, auto row) {
     const bool keep = Filter(static_cast<int>(row), particle, conf, cal, ft, traj);
-    return keep ? 1 : 0;   // 1 = keep row, 0 = drop row
+    return keep ? 1 : 0;
   });
 }
 
-// ------------------------------------------------------------
+void RGAFiducialFilter::SetStrictness(int s) {
+  if (s<1 || s>3) {
+    throw std::runtime_error("[RGAFID] SetStrictness expects 1,2,3");
+  }
+  u_strictness_user = s;
+}
+
+// ------------------------------
 // Core helpers
-// ------------------------------------------------------------
+// ------------------------------
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   CalLayers out;
@@ -178,7 +270,7 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
 }
 
 bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness) {
-  if (!H.has_any) return true; // no PCal track -> pass
+  if (!H.has_any) return true;
 
   float min_lv = std::numeric_limits<float>::infinity();
   float min_lw = std::numeric_limits<float>::infinity();
@@ -192,7 +284,7 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness) {
 }
 
 bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) const {
-  if (!ftBank) return true; // no FT track -> pass
+  if (!ftBank) return true;
 
   const auto& ft = *ftBank;
   const int n = ft.getRows();
@@ -211,9 +303,9 @@ bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) con
       const double d = std::hypot(x-cx, y-cy);
       if (d < R) return false;
     }
-    return true; // first association decides
+    return true; // first associated FT hit decides
   }
-  return true; // no FT association -> pass
+  return true; // no FT association
 }
 
 bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) const {
@@ -227,7 +319,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 
   for (int i=0; i<n; ++i) {
     if (traj.getInt("pindex", i)   != pindex) continue;
-    if (traj.getInt("detector", i) != 5     ) continue; // CVT == 5
+    if (traj.getInt("detector", i) != 5     ) continue; // CVT
 
     const int layer = traj.getInt("layer", i);
     const double e  = traj.getFloat("edge", i);
@@ -245,12 +337,12 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 
   for (int L : m_cvt.edge_layers) {
     auto it = edge_at_layer.find(L);
-    if (it == edge_at_layer.end()) continue; // missing layer -> pass
+    if (it == edge_at_layer.end()) continue; // missing -> pass
     if (!(it->second > m_cvt.edge_min)) return false;
   }
 
-  constexpr double kPI = 3.14159265358979323846;
   if (saw12 && !m_cvt.phi_forbidden_deg.empty()) {
+    constexpr double kPI = 3.14159265358979323846;
     double phi = std::atan2(y12, x12) * (180.0 / kPI);
     if (phi < 0) phi += 360.0;
     for (std::size_t i=0; i+1<m_cvt.phi_forbidden_deg.size(); i+=2) {
@@ -259,7 +351,6 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
       if (phi > lo && phi < hi) return false;
     }
   }
-
   return true;
 }
 
@@ -269,10 +360,9 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   if (!trajBank) return true;
 
   const int pid = particleBank.getInt("pid", pindex);
-  // cuts are defined for inbending and outbending particles separately
   const bool isNeg = (pid== 11 || pid==-211 || pid==-321 || pid==-2212);
   const bool isPos = (pid==-11 || pid== 211 || pid== 321 || pid== 2212);
-  if (!(isNeg || isPos)) return true; // photon, neutron or unassigned
+  if (!(isNeg || isPos)) return true;
 
   const float torus = configBank.getFloat("torus", 0);
   const bool electron_out = (torus == 1.0f);
@@ -290,7 +380,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const int n = traj.getRows();
   for (int i=0; i<n; ++i) {
     if (traj.getInt("pindex", i) != pindex) continue;
-    if (traj.getInt("detector", i) != 6)    continue; // DC == 6
+    if (traj.getInt("detector", i) != 6)    continue; // DC
     const int layer = traj.getInt("layer", i);
     const double e  = traj.getFloat("edge", i);
     if      (layer== 6) e1 = e;
@@ -313,9 +403,9 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   return true;
 }
 
-// ------------------------------------------------------------
-// Filter (per-track)
-// ------------------------------------------------------------
+// ------------------------------
+// Per-track decision
+// ------------------------------
 bool RGAFiducialFilter::Filter(int track_index,
                                const hipo::bank& particleBank,
                                const hipo::bank& configBank,
@@ -338,8 +428,7 @@ bool RGAFiducialFilter::Filter(int track_index,
 
   bool pass = true;
 
-  if (pid == 11) {
-    // Electron: FT topology -> FT cut; else -> CAL + DC
+  if (pid == 11) { // electron
     if (hasFT) {
       pass = pass && PassFTFiducial(track_index, ftBank);
     } else {
@@ -352,8 +441,7 @@ bool RGAFiducialFilter::Filter(int track_index,
     return pass;
   }
 
-  if (pid == 22) {
-    // Photon: FT or CAL, whichever is associated (don’t AND them)
+  if (pid == 22) { // photon
     if (hasFT) {
       pass = pass && PassFTFiducial(track_index, ftBank);
     } else if (hasCal) {
@@ -363,7 +451,7 @@ bool RGAFiducialFilter::Filter(int track_index,
     return pass;
   }
 
-  // Charged hadrons
+  // charged hadrons
   if (pid== 211 || pid== 321 || pid== 2212 ||
       pid==-211 || pid==-321 || pid==-2212) {
     pass = pass && PassCVTFiducial(track_index, trajBank);
@@ -371,7 +459,7 @@ bool RGAFiducialFilter::Filter(int track_index,
     return pass;
   }
 
-  // neutrals/others
+  // neutrals/others: no cut
   return true;
 }
 
