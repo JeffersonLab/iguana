@@ -280,9 +280,7 @@ void RGAFiducialFilter::SetStrictness(int s) {
   u_strictness_user = s;
 }
 
-// ------------------------------
-// Core helpers
-// ------------------------------
+// core helpers
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   CalLayers out;
@@ -387,8 +385,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 }
 
 bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBank,
-                                       const hipo::bank& configBank,
-                                       const hipo::bank* trajBank) const {
+    const hipo::bank& configBank, const hipo::bank* trajBank) const {
   if (!trajBank) return true;
 
   const int pid = particleBank.getInt("pid", pindex);
@@ -405,7 +402,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const double py = particleBank.getFloat("py", pindex);
   const double pz = particleBank.getFloat("pz", pindex);
   const double rho = std::hypot(px, py);
-  const double theta = std::atan2(rho, (pz==0.0 ? 1e-12 : pz)) * (180.0 / 3.14159265358979323846);
+  const double theta = std::atan2(rho, (pz==0.0 ? 1e-12 : pz)) * (180.0 / 3.14159);
 
   double e1=0.0, e2=0.0, e3=0.0;
   const auto& traj = *trajBank;
@@ -435,16 +432,10 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   return true;
 }
 
-// ------------------------------
-// Per-track decision
-// ------------------------------
-bool RGAFiducialFilter::Filter(int track_index,
-                               const hipo::bank& particleBank,
-                               const hipo::bank& configBank,
-                               const hipo::bank* calBank,
-                               const hipo::bank* ftBank,
-                               const hipo::bank* trajBank) const
-{
+// per-track decision
+bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
+  const hipo::bank& configBank, const hipo::bank* calBank,
+  const hipo::bank* ftBank, const hipo::bank* trajBank) const {
   const int pid = particleBank.getInt("pid", track_index);
   const int strictness = u_strictness_user.value_or(m_cal_strictness);
 
@@ -495,4 +486,4 @@ bool RGAFiducialFilter::Filter(int track_index,
   return true;
 }
 
-} // namespace iguana::clas12
+} 

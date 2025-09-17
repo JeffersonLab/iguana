@@ -29,7 +29,7 @@ namespace iguana::clas12 {
     DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
   public:
-    // ---- Public param types (exposed so Validator can read them via getters)
+    // public param types 
     struct FTParams {
       float rmin = 0;
       float rmax = 0;
@@ -41,7 +41,7 @@ namespace iguana::clas12 {
       std::vector<double> phi_forbidden_deg;  // flattened pairs (open intervals)
     };
     struct DCParams {
-      // Thresholds (cm)
+      // thresholds (cm)
       double theta_small_deg   = 10.0;   // theta boundary for special inbending case
       // inbending, theta < theta_small_deg
       double in_small_e1 = 10.0, in_small_e2 = 10.0, in_small_e3 = 10.0;
@@ -51,12 +51,12 @@ namespace iguana::clas12 {
       double out_e1      = 3.0,  out_e2      = 3.0,  out_e3      = 10.0;
     };
 
-    // ---- Algorithm API
+    // algorithm API
     void Start(hipo::banklist& banks) override;
     void Run  (hipo::banklist& banks) const override;
     void Stop () override {}
 
-    // User controlled override (takes precedence over YAML). Call before Start().
+    // user controlled override (takes precedence over YAML). Call before Start().
     void SetStrictness(int strictness);
 
     // ---- Read-only accessors for Validator (single source of truth)
@@ -65,7 +65,6 @@ namespace iguana::clas12 {
     const CVTParams&     CVT()           const { return m_cvt; }
     const DCParams&      DC()            const { return m_dc; }
 
-    // Public helper so Validator can delegate "keep?" if desired
     bool ShouldKeepRow(
       int track_index,
       const hipo::bank& particleBank,

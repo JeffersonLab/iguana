@@ -18,13 +18,12 @@ namespace iguana::clas12 {
 
 REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
 
-// tiny util
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
 
-// ---------- Book plots (no config read; pure visualization)
+// book plots (no config read; pure visualization)
 void RGAFiducialFilterValidator::BookIfNeeded() {
   // PCAL: 0–45 cm with 4.5 cm bins (bar width)
   const int nb = 10;
@@ -35,38 +34,36 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
     for (int s=1; s<=6; ++s) {
       if (!P[s].lv_before) {
         P[s].lv_before = new TH1D(Form("h_pcal_lv_before_pid%d_s%d", pid, s),
-                                  Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+          Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
         P[s].lv_before->SetStats(0);
       }
       if (!P[s].lv_after) {
         P[s].lv_after = new TH1D(Form("h_pcal_lv_after_pid%d_s%d", pid, s),
-                                 Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+          Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
         P[s].lv_after->SetStats(0);
       }
       if (!P[s].lw_before) {
         P[s].lw_before = new TH1D(Form("h_pcal_lw_before_pid%d_s%d", pid, s),
-                                  Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+          Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
         P[s].lw_before->SetStats(0);
       }
       if (!P[s].lw_after) {
         P[s].lw_after = new TH1D(Form("h_pcal_lw_after_pid%d_s%d", pid, s),
-                                 Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
+          Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
         P[s].lw_after->SetStats(0);
       }
     }
   }
 
-  // FT: x,y in ±20 cm
+  // FT: x,y in +/-20 cm
   for (int pid : kPIDs) {
     auto& F = m_ft_h[pid];
     if (!F.before)
       F.before = new TH2F(Form("h_ft_before_pid%d", pid),
-                          Form("FT x-y before (PID %d);x (cm);y (cm)", pid),
-                          120, -20, 20, 120, -20, 20);
+        Form("FT x-y before (PID %d);x (cm);y (cm)", pid), 120, -20, 20, 120, -20, 20);
     if (!F.after)
       F.after  = new TH2F(Form("h_ft_after_pid%d", pid),
-                          Form("FT x-y after (PID %d);x (cm);y (cm)", pid),
-                          120, -20, 20, 120, -20, 20);
+        Form("FT x-y after (PID %d);x (cm);y (cm)", pid), 120, -20, 20, 120, -20, 20);
     F.before->SetStats(0);
     F.after->SetStats(0);
   }
@@ -120,14 +117,12 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
     b_traj = GetBankIndex(banks, "REC::Traj"); m_have_traj=true;
   } else {
     m_log->Info("[RGAFID][VAL] REC::Traj not provided; CVT/DC plots disabled. "
-                "Re-run with -b REC::Traj to enable trajectory-based plots.");
+      "Re-run with -b REC::Traj to enable trajectory-based plots.");
   }
   b_config = GetBankIndex(banks, "RUN::config");
 
-  // Define algorithm sequence with the single algorithm we’re validating.
   m_algo_seq = std::make_unique<AlgorithmSequence>();
   m_algo_seq->Add("clas12::RGAFiducialFilter");
-  // No per-validator options — the algorithm will read its own Config.yaml.
   m_algo_seq->Start(banks);
 
   // Output
@@ -154,15 +149,15 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto& config   = GetBank(banks, b_config,   "RUN::config");
 
-  // Track torus polarity stats (labels for DC summary)
+  // track torus polarity stats (labels for DC summary)
   {
     bool e_out = (config.getFloat("torus", 0) == 1.0f);
     if (e_out) const_cast<RGAFiducialFilterValidator*>(this)->m_torus_out_events++;
     else       const_cast<RGAFiducialFilterValidator*>(this)->m_torus_in_events++;
   }
 
-  // Snapshot BEFORE sets of pindex
-  std::unordered_set<int> eorg_before;   // electrons or photons
+  // snapshot BEFORE sets of pindex
+  std::unordered_set<int> eorg_before;  
   std::unordered_set<int> had_before;
   std::unordered_set<int> pos_before, neg_before;
 
@@ -176,7 +171,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     else if (pid<0) neg_before.insert(pidx);
   }
 
-  // ---------- Run the algorithm (this will prune REC::Particle in place)
+  // run the algorithm to prune REC::Particle in place
   m_algo_seq->Run(banks);
 
   // Snapshot AFTER sets
@@ -194,12 +189,9 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     else if (pid<0) neg_after.insert(pidx);
   }
 
-  // From here on, we fill *both* before & after by iterating current banks
-  // and checking membership in BEFORE/AFTER pindex sets.
-
   std::scoped_lock<std::mutex> lock(m_mutex);
 
-  // ---------- PCAL before/after (electrons, photons)
+  // PCAL before/after (electrons, photons)
   if (m_have_calor) {
     auto& cal = GetBank(banks, b_calor, "REC::Calorimeter");
 
@@ -220,7 +212,8 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
 
       // PID for this pindex (from current particle bank — still fine)
       int pid = 11;
-      for (auto r : particle.getRowList()) if ((int)r==pidx) { pid = particle.getInt("pid", r); break; }
+      for (auto r : particle.getRowList()) if ((int)r==pidx) { 
+        pid = particle.getInt("pid", r); break; }
       if (pid!=11 && pid!=22) continue;
 
       auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sector];
@@ -253,7 +246,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     }
   }
 
-  // ---------- FT XY before/after (e-/gamma)
+  // FT XY before/after (e-/gamma)
   if (m_have_ft) {
     auto& ft = GetBank(banks, b_ft, "REC::ForwardTagger");
 
@@ -287,7 +280,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     const_cast<RGAFiducialFilterValidator*>(this)->m_ft_after_n [22] += seen_a_g.size();
   }
 
-  // ---------- CVT layer 12 phi/theta before/after (hadrons)
+  // CVT layer 12 phi/theta before/after (hadrons)
   if (m_have_traj) {
     auto& traj = GetBank(banks, b_traj, "REC::Traj");
 
@@ -319,7 +312,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     const_cast<RGAFiducialFilterValidator*>(this)->m_cvt_after_n  += (long long) a_seen.size();
   }
 
-  // ---------- DC edges pos/neg before/after
+  // DC edges pos/neg before/after
   if (m_have_traj) {
     auto& traj = GetBank(banks, b_traj, "REC::Traj");
 
@@ -334,7 +327,6 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       double edge = traj.getFloat("edge", i);
       int layer   = traj.getInt("layer", i);
 
-      // Sign from BEFORE sets (status from Particle)
       bool is_pos_before = pos_before.count(pidx);
       bool is_neg_before = neg_before.count(pidx);
       if (!is_pos_before && !is_neg_before) continue;
@@ -344,25 +336,24 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
 
       if (is_pos_before) {
         if (layer==6)  { if (!pos_b1.count(pidx)) { m_dc_pos.r1_before->Fill(edge); pos_b1.insert(pidx); }
-                         if (survived_pos && !pos_a1.count(pidx)) { m_dc_pos.r1_after->Fill(edge); pos_a1.insert(pidx); } }
+          if (survived_pos && !pos_a1.count(pidx)) { m_dc_pos.r1_after->Fill(edge); pos_a1.insert(pidx); } }
         if (layer==18) { if (!pos_b2.count(pidx)) { m_dc_pos.r2_before->Fill(edge); pos_b2.insert(pidx); }
-                         if (survived_pos && !pos_a2.count(pidx)) { m_dc_pos.r2_after->Fill(edge); pos_a2.insert(pidx); } }
+          if (survived_pos && !pos_a2.count(pidx)) { m_dc_pos.r2_after->Fill(edge); pos_a2.insert(pidx); } }
         if (layer==36) { if (!pos_b3.count(pidx)) { m_dc_pos.r3_before->Fill(edge); pos_b3.insert(pidx); }
-                         if (survived_pos && !pos_a3.count(pidx)) { m_dc_pos.r3_after->Fill(edge); pos_a3.insert(pidx); } }
+          if (survived_pos && !pos_a3.count(pidx)) { m_dc_pos.r3_after->Fill(edge); pos_a3.insert(pidx); } }
       } else {
         if (layer==6)  { if (!neg_b1.count(pidx)) { m_dc_neg.r1_before->Fill(edge); neg_b1.insert(pidx); }
-                         if (survived_neg && !neg_a1.count(pidx)) { m_dc_neg.r1_after->Fill(edge); neg_a1.insert(pidx); } }
+          if (survived_neg && !neg_a1.count(pidx)) { m_dc_neg.r1_after->Fill(edge); neg_a1.insert(pidx); } }
         if (layer==18) { if (!neg_b2.count(pidx)) { m_dc_neg.r2_before->Fill(edge); neg_b2.insert(pidx); }
-                         if (survived_neg && !neg_a2.count(pidx)) { m_dc_neg.r2_after->Fill(edge); neg_a2.insert(pidx); } }
+          if (survived_neg && !neg_a2.count(pidx)) { m_dc_neg.r2_after->Fill(edge); neg_a2.insert(pidx); } }
         if (layer==36) { if (!neg_b3.count(pidx)) { m_dc_neg.r3_before->Fill(edge); neg_b3.insert(pidx); }
-                         if (survived_neg && !neg_a3.count(pidx)) { m_dc_neg.r3_after->Fill(edge); neg_a3.insert(pidx); } }
+          if (survived_neg && !neg_a3.count(pidx)) { m_dc_neg.r3_after->Fill(edge); neg_a3.insert(pidx); } }
       }
     }
 
     // helper: size of triple intersection
-    auto inter3 = [](const std::set<int>& A,
-                     const std::set<int>& B,
-                     const std::set<int>& C)->size_t {
+    auto inter3 = [](const std::set<int>& A, 
+        const std::set<int>& B, const std::set<int>& C)->size_t {
       const std::set<int>* smallest = &A;
       if (B.size() < smallest->size()) smallest = &B;
       if (C.size() < smallest->size()) smallest = &C;
@@ -378,7 +369,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
   }
 }
 
-// ---------- Drawing
+// plotting
 void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title) {
   auto it = m_cal.find(pid);
   if (it == m_cal.end()) return;
