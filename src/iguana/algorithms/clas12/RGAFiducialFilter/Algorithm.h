@@ -112,6 +112,12 @@ namespace iguana::clas12 {
     int       m_cal_strictness = 1;
     CVTParams m_cvt{};
     DCParams  m_dc{};
+
+    // Concurrent parameters for configuration
+    mutable std::unique_ptr<ConcurrentParam<int>> o_cal_strictness;
+    mutable std::unique_ptr<ConcurrentParam<FTParams>> o_ft_params;
+    mutable std::unique_ptr<ConcurrentParam<CVTParams>> o_cvt_params;
+    mutable std::unique_ptr<ConcurrentParam<DCParams>> o_dc_params;
   };
 
 } // namespace iguana::clas12

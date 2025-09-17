@@ -32,6 +32,12 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
   // Get configuration using Iguana's system
   ParseYAMLConfig();
   
+  // Create concurrent parameters
+  o_cal_strictness = ConcurrentParamFactory::Create<int>();
+  o_ft_params = ConcurrentParamFactory::Create<FTParams>();
+  o_cvt_params = ConcurrentParamFactory::Create<CVTParams>();
+  o_dc_params = ConcurrentParamFactory::Create<DCParams>();
+
   // Discover available banks
   b_particle = GetBankIndex(banks, "REC::Particle");
 
@@ -51,56 +57,61 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_have_traj = true;
   }
 
-  // Load configuration
-  LoadConfig();
+  // Load initial configuration
+  Reload(0, 0);
 }
 
-void RGAFiducialFilter::LoadConfig() {
-  // --- Calorimeter
-  m_cal_strictness = GetOption<int>("calorimeter/strictness");
-  if (m_cal_strictness < 1 || m_cal_strictness > 3)
-    throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1,2,3");
-
-  // --- Forward Tagger
+void RGAFiducialFilter::Reload(int runnum, concurrent_key_t key) const {
+  std::lock_guard<std::mutex> const lock(m_mutex);
+  
+  // Load configuration values
+  o_cal_strictness->Save(GetOption<int>("calorimeter/strictness"), key);
+  
+  // Load FT parameters
+  FTParams ft_params;
   auto radius = GetOptionVector<double>("forward_tagger/radius");
   if (radius.size() != 2)
     throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin,rmax]");
   
-  u_ft_params.rmin = static_cast<float>(radius[0]);
-  u_ft_params.rmax = static_cast<float>(radius[1]);
+  ft_params.rmin = static_cast<float>(radius[0]);
+  ft_params.rmax = static_cast<float>(radius[1]);
   
   if (HasOption("forward_tagger/holes_flat")) {
     auto holes_flat = GetOptionVector<double>("forward_tagger/holes_flat");
     if (!holes_flat.empty() && (holes_flat.size() % 3) != 0)
       throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
     
-    u_ft_params.holes.clear();
-    u_ft_params.holes.reserve(holes_flat.size()/3);
+    ft_params.holes.clear();
+    ft_params.holes.reserve(holes_flat.size()/3);
     for (std::size_t i=0; i+2<holes_flat.size(); i+=3) {
       float R  = static_cast<float>(holes_flat[i+0]);
       float cx = static_cast<float>(holes_flat[i+1]);
       float cy = static_cast<float>(holes_flat[i+2]);
       if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R<=0.f)
         throw std::runtime_error("[RGAFID] invalid FT hole triple in 'holes_flat'");
-      u_ft_params.holes.push_back({R,cx,cy});
+      ft_params.holes.push_back({R,cx,cy});
     }
   }
-
-  // --- CVT
-  m_cvt.edge_layers = GetOptionVector<int>("cvt/edge_layers");
-  if (m_cvt.edge_layers.empty())
+  o_ft_params->Save(ft_params, key);
+  
+  // Load CVT parameters
+  CVTParams cvt_params;
+  cvt_params.edge_layers = GetOptionVector<int>("cvt/edge_layers");
+  if (cvt_params.edge_layers.empty())
     throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
 
-  m_cvt.edge_min = GetOption<double>("cvt/edge_min");
+  cvt_params.edge_min = GetOption<double>("cvt/edge_min");
 
   if (HasOption("cvt/phi_forbidden_deg")) {
-    m_cvt.phi_forbidden_deg = GetOptionVector<double>("cvt/phi_forbidden_deg");
-    if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0)
+    cvt_params.phi_forbidden_deg = GetOptionVector<double>("cvt/phi_forbidden_deg");
+    if (!cvt_params.phi_forbidden_deg.empty() && (cvt_params.phi_forbidden_deg.size() % 2) != 0)
       throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
   }
-
-  // --- DC
-  m_dc.theta_small_deg = GetOption<double>("dc/theta_small_deg");
+  o_cvt_params->Save(cvt_params, key);
+  
+  // Load DC parameters
+  DCParams dc_params;
+  dc_params.theta_small_deg = GetOption<double>("dc/theta_small_deg");
 
   auto read_thresholds = [&](const std::string& key) -> std::array<double, 3> {
     auto v = GetOptionVector<double>(key);
@@ -114,12 +125,24 @@ void RGAFiducialFilter::LoadConfig() {
   auto in_s = read_thresholds("dc/thresholds_in_smallTheta");
   auto in_l = read_thresholds("dc/thresholds_in_largeTheta");
 
-  m_dc.out_e1 = out[0];  m_dc.out_e2 = out[1];  m_dc.out_e3 = out[2];
-  m_dc.in_small_e1 = in_s[0]; m_dc.in_small_e2 = in_s[1]; m_dc.in_small_e3 = in_s[2];
-  m_dc.in_large_e1 = in_l[0]; m_dc.in_large_e2 = in_l[1]; m_dc.in_large_e3 = in_l[2];
+  dc_params.out_e1 = out[0];  dc_params.out_e2 = out[1];  dc_params.out_e3 = out[2];
+  dc_params.in_small_e1 = in_s[0]; dc_params.in_small_e2 = in_s[1]; dc_params.in_small_e3 = in_s[2];
+  dc_params.in_large_e1 = in_l[0]; dc_params.in_large_e2 = in_l[1]; dc_params.in_large_e3 = in_l[2];
+  o_dc_params->Save(dc_params, key);
 }
 
-void RGAFiducialFilter::Run(hipo::banklist& banks) const {
+bool RGAFiducialFilter::Filter(int track_index,
+                               const hipo::bank& particleBank,
+                               const hipo::bank& configBank,
+                               const hipo::bank* calBank,
+                               const hipo::bank* ftBank,
+                               const hipo::bank* trajBank) const
+{
+  // Get current configuration
+  auto strictness = o_cal_strictness->Load(0);
+  auto ft_params = o_ft_params->Load(0);
+  auto cvt_params = o_cvt_params->Load(0);
+  auto dc_params = o_dc_params->Load(0);
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto& conf     = GetBank(banks, b_config,   "RUN::config");
   auto* cal      = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter")   : nullptr;
