@@ -112,27 +112,38 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
 }
 
 void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
-  // Banks
+  // ---- Bank handles / presence
   b_particle = GetBankIndex(banks, "REC::Particle");
+
   if (banklist_has(banks, "REC::Calorimeter")) {
-    b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor=true;
+    b_calor = GetBankIndex(banks, "REC::Calorimeter");
+    m_have_calor = true;
   }
+
   if (banklist_has(banks, "REC::ForwardTagger")) {
-    b_ft = GetBankIndex(banks, "REC::ForwardTagger"); m_have_ft=true;
+    b_ft = GetBankIndex(banks, "REC::ForwardTagger");
+    m_have_ft = true;
   }
+
   if (banklist_has(banks, "REC::Traj")) {
-    b_traj = GetBankIndex(banks, "REC::Traj"); m_have_traj=true;
+    b_traj = GetBankIndex(banks, "REC::Traj");
+    m_have_traj = true;
   } else {
-    m_have_traj=false;
+    m_have_traj = false;
     m_log->Info("[RGAFID][VAL] REC::Traj not provided; CVT/DC plots disabled. "
                 "Re-run with -b REC::Traj to enable trajectory-based plots.");
   }
+
   b_config = GetBankIndex(banks, "RUN::config");
 
-  // Let the ALGORITHM load YAML and own the config (single source of truth)
+  // ---- Give the sub-algorithm the same services (logger, YAMLReader, etc.)
+  // This is the key line that avoids GetOptionVector failures inside the sub-algorithm.
+  m_algo.CloneServicesFrom(*this);
+
+  // ---- Let the ALGORITHM load YAML and own the config (single source of truth)
   m_algo.Start(banks);
 
-  // Copy the now-validated parameters from the algorithm for drawing & cuts
+  // ---- Copy the now-validated parameters from the algorithm for drawing & cuts
   m_cal_strictness = m_algo.CalStrictness();
 
   {
@@ -155,7 +166,7 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
     m_dc_params.out_e1      = dc.out_e1;      m_dc_params.out_e2      = dc.out_e2;      m_dc_params.out_e3      = dc.out_e3;
   }
 
-  // Output
+  // ---- Output setup
   if (auto dir = GetOutputDirectory()) {
     m_base.Form("%s/rga_fiducial", dir->c_str());
     m_out  = new TFile(Form("%s.root", m_base.Data()), "RECREATE");
@@ -164,6 +175,7 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
     m_out  = nullptr;
   }
 
+  // ---- Book histograms
   BookIfNeeded();
 }
 
