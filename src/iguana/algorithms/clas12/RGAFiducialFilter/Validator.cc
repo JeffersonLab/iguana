@@ -171,6 +171,11 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     else if (pid<0) neg_before.insert(pidx);
   }
 
+  std::unordered_map<int,int> pid_before;
+  for (auto const& row : particle.getRowList()) {
+    pid_before[(int)row] = particle.getInt("pid", row);
+  }
+
   // run the algorithm to prune REC::Particle in place
   m_algo_seq->Run(banks);
 
@@ -210,10 +215,11 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       double lv = cal.getFloat("lv", i);
       double lw = cal.getFloat("lw", i);
 
-      // PID for this pindex (from current particle bank — still fine)
-      int pid = 11;
-      for (auto r : particle.getRowList()) if ((int)r==pidx) { 
-        pid = particle.getInt("pid", r); break; }
+      // PID for this pindex (from BEFORE snapshot)
+      int pid = 0;
+      auto itpb = pid_before.find(pidx);
+      if (itpb == pid_before.end()) continue;
+      pid = itpb->second;
       if (pid!=11 && pid!=22) continue;
 
       auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sector];
@@ -257,8 +263,10 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       int pidx = ft.getInt("pindex", i);
       if (!eorg_before.count(pidx)) continue;
 
-      int pid = 11;
-      for (auto r : particle.getRowList()) if ((int)r==pidx) { pid = particle.getInt("pid", r); break; }
+      int pid = 0;
+      auto itpb = pid_before.find(pidx);
+      if (itpb == pid_before.end()) continue;
+      pid = itpb->second;
       if (pid!=11 && pid!=22) continue;
 
       auto& HH = const_cast<RGAFiducialFilterValidator*>(this)->m_ft_h.at(pid);
@@ -298,9 +306,10 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       double y = traj.getFloat("y", i);
       double z = traj.getFloat("z", i);
 
-      double phi = std::atan2(y, x) * (180.0/M_PI); if (phi < 0) phi += 360.0;
+      constexpr double kPI = 3.14159265358979323846;
+      double phi = std::atan2(y, x) * (180.0/kPI); if (phi < 0) phi += 360.0;
       double rho = std::sqrt(x*x + y*y);
-      double theta = std::atan2(rho, (z==0.0 ? 1e-9 : z)) * (180.0/M_PI);
+      double theta = std::atan2(rho, (z==0.0 ? 1e-9 : z)) * (180.0/kPI);
 
       if (!b_seen.count(pidx)) { m_cvt_before->Fill(phi, theta); b_seen.insert(pidx); }
       if (had_after.count(pidx) && !a_seen.count(pidx)) {
@@ -549,4 +558,4 @@ void RGAFiducialFilterValidator::Stop() {
   }
 }
 
-} // namespace iguana::clas12
+} 

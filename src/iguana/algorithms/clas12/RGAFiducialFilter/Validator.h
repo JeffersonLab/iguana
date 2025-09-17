@@ -11,6 +11,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <mutex>
 
 namespace iguana::clas12 {
 
@@ -23,7 +24,7 @@ public:
   void Stop () override;
 
 private:
-  // ---------- Banks we look at
+  // banks 
   hipo::banklist::size_type b_particle{};
   hipo::banklist::size_type b_calor{};
   hipo::banklist::size_type b_ft{};
@@ -33,14 +34,14 @@ private:
   bool m_have_ft    = false;
   bool m_have_traj  = false;
 
-  // ---------- We just run the algorithm via AlgorithmSequence
+  // ust run the algorithm via AlgorithmSequence
   std::unique_ptr<AlgorithmSequence> m_algo_seq;
 
-  // ---------- Small PID set we visualize specially
+  // Small PID set to visualize specially
   const std::array<int,2> kPIDs{11,22};  // electrons, photons
 
-  // ---------- Histograms
-  // PCAL hists per PID & sector (BEFORE/AFTER, not “kept/cut”)
+  // Histograms
+  // PCAL hists per PID & sector (BEFORE/AFTER)
   struct SecHists {
     TH1D* lv_before=nullptr; TH1D* lv_after=nullptr;
     TH1D* lw_before=nullptr; TH1D* lw_after=nullptr;
@@ -77,16 +78,18 @@ private:
   long long m_torus_in_events  = 0;
   long long m_torus_out_events = 0;
 
-  // ---------- Output
+  // Output
   TString m_base;
   TFile*  m_out = nullptr;
 
-  // ---------- Helpers
+  // Helpers
   void BookIfNeeded();
   void DrawCalCanvas(int pid, const char* title);
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
   void DrawDCCanvas2x3(const DCHists& H, const char* bend, double survive_pct);
+
+  mutable std::mutex m_mutex{};
 };
 
-} // namespace iguana::clas12
+} 

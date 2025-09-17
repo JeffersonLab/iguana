@@ -372,7 +372,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
   }
 
   if (saw12 && !m_cvt.phi_forbidden_deg.empty()) {
-    constexpr double kPI = 3.14159265358979323846;
+    constexpr double kPI = 3.141593;
     double phi = std::atan2(y12, x12) * (180.0 / kPI);
     if (phi < 0) phi += 360.0;
     for (std::size_t i=0; i+1<m_cvt.phi_forbidden_deg.size(); i+=2) {
@@ -402,7 +402,8 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const double py = particleBank.getFloat("py", pindex);
   const double pz = particleBank.getFloat("pz", pindex);
   const double rho = std::hypot(px, py);
-  const double theta = std::atan2(rho, (pz==0.0 ? 1e-12 : pz)) * (180.0 / 3.14159);
+  const double kPI = 3.141593;
+  const double theta = std::atan2(rho, (pz==0.0 ? 1e-12 : pz)) * (180.0 / kPI);
 
   double e1=0.0, e2=0.0, e3=0.0;
   const auto& traj = *trajBank;
