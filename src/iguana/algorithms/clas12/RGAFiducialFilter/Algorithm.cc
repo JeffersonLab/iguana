@@ -19,16 +19,14 @@ namespace iguana::clas12 {
 
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
 
-// ------------------------------
-// tiny util
-// ------------------------------
+
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
 
 // ------------------------------
-// Robust, stateless YAML helpers
+// YAML helpers
 // ------------------------------
 static std::string& RGAFID_ConfigPathRef() {
   static std::string g_path;
@@ -50,14 +48,23 @@ static std::string RGAFID_ListKeys(const YAML::Node& n) {
   return os.str();
 }
 
-// Always reload the YAML file fresh and return the effective algorithm root.
-// Supports either a wrapped document (top key "clas12::RGAFiducialFilter")
-// or a flat document with the expected sections at the top level.
-static YAML::Node RGAFID_LoadRootYAML_fresh() {
-  // Determine base directory for algorithms
+// reload the YAML file fresh and return the effective algorithm root.
+// ---- Strict loader: require the "clas12::RGAFiducialFilter" wrapper
+static std::string RGAFID_ListKeys(const YAML::Node& n) {
+  if (!n.IsMap()) return "<non-map>";
+  std::string s;
+  for (auto it = n.begin(); it != n.end(); ++it) {
+    if (!s.empty()) s += ", ";
+    s += it->first.as<std::string>();
+  }
+  return s;
+}
+
+static YAML::Node RGAFID_LoadRootYAML() {
+  // Resolve base directory for algorithms
   std::string base;
   if (const char* env = std::getenv("IGUANA_ETCDIR")) {
-    base = env; // user env often points directly to ".../etc/iguana/algorithms"
+    base = env; // treat env var as either ".../etc/iguana" or ".../etc/iguana/algorithms"
     const std::string tail = "/algorithms";
     if (base.size() < tail.size() ||
         base.compare(base.size() - tail.size(), tail.size(), tail) != 0) {
@@ -68,7 +75,6 @@ static YAML::Node RGAFID_LoadRootYAML_fresh() {
   }
 
   const std::string path = base + "/clas12/RGAFiducialFilter/Config.yaml";
-  RGAFID_ConfigPathRef() = path;
 
   YAML::Node doc;
   try {
@@ -78,30 +84,23 @@ static YAML::Node RGAFID_LoadRootYAML_fresh() {
                              path + " : " + e.what());
   }
 
-  // Choose wrapped or flat root
   YAML::Node root = doc["clas12::RGAFiducialFilter"];
-  if (!root.IsDefined()) {
-    // If the document is a single-key wrapper, use its value.
-    if (doc.IsMap() && doc.size() == 1) {
-      auto it = doc.begin();
-      if (it->second.IsMap()) root = it->second;
-    }
-  }
-  if (!root.IsDefined()) root = doc;
-
-  // Sanity-check the root contains expected sections
-  if (!(root["calorimeter"].IsDefined() &&
-        root["forward_tagger"].IsDefined() &&
-        root["cvt"].IsDefined() &&
-        root["dc"].IsDefined())) {
+  if (!root.IsDefined() || !root.IsMap()) {
     std::ostringstream msg;
-    msg << "[RGAFID] Config root is missing one or more required sections "
-           "(need calorimeter, forward_tagger, cvt, dc)"
-           " ; file = " << path
-        << " ; top-level keys = '" << RGAFID_ListKeys(root) << "'";
+    msg << "[RGAFID] Expected top-level key 'clas12::RGAFiducialFilter' in "
+           << path << " ; file has keys: '" << RGAFID_ListKeys(doc) << "'";
     throw std::runtime_error(msg.str());
   }
 
+  // Optional: enforce required sections early
+  for (const char* k : {"calorimeter","forward_tagger","cvt","dc"}) {
+    if (!root[k].IsDefined()) {
+      std::ostringstream msg;
+      msg << "[RGAFID] Missing required section '" << k << "' under 'clas12::RGAFiducialFilter' "
+          << "in " << path << " ; present keys: '" << RGAFID_ListKeys(root) << "'";
+      throw std::runtime_error(msg.str());
+    }
+  }
   return root;
 }
 
