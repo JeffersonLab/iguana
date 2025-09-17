@@ -32,7 +32,7 @@ namespace iguana::clas12 {
 
   // ---- Config loader (read relative to this algorithm's YAML root)
   void RGAFiducialFilter::LoadConfigFromYAML() {
-    if (!GetConfig()) ParseYAMLConfig(); // ensure YAML is parsed once
+    ParseYAMLConfig(); 
 
     // --- Calorimeter strictness
     {
