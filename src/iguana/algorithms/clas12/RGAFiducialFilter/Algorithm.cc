@@ -32,78 +32,57 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
 }
 
 // Load the RGAFiducialFilter YAML once and return the effective root:
-// - If the file contains a top-level "clas12::RGAFiducialFilter", return that node.
-// - Otherwise return the whole document (flat style).
-static YAML::Node RGAFID_LoadRootYAML() {
-  static YAML::Node root;
-  static bool loaded = false;
-  if (!loaded) {
-    // Where to look for the file
-    // If IGUANA_ETCDIR is exported as ".../etc/iguana/algorithms" (your runtime setup),
-    // use it directly. Otherwise fall back to the compiled-in IGUANA_ETCDIR and append /algorithms.
-    std::string base;
-    if (const char* env = std::getenv("IGUANA_ETCDIR")) {
-      base = env;  // expected to already end with /algorithms
-    } else {
-      base = std::string(IGUANA_ETCDIR) + "/algorithms";
-    }
-    const std::string path = base + "/clas12/RGAFiducialFilter/Config.yaml";
+// --- keep the existing includes and RGAFID_LoadRootYAML() ---
 
-    try {
-      root = YAML::LoadFile(path);
-    } catch (const std::exception& e) {
-      throw std::runtime_error(std::string("[RGAFID] Could not load Config.yaml at ") + path +
-                               " : " + e.what());
-    }
-
-    // Support both wrapped and flat styles
-    if (root["clas12::RGAFiducialFilter"]) root = root["clas12::RGAFiducialFilter"];
-    loaded = true;
-  }
-  return root;
-}
-
-// Read a scalar T at a given YAML path under the RGAFiducialFilter root.
-template <typename T>
-static T RGAFID_ReadScalar(std::initializer_list<const char*> keys,
-                           const char* dbgkey_for_errors) {
+// Walk to a node under the RGAFiducialFilter root; throw with a helpful key name.
+static YAML::Node RGAFID_GetNode(std::initializer_list<const char*> keys,
+                                 const char* dbgkey_for_errors) {
   YAML::Node node = RGAFID_LoadRootYAML();
   for (auto* k : keys) {
     if (!node[k]) {
-      throw std::runtime_error(std::string("[RGAFID] Missing key '") + k +
-                               "' while reading " + dbgkey_for_errors);
+      std::ostringstream msg;
+      msg << "[RGAFID] Missing key '" << k << "' while reading " << dbgkey_for_errors;
+      throw std::runtime_error(msg.str());
     }
     node = node[k];
   }
-  if (!node.IsScalar()) {
-    throw std::runtime_error(std::string("[RGAFID] Expected scalar for ") + dbgkey_for_errors);
-  }
-  try {
-    return node.as<T>();
-  } catch (const std::exception& e) {
-    throw std::runtime_error(std::string("[RGAFID] Scalar conversion failed for ") +
-                             dbgkey_for_errors + ": " + e.what());
-  }
+  return node;
 }
 
-// ---- Config loader (read relative to this algorithm's YAML root)
-void RGAFiducialFilter::LoadConfigFromYAML() {
-  // Keep Iguana's config system engaged (for vector reads below).
-  ParseYAMLConfig();
+// Read a vector<T>. If the YAML provides a scalar, accept it as {value} (1-element vector).
+template <typename T>
+static std::vector<T> RGAFID_ReadVector(std::initializer_list<const char*> keys,
+                                        const char* dbgkey_for_errors) {
+  YAML::Node node = RGAFID_GetNode(keys, dbgkey_for_errors);
+  std::vector<T> out;
+  if (node.IsSequence()) {
+    out.reserve(node.size());
+    for (auto const& item : node) {
+      try { out.push_back(item.as<T>()); }
+      catch (const std::exception& e) {
+        std::ostringstream msg; msg << "[RGAFID] Vector conversion failed for "
+                                    << dbgkey_for_errors << ": " << e.what();
+        throw std::runtime_error(msg.str());
+      }
+    }
+    return out;
+  }
+  if (node.IsScalar()) {
+    try { out.push_back(node.as<T>()); return out; }
+    catch (const std::exception& e) {
+      std::ostringstream msg; msg << "[RGAFID] Scalar-as-vector conversion failed for "
+                                  << dbgkey_for_errors << ": " << e.what();
+      throw std::runtime_error(msg.str());
+    }
+  }
+  std::ostringstream msg; msg << "[RGAFID] Expected sequence (or scalar) for " << dbgkey_for_errors;
+  throw std::runtime_error(msg.str());
+}
 
-  // Helpers for LIST options: try flat first, then wrapped
-  auto getDvec = [&](const char* dbg,
-                     std::initializer_list<const char*> flat,
-                     std::initializer_list<const char*> wrap) -> std::vector<double> {
-    try { return GetOptionVector<double>(dbg, Path(flat)); }
-    catch (...) { return GetOptionVector<double>(dbg, Path(wrap)); }
-  };
-  auto getIvec = [&](const char* dbg,
-                     std::initializer_list<const char*> flat,
-                     std::initializer_list<const char*> wrap) -> std::vector<int> {
-    try { return GetOptionVector<int>(dbg, Path(flat)); }
-    catch (...) { return GetOptionVector<int>(dbg, Path(wrap)); }
-  };
+// ---- Config loader (yaml-cpp only)
+void RGAFiducialFilter::LoadConfigFromYAML() {
+  // Optional: keep this if other Iguana machinery expects it, but we won't use GetOptionVector.
+  ParseYAMLConfig();
 
   // --- Calorimeter (strictness is a SCALAR)
   {
@@ -115,9 +94,8 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
 
   // --- Forward Tagger (LISTS)
   {
-    auto radius = getDvec("rgafid.ft.radius",
-                          {"forward_tagger","radius"},
-                          {"clas12::RGAFiducialFilter","forward_tagger","radius"});
+    auto radius = RGAFID_ReadVector<double>({"forward_tagger","radius"},
+                                            "forward_tagger.radius");
     if (radius.size() != 2)
       throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin,rmax]");
     u_ft_params.rmin = static_cast<float>(radius[0]);
@@ -126,14 +104,13 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
         !(u_ft_params.rmin > 0.f && u_ft_params.rmax > u_ft_params.rmin))
       throw std::runtime_error("[RGAFID] invalid forward_tagger.radius values");
 
-    auto holes_flat = getDvec("rgafid.ft.holes_flat",
-                              {"forward_tagger","holes_flat"},
-                              {"clas12::RGAFiducialFilter","forward_tagger","holes_flat"});
+    auto holes_flat = RGAFID_ReadVector<double>({"forward_tagger","holes_flat"},
+                                                "forward_tagger.holes_flat");
     if (!holes_flat.empty() && (holes_flat.size() % 3) != 0)
       throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
     u_ft_params.holes.clear();
     u_ft_params.holes.reserve(holes_flat.size()/3);
-    for (std::size_t i=0;i<holes_flat.size();i+=3) {
+    for (std::size_t i=0;i+2<holes_flat.size();i+=3) {
       float R  = static_cast<float>(holes_flat[i+0]);
       float cx = static_cast<float>(holes_flat[i+1]);
       float cy = static_cast<float>(holes_flat[i+2]);
@@ -145,18 +122,16 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
 
   // --- CVT (edge_layers LIST; edge_min SCALAR; phi_forbidden LIST)
   {
-    m_cvt.edge_layers = getIvec("rgafid.cvt.edge_layers",
-                                {"cvt","edge_layers"},
-                                {"clas12::RGAFiducialFilter","cvt","edge_layers"});
+    m_cvt.edge_layers = RGAFID_ReadVector<int>({"cvt","edge_layers"}, "cvt.edge_layers");
     if (m_cvt.edge_layers.empty())
       throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
 
     m_cvt.edge_min = RGAFID_ReadScalar<double>({"cvt","edge_min"}, "cvt.edge_min");
 
-    m_cvt.phi_forbidden_deg = getDvec("rgafid.cvt.phi_forbidden_deg",
-                                      {"cvt","phi_forbidden_deg"},
-                                      {"clas12::RGAFiducialFilter","cvt","phi_forbidden_deg"});
-    if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0)
+    m_cvt.phi_forbidden_deg = RGAFID_ReadVector<double>({"cvt","phi_forbidden_deg"},
+                                                        "cvt.phi_forbidden_deg");
+    if (!m_cvt.phi_forbidden_deg.empty() &&
+        (m_cvt.phi_forbidden_deg.size() % 2) != 0)
       throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
   }
 
@@ -166,13 +141,7 @@ void RGAFiducialFilter::LoadConfigFromYAML() {
                                                      "dc.theta_small_deg");
 
     auto need3 = [&](const char* key) -> std::array<double,3> {
-      std::vector<double> vv;
-      try {
-        vv = GetOptionVector<double>(std::string("rgafid.dc.") + key, Path({"dc", key}));
-      } catch (...) {
-        vv = GetOptionVector<double>(std::string("rgafid.dc.") + key,
-                                     Path({"clas12::RGAFiducialFilter","dc", key}));
-      }
+      auto vv = RGAFID_ReadVector<double>({"dc", key}, (std::string("dc.") + key).c_str());
       if (vv.size() != 3) {
         std::ostringstream msg; msg << "[RGAFID] 'dc." << key << "' must be [e1,e2,e3]";
         throw std::runtime_error(msg.str());
