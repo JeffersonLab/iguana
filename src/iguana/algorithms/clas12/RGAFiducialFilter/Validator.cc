@@ -1,5 +1,6 @@
 #include "Validator.h"
 #include "iguana/services/YAMLReader.h"  // for YAMLReader::node_path_t
+#include "Algorithm.h"                   // use RGAFiducialFilter as config accessor
 
 #include <TCanvas.h>
 #include <TLegend.h>
@@ -39,16 +40,23 @@ static inline NodePath Path(std::initializer_list<const char*> keys) {
   return p;
 }
 
-// ---- Config loader (read relative to this validator's YAML root)
+// ---- Config loader (primary: validator root; fallback: algorithm root)
 void RGAFiducialFilterValidator::LoadConfigFromYAML() {
-  // Always parse; the reader caches internally.
+  // Initialize readers (they cache internally)
   ParseYAMLConfig();
+  RGAFiducialFilter algo_cfg;
+  algo_cfg.ParseYAMLConfig();
 
+  // helpers that fall back to algorithm root when the local lookup returns empty
   auto getD = [&](const char* dbg, const NodePath& p) -> std::vector<double> {
-    return GetOptionVector<double>(dbg, p);
+    auto v = GetOptionVector<double>(dbg, p);
+    if (!v.empty()) return v;
+    return algo_cfg.GetOptionVector<double>(dbg, p);
   };
   auto getI = [&](const char* dbg, const NodePath& p) -> std::vector<int> {
-    return GetOptionVector<int>(dbg, p);
+    auto v = GetOptionVector<int>(dbg, p);
+    if (!v.empty()) return v;
+    return algo_cfg.GetOptionVector<int>(dbg, p);
   };
 
   // ---------- PCal strictness (for plotting split only)
@@ -238,7 +246,7 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
 
   // Output
   if (auto dir = GetOutputDirectory()) {
-    m_base.Form("%s/rga_fiducial", dir->c_str());  // <-- fix: use c_str()
+    m_base.Form("%s/rga_fiducial", dir->c_str());
     m_out  = new TFile(Form("%s.root", m_base.Data()), "RECREATE");
   } else {
     m_base = "rga_fiducial";
@@ -612,7 +620,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       }
     }
 
-    // helper: size
+    // helper: size of triple intersection
     auto inter3 = [](const std::set<int>& A,
         const std::set<int>& B,
         const std::set<int>& C)->size_t {
@@ -624,7 +632,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       return cnt;
     };
 
-    // accumulate the totals using the intersection across regions
+    // accumulate totals using the intersection across regions
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n +=
       (long long) inter3(pos_b1, pos_b2, pos_b3);
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  +=

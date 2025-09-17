@@ -96,4 +96,4 @@ namespace iguana::clas12 {
     DCParams m_dc{};
   };
 
-} 
+}

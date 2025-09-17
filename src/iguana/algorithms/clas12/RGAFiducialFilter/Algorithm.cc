@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/services/YAMLReader.h"  // for YAMLReader::node_path_t
 
 #include <algorithm>
 #include <array>
@@ -16,6 +17,14 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
 
+  // Build YAML node paths (required because GetOptionVector expects node_path_t, not an init-list)
+  using NodePath = iguana::YAMLReader::node_path_t;
+  static inline NodePath Path(std::initializer_list<const char*> keys) {
+    NodePath p;
+    for (auto* k : keys) p.emplace_back(std::string(k));
+    return p;
+  }
+
   static bool banklist_has(hipo::banklist& banks, const char* name) {
     for (auto& b : banks) if (b.getSchema().getName() == name) return true;
     return false;
@@ -28,7 +37,7 @@ namespace iguana::clas12 {
     // --- Calorimeter strictness
     {
       auto v = GetOptionVector<int>("rgafid.cal.strictness",
-                                    {"calorimeter", "strictness"});
+                                    Path({"calorimeter", "strictness"}));
       if (v.empty()) throw std::runtime_error("[RGAFID] Missing 'calorimeter.strictness'");
       m_cal_strictness = v.at(0);
       if (m_cal_strictness < 1 || m_cal_strictness > 3)
@@ -38,7 +47,7 @@ namespace iguana::clas12 {
     // --- Forward Tagger
     {
       auto radius = GetOptionVector<double>("rgafid.ft.radius",
-                                            {"forward_tagger", "radius"});
+                                            Path({"forward_tagger", "radius"}));
       if (radius.size() != 2)
         throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin,rmax]");
       u_ft_params.rmin = static_cast<float>(radius[0]);
@@ -48,7 +57,7 @@ namespace iguana::clas12 {
         throw std::runtime_error("[RGAFID] invalid forward_tagger.radius values");
 
       auto holes_flat = GetOptionVector<double>("rgafid.ft.holes_flat",
-                                                {"forward_tagger", "holes_flat"});
+                                                Path({"forward_tagger", "holes_flat"}));
       if (!holes_flat.empty() && (holes_flat.size()%3)!=0)
         throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
       u_ft_params.holes.clear();
@@ -66,19 +75,19 @@ namespace iguana::clas12 {
     // --- CVT
     {
       m_cvt.edge_layers =
-        GetOptionVector<int>("rgafid.cvt.edge_layers", {"cvt", "edge_layers"});
+        GetOptionVector<int>("rgafid.cvt.edge_layers", Path({"cvt", "edge_layers"}));
       if (m_cvt.edge_layers.empty())
         throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
 
       auto v_edge_min =
-        GetOptionVector<double>("rgafid.cvt.edge_min", {"cvt", "edge_min"});
+        GetOptionVector<double>("rgafid.cvt.edge_min", Path({"cvt", "edge_min"}));
       if (v_edge_min.empty())
         throw std::runtime_error("[RGAFID] 'cvt.edge_min' must be provided as [value]");
       m_cvt.edge_min = v_edge_min.at(0);
 
       m_cvt.phi_forbidden_deg =
         GetOptionVector<double>("rgafid.cvt.phi_forbidden_deg",
-                                {"cvt", "phi_forbidden_deg"});
+                                Path({"cvt", "phi_forbidden_deg"}));
       if (!m_cvt.phi_forbidden_deg.empty() &&
           (m_cvt.phi_forbidden_deg.size()%2)!=0)
         throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
@@ -87,13 +96,13 @@ namespace iguana::clas12 {
     // --- DC
     {
       auto v_theta_small =
-        GetOptionVector<double>("rgafid.dc.theta_small_deg", {"dc", "theta_small_deg"});
+        GetOptionVector<double>("rgafid.dc.theta_small_deg", Path({"dc", "theta_small_deg"}));
       if (v_theta_small.empty())
         throw std::runtime_error("[RGAFID] 'dc.theta_small_deg' must be provided as [value]");
       m_dc.theta_small_deg = v_theta_small.at(0);
 
       auto need3 = [&](const char* key) -> std::array<double,3> {
-        auto vv = GetOptionVector<double>(std::string("rgafid.dc.") + key, {"dc", key});
+        auto vv = GetOptionVector<double>(std::string("rgafid.dc.") + key, Path({"dc", key}));
         if (vv.size() != 3) {
           std::ostringstream msg; msg << "[RGAFID] 'dc." << key << "' must be [e1,e2,e3]";
           throw std::runtime_error(msg.str());
