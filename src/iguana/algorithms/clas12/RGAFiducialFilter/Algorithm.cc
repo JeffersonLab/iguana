@@ -19,17 +19,12 @@ namespace iguana::clas12 {
 
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
 
-// ------------------------------
-// small util
-// ------------------------------
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
 
-// ------------------------------
 // YAML helpers
-// ------------------------------
 static std::string& RGAFID_ConfigPathRef() {
   static std::string g_path;
   return g_path;
@@ -52,10 +47,9 @@ static std::string RGAFID_ListKeys(const YAML::Node& n) {
 
 // Strict loader: require the "clas12::RGAFiducialFilter" wrapper
 static YAML::Node RGAFID_LoadRootYAML() {
-  // Resolve base directory for algorithms
   std::string base;
   if (const char* env = std::getenv("IGUANA_ETCDIR")) {
-    base = env; // treat env var as either ".../etc/iguana" or ".../etc/iguana/algorithms"
+    base = env; 
     const std::string tail = "/algorithms";
     if (base.size() < tail.size() ||
         base.compare(base.size() - tail.size(), tail.size(), tail) != 0) {
@@ -84,7 +78,7 @@ static YAML::Node RGAFID_LoadRootYAML() {
     throw std::runtime_error(msg.str());
   }
 
-  // Early sanity check for required sections
+  // sanity check for required yaml sections
   for (const char* k : {"calorimeter","forward_tagger","cvt","dc"}) {
     if (!root[k].IsDefined()) {
       std::ostringstream msg;
@@ -96,13 +90,13 @@ static YAML::Node RGAFID_LoadRootYAML() {
   return root;
 }
 
-// Walk to a node under the (fresh) root; never mutates global state.
+// walk to a node under the fresh root;
 static YAML::Node RGAFID_GetNode(std::initializer_list<const char*> keys,
-                                 const char* dbgkey_for_errors) {
+    const char* dbgkey_for_errors) {
   const YAML::Node root = RGAFID_LoadRootYAML();
   YAML::Node node = root;
   for (auto* k : keys) {
-    YAML::Node next = node[k]; // const lookup; no insertion
+    YAML::Node next = node[k]; 
     if (!next.IsDefined()) {
       std::ostringstream msg;
       msg << "[RGAFID] Missing key '" << k << "' while reading " << dbgkey_for_errors
@@ -160,9 +154,7 @@ static std::vector<T> RGAFID_ReadVector(std::initializer_list<const char*> keys,
   throw std::runtime_error(msg.str());
 }
 
-// ------------------------------
-// Config loader (uses the helpers above)
-// ------------------------------
+// Config loader 
 void RGAFiducialFilter::LoadConfig() {
   // Calorimeter strictness
   m_cal_strictness = RGAFID_ReadScalar<int>({"calorimeter","strictness"},
@@ -243,9 +235,7 @@ void RGAFiducialFilter::LoadConfig() {
   }
 }
 
-// ------------------------------
-// Lifecycle
-// ------------------------------
+// lifecycle
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   b_particle = GetBankIndex(banks, "REC::Particle");
@@ -266,7 +256,6 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_have_traj = true;
   }
 
-  // Read config from YAML (strict wrapper required)
   LoadConfig();
 }
 
@@ -278,7 +267,7 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   auto* traj     = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj")          : nullptr;
 
   // Prune in place
-  particle.getMutableRowList().filter([&](auto /*bank*/, auto row) {
+  particle.getMutableRowList().filter([&](auto, auto row) {
     const bool keep = Filter(static_cast<int>(row), particle, conf, cal, ft, traj);
     return keep ? 1 : 0;
   });
