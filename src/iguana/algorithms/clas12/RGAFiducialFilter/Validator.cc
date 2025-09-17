@@ -89,17 +89,28 @@ static std::vector<T> GetFromAlgoFallback(const NodePath& p) {
 
 // ---- Config loader (primary: validator root; fallback: algorithm root via yaml-cpp)
 void RGAFiducialFilterValidator::LoadConfigFromYAML() {
-  // Always parse our own root; the reader caches internally.
-  ParseYAMLConfig();
+  // Parse our own (validator) config if available; ignore errors so we can fallback.
+  try { ParseYAMLConfig(); } catch (const std::exception&) {
+    // No validator-root config present; we'll rely on the algorithm-root fallback.
+  }
 
   auto getD = [&](const char* dbg, const NodePath& p) -> std::vector<double> {
-    auto v = GetOptionVector<double>(dbg, p);
-    if (!v.empty()) return v;
+    try {
+      auto v = GetOptionVector<double>(dbg, p);
+      if (!v.empty()) return v;
+    } catch (const std::exception&) {
+      // swallow and fallback
+    }
     return GetFromAlgoFallback<double>(p);
   };
+
   auto getI = [&](const char* dbg, const NodePath& p) -> std::vector<int> {
-    auto v = GetOptionVector<int>(dbg, p);
-    if (!v.empty()) return v;
+    try {
+      auto v = GetOptionVector<int>(dbg, p);
+      if (!v.empty()) return v;
+    } catch (const std::exception&) {
+      // swallow and fallback
+    }
     return GetFromAlgoFallback<int>(p);
   };
 
