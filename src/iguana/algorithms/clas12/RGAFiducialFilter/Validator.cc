@@ -112,19 +112,17 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
 }
 
 void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
-  // ---- Bank handles / presence
+  // ---- Banks / presence flags
   b_particle = GetBankIndex(banks, "REC::Particle");
 
   if (banklist_has(banks, "REC::Calorimeter")) {
     b_calor = GetBankIndex(banks, "REC::Calorimeter");
     m_have_calor = true;
   }
-
   if (banklist_has(banks, "REC::ForwardTagger")) {
     b_ft = GetBankIndex(banks, "REC::ForwardTagger");
     m_have_ft = true;
   }
-
   if (banklist_has(banks, "REC::Traj")) {
     b_traj = GetBankIndex(banks, "REC::Traj");
     m_have_traj = true;
@@ -133,40 +131,107 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
     m_log->Info("[RGAFID][VAL] REC::Traj not provided; CVT/DC plots disabled. "
                 "Re-run with -b REC::Traj to enable trajectory-based plots.");
   }
-
   b_config = GetBankIndex(banks, "RUN::config");
 
-  // ---- Give the sub-algorithm the same services (logger, YAMLReader, etc.)
-  // This is the key line that avoids GetOptionVector failures inside the sub-algorithm.
-  m_algo.CloneServicesFrom(*this);
+  // ---- Parse YAML at *this* validator's root.
+  // Because you symlinked .../RGAFiducialFilterValidator -> .../RGAFiducialFilter,
+  // this reads the SAME Config.yaml as the algorithm.
+  ParseYAMLConfig();
 
-  // ---- Let the ALGORITHM load YAML and own the config (single source of truth)
-  m_algo.Start(banks);
+  // tiny helpers to build node paths & fetch options
+  using NodePath = iguana::YAMLReader::node_path_t;
+  auto Path = [](std::initializer_list<const char*> keys) -> NodePath {
+    NodePath p;
+    for (auto* k : keys) p.emplace_back(std::string(k));
+    return p;
+  };
+  auto getD = [&](const char* dbg, const NodePath& p) -> std::vector<double> {
+    return GetOptionVector<double>(dbg, p);
+  };
+  auto getI = [&](const char* dbg, const NodePath& p) -> std::vector<int> {
+    return GetOptionVector<int>(dbg, p);
+  };
 
-  // ---- Copy the now-validated parameters from the algorithm for drawing & cuts
-  m_cal_strictness = m_algo.CalStrictness();
-
+  // ---- Calorimeter strictness (for splitting kept/cut in plots)
   {
-    const auto& ft = m_algo.FT();
-    m_ftdraw.rmin  = ft.rmin;
-    m_ftdraw.rmax  = ft.rmax;
-    m_ftdraw.holes = ft.holes;
-  }
-  {
-    const auto& cvt = m_algo.CVT();
-    m_cvt_params.edge_layers       = cvt.edge_layers;
-    m_cvt_params.edge_min          = cvt.edge_min;
-    m_cvt_params.phi_forbidden_deg = cvt.phi_forbidden_deg;
-  }
-  {
-    const auto& dc = m_algo.DC();
-    m_dc_params.theta_small_deg = dc.theta_small_deg;
-    m_dc_params.in_small_e1 = dc.in_small_e1; m_dc_params.in_small_e2 = dc.in_small_e2; m_dc_params.in_small_e3 = dc.in_small_e3;
-    m_dc_params.in_large_e1 = dc.in_large_e1; m_dc_params.in_large_e2 = dc.in_large_e2; m_dc_params.in_large_e3 = dc.in_large_e3;
-    m_dc_params.out_e1      = dc.out_e1;      m_dc_params.out_e2      = dc.out_e2;      m_dc_params.out_e3      = dc.out_e3;
+    auto v = getI("rgafid.cal.strictness", Path({"calorimeter","strictness"}));
+    if (v.empty())
+      throw std::runtime_error("[RGAFID][VAL] Missing 'calorimeter.strictness'");
+    m_cal_strictness = v.at(0);
+    if (m_cal_strictness < 1 || m_cal_strictness > 3)
+      throw std::runtime_error("[RGAFID][VAL] 'calorimeter.strictness' must be 1,2,3");
   }
 
-  // ---- Output setup
+  // ---- Forward Tagger overlays & pass logic
+  {
+    auto radius = getD("rgafid.ft.radius", Path({"forward_tagger","radius"}));
+    if (radius.size() != 2)
+      throw std::runtime_error("[RGAFID][VAL] 'forward_tagger.radius' must be [rmin,rmax]");
+    m_ftdraw.rmin = static_cast<float>(radius[0]);
+    m_ftdraw.rmax = static_cast<float>(radius[1]);
+    if (!(std::isfinite(m_ftdraw.rmin) && std::isfinite(m_ftdraw.rmax)) ||
+        !(m_ftdraw.rmin > 0.f && m_ftdraw.rmax > m_ftdraw.rmin))
+      throw std::runtime_error("[RGAFID][VAL] invalid forward_tagger.radius values");
+
+    auto holes_flat = getD("rgafid.ft.holes_flat", Path({"forward_tagger","holes_flat"}));
+    if (!holes_flat.empty() && (holes_flat.size()%3)!=0)
+      throw std::runtime_error("[RGAFID][VAL] 'forward_tagger.holes_flat' must have 3N values");
+    m_ftdraw.holes.clear();
+    m_ftdraw.holes.reserve(holes_flat.size()/3);
+    for (std::size_t i=0;i<holes_flat.size();i+=3) {
+      float R  = static_cast<float>(holes_flat[i+0]);
+      float cx = static_cast<float>(holes_flat[i+1]);
+      float cy = static_cast<float>(holes_flat[i+2]);
+      if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R<=0.f)
+        throw std::runtime_error("[RGAFID][VAL] invalid FT hole triple in 'holes_flat'");
+      m_ftdraw.holes.push_back({R,cx,cy});
+    }
+  }
+
+  // ---- CVT parameters
+  {
+    m_cvt_params.edge_layers = getI("rgafid.cvt.edge_layers", Path({"cvt","edge_layers"}));
+    if (m_cvt_params.edge_layers.empty())
+      throw std::runtime_error("[RGAFID][VAL] 'cvt.edge_layers' must be non-empty");
+
+    auto v_edge_min = getD("rgafid.cvt.edge_min", Path({"cvt","edge_min"}));
+    if (v_edge_min.empty())
+      throw std::runtime_error("[RGAFID][VAL] 'cvt.edge_min' must be provided as [value]");
+    m_cvt_params.edge_min = v_edge_min.at(0);
+
+    m_cvt_params.phi_forbidden_deg =
+      getD("rgafid.cvt.phi_forbidden_deg", Path({"cvt","phi_forbidden_deg"}));
+    if (!m_cvt_params.phi_forbidden_deg.empty() &&
+        (m_cvt_params.phi_forbidden_deg.size()%2)!=0)
+      throw std::runtime_error("[RGAFID][VAL] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
+  }
+
+  // ---- DC parameters
+  {
+    auto v_theta_small = getD("rgafid.dc.theta_small_deg", Path({"dc","theta_small_deg"}));
+    if (v_theta_small.empty())
+      throw std::runtime_error("[RGAFID][VAL] 'dc.theta_small_deg' must be provided as [value]");
+    m_dc_params.theta_small_deg = v_theta_small.at(0);
+
+    auto need3 = [&](const char* key) -> std::array<double,3> {
+      auto vv = getD((std::string("rgafid.dc.")+key).c_str(), Path({"dc",key}));
+      if (vv.size() != 3) {
+        std::ostringstream msg; msg << "[RGAFID][VAL] 'dc." << key << "' must be [e1,e2,e3]";
+        throw std::runtime_error(msg.str());
+      }
+      return {vv[0], vv[1], vv[2]};
+    };
+
+    auto out  = need3("thresholds_out");
+    auto in_s = need3("thresholds_in_smallTheta");
+    auto in_l = need3("thresholds_in_largeTheta");
+
+    m_dc_params.out_e1 = out[0];  m_dc_params.out_e2 = out[1];  m_dc_params.out_e3 = out[2];
+    m_dc_params.in_small_e1 = in_s[0]; m_dc_params.in_small_e2 = in_s[1]; m_dc_params.in_small_e3 = in_s[2];
+    m_dc_params.in_large_e1 = in_l[0]; m_dc_params.in_large_e2 = in_l[1]; m_dc_params.in_large_e3 = in_l[2];
+  }
+
+  // ---- Output file/dir
   if (auto dir = GetOutputDirectory()) {
     m_base.Form("%s/rga_fiducial", dir->c_str());
     m_out  = new TFile(Form("%s.root", m_base.Data()), "RECREATE");
