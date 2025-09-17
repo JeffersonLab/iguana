@@ -442,9 +442,5 @@ bool RGAFiducialFilter::Filter(
   return true;
 }
 
-void RGAFiducialFilter::Stop()
-{
-  // no-op
-}
 
 } // namespace iguana::clas12
