@@ -48,61 +48,55 @@ static std::string RGAFID_ListMapKeys(const YAML::Node& n) {
   return out.str();
 }
 
-// Load YAML once; support both flat and wrapped styles; remember the path used.
+// --- load the root once (safe 'wrapped vs flat' check; no accidental insertion)
 static YAML::Node RGAFID_LoadRootYAML() {
   static YAML::Node root;
   static bool loaded = false;
   if (!loaded) {
-    // Determine base dir:
-    // - If IGUANA_ETCDIR is set, we trust it (your runtime sets it to ".../etc/iguana/algorithms").
-    // - Otherwise, fall back to the compile-time IGUANA_ETCDIR and append "/algorithms".
     std::string base;
     if (const char* env = std::getenv("IGUANA_ETCDIR")) {
-      base = env;  // expected to end with /algorithms in your setup
+      base = env;                 // should already end with /algorithms
     } else {
       base = std::string(IGUANA_ETCDIR) + "/algorithms";
     }
-    g_rgafid_yaml_path = base + "/clas12/RGAFiducialFilter/Config.yaml";
+    const std::string path = base + "/clas12/RGAFiducialFilter/Config.yaml";
 
+    YAML::Node doc;
     try {
-      root = YAML::LoadFile(g_rgafid_yaml_path);
+      doc = YAML::LoadFile(path);
     } catch (const std::exception& e) {
-      std::ostringstream msg;
-      msg << "[RGAFID] Could not load Config.yaml at " << g_rgafid_yaml_path
-          << " : " << e.what();
-      throw std::runtime_error(msg.str());
+      throw std::runtime_error(std::string("[RGAFID] Could not load Config.yaml at ") +
+                               path + " : " + e.what());
     }
 
-    // Accept both wrapped and flat documents
-    if (root["clas12::RGAFiducialFilter"])
-      root = root["clas12::RGAFiducialFilter"];
-
+    // IMPORTANT: use IsDefined() on a SEPARATE 'doc' node (this does not insert)
+    const YAML::Node wrapped = doc["clas12::RGAFiducialFilter"];
+    root = (wrapped.IsDefined() ? wrapped : doc);
     loaded = true;
   }
   return root;
 }
 
-// Walk to a node under the root; if missing, throw with path + available keys.
+// --- safe traversal (index into CONST node so operator[] does NOT insert)
 static YAML::Node RGAFID_GetNode(std::initializer_list<const char*> keys,
                                  const char* dbgkey_for_errors) {
-  YAML::Node node = RGAFID_LoadRootYAML();
-  const char* first_key = nullptr;
+  const YAML::Node doc = RGAFID_LoadRootYAML();   // const to force const operator[]
+  YAML::Node current = doc;                       // storage for the step-wise node
 
+  // We keep a pointer to const so (*cur)[k] uses the const overload (no insertion)
+  const YAML::Node* cur = &doc;
   for (auto* k : keys) {
-    if (!first_key) first_key = k;
-    if (!node[k]) {
+    const YAML::Node next = (*cur)[k];
+    if (!next.IsDefined()) {
       std::ostringstream msg;
-      msg << "[RGAFID] Missing key '" << k << "' while reading " << dbgkey_for_errors
-          << " ; file = " << g_rgafid_yaml_path;
-      // If we failed on the first step, include top-level keys for clarity
-      if (k == first_key) {
-        msg << " ; top-level keys = " << RGAFID_ListMapKeys(RGAFID_LoadRootYAML());
-      }
+      msg << "[RGAFID] Missing key '" << k << "' while reading " << dbgkey_for_errors;
       throw std::runtime_error(msg.str());
     }
-    node = node[k];
+    // move forward one level
+    current = next;
+    cur = &current;
   }
-  return node;
+  return current;
 }
 
 // Read a scalar T (reviewer requirement: strictness is scalar, not [1])
