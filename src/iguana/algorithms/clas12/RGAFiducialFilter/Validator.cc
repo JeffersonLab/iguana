@@ -1,6 +1,6 @@
 #include "Validator.h"
 #include "iguana/services/YAMLReader.h"  // for YAMLReader::node_path_t
-#include "Algorithm.h"                   // use RGAFiducialFilter as config accessor
+#include <yaml-cpp/yaml.h>               // fallback parse from IGUANA_ETCDIR
 
 #include <TCanvas.h>
 #include <TLegend.h>
@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdlib>
+#include <fstream>
 #include <limits>
 #include <map>
 #include <set>
@@ -40,23 +42,53 @@ static inline NodePath Path(std::initializer_list<const char*> keys) {
   return p;
 }
 
-// ---- Config loader (primary: validator root; fallback: algorithm root)
-void RGAFiducialFilterValidator::LoadConfigFromYAML() {
-  // Initialize readers (they cache internally)
-  ParseYAMLConfig();
-  RGAFiducialFilter algo_cfg;
-  algo_cfg.ParseYAMLConfig();
+// ---- tiny helpers: yaml-cpp fallback into algorithm root
+static YAML::Node LoadAlgoRootFromFile() {
+  const char* etc = std::getenv("IGUANA_ETCDIR");
+  if (!etc) return YAML::Node();
+  std::string path = std::string(etc) + "/clas12/RGAFiducialFilter/Config.yaml";
+  try {
+    YAML::Node doc = YAML::LoadFile(path);
+    if (doc && doc["clas12::RGAFiducialFilter"]) return doc["clas12::RGAFiducialFilter"];
+  } catch (const std::exception&) {
+    // ignore; we'll fall back to empty node and let validator defaults/error handling trigger
+  }
+  return YAML::Node();
+}
 
-  // helpers that fall back to algorithm root when the local lookup returns empty
+template <typename T>
+static std::vector<T> GetFromAlgoFallback(const NodePath& p) {
+  static YAML::Node algoRoot = LoadAlgoRootFromFile(); // load once
+  std::vector<T> out;
+  if (!algoRoot) return out;
+  YAML::Node n = algoRoot;
+  for (const auto& key : p) {
+    n = n[key];
+    if (!n) return out;
+  }
+  if (n.IsSequence()) {
+    out.reserve(n.size());
+    for (auto it : n) out.push_back(it.as<T>());
+  } else if (n) {
+    out.push_back(n.as<T>());
+  }
+  return out;
+}
+
+// ---- Config loader (primary: validator root; fallback: algorithm root via yaml-cpp)
+void RGAFiducialFilterValidator::LoadConfigFromYAML() {
+  // Always parse our own root; the reader caches internally.
+  ParseYAMLConfig();
+
   auto getD = [&](const char* dbg, const NodePath& p) -> std::vector<double> {
     auto v = GetOptionVector<double>(dbg, p);
     if (!v.empty()) return v;
-    return algo_cfg.GetOptionVector<double>(dbg, p);
+    return GetFromAlgoFallback<double>(p);
   };
   auto getI = [&](const char* dbg, const NodePath& p) -> std::vector<int> {
     auto v = GetOptionVector<int>(dbg, p);
     if (!v.empty()) return v;
-    return algo_cfg.GetOptionVector<int>(dbg, p);
+    return GetFromAlgoFallback<int>(p);
   };
 
   // ---------- PCal strictness (for plotting split only)

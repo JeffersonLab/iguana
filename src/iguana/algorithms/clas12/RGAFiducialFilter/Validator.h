@@ -99,7 +99,7 @@ private:
 
   // helpers
   void BookIfNeeded();
-  void LoadConfigFromYAML(); // read all params for overlays and cuts, with algorithm fallback
+  void LoadConfigFromYAML(); // read all params for overlays and cuts, with algorithm-root fallback
   void DrawCalCanvas(int pid, const char* title);
   void DrawFTCanvas2x2();
   void DrawCVTCanvas1x2(const char* title);
