@@ -31,7 +31,7 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
 static std::string g_rgafid_yaml_path;
 
 
-/void RGAFiducialFilter::Start(hipo::banklist& banks)
+void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   // Get configuration using Iguana's system
   ParseYAMLConfig();
@@ -64,21 +64,20 @@ void RGAFiducialFilter::LoadConfig() {
   auto config = GetConfig();
   
   // --- Calorimeter
-  m_cal_strictness = config["calorimeter"]["strictness"].as<int>();
+  m_cal_strictness = config->GetOption<int>("calorimeter/strictness");
   if (m_cal_strictness < 1 || m_cal_strictness > 3)
     throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1,2,3");
 
   // --- Forward Tagger
-  auto ft_config = config["forward_tagger"];
-  auto radius = ft_config["radius"].as<std::vector<double>>();
+  auto radius = config->GetOptionVector<double>("forward_tagger/radius");
   if (radius.size() != 2)
     throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin,rmax]");
   
   u_ft_params.rmin = static_cast<float>(radius[0]);
   u_ft_params.rmax = static_cast<float>(radius[1]);
   
-  if (ft_config["holes_flat"]) {
-    auto holes_flat = ft_config["holes_flat"].as<std::vector<double>>();
+  if (config->HasOption("forward_tagger/holes_flat")) {
+    auto holes_flat = config->GetOptionVector<double>("forward_tagger/holes_flat");
     if (!holes_flat.empty() && (holes_flat.size() % 3) != 0)
       throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
     
@@ -95,34 +94,32 @@ void RGAFiducialFilter::LoadConfig() {
   }
 
   // --- CVT
-  auto cvt_config = config["cvt"];
-  m_cvt.edge_layers = cvt_config["edge_layers"].as<std::vector<int>>();
+  m_cvt.edge_layers = config->GetOptionVector<int>("cvt/edge_layers");
   if (m_cvt.edge_layers.empty())
     throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
 
-  m_cvt.edge_min = cvt_config["edge_min"].as<double>();
+  m_cvt.edge_min = config->GetOption<double>("cvt/edge_min");
 
-  if (cvt_config["phi_forbidden_deg"]) {
-    m_cvt.phi_forbidden_deg = cvt_config["phi_forbidden_deg"].as<std::vector<double>>();
+  if (config->HasOption("cvt/phi_forbidden_deg")) {
+    m_cvt.phi_forbidden_deg = config->GetOptionVector<double>("cvt/phi_forbidden_deg");
     if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0)
       throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
   }
 
   // --- DC
-  auto dc_config = config["dc"];
-  m_dc.theta_small_deg = dc_config["theta_small_deg"].as<double>();
+  m_dc.theta_small_deg = config->GetOption<double>("dc/theta_small_deg");
 
   auto read_thresholds = [&](const std::string& key) -> std::array<double, 3> {
-    auto v = dc_config[key].as<std::vector<double>>();
+    auto v = config->GetOptionVector<double>(key);
     if (v.size() != 3) {
       throw std::runtime_error("[RGAFID] 'dc." + key + "' must be [e1,e2,e3]");
     }
     return {v[0], v[1], v[2]};
   };
 
-  auto out = read_thresholds("thresholds_out");
-  auto in_s = read_thresholds("thresholds_in_smallTheta");
-  auto in_l = read_thresholds("thresholds_in_largeTheta");
+  auto out = read_thresholds("dc/thresholds_out");
+  auto in_s = read_thresholds("dc/thresholds_in_smallTheta");
+  auto in_l = read_thresholds("dc/thresholds_in_largeTheta");
 
   m_dc.out_e1 = out[0];  m_dc.out_e2 = out[1];  m_dc.out_e3 = out[2];
   m_dc.in_small_e1 = in_s[0]; m_dc.in_small_e2 = in_s[1]; m_dc.in_small_e3 = in_s[2];
