@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <yaml-cpp/yaml.h>
 
 namespace iguana::clas12 {
 
@@ -30,6 +31,61 @@ namespace iguana::clas12 {
     return false;
   }
 
+  // Load the RGAFiducialFilter YAML once and return the effective root:
+  // - If the file contains a top-level "clas12::RGAFiducialFilter", return that node
+  // - Otherwise return the whole document (flat style)
+  static YAML::Node RGAFID_LoadRootYAML() {
+    static YAML::Node root;
+    static bool loaded = false;
+    if (!loaded) {
+      // Where to look for the file
+      // If IGUANA_ETCDIR is exported as ".../etc/iguana/algorithms" (as you do at runtime),
+      // use it directly. Otherwise fall back to the compiled-in IGUANA_ETCDIR and append /algorithms.
+      std::string base;
+      if (const char* env = std::getenv("IGUANA_ETCDIR")) {
+        base = env;  // expected to already end with /algorithms
+      } else {
+        base = std::string(IGUANA_ETCDIR) + "/algorithms";
+      }
+      const std::string path = base + "/clas12/RGAFiducialFilter/Config.yaml";
+
+      try {
+        root = YAML::LoadFile(path);
+      } catch (const std::exception& e) {
+        throw std::runtime_error(std::string("[RGAFID] Could not load Config.yaml at ") + path +
+                                 " : " + e.what());
+      }
+
+      // Support both wrapped and flat styles
+      if (root["clas12::RGAFiducialFilter"]) root = root["clas12::RGAFiducialFilter"];
+      loaded = true;
+    }
+    return root;
+  }
+
+  // Read a scalar T at a given YAML path under the RGAFiducialFilter root.
+  template <typename T>
+  static T RGAFID_ReadScalar(std::initializer_list<const char*> keys,
+                             const char* dbgkey_for_errors) {
+    YAML::Node node = RGAFID_LoadRootYAML();
+    for (auto* k : keys) {
+      if (!node[k]) {
+        throw std::runtime_error(std::string("[RGAFID] Missing key '") + k +
+                                 "' while reading " + dbgkey_for_errors);
+      }
+      node = node[k];
+    }
+    if (!node.IsScalar()) {
+      throw std::runtime_error(std::string("[RGAFID] Expected scalar for ") + dbgkey_for_errors);
+    }
+    try {
+      return node.as<T>();
+    } catch (const std::exception& e) {
+      throw std::runtime_error(std::string("[RGAFID] Scalar conversion failed for ") +
+                               dbgkey_for_errors + ": " + e.what());
+    }
+  }
+
   // ---- Config loader (read relative to this algorithm's YAML root)
   void RGAFiducialFilter::LoadConfigFromYAML() {
     ParseYAMLConfig();
@@ -39,7 +95,7 @@ namespace iguana::clas12 {
       NodePath p; for (auto* k : keys) p.emplace_back(std::string(k)); return p;
     };
 
-    // Helpers: try flat path; if it throws, try wrapped path.
+    // Helpers for LIST options: try flat first, then wrapped
     auto getDvec = [&](const char* dbg,
                        std::initializer_list<const char*> flat,
                        std::initializer_list<const char*> wrap) -> std::vector<double> {
@@ -52,29 +108,16 @@ namespace iguana::clas12 {
       try { return GetOptionVector<int>(dbg, Path(flat)); }
       catch (...) { return GetOptionVector<int>(dbg, Path(wrap)); }
     };
-    auto getD = [&](const char* dbg,
-                    std::initializer_list<const char*> flat,
-                    std::initializer_list<const char*> wrap) -> double {
-      try { return GetOption<double>(dbg, Path(flat)); }
-      catch (...) { return GetOption<double>(dbg, Path(wrap)); }
-    };
-    auto getI = [&](const char* dbg,
-                    std::initializer_list<const char*> flat,
-                    std::initializer_list<const char*> wrap) -> int {
-      try { return GetOption<int>(dbg, Path(flat)); }
-      catch (...) { return GetOption<int>(dbg, Path(wrap)); }
-    };
 
     // --- Calorimeter (strictness is a SCALAR)
     {
-      m_cal_strictness = getI("rgafid.cal.strictness",
-                              {"calorimeter","strictness"},
-                              {"clas12::RGAFiducialFilter","calorimeter","strictness"});
+      m_cal_strictness = RGAFID_ReadScalar<int>({"calorimeter","strictness"},
+                                                "calorimeter.strictness");
       if (m_cal_strictness < 1 || m_cal_strictness > 3)
         throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1,2,3");
     }
 
-    // --- Forward Tagger (lists)
+    // --- Forward Tagger (LISTS)
     {
       auto radius = getDvec("rgafid.ft.radius",
                             {"forward_tagger","radius"},
@@ -104,7 +147,7 @@ namespace iguana::clas12 {
       }
     }
 
-    // --- CVT (edge_layers list; edge_min scalar; phi_forbidden list)
+    // --- CVT (edge_layers LIST; edge_min SCALAR; phi_forbidden LIST)
     {
       m_cvt.edge_layers = getIvec("rgafid.cvt.edge_layers",
                                   {"cvt","edge_layers"},
@@ -112,23 +155,19 @@ namespace iguana::clas12 {
       if (m_cvt.edge_layers.empty())
         throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
 
-      m_cvt.edge_min = getD("rgafid.cvt.edge_min",
-                            {"cvt","edge_min"},
-                            {"clas12::RGAFiducialFilter","cvt","edge_min"});
+      m_cvt.edge_min = RGAFID_ReadScalar<double>({"cvt","edge_min"}, "cvt.edge_min");
 
       m_cvt.phi_forbidden_deg = getDvec("rgafid.cvt.phi_forbidden_deg",
                                         {"cvt","phi_forbidden_deg"},
                                         {"clas12::RGAFiducialFilter","cvt","phi_forbidden_deg"});
-      if (!m_cvt.phi_forbidden_deg.empty() &&
-          (m_cvt.phi_forbidden_deg.size() % 2) != 0)
+      if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0)
         throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
     }
 
-    // --- DC (theta_small_deg scalar; thresholds triplets)
+    // --- DC (theta_small_deg SCALAR; thresholds triplets LISTS)
     {
-      m_dc.theta_small_deg = getD("rgafid.dc.theta_small_deg",
-                                  {"dc","theta_small_deg"},
-                                  {"clas12::RGAFiducialFilter","dc","theta_small_deg"});
+      m_dc.theta_small_deg = RGAFID_ReadScalar<double>({"dc","theta_small_deg"},
+                                                       "dc.theta_small_deg");
 
       auto need3 = [&](const char* key) -> std::array<double,3> {
         std::vector<double> vv;
