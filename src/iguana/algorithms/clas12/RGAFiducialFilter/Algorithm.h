@@ -106,7 +106,7 @@ namespace iguana::clas12 {
         const hipo::bank* calBank, const hipo::bank* ftBank, const hipo::bank* trajBank) const;
 
     // ---- Config loading (from ConfigFileReader helpers)
-    void LoadConfigFromYAML();
+    void LoadConfig();
 
     // CVT/DC params; loaded from Config.yaml (below are defaults which get overwritten)
     int       m_cal_strictness = 1;
