@@ -64,11 +64,12 @@ namespace iguana {
       /// use this method if you intend to use "action functions" instead of `Algorithm::Run`.
       void Start();
 
-      /// @brief Run this algorithm for an event.
+      /// @brief **Run Function:** Process an event's `hipo::banklist`
       /// @param banks the list of banks to process
       /// @returns a boolean value, which is typically used to decide whether or not to continue analyzing an event, _i.e._, it can be used
       /// as an _event-level_ filter; not all algorithms use or need this feature; see the algorithm's more specialized `Run` functions,
       /// which have `hipo::bank` parameters
+      /// @see Specialized `%Run` function(s) above/below; they take individual `hipo::bank` objects as parameters, and their documentation explains which banks are used by this algorithm and how.
       virtual bool Run(hipo::banklist& banks) const = 0;
 
       /// @brief Finalize this algorithm after all events are processed.

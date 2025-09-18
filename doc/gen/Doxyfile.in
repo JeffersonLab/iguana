@@ -286,16 +286,17 @@ TAB_SIZE               = 4
 ALIASES =
 # algorithm properties
 ALIASES += algo_brief{1}="@brief **%Algorithm:** \1^^@xrefitem algo \"\" \"\" \1^^"
-ALIASES += algo_type_filter="@par Type: Filter^^This algorithm will filter input bank(s).^^"
-ALIASES += algo_type_transformer="@par Type: Transformer^^This algorithm will change values within input bank(s).^^"
-ALIASES += algo_type_creator="@par Type: Creator^^This algorithm creates new bank(s) and its definition is found within the \link src/iguana/bankdefs/iguana.json **Iguana Bank Definitions JSON File** \endlink<ul><li>For guidance on how to read this JSON file, [see documentation on created banks](#mainpageCreatedBanks).</li><li>See also the return value type of this algorithm's action functions, which may be `struct`s with the same set of variables as the created bank.</li></ul>"
+ALIASES += algo_type_filter="@par Type: Filter^^This algorithm will filter input bank(s).^^@link_to_run_ftn"
+ALIASES += algo_type_transformer="@par Type: Transformer^^This algorithm will change values within input bank(s).^^@link_to_run_ftn"
+ALIASES += algo_type_creator="@par Type: Creator^^This algorithm creates new bank(s) and its definition is found within the \link src/iguana/bankdefs/iguana.json **Iguana Bank Definitions JSON File** \endlink<ul><li>For guidance on how to read this JSON file, [see documentation on created banks](#mainpageCreatedBanks).</li><li>See also the return value type of this algorithm's action functions, which may be `struct`s with the same set of variables as the created bank.</li></ul>^^@link_to_run_ftn"
 # configuration options
 ALIASES += begin_doc_config{1}="\par Configuration Options:^^YAML configuration, which includes the default option values:^^@include \1/Config.yaml ^^Table of options and descriptions:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"
 ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
 ALIASES += end_doc="</table>^^"
 # run functions
-ALIASES += run_function="@brief **Run Function**"
-ALIASES += run_function_returns_true="@returns `true`, _i.e._, this `Run` function does not provide an event-level filter"
+ALIASES += run_function="@brief **Run Function:** Process an event's `hipo::bank` objects^^^^The parameter list explains which banks are input (\"in\"), output (\"out\"), or both (\"in,out\").^^"
+ALIASES += link_to_run_ftn="@par Input and Output Banks:^^See @link ::Run `Run` function(s) for the banks @endlink that are processed by this algorithm.^^"
+ALIASES += run_function_returns_true="@returns `true`, _i.e._, this `%Run` function does not provide an event-level filter"
 # action functions
 ALIASES += action_function{1}="\xrefitem action \"Function Type\" \"List of all Action Functions\" \1 \brief **Action Function:** "
 ALIASES += when_to_call{1}="@note This function should be called **\1**"
@@ -715,7 +716,7 @@ SORT_MEMBER_DOCS       = YES
 # this will also influence the order of the classes in the class list.
 # The default value is: NO.
 
-SORT_BRIEF_DOCS        = NO
+SORT_BRIEF_DOCS        = YES
 
 # If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen will sort the
 # (brief and detailed) documentation of class members so that constructors and
@@ -734,7 +735,7 @@ SORT_MEMBERS_CTORS_1ST = NO
 # appear in their defined order.
 # The default value is: NO.
 
-SORT_GROUP_NAMES       = NO
+SORT_GROUP_NAMES       = YES
 
 # If the SORT_BY_SCOPE_NAME tag is set to YES, the class list will be sorted by
 # fully-qualified names, including namespaces. If set to NO, the class list will
