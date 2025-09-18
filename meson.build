@@ -58,7 +58,7 @@ hipo_dep = dependency(
 )
 ROOT_dep = dependency(
   'ROOT',
-  version: '>=6.28.10',
+  version: '>=6.30',
   method: 'cmake',
   required: get_option('z_require_root'),
   modules: [
