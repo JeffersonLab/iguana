@@ -36,9 +36,9 @@ namespace iguana {
       }
       virtual ~Validator() {}
 
-      void Start(hipo::banklist& banks) override{};
-      void Run(hipo::banklist& banks) const override{};
-      void Stop() override{};
+      void Start(hipo::banklist& banks) override {}
+      bool Run(hipo::banklist& banks) const override { return true; }
+      void Stop() override {}
 
       /// Set this validator's output directory
       /// @param output_dir the output directory

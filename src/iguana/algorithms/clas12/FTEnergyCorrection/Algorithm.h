@@ -5,12 +5,8 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Forward Tagger energy correction
-  ///
-  /// @begin_doc_algo{clas12::FTEnergyCorrection | Transformer}
-  /// @input_banks{RECFT::Particle}
-  /// @output_banks{RECFT::Particle}
-  /// @end_doc
+  /// @algo_brief{Forward Tagger energy correction}
+  /// @algo_type_transformer
   class FTEnergyCorrection : public Algorithm {
 
     DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::FTEnergyCorrection)
@@ -18,8 +14,13 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in,out] ftParticleBank `RECFT::Particle`, which will have the correction applied
+      /// @run_function_returns_true
+      bool Run(hipo::bank& ftParticleBank) const;
 
       /// @action_function{scalar transformer}
       /// Transformation function that returns 4-vector of electron with corrected energy for the Forward Tagger.

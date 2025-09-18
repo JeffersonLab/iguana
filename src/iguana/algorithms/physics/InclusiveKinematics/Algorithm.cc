@@ -74,11 +74,19 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void InclusiveKinematics::Run(hipo::banklist& banks) const
+  bool InclusiveKinematics::Run(hipo::banklist& banks) const
   {
-    auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
-    auto& config_bank   = GetBank(banks, b_config, "RUN::config");
-    auto& result_bank   = GetBank(banks, b_result, GetClassName());
+    return Run(
+        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_config, "RUN::config"),
+        GetBank(banks, b_result, GetClassName()));
+  }
+
+  bool InclusiveKinematics::Run(
+      hipo::bank const& particle_bank,
+      hipo::bank const& config_bank,
+      hipo::bank& result_bank) const
+  {
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
     auto key = PrepareEvent(config_bank.getInt("run",0));
@@ -86,7 +94,7 @@ namespace iguana::physics {
     auto lepton_pindex = FindScatteredLepton(particle_bank, key);
     if(lepton_pindex < 0) {
       ShowBank(result_bank, Logger::Header("CREATED BANK IS EMPTY"));
-      return;
+      return false;
     }
 
     auto result_vars = ComputeFromLepton(
@@ -111,6 +119,7 @@ namespace iguana::physics {
     result_bank.putDouble(i_targetM, 0, result_vars.targetM);
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
+    return true;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
