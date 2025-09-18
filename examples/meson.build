@@ -26,12 +26,10 @@ foreach example, info : example_sources
     example_exe = executable(
       example,
       sources: info['sources'],
-      include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
+      include_directories: [ project_inc ],
       dependencies: project_deps,
       link_with: project_libs,
-      link_args: ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
       install: true,
-      build_rpath: ROOT_dep_rpath,
     )
     if fs.is_file(get_option('test_data_file'))
       test(
