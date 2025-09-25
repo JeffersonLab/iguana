@@ -256,6 +256,9 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_have_traj = true;
   }
 
+  // load configuration via Iguana's YAMLReader
+  ParseYAMLConfig();
+
   LoadConfig();
 }
 
