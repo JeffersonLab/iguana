@@ -44,6 +44,14 @@ algo_dict = [
     },
   },
   {
+    'name': 'clas12::rgc::FiducialFilter',
+    'has_validator': false, # FIXME
+    'test_args': {
+      'banks': [ 'REC::Particle', 'RUN::config', 'REC::Traj', 'REC::Calorimeter' ],
+      'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
+    },
+  },
+  {
     'name': 'clas12::SectorFinder',
     'test_args': {
       'banks': [ 'REC::Particle', 'REC::Calorimeter', 'REC::Track', 'REC::Scintillator' ],

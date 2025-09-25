@@ -162,13 +162,13 @@ namespace iguana::clas12 {
           float const torus,
           int const pid) const;
 
-    private: // methods
+    protected: // methods
 
       /// @param level the cut level string
       /// @returns `CutLevel` associated to the input
       CutLevel ParseCutLevel(std::string const& level) const;
 
-    private: // members
+    protected: // members
 
       // `hipo::banklist`
       hipo::banklist::size_type b_particle;
