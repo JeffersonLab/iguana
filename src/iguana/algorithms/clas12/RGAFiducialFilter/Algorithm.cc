@@ -222,48 +222,52 @@ bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) con
 
 bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) const {
   if (!trajBank) return true;
+
   const auto& traj = *trajBank;
   const int n = traj.getRows();
 
-  // one edge per layer (1..12); NaN = not seen
-  std::array<double, 13> edge_by_layer;
-  edge_by_layer.fill(std::numeric_limits<double>::quiet_NaN());
+  // Best (max) finite edge value per layer for this track
+  std::map<int, double> best_edge;
 
-  double x12 = 0.0, y12 = 0.0; bool saw12 = false; double bestR2_12 = -1.0;
+  double x12 = 0.0, y12 = 0.0; 
+  bool saw12 = false;
 
   for (int i = 0; i < n; ++i) {
     if (traj.getInt("pindex", i)   != pindex) continue;
     if (traj.getInt("detector", i) != 5     ) continue; // CVT
 
-    const int    layer = traj.getInt("layer", i);
-    const double edge  = traj.getFloat("edge", i);
+    const int layer   = traj.getInt("layer", i);
+    const double edge = static_cast<double>(traj.getFloat("edge", i));
 
-    // Keep the FIRST valid edge per layer; do not let later rows overwrite it.
-    if (layer >= 0 && layer < (int)edge_by_layer.size()) {
-      if (std::isnan(edge_by_layer[layer]) && std::isfinite(edge)) {
-        edge_by_layer[layer] = edge;
+    // keep the last finite phi position from layer 12
+    if (layer == 12) {
+      const double x = static_cast<double>(traj.getFloat("x", i));
+      const double y = static_cast<double>(traj.getFloat("y", i));
+      if (std::isfinite(x) && std::isfinite(y)) {
+        x12 = x; y12 = y; saw12 = true;
       }
     }
 
-    if (layer == 12) {
-      const double x = traj.getFloat("x", i);
-      const double y = traj.getFloat("y", i);
-      const double r2 = x*x + y*y;
-      if (std::isfinite(r2) && r2 > bestR2_12) { bestR2_12 = r2; x12 = x; y12 = y; saw12 = true; }
+    // record best (max) finite edge for layers we actually cut on
+    if (std::find(m_cvt.edge_layers.begin(), m_cvt.edge_layers.end(), layer) != m_cvt.edge_layers.end()) {
+      if (std::isfinite(edge)) {
+        auto it = best_edge.find(layer);
+        if (it == best_edge.end()) best_edge[layer] = edge;
+        else if (edge > it->second) it->second = edge;
+      }
     }
   }
 
-  // Require edge > edge_min for every requested layer that we actually saw.
+  // Apply edge > edge_min for each layer that has a finite measurement
   for (int L : m_cvt.edge_layers) {
-    double e = (L >= 0 && L < (int)edge_by_layer.size()) ? edge_by_layer[L]
-                                                         : std::numeric_limits<double>::quiet_NaN();
-    if (std::isnan(e)) continue;             // missing layer -> pass (your convention)
-    if (!(e > m_cvt.edge_min)) return false; // at/below threshold -> fail
+    auto it = best_edge.find(L);
+    if (it == best_edge.end()) continue;           // missing layer ⇒ pass
+    if (!(it->second > m_cvt.edge_min)) return false; // fail if edge <= edge_min
   }
 
-  // Optional phi veto from layer 12
+  // Phi veto from YAML (open intervals)
   if (saw12 && !m_cvt.phi_forbidden_deg.empty()) {
-    constexpr double kPI = 3.141592653589793;
+    constexpr double kPI = 3.14159265358979323846;
     double phi = std::atan2(y12, x12) * (180.0 / kPI);
     if (phi < 0) phi += 360.0;
     for (std::size_t i = 0; i + 1 < m_cvt.phi_forbidden_deg.size(); i += 2) {
