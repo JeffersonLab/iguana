@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cstdarg>
 
 namespace iguana::clas12 {
 
