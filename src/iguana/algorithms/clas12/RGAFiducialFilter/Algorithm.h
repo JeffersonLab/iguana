@@ -21,14 +21,12 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` bank using subsystem-specific fiducial cuts:
-  /// electrons/photons use FT (or PCAL fallback), charged hadrons use CVT/DC,
-  /// considering only the banks present for each track.
-  ///
-  /// @begin_doc_algo{clas12::RGAFiducialFilter | Filter}
-  /// @input_banks{REC::Particle, RUN::config, REC::Calorimeter, REC::ForwardTagger, REC::Traj}
-  /// @output_banks{REC::Particle}
-  /// @end_doc
+  // @brief_algo Filter the `REC::Particle` bank using subsystem-specific fiducial cuts
+  //
+  // @begin_doc_algo{clas12::RGAFiducialFilter | Filter}
+  // @input_banks{REC::Particle, RUN::config, REC::Calorimeter, REC::ForwardTagger, REC::Traj}
+  // @output_banks{REC::Particle}
+  // @end_doc
   class RGAFiducialFilter : public Algorithm {
     DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
