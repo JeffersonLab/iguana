@@ -576,13 +576,83 @@ void RGAFiducialFilterValidator::Stop() {
   DrawDCCanvas2x3(m_dc_pos, pos_bend_id, pos_pct);
   DrawDCCanvas2x3(m_dc_neg, neg_bend_id, neg_pct);
 
+  // ---- Write all histograms into the ROOT file (they're detached from any directory)
   if (m_out) {
+    m_out->cd();
+
+    auto write_obj = [&](TObject* o){ if (o) o->Write(); };
+
+    // PCAL (per PID, per sector)
+    for (auto& kv : m_cal) {
+      auto& sectors = kv.second;
+      for (int s=1; s<=6; ++s) {
+        auto& H = sectors[s];
+        write_obj(H.lv_before);
+        write_obj(H.lv_after);
+        write_obj(H.lw_before);
+        write_obj(H.lw_after);
+      }
+    }
+
+    // FT
+    for (auto& kv : m_ft_h) {
+      write_obj(kv.second.before);
+      write_obj(kv.second.after);
+    }
+
+    // CVT
+    write_obj(m_cvt_before);
+    write_obj(m_cvt_after);
+
+    // DC
+    auto write_dc = [&](const DCHists& H){
+      write_obj(H.r1_before); write_obj(H.r1_after);
+      write_obj(H.r2_before); write_obj(H.r2_after);
+      write_obj(H.r3_before); write_obj(H.r3_after);
+    };
+    write_dc(m_dc_pos);
+    write_dc(m_dc_neg);
+
     m_out->Write();
     m_log->Info("Wrote output file {}", m_out->GetName());
     m_out->Close();
     delete m_out;
     m_out = nullptr;
   }
+
+  // ---- Explicitly delete all booked histograms to satisfy ASan/LSan
+  auto zap = [&](auto*& p){ if (p) { delete p; p = nullptr; } };
+
+  // PCAL
+  for (auto& kv : m_cal) {
+    auto& sectors = kv.second;
+    for (int s=1; s<=6; ++s) {
+      auto& H = sectors[s];
+      zap(H.lv_before); zap(H.lv_after);
+      zap(H.lw_before); zap(H.lw_after);
+    }
+  }
+  m_cal.clear();
+
+  // FT
+  for (auto& kv : m_ft_h) {
+    zap(kv.second.before);
+    zap(kv.second.after);
+  }
+  m_ft_h.clear();
+
+  // CVT
+  zap(m_cvt_before);
+  zap(m_cvt_after);
+
+  // DC
+  auto zap_dc = [&](DCHists& H){
+    zap(H.r1_before); zap(H.r1_after);
+    zap(H.r2_before); zap(H.r2_after);
+    zap(H.r3_before); zap(H.r3_after);
+  };
+  zap_dc(m_dc_pos);
+  zap_dc(m_dc_neg);
 }
 
 } // namespace iguana::clas12
