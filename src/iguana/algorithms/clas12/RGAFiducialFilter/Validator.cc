@@ -558,4 +558,4 @@ void RGAFiducialFilterValidator::Stop() {
   }
 }
 
-} 
+} // namespace iguana::clas12

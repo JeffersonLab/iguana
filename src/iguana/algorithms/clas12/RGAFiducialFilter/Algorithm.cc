@@ -1,5 +1,4 @@
 // src/iguana/algorithms/clas12/RGAFiducialFilter/Algorithm.cc
-
 #include "Algorithm.h"
 
 #include <algorithm>
@@ -25,6 +24,18 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
   return false;
 }
 
+static bool traj_has_detector(const hipo::bank* trajBank, int pindex, int detector) {
+  if (!trajBank) return false;
+  const auto& traj = *trajBank;
+  const int n = traj.getRows();
+  for (int i=0; i<n; ++i) {
+    if (traj.getInt("pindex", i) == pindex && traj.getInt("detector", i) == detector) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // -----------------------------------------------------------------------------
 // lightweight aggregated debug (prints to stderr)
 // -----------------------------------------------------------------------------
@@ -38,14 +49,15 @@ struct CvtDebug {
   long long missing_req[kMaxLayer]{}; // layer L required but missing this track
   double last_edge_min{0.0};
 
-  void tickRequired(const std::vector<int>& req, const std::map<int,double>& best_edge, double edge_min) {
+  void tickRequired(const std::vector<int>& req,
+                    const std::map<int,double>& best_edge,
+                    double edge_min) {
     last_edge_min = edge_min;
     for (int L : req) {
       if (L<0 || L>=kMaxLayer) continue;
       required[L]++;
       auto it = best_edge.find(L);
       if (it == best_edge.end()) { missing_req[L]++; continue; }
-      // counted in seen[] elsewhere
       if (!(it->second > edge_min)) leq_min[L]++;
     }
   }
@@ -269,10 +281,10 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
   const auto& traj = *trajBank;
   const int n = traj.getRows();
 
-  // One edge value per layer (your expectation) — we track the value we see per layer.
+  // One edge value per layer for this track (keep the last seen value for a layer).
   std::map<int, double> edge_at_layer;
 
-  double x12 = 0.0, y12 = 0.0; 
+  double x12 = 0.0, y12 = 0.0;
   bool saw12 = false;
 
   for (int i = 0; i < n; ++i) {
@@ -282,8 +294,6 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
     const int layer   = traj.getInt("layer", i);
     const double edge = static_cast<double>(traj.getFloat("edge", i));
 
-    // keep the (only) edge for this layer (if multiple ever appear, this keeps the last one,
-    // matching your Java loop semantics)
     if (std::find(m_cvt.edge_layers.begin(), m_cvt.edge_layers.end(), layer) != m_cvt.edge_layers.end()) {
       edge_at_layer[layer] = edge;
       if (0 <= layer && layer < CvtDebug::kMaxLayer) g_dbg.seen[layer]++; // debug accounting
@@ -320,7 +330,11 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
     for (std::size_t i = 0; i + 1 < m_cvt.phi_forbidden_deg.size(); i += 2) {
       const double lo = m_cvt.phi_forbidden_deg[i];
       const double hi = m_cvt.phi_forbidden_deg[i + 1];
-      if (phi > lo && phi < hi) { g_dbg.tracks++; g_dbg.fail_phi++; if ((g_dbg.tracks % 100000)==0) g_dbg.print("progress"); return false; }
+      if (phi > lo && phi < hi) {
+        g_dbg.tracks++; g_dbg.fail_phi++;
+        if ((g_dbg.tracks % 100000)==0) g_dbg.print("progress");
+        return false;
+      }
     }
   }
 
@@ -351,17 +365,23 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const double theta = std::atan2(rho, (pz==0.0 ? 1e-12 : pz)) * (180.0 / kPI);
 
   double e1=0.0, e2=0.0, e3=0.0;
+  bool   saw_dc = false;
+
   const auto& traj = *trajBank;
   const int n = traj.getRows();
   for (int i=0; i<n; ++i) {
     if (traj.getInt("pindex", i) != pindex) continue;
     if (traj.getInt("detector", i) != 6)    continue; // DC
+    saw_dc = true;
     const int layer = traj.getInt("layer", i);
     const double e  = traj.getFloat("edge", i);
     if      (layer== 6) e1 = e;
     else if (layer==18) e2 = e;
     else if (layer==36) e3 = e;
   }
+
+  // If this track has no DC rows at all, DC cuts do not apply.
+  if (!saw_dc) return true;
 
   auto pass3 = [](double a1, double a2, double a3, double t1, double t2, double t3)->bool {
     return (a1>t1 && a2>t2 && a3>t3);
@@ -397,6 +417,8 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
 
   const bool hasCal = has_assoc(calBank);
   const bool hasFT  = has_assoc(ftBank);
+  const bool hasCVT = traj_has_detector(trajBank, track_index, 5);
+  const bool hasDC  = traj_has_detector(trajBank, track_index, 6);
 
   bool pass = true;
 
@@ -408,7 +430,9 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
         auto calhits = CollectCalHitsForTrack(*calBank, track_index);
         pass = pass && PassCalStrictness(calhits, strictness);
       }
-      pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
+      if (hasDC) {
+        pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
+      }
     }
     return pass;
   }
@@ -426,8 +450,9 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
   // charged hadrons
   if (pid== 211 || pid== 321 || pid== 2212 ||
       pid==-211 || pid==-321 || pid==-2212) {
-    pass = pass && PassCVTFiducial(track_index, trajBank);
-    pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
+    // Only apply the cut for the subsystem the track actually has.
+    if (hasCVT) pass = pass && PassCVTFiducial(track_index, trajBank);
+    if (hasDC)  pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
     return pass;
   }
 
