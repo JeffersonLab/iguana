@@ -422,6 +422,8 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title) {
   }
 
   c->SaveAs(Form("%s_pcal_lv_lw_pid%d.png", m_base.Data(), pid));
+  c->Close();
+  delete c;
 }
 
 void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
@@ -453,6 +455,8 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
     Form("Photons (after)  [survive = %.3f%%];x (cm);y (cm)", pct(22)));
 
   c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
+  c->Close();
+  delete c;
 }
 
 void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title) {
@@ -485,6 +489,8 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title) {
   m_cvt_after->Draw("COLZ");
 
   c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
+  c->Close();
+  delete c;
 }
 
 void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H,
@@ -525,6 +531,8 @@ void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H,
     H.r3_after ->SetTitle(Form("%s DC Region 3 (after)  [survive = %.3f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
 
   c->SaveAs(Form("%s_dc_%s_2x3.png", m_base.Data(), bend));
+  c->Close();
+  delete c;
 }
 
 void RGAFiducialFilterValidator::Stop() {
@@ -551,11 +559,46 @@ void RGAFiducialFilterValidator::Stop() {
   DrawDCCanvas2x3(m_dc_pos, pos_bend_id, pos_pct);
   DrawDCCanvas2x3(m_dc_neg, neg_bend_id, neg_pct);
 
+  // Write & close output ROOT file
   if (m_out) {
     m_out->Write();
     m_log->Info("Wrote output file {}", m_out->GetName());
     m_out->Close();
+    delete m_out;
+    m_out = nullptr;
   }
+
+  // Free all histograms we allocated
+  for (auto& kv : m_cal) {
+    auto& perSector = kv.second;
+    for (int s=1; s<=6; ++s) {
+      auto& H = perSector[s];
+      if (H.lv_before) { delete H.lv_before; H.lv_before = nullptr; }
+      if (H.lv_after ) { delete H.lv_after ; H.lv_after  = nullptr; }
+      if (H.lw_before) { delete H.lw_before; H.lw_before = nullptr; }
+      if (H.lw_after ) { delete H.lw_after ; H.lw_after  = nullptr; }
+    }
+  }
+
+  for (auto& kv : m_ft_h) {
+    auto& F = kv.second;
+    if (F.before) { delete F.before; F.before = nullptr; }
+    if (F.after ) { delete F.after ; F.after  = nullptr; }
+  }
+
+  if (m_cvt_before) { delete m_cvt_before; m_cvt_before = nullptr; }
+  if (m_cvt_after ) { delete m_cvt_after ; m_cvt_after  = nullptr; }
+
+  auto del_dc = [](DCHists& H){
+    if (H.r1_before) { delete H.r1_before; H.r1_before = nullptr; }
+    if (H.r2_before) { delete H.r2_before; H.r2_before = nullptr; }
+    if (H.r3_before) { delete H.r3_before; H.r3_before = nullptr; }
+    if (H.r1_after ) { delete H.r1_after ; H.r1_after  = nullptr; }
+    if (H.r2_after ) { delete H.r2_after ; H.r2_after  = nullptr; }
+    if (H.r3_after ) { delete H.r3_after ; H.r3_after  = nullptr; }
+  };
+  del_dc(m_dc_pos);
+  del_dc(m_dc_neg);
 }
 
 } // namespace iguana::clas12
