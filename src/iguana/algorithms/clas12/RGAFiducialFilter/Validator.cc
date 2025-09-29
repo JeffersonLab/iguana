@@ -1,3 +1,5 @@
+// src/iguana/algorithms/clas12/RGAFiducialFilter/Validator.cc
+
 #include "Validator.h"
 
 #include <TCanvas.h>
@@ -36,21 +38,25 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
         P[s].lv_before = new TH1D(Form("h_pcal_lv_before_pid%d_s%d", pid, s),
           Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
         P[s].lv_before->SetStats(0);
+        P[s].lv_before->SetDirectory(nullptr);
       }
       if (!P[s].lv_after) {
         P[s].lv_after = new TH1D(Form("h_pcal_lv_after_pid%d_s%d", pid, s),
           Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
         P[s].lv_after->SetStats(0);
+        P[s].lv_after->SetDirectory(nullptr);
       }
       if (!P[s].lw_before) {
         P[s].lw_before = new TH1D(Form("h_pcal_lw_before_pid%d_s%d", pid, s),
           Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
         P[s].lw_before->SetStats(0);
+        P[s].lw_before->SetDirectory(nullptr);
       }
       if (!P[s].lw_after) {
         P[s].lw_after = new TH1D(Form("h_pcal_lw_after_pid%d_s%d", pid, s),
           Form("PID %d S%d;length (cm);counts", pid, s), nb, lo, hi);
         P[s].lw_after->SetStats(0);
+        P[s].lw_after->SetDirectory(nullptr);
       }
     }
   }
@@ -58,32 +64,41 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
   // FT: x,y in +/-20 cm
   for (int pid : kPIDs) {
     auto& F = m_ft_h[pid];
-    if (!F.before)
+    if (!F.before) {
       F.before = new TH2F(Form("h_ft_before_pid%d", pid),
         Form("FT x-y before (PID %d);x (cm);y (cm)", pid), 120, -20, 20, 120, -20, 20);
-    if (!F.after)
+      F.before->SetStats(0);
+      F.before->SetDirectory(nullptr);
+    }
+    if (!F.after) {
       F.after  = new TH2F(Form("h_ft_after_pid%d", pid),
         Form("FT x-y after (PID %d);x (cm);y (cm)", pid), 120, -20, 20, 120, -20, 20);
-    F.before->SetStats(0);
-    F.after->SetStats(0);
+      F.after->SetStats(0);
+      F.after->SetDirectory(nullptr);
+    }
   }
 
   // CVT layer 12: phi (deg) vs theta (deg), hadrons only
-  if (!m_cvt_before)
+  if (!m_cvt_before) {
     m_cvt_before = new TH2F("h_cvt_l12_phi_theta_before_all",
       "CVT layer 12 before (hadrons: #pm211,#pm321,#pm2212);phi (deg);theta (deg)",
       180, 0, 360,  90, 0, 90);
-  if (!m_cvt_after)
+    m_cvt_before->SetStats(0);
+    m_cvt_before->SetDirectory(nullptr);
+  }
+  if (!m_cvt_after) {
     m_cvt_after  = new TH2F("h_cvt_l12_phi_theta_after_all",
       "CVT layer 12 after (hadrons: #pm211,#pm321,#pm2212);phi (deg);theta (deg)",
       180, 0, 360,  90, 0, 90);
-  m_cvt_before->SetStats(0);
-  m_cvt_after->SetStats(0);
+    m_cvt_after->SetStats(0);
+    m_cvt_after->SetDirectory(nullptr);
+  }
 
   // DC edges: 0–30 cm in 0.3 cm bins
   auto mk = [](const char* name, const char* title){
     auto* h = new TH1D(name, title, 100, 0.0, 30.0);
     h->SetStats(0);
+    h->SetDirectory(nullptr);
     return h;
   };
   if (!m_dc_pos.r1_before) {
@@ -412,12 +427,14 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title) {
     H.lv_after ->Draw("HISTSAME");
     H.lw_after ->Draw("HISTSAME");
 
+    // IMPORTANT: let the pad own (and delete) the legend
     auto* leg = new TLegend(0.55, 0.72, 0.88, 0.90);
     leg->SetBorderSize(0); leg->SetFillStyle(0);
     leg->AddEntry(H.lv_before, "lv before", "l");
     leg->AddEntry(H.lw_before, "lw before", "l");
     leg->AddEntry(H.lv_after , "lv after",  "l");
     leg->AddEntry(H.lw_after , "lw after",  "l");
+    leg->SetBit(TObject::kCanDelete); // pad will delete on canvas destruction
     leg->Draw();
   }
 
@@ -559,7 +576,6 @@ void RGAFiducialFilterValidator::Stop() {
   DrawDCCanvas2x3(m_dc_pos, pos_bend_id, pos_pct);
   DrawDCCanvas2x3(m_dc_neg, neg_bend_id, neg_pct);
 
-  // Write & close output ROOT file
   if (m_out) {
     m_out->Write();
     m_log->Info("Wrote output file {}", m_out->GetName());
@@ -567,38 +583,6 @@ void RGAFiducialFilterValidator::Stop() {
     delete m_out;
     m_out = nullptr;
   }
-
-  // Free all histograms we allocated
-  for (auto& kv : m_cal) {
-    auto& perSector = kv.second;
-    for (int s=1; s<=6; ++s) {
-      auto& H = perSector[s];
-      if (H.lv_before) { delete H.lv_before; H.lv_before = nullptr; }
-      if (H.lv_after ) { delete H.lv_after ; H.lv_after  = nullptr; }
-      if (H.lw_before) { delete H.lw_before; H.lw_before = nullptr; }
-      if (H.lw_after ) { delete H.lw_after ; H.lw_after  = nullptr; }
-    }
-  }
-
-  for (auto& kv : m_ft_h) {
-    auto& F = kv.second;
-    if (F.before) { delete F.before; F.before = nullptr; }
-    if (F.after ) { delete F.after ; F.after  = nullptr; }
-  }
-
-  if (m_cvt_before) { delete m_cvt_before; m_cvt_before = nullptr; }
-  if (m_cvt_after ) { delete m_cvt_after ; m_cvt_after  = nullptr; }
-
-  auto del_dc = [](DCHists& H){
-    if (H.r1_before) { delete H.r1_before; H.r1_before = nullptr; }
-    if (H.r2_before) { delete H.r2_before; H.r2_before = nullptr; }
-    if (H.r3_before) { delete H.r3_before; H.r3_before = nullptr; }
-    if (H.r1_after ) { delete H.r1_after ; H.r1_after  = nullptr; }
-    if (H.r2_after ) { delete H.r2_after ; H.r2_after  = nullptr; }
-    if (H.r3_after ) { delete H.r3_after ; H.r3_after  = nullptr; }
-  };
-  del_dc(m_dc_pos);
-  del_dc(m_dc_neg);
 }
 
 } // namespace iguana::clas12
