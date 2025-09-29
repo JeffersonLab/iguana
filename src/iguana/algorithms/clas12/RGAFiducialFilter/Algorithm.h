@@ -8,19 +8,27 @@
 #include <string>
 #include <vector>
 
+// RGA fiducial filter:
+//   - PCal-only edge cuts on lv & lw with strictness thresholds:
+//       s=1 -> {lv,lw} >=  9.0 cm (bars are width of 4.5cm)
+//       s=2 -> {lv,lw} >= 13.5 cm
+//       s=3 -> {lv,lw} >= 18.0 cm
+//   - Forward Tagger annulus + low efficiency hole vetoes
+//   - Central detector (CVT) fiducial:
+//       require edge > edge_min (default 0) and vetoes on gaps between CVT sectors
+//   - Drift Chamber (DC) fiducial:
+//       three region edge thresholds with separate inbending/outbending track logic
+
 namespace iguana::clas12 {
 
-  // RGA fiducial filter:
-  //   - PCal-only edge cuts on lv & lw with strictness thresholds:
-  //       s=1 -> {lv,lw} >=  9.0 cm (bars are width of 4.5cm)
-  //       s=2 -> {lv,lw} >= 13.5 cm
-  //       s=3 -> {lv,lw} >= 18.0 cm
-  //   - Forward Tagger annulus + low efficiency hole vetoes
-  //   - Central detector (CVT) fiducial:
-  //       require edge > edge_min (default 0) and vetoes on gaps between CVT sectors
-  //   - Drift Chamber (DC) fiducial:
-  //       three region edge thresholds with separate inbending/outbending track logic
-
+  /// @brief_algo Filter the `REC::Particle` bank using subsystem-specific fiducial cuts:
+  /// electrons/photons use FT (or PCAL fallback), charged hadrons use CVT/DC,
+  /// considering only the banks present for each track.
+  ///
+  /// @begin_doc_algo{clas12::RGAFiducialFilter | Filter}
+  /// @input_banks{REC::Particle, RUN::config, REC::Calorimeter, REC::ForwardTagger, REC::Traj}
+  /// @output_banks{REC::Particle}
+  /// @end_doc
   class RGAFiducialFilter : public Algorithm {
     DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
