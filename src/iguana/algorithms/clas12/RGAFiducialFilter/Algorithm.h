@@ -1,10 +1,10 @@
+// src/iguana/algorithms/clas12/RGAFiducialFilter/Algorithm.h
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 
 #include <array>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -20,10 +20,7 @@ namespace iguana::clas12 {
   //       require edge > edge_min (default 0) and vetoes on gaps between CVT sectors
   //   - Drift Chamber (DC) fiducial:
   //       three region edge thresholds with separate inbending/outbending track logic
-  // All defaults are required from Config.yaml. Users may override
-  // strictness via SetStrictness(1|2|3) before Start().
-  //
-  // !!! TO DO: implement run-by-run data/MC matching for missing PMTs, etc.
+  // All defaults are required from Config.yaml.
 
   class RGAFiducialFilter : public Algorithm {
     DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
@@ -56,9 +53,6 @@ namespace iguana::clas12 {
     void Run  (hipo::banklist& banks) const override;
     void Stop () override {}
 
-    // user controlled override (takes precedence over YAML). Call before Start().
-    void SetStrictness(int strictness);
-
     // ---- Read-only accessors for Validator (single source of truth)
     int                  CalStrictness() const { return m_cal_strictness; }
     const FTParams&      FT()            const { return u_ft_params; }
@@ -88,8 +82,7 @@ namespace iguana::clas12 {
     bool m_have_traj  = false;
 
     // FT params (loaded from YAML)
-    FTParams           u_ft_params{};      // in-use FT params from YAML
-    std::optional<int> u_strictness_user;  // if SetStrictness() used
+    FTParams u_ft_params{};            // in-use FT params from YAML
 
     // core filter functions
     struct CalHit { int sector=0; float lv=0, lw=0, lu=0; };
@@ -111,7 +104,6 @@ namespace iguana::clas12 {
     int       m_cal_strictness = 1;
     CVTParams m_cvt{};
     DCParams  m_dc{};
-
   };
 
-} 
+} // namespace iguana::clas12

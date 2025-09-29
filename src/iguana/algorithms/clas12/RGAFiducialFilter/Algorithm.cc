@@ -209,12 +209,6 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   });
 }
 
-void RGAFiducialFilter::SetStrictness(int s) {
-  if (s<1 || s>3)
-    throw std::runtime_error("[RGAFID] SetStrictness expects 1,2,3");
-  u_strictness_user = s;
-}
-
 // -----------------------------------------------------------------------------
 // core helpers
 // -----------------------------------------------------------------------------
@@ -406,7 +400,7 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
   const hipo::bank* ftBank, const hipo::bank* trajBank) const {
 
   const int pid = particleBank.getInt("pid", track_index);
-  const int strictness = u_strictness_user.value_or(m_cal_strictness);
+  const int strictness = m_cal_strictness; // single source of truth: YAML
 
   auto has_assoc = [&](const hipo::bank* b)->bool {
     if (!b) return false;
