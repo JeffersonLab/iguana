@@ -20,13 +20,11 @@ namespace iguana::clas12 {
   //       require edge > edge_min (default 0) and vetoes on gaps between CVT sectors
   //   - Drift Chamber (DC) fiducial:
   //       three region edge thresholds with separate inbending/outbending track logic
-  // All defaults are required from Config.yaml.
 
   class RGAFiducialFilter : public Algorithm {
     DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
   public:
-    // public param types 
     struct FTParams {
       float rmin = 0;
       float rmax = 0;
@@ -35,11 +33,11 @@ namespace iguana::clas12 {
     struct CVTParams {
       std::vector<int>    edge_layers;        // e.g. {1,3,5,7,12}
       double              edge_min = 0.0;     // > edge_min
-      std::vector<double> phi_forbidden_deg;  // flattened pairs (open intervals)
+      std::vector<double> phi_forbidden_deg;  
     };
     struct DCParams {
       // thresholds (cm)
-      double theta_small_deg   = 10.0;   // theta boundary for special inbending case
+      double theta_small_deg   = 10.0;   // tighter boundary for inbending
       // inbending, theta < theta_small_deg
       double in_small_e1 = 10.0, in_small_e2 = 10.0, in_small_e3 = 10.0;
       // inbending, theta >= theta_small_deg
@@ -53,20 +51,16 @@ namespace iguana::clas12 {
     void Run  (hipo::banklist& banks) const override;
     void Stop () override {}
 
-    // ---- Read-only accessors for Validator (single source of truth)
+    // ---- Read-only accessors for Validator 
     int                  CalStrictness() const { return m_cal_strictness; }
     const FTParams&      FT()            const { return u_ft_params; }
     const CVTParams&     CVT()           const { return m_cvt; }
     const DCParams&      DC()            const { return m_dc; }
 
     bool ShouldKeepRow(
-      int track_index,
-      const hipo::bank& particleBank,
-      const hipo::bank& configBank,
-      const hipo::bank* calBank,
-      const hipo::bank* ftBank,
-      const hipo::bank* trajBank) const
-    {
+      int track_index, const hipo::bank& particleBank,
+      const hipo::bank& configBank, const hipo::bank* calBank,
+      const hipo::bank* ftBank, const hipo::bank* trajBank) const {
       return Filter(track_index, particleBank, configBank, calBank, ftBank, trajBank);
     }
 
@@ -82,7 +76,7 @@ namespace iguana::clas12 {
     bool m_have_traj  = false;
 
     // FT params (loaded from YAML)
-    FTParams u_ft_params{};            // in-use FT params from YAML
+    FTParams u_ft_params{};       
 
     // core filter functions
     struct CalHit { int sector=0; float lv=0, lw=0, lu=0; };
@@ -97,13 +91,13 @@ namespace iguana::clas12 {
     bool Filter(int track_index, const hipo::bank& particleBank, const hipo::bank& configBank,
         const hipo::bank* calBank, const hipo::bank* ftBank, const hipo::bank* trajBank) const;
 
-    // ---- Config loading (from ConfigFileReader helpers)
+    // ---- Config loading
     void LoadConfig();
 
-    // CVT/DC params; loaded from Config.yaml (below are defaults which get overwritten)
+    // CVT/DC params; 
     int       m_cal_strictness = 1;
     CVTParams m_cvt{};
     DCParams  m_dc{};
   };
 
-} // namespace iguana::clas12
+}

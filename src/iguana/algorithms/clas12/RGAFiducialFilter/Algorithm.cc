@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <cstdio>
 #include <limits>
 #include <map>
 #include <stdexcept>
@@ -16,9 +15,7 @@ namespace iguana::clas12 {
 
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
 
-// -----------------------------------------------------------------------------
 // small helpers
-// -----------------------------------------------------------------------------
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
@@ -35,49 +32,6 @@ static bool traj_has_detector(const hipo::bank* trajBank, int pindex, int detect
   }
   return false;
 }
-
-// -----------------------------------------------------------------------------
-// lightweight aggregated debug (prints to stderr)
-// -----------------------------------------------------------------------------
-namespace {
-struct CvtDebug {
-  long long tracks{0}, pass{0}, fail_edge{0}, fail_phi{0};
-  static constexpr int kMaxLayer = 64;
-  long long seen[kMaxLayer]{};        // how many times we saw a CVT edge for layer L
-  long long leq_min[kMaxLayer]{};     // how many times edge <= edge_min at layer L
-  long long required[kMaxLayer]{};    // layer L was in the required list
-  long long missing_req[kMaxLayer]{}; // layer L required but missing this track
-  double last_edge_min{0.0};
-
-  void tickRequired(const std::vector<int>& req,
-                    const std::map<int,double>& best_edge,
-                    double edge_min) {
-    last_edge_min = edge_min;
-    for (int L : req) {
-      if (L<0 || L>=kMaxLayer) continue;
-      required[L]++;
-      auto it = best_edge.find(L);
-      if (it == best_edge.end()) { missing_req[L]++; continue; }
-      if (!(it->second > edge_min)) leq_min[L]++;
-    }
-  }
-
-  void print(const char* when) {
-    std::fprintf(stderr,
-      "[RGAFID][%s] CVT summary: tracks=%lld pass=%lld fail_edge=%lld fail_phi=%lld edge_min=%.6g\n",
-      when, tracks, pass, fail_edge, fail_phi, last_edge_min);
-    std::fprintf(stderr, "[RGAFID][%s]  layer : required  missing  seen   edge<=min\n", when);
-    for (int L=0; L<kMaxLayer; ++L) {
-      if (required[L] || seen[L]) {
-        std::fprintf(stderr, "[RGAFID][%s]  %5d : %8lld %8lld %6lld %10lld\n",
-                     when, L, required[L], missing_req[L], seen[L], leq_min[L]);
-      }
-    }
-  }
-  ~CvtDebug(){ print("exit"); }
-};
-static CvtDebug g_dbg;
-} // namespace
 
 // -----------------------------------------------------------------------------
 // configuration
@@ -275,7 +229,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
   const auto& traj = *trajBank;
   const int n = traj.getRows();
 
-  // One edge value per layer for this track (keep the last seen value for a layer).
+  // One edge value per required layer for this track (keep the last seen value for a layer).
   std::map<int, double> edge_at_layer;
 
   double x12 = 0.0, y12 = 0.0;
@@ -290,7 +244,6 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 
     if (std::find(m_cvt.edge_layers.begin(), m_cvt.edge_layers.end(), layer) != m_cvt.edge_layers.end()) {
       edge_at_layer[layer] = edge;
-      if (0 <= layer && layer < CvtDebug::kMaxLayer) g_dbg.seen[layer]++; // debug accounting
     }
 
     if (layer == 12) {
@@ -302,16 +255,11 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
     }
   }
 
-  // Record required/missing and edge<=min tallies before we decide.
-  g_dbg.tickRequired(m_cvt.edge_layers, edge_at_layer, m_cvt.edge_min);
-
   // Apply edge > edge_min for each layer that has a measurement; missing layer => pass.
   for (int L : m_cvt.edge_layers) {
     auto it = edge_at_layer.find(L);
     if (it == edge_at_layer.end()) continue;            // missing layer ⇒ pass
     if (!(it->second > m_cvt.edge_min)) {               // fail if edge <= edge_min
-      g_dbg.tracks++; g_dbg.fail_edge++;
-      if ((g_dbg.tracks % 100000) == 0) g_dbg.print("progress");
       return false;
     }
   }
@@ -325,15 +273,11 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
       const double lo = m_cvt.phi_forbidden_deg[i];
       const double hi = m_cvt.phi_forbidden_deg[i + 1];
       if (phi > lo && phi < hi) {
-        g_dbg.tracks++; g_dbg.fail_phi++;
-        if ((g_dbg.tracks % 100000)==0) g_dbg.print("progress");
         return false;
       }
     }
   }
 
-  g_dbg.tracks++; g_dbg.pass++;
-  if ((g_dbg.tracks % 100000) == 0) g_dbg.print("progress");
   return true;
 }
 

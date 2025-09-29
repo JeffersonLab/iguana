@@ -28,12 +28,10 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
   return false;
 }
 
-// Robust canvas disposal to satisfy LSan/ASan (avoids tiny painter leaks)
 static inline void SaveAndDisposeCanvas(TCanvas* c, const char* path_png) {
   if (!c) return;
   c->Modified();
   c->Update();
-  // Print is the canonical way; SaveAs ultimately funnels here for images
   c->Print(path_png);
   // Remove from global list before deletion
   if (gROOT && gROOT->GetListOfCanvases())
@@ -41,9 +39,8 @@ static inline void SaveAndDisposeCanvas(TCanvas* c, const char* path_png) {
   delete c;
 }
 
-// book plots (no config read; pure visualization)
 void RGAFiducialFilterValidator::BookIfNeeded() {
-  // PCAL: 0–45 cm with 4.5 cm bins (bar width)
+  // PCal: 0–45 cm with 4.5 cm bins (bar width)
   const int nb = 10;
   const double lo = 0.0, hi = 45.0;
 
@@ -136,12 +133,11 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
 }
 
 void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
-  // ROOT housekeeping to minimize leaks and noise
+
   if (gROOT) gROOT->SetBatch(kTRUE);
   if (gStyle) gStyle->SetOptStat(0);
   TH1::AddDirectory(kFALSE);
 
-  // Banks present?
   b_particle = GetBankIndex(banks, "REC::Particle");
   if (banklist_has(banks, "REC::Calorimeter")) {
     b_calor = GetBankIndex(banks, "REC::Calorimeter"); m_have_calor=true;
@@ -192,7 +188,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     else       const_cast<RGAFiducialFilterValidator*>(this)->m_torus_in_events++;
   }
 
-  // snapshot BEFORE sets of pindex
+  // snapshot before sets of pindex
   std::unordered_set<int> eorg_before;  
   std::unordered_set<int> had_before;
   std::unordered_set<int> pos_before, neg_before;
@@ -215,7 +211,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
   // run the algorithm to prune REC::Particle in place
   m_algo_seq->Run(banks);
 
-  // Snapshot AFTER sets
+  // Snapshot after sets
   std::unordered_set<int> eorg_after;
   std::unordered_set<int> had_after;
   std::unordered_set<int> pos_after, neg_after;
@@ -232,16 +228,16 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
 
   std::scoped_lock<std::mutex> lock(m_mutex);
 
-  // PCAL before/after (electrons, photons)
+  // PCal before/after (electrons, photons)
   if (m_have_calor) {
     auto& cal = GetBank(banks, b_calor, "REC::Calorimeter");
 
-    // unique pindex counters per sector (for survival % on titles)
+    // unique pindex counters per sector (for survival %)
     std::array<std::set<int>,7> be_e, af_e, be_g, af_g;
 
     const int n = cal.getRows();
     for (int i=0;i<n;++i) {
-      if (cal.getInt("layer", i) != 1) continue; // PCAL only
+      if (cal.getInt("layer", i) != 1) continue; // PCal only
       int pidx = cal.getInt("pindex", i);
       if (!eorg_before.count(pidx)) continue;
 
@@ -251,7 +247,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       double lv = cal.getFloat("lv", i);
       double lw = cal.getFloat("lw", i);
 
-      // PID for this pindex (from BEFORE snapshot)
+      // PID for this pindex (from before snapshot)
       int pid = 0;
       auto itpb = pid_before.find(pidx);
       if (itpb == pid_before.end()) continue;
@@ -342,7 +338,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       double y = traj.getFloat("y", i);
       double z = traj.getFloat("z", i);
 
-      constexpr double kPI = 3.14159265358979323846;
+      constexpr double kPI = 3.14159;
       double phi = std::atan2(y, x) * (180.0/kPI); if (phi < 0) phi += 360.0;
       double rho = std::sqrt(x*x + y*y);
       double theta = std::atan2(rho, (z==0.0 ? 1e-9 : z)) * (180.0/kPI);
@@ -448,14 +444,13 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title) {
     H.lv_after ->Draw("HISTSAME");
     H.lw_after ->Draw("HISTSAME");
 
-    // IMPORTANT: let the pad own (and delete) the legend
     auto* leg = new TLegend(0.55, 0.72, 0.88, 0.90);
     leg->SetBorderSize(0); leg->SetFillStyle(0);
     leg->AddEntry(H.lv_before, "lv before", "l");
     leg->AddEntry(H.lw_before, "lw before", "l");
     leg->AddEntry(H.lv_after , "lv after",  "l");
     leg->AddEntry(H.lw_after , "lw after",  "l");
-    leg->SetBit(TObject::kCanDelete); // pad will delete on canvas destruction
+    leg->SetBit(TObject::kCanDelete); 
     leg->Draw();
   }
 
@@ -548,7 +543,7 @@ void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H,
     H.r3_before->Draw("HIST");
     H.r3_before->SetTitle(Form("%s DC Region 3 (before);edge (cm);counts", bendTitle.Data())); }
 
-  // after row with survive %
+  // after row 
   c->cd(4); SetDCPadMargins(); if (H.r1_after)  {
     H.r1_after ->SetLineWidth(2);
     H.r1_after ->Draw("HIST");
@@ -589,7 +584,7 @@ void RGAFiducialFilterValidator::Stop() {
   DrawDCCanvas2x3(m_dc_pos, pos_bend_id, pos_pct);
   DrawDCCanvas2x3(m_dc_neg, neg_bend_id, neg_pct);
 
-  // ---- Write all histograms into the ROOT file (they're detached from any directory)
+  // write all histograms into the ROOT file 
   if (m_out) {
     m_out->cd();
 
@@ -633,7 +628,7 @@ void RGAFiducialFilterValidator::Stop() {
     m_out = nullptr;
   }
 
-  // ---- Explicitly delete all booked histograms to satisfy ASan/LSan
+  // explicitly delete all booked histograms 
   auto zap = [&](auto*& p){ if (p) { delete p; p = nullptr; } };
 
   // PCAL
@@ -667,9 +662,9 @@ void RGAFiducialFilterValidator::Stop() {
   zap_dc(m_dc_pos);
   zap_dc(m_dc_neg);
 
-  // ---- Final belt-and-suspenders: ensure no canvases linger globally
+  // ensure no canvases linger globally
   if (gROOT && gROOT->GetListOfCanvases())
     gROOT->GetListOfCanvases()->Delete();
 }
 
-} // namespace iguana::clas12
+} 
