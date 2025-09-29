@@ -6,6 +6,9 @@
 #include <TLegend.h>
 #include <TString.h>
 #include <TPad.h>
+#include <TROOT.h>
+#include <TStyle.h>
+#include <TH1.h>
 
 #include <algorithm>
 #include <array>
@@ -23,6 +26,19 @@ REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
+}
+
+// Robust canvas disposal to satisfy LSan/ASan (avoids tiny painter leaks)
+static inline void SaveAndDisposeCanvas(TCanvas* c, const char* path_png) {
+  if (!c) return;
+  c->Modified();
+  c->Update();
+  // Print is the canonical way; SaveAs ultimately funnels here for images
+  c->Print(path_png);
+  // Remove from global list before deletion
+  if (gROOT && gROOT->GetListOfCanvases())
+    gROOT->GetListOfCanvases()->Remove(c);
+  delete c;
 }
 
 // book plots (no config read; pure visualization)
@@ -120,6 +136,11 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
 }
 
 void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
+  // ROOT housekeeping to minimize leaks and noise
+  if (gROOT) gROOT->SetBatch(kTRUE);
+  if (gStyle) gStyle->SetOptStat(0);
+  TH1::AddDirectory(kFALSE);
+
   // Banks present?
   b_particle = GetBankIndex(banks, "REC::Particle");
   if (banklist_has(banks, "REC::Calorimeter")) {
@@ -438,9 +459,7 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title) {
     leg->Draw();
   }
 
-  c->SaveAs(Form("%s_pcal_lv_lw_pid%d.png", m_base.Data(), pid));
-  c->Close();
-  delete c;
+  SaveAndDisposeCanvas(c, Form("%s_pcal_lv_lw_pid%d.png", m_base.Data(), pid));
 }
 
 void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
@@ -471,9 +490,7 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
   draw_pad(4, m_ft_h.at(22).after,
     Form("Photons (after)  [survive = %.3f%%];x (cm);y (cm)", pct(22)));
 
-  c->SaveAs(Form("%s_ft_xy_2x2.png", m_base.Data()));
-  c->Close();
-  delete c;
+  SaveAndDisposeCanvas(c, Form("%s_ft_xy_2x2.png", m_base.Data()));
 }
 
 void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title) {
@@ -505,9 +522,7 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title) {
   m_cvt_after->SetTitle(Form("CVT layer 12 after (hadrons)  [survive = %.3f%%];phi (deg);theta (deg)", pct));
   m_cvt_after->Draw("COLZ");
 
-  c->SaveAs(Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
-  c->Close();
-  delete c;
+  SaveAndDisposeCanvas(c, Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
 }
 
 void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H,
@@ -547,9 +562,7 @@ void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H,
     H.r3_after ->Draw("HIST");
     H.r3_after ->SetTitle(Form("%s DC Region 3 (after)  [survive = %.3f%%];edge (cm);counts", bendTitle.Data(), survive_pct)); }
 
-  c->SaveAs(Form("%s_dc_%s_2x3.png", m_base.Data(), bend));
-  c->Close();
-  delete c;
+  SaveAndDisposeCanvas(c, Form("%s_dc_%s_2x3.png", m_base.Data(), bend));
 }
 
 void RGAFiducialFilterValidator::Stop() {
@@ -653,6 +666,10 @@ void RGAFiducialFilterValidator::Stop() {
   };
   zap_dc(m_dc_pos);
   zap_dc(m_dc_neg);
+
+  // ---- Final belt-and-suspenders: ensure no canvases linger globally
+  if (gROOT && gROOT->GetListOfCanvases())
+    gROOT->GetListOfCanvases()->Delete();
 }
 
 } // namespace iguana::clas12
