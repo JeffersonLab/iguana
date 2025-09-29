@@ -33,9 +33,7 @@ static bool traj_has_detector(const hipo::bank* trajBank, int pindex, int detect
   return false;
 }
 
-// -----------------------------------------------------------------------------
 // configuration
-// -----------------------------------------------------------------------------
 void RGAFiducialFilter::LoadConfig() {
   // Calorimeter strictness (required: 1,2,3)
   m_cal_strictness = GetOptionScalar<int>("calorimeter.strictness", {"calorimeter", "strictness"});
@@ -74,7 +72,7 @@ void RGAFiducialFilter::LoadConfig() {
         u_ft_params.holes.push_back({R,cx,cy});
       }
     } catch (const std::exception&) {
-      // optional; leave empty if not provided
+      
     }
   }
 
@@ -94,7 +92,7 @@ void RGAFiducialFilter::LoadConfig() {
         throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
       }
     } catch (const std::exception&) {
-      // optional
+
     }
   }
 
@@ -121,9 +119,7 @@ void RGAFiducialFilter::LoadConfig() {
   }
 }
 
-// -----------------------------------------------------------------------------
 // lifecycle
-// -----------------------------------------------------------------------------
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   b_particle = GetBankIndex(banks, "REC::Particle");
@@ -144,7 +140,6 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
     m_have_traj = true;
   }
 
-  // Load YAML via Iguana's built-in reader; populates GetOption*() sources
   ParseYAMLConfig();
   LoadConfig();
 }
@@ -156,16 +151,14 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   auto* ft       = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
   auto* traj     = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj")          : nullptr;
 
-  // Prune in place
+  // prune in place
   particle.getMutableRowList().filter([&](auto, auto row) {
     const bool keep = Filter(static_cast<int>(row), particle, conf, cal, ft, traj);
     return keep ? 1 : 0;
   });
 }
 
-// -----------------------------------------------------------------------------
 // core helpers
-// -----------------------------------------------------------------------------
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   CalLayers out;
@@ -218,7 +211,7 @@ bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) con
       const double d = std::hypot(x-cx, y-cy);
       if (d < R) return false;
     }
-    return true; // first associated FT hit decides
+    return true; // first associated FT hit 
   }
   return true; // no FT association
 }
@@ -229,7 +222,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
   const auto& traj = *trajBank;
   const int n = traj.getRows();
 
-  // One edge value per required layer for this track (keep the last seen value for a layer).
+  // One edge value per required layer for this track 
   std::map<int, double> edge_at_layer;
 
   double x12 = 0.0, y12 = 0.0;
@@ -255,18 +248,18 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
     }
   }
 
-  // Apply edge > edge_min for each layer that has a measurement; missing layer => pass.
+  // Apply edge > edge_min for each layer that has a measurement; missing layer -> pass.
   for (int L : m_cvt.edge_layers) {
     auto it = edge_at_layer.find(L);
-    if (it == edge_at_layer.end()) continue;            // missing layer ⇒ pass
+    if (it == edge_at_layer.end()) continue;            // missing layer -> pass
     if (!(it->second > m_cvt.edge_min)) {               // fail if edge <= edge_min
       return false;
     }
   }
 
-  // Phi veto from YAML (open intervals)
+  // Phi veto from YAML 
   if (saw12 && !m_cvt.phi_forbidden_deg.empty()) {
-    constexpr double kPI = 3.14159265358979323846;
+    constexpr double kPI = 3.141593;
     double phi = std::atan2(y12, x12) * (180.0 / kPI);
     if (phi < 0) phi += 360.0;
     for (std::size_t i = 0; i + 1 < m_cvt.phi_forbidden_deg.size(); i += 2) {
@@ -318,7 +311,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
     else if (layer==36) e3 = e;
   }
 
-  // If this track has no DC rows at all, DC cuts do not apply.
+  // if track has no DC rows at all, DC cuts do not apply.
   if (!saw_dc) return true;
 
   auto pass3 = [](double a1, double a2, double a3, double t1, double t2, double t3)->bool {
@@ -336,15 +329,13 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   return true;
 }
 
-// -----------------------------------------------------------------------------
 // per-track decision
-// -----------------------------------------------------------------------------
 bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
   const hipo::bank& configBank, const hipo::bank* calBank,
   const hipo::bank* ftBank, const hipo::bank* trajBank) const {
 
   const int pid = particleBank.getInt("pid", track_index);
-  const int strictness = m_cal_strictness; // single source of truth: YAML
+  const int strictness = m_cal_strictness; 
 
   auto has_assoc = [&](const hipo::bank* b)->bool {
     if (!b) return false;
@@ -388,7 +379,7 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
   // charged hadrons
   if (pid== 211 || pid== 321 || pid== 2212 ||
       pid==-211 || pid==-321 || pid==-2212) {
-    // Only apply the cut for the subsystem the track actually has.
+    // only apply the cut for the subsystem the track actually has
     if (hasCVT) pass = pass && PassCVTFiducial(track_index, trajBank);
     if (hasDC)  pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
     return pass;
@@ -398,4 +389,4 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
   return true;
 }
 
-} // namespace iguana::clas12
+} 
