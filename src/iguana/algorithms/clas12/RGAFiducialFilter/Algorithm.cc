@@ -1,55 +1,21 @@
 // src/iguana/algorithms/clas12/RGAFiducialFilter/Algorithm.cc
+
 #include "Algorithm.h"
 
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <cstddef>
 #include <cstdio>
-#include <cstdlib>
 #include <limits>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
-#include <cstdarg>
 
 namespace iguana::clas12 {
 
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
-
-// -----------------------------------------------------------------------------
-// tiny debug helpers (opt-in via IGUANA_RGAFID_DEBUG[=_N])
-// -----------------------------------------------------------------------------
-static inline bool rgafid_dbg_enabled() {
-  static int s = -1;
-  if (s < 0) s = (std::getenv("IGUANA_RGAFID_DEBUG") != nullptr) ? 1 : 0;
-  return s != 0;
-}
-static inline int rgafid_dbg_limit() {
-  static int lim = -1;
-  if (lim < 0) {
-    lim = 20; // default: print at most 20 detailed lines
-    if (const char* env = std::getenv("IGUANA_RGAFID_DEBUG")) {
-      // allow IGUANA_RGAFID_DEBUG=100 to raise the limit
-      int v = std::atoi(env);
-      if (v > 0) lim = v;
-    }
-  }
-  return lim;
-}
-static inline void rgafid_dbgf(const char* fmt, ...) {
-  if (!rgafid_dbg_enabled()) return;
-  static int count = 0;
-  if (count >= rgafid_dbg_limit()) return;
-  ++count;
-  std::fprintf(stderr, "[RGAFID][debug] ");
-  va_list ap; va_start(ap, fmt);
-  std::vfprintf(stderr, fmt, ap);
-  va_end(ap);
-  std::fprintf(stderr, "\n");
-}
 
 // -----------------------------------------------------------------------------
 // small helpers
@@ -58,6 +24,48 @@ static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
 }
+
+// -----------------------------------------------------------------------------
+// lightweight aggregated debug (prints to stderr)
+// -----------------------------------------------------------------------------
+namespace {
+struct CvtDebug {
+  long long tracks{0}, pass{0}, fail_edge{0}, fail_phi{0};
+  static constexpr int kMaxLayer = 64;
+  long long seen[kMaxLayer]{};        // how many times we saw a CVT edge for layer L
+  long long leq_min[kMaxLayer]{};     // how many times edge <= edge_min at layer L
+  long long required[kMaxLayer]{};    // layer L was in the required list
+  long long missing_req[kMaxLayer]{}; // layer L required but missing this track
+  double last_edge_min{0.0};
+
+  void tickRequired(const std::vector<int>& req, const std::map<int,double>& best_edge, double edge_min) {
+    last_edge_min = edge_min;
+    for (int L : req) {
+      if (L<0 || L>=kMaxLayer) continue;
+      required[L]++;
+      auto it = best_edge.find(L);
+      if (it == best_edge.end()) { missing_req[L]++; continue; }
+      // counted in seen[] elsewhere
+      if (!(it->second > edge_min)) leq_min[L]++;
+    }
+  }
+
+  void print(const char* when) {
+    std::fprintf(stderr,
+      "[RGAFID][%s] CVT summary: tracks=%lld pass=%lld fail_edge=%lld fail_phi=%lld edge_min=%.6g\n",
+      when, tracks, pass, fail_edge, fail_phi, last_edge_min);
+    std::fprintf(stderr, "[RGAFID][%s]  layer : required  missing  seen   edge<=min\n", when);
+    for (int L=0; L<kMaxLayer; ++L) {
+      if (required[L] || seen[L]) {
+        std::fprintf(stderr, "[RGAFID][%s]  %5d : %8lld %8lld %6lld %10lld\n",
+                     when, L, required[L], missing_req[L], seen[L], leq_min[L]);
+      }
+    }
+  }
+  ~CvtDebug(){ print("exit"); }
+};
+static CvtDebug g_dbg;
+} // namespace
 
 // -----------------------------------------------------------------------------
 // configuration
@@ -173,16 +181,6 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
   // Load YAML via Iguana's built-in reader; populates GetOption*() sources
   ParseYAMLConfig();
   LoadConfig();
-
-  if (rgafid_dbg_enabled()) {
-    std::fprintf(stderr,
-      "[RGAFID][debug] enabled (limit=%d). edge_min=%.3f; layers=",
-      rgafid_dbg_limit(), m_cvt.edge_min);
-    for (std::size_t i=0;i<m_cvt.edge_layers.size();++i) {
-      std::fprintf(stderr, "%s%d", (i?",":""), m_cvt.edge_layers[i]);
-    }
-    std::fprintf(stderr, "\n");
-  }
 }
 
 void RGAFiducialFilter::Run(hipo::banklist& banks) const {
@@ -271,43 +269,45 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
   const auto& traj = *trajBank;
   const int n = traj.getRows();
 
-  // Best (max) finite edge value per layer for this track
-  std::map<int, double> best_edge;
+  // One edge value per layer (your expectation) — we track the value we see per layer.
+  std::map<int, double> edge_at_layer;
 
-  double x12 = 0.0, y12 = 0.0;
-  bool   saw12 = false;
+  double x12 = 0.0, y12 = 0.0; 
+  bool saw12 = false;
 
   for (int i = 0; i < n; ++i) {
     if (traj.getInt("pindex", i)   != pindex) continue;
     if (traj.getInt("detector", i) != 5     ) continue; // CVT
 
-    const int    layer = traj.getInt("layer", i);
-    const double edge  = static_cast<double>(traj.getFloat("edge", i));
+    const int layer   = traj.getInt("layer", i);
+    const double edge = static_cast<double>(traj.getFloat("edge", i));
+
+    // keep the (only) edge for this layer (if multiple ever appear, this keeps the last one,
+    // matching your Java loop semantics)
+    if (std::find(m_cvt.edge_layers.begin(), m_cvt.edge_layers.end(), layer) != m_cvt.edge_layers.end()) {
+      edge_at_layer[layer] = edge;
+      if (0 <= layer && layer < CvtDebug::kMaxLayer) g_dbg.seen[layer]++; // debug accounting
+    }
 
     if (layer == 12) {
       const double x = static_cast<double>(traj.getFloat("x", i));
       const double y = static_cast<double>(traj.getFloat("y", i));
-      if (std::isfinite(x) && std::isfinite(y)) { x12 = x; y12 = y; saw12 = true; }
-    }
-
-    // record best (max) finite edge for layers we actually cut on
-    if (std::find(m_cvt.edge_layers.begin(), m_cvt.edge_layers.end(), layer) != m_cvt.edge_layers.end()) {
-      if (std::isfinite(edge)) {
-        auto it = best_edge.find(layer);
-        if (it == best_edge.end() || edge > it->second) best_edge[layer] = edge;
+      if (std::isfinite(x) && std::isfinite(y)) {
+        x12 = x; y12 = y; saw12 = true;
       }
     }
   }
 
-  // Apply edge > edge_min for each layer that has a finite measurement
+  // Record required/missing and edge<=min tallies before we decide.
+  g_dbg.tickRequired(m_cvt.edge_layers, edge_at_layer, m_cvt.edge_min);
+
+  // Apply edge > edge_min for each layer that has a measurement; missing layer => pass.
   for (int L : m_cvt.edge_layers) {
-    auto it = best_edge.find(L);
-    if (it == best_edge.end()) continue;                 // missing layer ⇒ pass
-    if (!(it->second > m_cvt.edge_min)) {
-      if (rgafid_dbg_enabled()) {
-        rgafid_dbgf("CVT fail (pindex=%d) on layer %d: edge=%.3f <= edge_min=%.3f",
-                    pindex, L, it->second, m_cvt.edge_min);
-      }
+    auto it = edge_at_layer.find(L);
+    if (it == edge_at_layer.end()) continue;            // missing layer ⇒ pass
+    if (!(it->second > m_cvt.edge_min)) {               // fail if edge <= edge_min
+      g_dbg.tracks++; g_dbg.fail_edge++;
+      if ((g_dbg.tracks % 100000) == 0) g_dbg.print("progress");
       return false;
     }
   }
@@ -320,15 +320,12 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
     for (std::size_t i = 0; i + 1 < m_cvt.phi_forbidden_deg.size(); i += 2) {
       const double lo = m_cvt.phi_forbidden_deg[i];
       const double hi = m_cvt.phi_forbidden_deg[i + 1];
-      if (phi > lo && phi < hi) {
-        if (rgafid_dbg_enabled()) {
-          rgafid_dbgf("CVT phi veto (pindex=%d): phi=%.2f in (%.2f, %.2f)", pindex, phi, lo, hi);
-        }
-        return false;
-      }
+      if (phi > lo && phi < hi) { g_dbg.tracks++; g_dbg.fail_phi++; if ((g_dbg.tracks % 100000)==0) g_dbg.print("progress"); return false; }
     }
   }
 
+  g_dbg.tracks++; g_dbg.pass++;
+  if ((g_dbg.tracks % 100000) == 0) g_dbg.print("progress");
   return true;
 }
 
@@ -429,13 +426,9 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
   // charged hadrons
   if (pid== 211 || pid== 321 || pid== 2212 ||
       pid==-211 || pid==-321 || pid==-2212) {
-    bool cvt_ok = PassCVTFiducial(track_index, trajBank);
-    bool dc_ok  = PassDCFiducial(track_index, particleBank, configBank, trajBank);
-    if (rgafid_dbg_enabled() && (!cvt_ok || !dc_ok)) {
-      rgafid_dbgf("track pindex=%d pid=%d => CVT:%s DC:%s",
-                  track_index, pid, cvt_ok?"ok":"FAIL", dc_ok?"ok":"FAIL");
-    }
-    return (cvt_ok && dc_ok);
+    pass = pass && PassCVTFiducial(track_index, trajBank);
+    pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
+    return pass;
   }
 
   // neutrals/others: no cut
