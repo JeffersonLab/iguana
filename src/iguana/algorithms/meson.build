@@ -229,12 +229,10 @@ endforeach
 algo_lib = shared_library(
   'IguanaAlgorithms',
   algo_sources,
-  include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
+  include_directories: [ project_inc ],
   dependencies: project_deps,
   link_with: [ services_lib ],
-  link_args: ROOT_dep_link_args,
   install: true,
-  build_rpath: ROOT_dep_rpath,
 )
 install_headers(algo_headers, subdir: meson.project_name() / 'algorithms', preserve_path: true)
 project_libs += algo_lib
@@ -243,12 +241,10 @@ project_libs += algo_lib
 vdor_lib = shared_library(
   'IguanaValidators',
   vdor_sources,
-  include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
+  include_directories: [ project_inc ],
   dependencies: project_deps,
   link_with: [ services_lib, algo_lib ],
-  link_args: ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
   install: true,
-  build_rpath: ROOT_dep_rpath,
 )
 install_headers(vdor_headers, subdir: meson.project_name() / 'algorithms', preserve_path: true)
 

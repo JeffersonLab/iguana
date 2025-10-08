@@ -58,9 +58,20 @@ hipo_dep = dependency(
 )
 ROOT_dep = dependency(
   'ROOT',
-  version: '>=6.28.10',
+  version: '>=6.30',
   method: 'cmake',
   required: get_option('z_require_root'),
+  modules: [
+    'ROOT::Core',
+    'ROOT::GenVector',
+    'ROOT::Gpad',
+    'ROOT::Graf',
+    'ROOT::Hist',
+    'ROOT::RIO',
+    'ROOT::ROOTDataFrame',
+    'ROOT::ROOTVecOps',
+    'ROOT::TreePlayer',
+  ],
 )
 prog_ruby = find_program(
   'ruby',
@@ -81,9 +92,8 @@ thread_dep = dependency(
 # FIXME: for users which use LD_LIBRARY_PATH, we should try to keep this list
 # ordered such that the ones users are *least likely* to try to build
 # themselves are listed last (see FIXME in meson/this_iguana.sh.in)
-# NOTE: omit ROOT (handled differently, and most ROOT users already have it in their environment)
 dep_list = []
-foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, rcdb_dep ]
+foreach dep : [ hipo_dep, fmt_dep, yamlcpp_dep, rcdb_dep, ROOT_dep ]
   if dep.found()
     dep_list += dep
   endif
@@ -104,7 +114,7 @@ foreach dep : dep_list
     foreach lib : dep.get_variable(cmake: 'PACKAGE_LIBRARIES').split(';')
       libdirs += run_command('dirname', lib, check: true).stdout().strip()
     endforeach
-    incdirs = ROOT_dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
+    incdirs = dep.get_variable(cmake: 'PACKAGE_INCLUDE_DIRS').split(';')
   else
     name = dep.get_variable(internal: 'name', default_value: dep.name())
     if name == 'rcdb'
@@ -140,42 +150,10 @@ hipo_dep_dataframes_found = hipo_dep.get_variable(
   default_value: 'false',
 ).to_lower() == 'true'
 
-# handle ROOT
-ROOT_dep_inc_dirs = []
-ROOT_dep_link_args = []
-ROOT_dep_link_args_for_validators = []
-ROOT_dep_rpath = ''
-if ROOT_dep.found()
-  ROOT_dep_inc_dirs += include_directories(
-    run_command('root-config', '--incdir', check: true).stdout().strip(),
-  )
-  ROOT_libdir = run_command('root-config', '--libdir', check: true).stdout().strip()
-  # ROOT libraries that we need (safer than `root-config --libs`)
-  ROOT_dep_link_args += [
-    '-L' + ROOT_libdir,
-    '-lCore',
-    '-lGenVector',
-    '-lROOTDataFrame',
-    '-lROOTVecOps',
-    '-lTreePlayer',
-  ]
-  # additional ROOT libraries for validators (namely, graphics libraries)
-  ROOT_dep_link_args_for_validators = [
-    '-L' + ROOT_libdir,
-    '-lRIO',
-    '-lHist',
-    '-lGpad',
-    '-lGraf',
-  ]
-  ROOT_dep_rpath = ROOT_libdir
-  # preprocessor macro for turning on/off ROOT-dependent parts of the code; currently only used for Validator plot styles
-  add_project_arguments('-DIGUANA_ROOT_FOUND', language: [ 'cpp' ])
-endif
-
 # general project vars
 project_inc = include_directories('src')
 project_libs = []
-project_deps = declare_dependency(dependencies: dep_list) # do NOT include ROOT here
+project_deps = declare_dependency(dependencies: dep_list)
 project_etcdir = get_option('sysconfdir') / meson.project_name()
 project_test_env = environment()
 project_pythondir = 'python'
@@ -202,10 +180,10 @@ project_test_env.set(
 )
 
 # set preprocessor macros
-add_project_arguments(
-  '-DIGUANA_ETCDIR="' + get_option('prefix') / project_etcdir + '"',
-  language: [ 'cpp' ],
-)
+add_project_arguments('-DIGUANA_ETCDIR="' + get_option('prefix') / project_etcdir + '"', language: [ 'cpp' ])
+if ROOT_dep.found()
+  add_project_arguments('-DIGUANA_ROOT_FOUND', language: [ 'cpp' ]) # currently only used for Validator plot styles
+endif
 
 # start chameleon
 if use_chameleon
