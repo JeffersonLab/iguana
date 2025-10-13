@@ -45,24 +45,19 @@ void RGAFiducialFilter::LoadConfig() {
     }
 
     u_ft_params.holes.clear();
-    try {
-      auto holes_flat = GetOptionVector<double>("forward_tagger.holes_flat",
-                                                {"forward_tagger","holes_flat"});
-      if (!holes_flat.empty() && (holes_flat.size() % 3) != 0) {
-        throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
+    auto holes_flat = GetOptionVectorOrDefault<double>(
+      "forward_tagger.holes_flat", {"forward_tagger","holes_flat"}, {}
+    );
+
+    u_ft_params.holes.reserve(holes_flat.size() / 3);
+    for (std::size_t i = 0; i + 2 < holes_flat.size(); i += 3) {
+      const float R  = static_cast<float>(holes_flat[i + 0]);
+      const float cx = static_cast<float>(holes_flat[i + 1]);
+      const float cy = static_cast<float>(holes_flat[i + 2]);
+      if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R <= 0.f) {
+        throw std::runtime_error("[RGAFID] invalid FT hole triple in 'holes_flat'");
       }
-      u_ft_params.holes.reserve(holes_flat.size()/3);
-      for (std::size_t i=0; i+2<holes_flat.size(); i+=3) {
-        float R  = static_cast<float>(holes_flat[i+0]);
-        float cx = static_cast<float>(holes_flat[i+1]);
-        float cy = static_cast<float>(holes_flat[i+2]);
-        if (!(std::isfinite(R) && std::isfinite(cx) && std::isfinite(cy)) || R<=0.f) {
-          throw std::runtime_error("[RGAFID] invalid FT hole triple in 'holes_flat'");
-        }
-        u_ft_params.holes.push_back({R,cx,cy});
-      }
-    } catch (const std::exception&) {
-      
+      u_ft_params.holes.push_back({R, cx, cy});
     }
   }
 
@@ -75,15 +70,9 @@ void RGAFiducialFilter::LoadConfig() {
     m_cvt.edge_min = GetOptionScalar<double>("cvt.edge_min", {"cvt","edge_min"});
 
     m_cvt.phi_forbidden_deg.clear();
-    try {
-      m_cvt.phi_forbidden_deg =
-        GetOptionVector<double>("cvt.phi_forbidden_deg", {"cvt","phi_forbidden_deg"});
-      if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0) {
-        throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
-      }
-    } catch (const std::exception&) {
-
-    }
+    m_cvt.phi_forbidden_deg = GetOptionVectorOrDefault<double>(
+      "cvt.phi_forbidden_deg", {"cvt","phi_forbidden_deg"}, {}
+    );
   }
 
   // DC (required: theta_small_deg and three threshold triplets)
