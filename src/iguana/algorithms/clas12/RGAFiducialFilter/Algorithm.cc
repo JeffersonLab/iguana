@@ -5,7 +5,6 @@ namespace iguana::clas12 {
 
 REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
 
-// small helpers
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
   return false;
@@ -23,15 +22,29 @@ static bool traj_has_detector(const hipo::bank* trajBank, int pindex, int detect
   return false;
 }
 
-// configuration
 void RGAFiducialFilter::LoadConfig() {
-  // Calorimeter strictness (required: 1,2,3)
   m_cal_strictness = GetOptionScalar<int>("calorimeter.strictness", {"calorimeter", "strictness"});
   if (m_cal_strictness < 1 || m_cal_strictness > 3) {
     throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3");
   }
 
-  // Forward Tagger (required: radius; optional: holes_flat)
+  // helper: missing key -> empty vector; other errors -> rethrow
+  auto get_vec_or_empty = [&](const char* dotted,
+                              std::initializer_list<const char*> path) {
+    std::vector<double> v;
+    try {
+      v = GetOptionVector<double>(dotted, path);
+    } catch (const std::exception& e) {
+      const std::string msg = e.what();
+      if (msg.find("not found") == std::string::npos &&
+          msg.find("missing")   == std::string::npos) {
+        throw;
+      }
+      v.clear();
+    }
+    return v;
+  };
+
   {
     auto radius = GetOptionVector<double>("forward_tagger.radius", {"forward_tagger","radius"});
     if (radius.size() != 2) {
@@ -45,10 +58,11 @@ void RGAFiducialFilter::LoadConfig() {
     }
 
     u_ft_params.holes.clear();
-    auto holes_flat = GetOptionVectorOrDefault<double>(
-      "forward_tagger.holes_flat", {"forward_tagger","holes_flat"}, {}
-    );
-
+    const auto holes_flat =
+      get_vec_or_empty("forward_tagger.holes_flat", {"forward_tagger","holes_flat"});
+    if (!holes_flat.empty() && (holes_flat.size() % 3) != 0) {
+      throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
+    }
     u_ft_params.holes.reserve(holes_flat.size() / 3);
     for (std::size_t i = 0; i + 2 < holes_flat.size(); i += 3) {
       const float R  = static_cast<float>(holes_flat[i + 0]);
@@ -61,7 +75,6 @@ void RGAFiducialFilter::LoadConfig() {
     }
   }
 
-  // CVT (required: edge_layers, edge_min; optional: phi_forbidden_deg)
   {
     m_cvt.edge_layers = GetOptionVector<int>("cvt.edge_layers", {"cvt","edge_layers"});
     if (m_cvt.edge_layers.empty()) {
@@ -69,13 +82,13 @@ void RGAFiducialFilter::LoadConfig() {
     }
     m_cvt.edge_min = GetOptionScalar<double>("cvt.edge_min", {"cvt","edge_min"});
 
-    m_cvt.phi_forbidden_deg.clear();
-    m_cvt.phi_forbidden_deg = GetOptionVectorOrDefault<double>(
-      "cvt.phi_forbidden_deg", {"cvt","phi_forbidden_deg"}, {}
-    );
+    m_cvt.phi_forbidden_deg =
+      get_vec_or_empty("cvt.phi_forbidden_deg", {"cvt","phi_forbidden_deg"});
+    if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0) {
+      throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
+    }
   }
 
-  // DC (required: theta_small_deg and three threshold triplets)
   {
     m_dc.theta_small_deg =
       GetOptionScalar<double>("dc.theta_small_deg", {"dc","theta_small_deg"});
@@ -98,14 +111,10 @@ void RGAFiducialFilter::LoadConfig() {
   }
 }
 
-// lifecycle
 void RGAFiducialFilter::Start(hipo::banklist& banks)
 {
   b_particle = GetBankIndex(banks, "REC::Particle");
-
-  if (banklist_has(banks, "RUN::config")) {
-    b_config = GetBankIndex(banks, "RUN::config");
-  }
+  b_config   = GetBankIndex(banks, "RUN::config");
   if (banklist_has(banks, "REC::Calorimeter")) {
     b_calor = GetBankIndex(banks, "REC::Calorimeter");
     m_have_calor = true;
@@ -130,21 +139,19 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   auto* ft       = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
   auto* traj     = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj")          : nullptr;
 
-  // prune in place
   particle.getMutableRowList().filter([&](auto, auto row) {
     const bool keep = Filter(static_cast<int>(row), particle, conf, cal, ft, traj);
     return keep ? 1 : 0;
   });
 }
 
-// core helpers
 RGAFiducialFilter::CalLayers
 RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   CalLayers out;
   const int n = cal.getRows();
   for (int i=0; i<n; ++i) {
     if (cal.getInt("pindex", i) != pindex) continue;
-    if (cal.getInt("layer",  i) != 1     ) continue; // PCal only
+    if (cal.getInt("layer",  i) != 1     ) continue;
     CalHit h;
     h.sector = cal.getInt ("sector", i);
     h.lv     = cal.getFloat("lv", i);
@@ -190,9 +197,9 @@ bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) con
       const double d = std::hypot(x-cx, y-cy);
       if (d < R) return false;
     }
-    return true; // first associated FT hit 
+    return true;
   }
-  return true; // no FT association
+  return true;
 }
 
 bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) const {
@@ -201,7 +208,6 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
   const auto& traj = *trajBank;
   const int n = traj.getRows();
 
-  // One edge value per required layer for this track 
   std::map<int, double> edge_at_layer;
 
   double x12 = 0.0, y12 = 0.0;
@@ -209,7 +215,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 
   for (int i = 0; i < n; ++i) {
     if (traj.getInt("pindex", i)   != pindex) continue;
-    if (traj.getInt("detector", i) != DetectorType::CVT     ) continue; // CVT
+    if (traj.getInt("detector", i) != DetectorType::CVT) continue;
 
     const int layer   = traj.getInt("layer", i);
     const double edge = static_cast<double>(traj.getFloat("edge", i));
@@ -227,16 +233,14 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
     }
   }
 
-  // Apply edge > edge_min for each layer that has a measurement; missing layer -> pass.
   for (int L : m_cvt.edge_layers) {
     auto it = edge_at_layer.find(L);
-    if (it == edge_at_layer.end()) continue;            // missing layer -> pass
-    if (!(it->second > m_cvt.edge_min)) {               // fail if edge <= edge_min
+    if (it == edge_at_layer.end()) continue;
+    if (!(it->second > m_cvt.edge_min)) {
       return false;
     }
   }
 
-  // Phi veto from YAML 
   if (saw12 && !m_cvt.phi_forbidden_deg.empty()) {
     double phi = std::atan2(y12, x12) * (180.0 / M_PI);
     if (phi < 0) phi += 360.0;
@@ -270,7 +274,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const double py = particleBank.getFloat("py", pindex);
   const double pz = particleBank.getFloat("pz", pindex);
   const double rho = std::hypot(px, py);
-  const double theta = std::atan2(rho, pz) * (180.0 / M_PI);
+  const double theta = std::atan2(rho, (pz==0.0 ? 1e-12 : pz)) * (180.0 / M_PI);
 
   double e1=0.0, e2=0.0, e3=0.0;
   bool   saw_dc = false;
@@ -279,7 +283,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const int n = traj.getRows();
   for (int i=0; i<n; ++i) {
     if (traj.getInt("pindex", i) != pindex) continue;
-    if (traj.getInt("detector", i) != DetectorType::DC)    continue; // DC
+    if (traj.getInt("detector", i) != DetectorType::DC) continue;
     saw_dc = true;
     const int layer = traj.getInt("layer", i);
     const double e  = traj.getFloat("edge", i);
@@ -288,7 +292,6 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
     else if (layer==36) e3 = e;
   }
 
-  // if track has no DC rows at all, DC cuts do not apply.
   if (!saw_dc) return true;
 
   auto pass3 = [](double a1, double a2, double a3, double t1, double t2, double t3)->bool {
@@ -306,15 +309,14 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   return true;
 }
 
-// per-track decision
 bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
   const hipo::bank& configBank, const hipo::bank* calBank,
   const hipo::bank* ftBank, const hipo::bank* trajBank) const {
 
   const int pid = particleBank.getInt("pid", track_index);
-  const int strictness = m_cal_strictness; 
+  const int strictness = m_cal_strictness;
 
-  auto has_assoc = [&](const hipo::bank* b)->bool {
+  auto has_assoc = [&track_index](const hipo::bank* b)->bool {
     if (!b) return false;
     const int n = b->getRows();
     for (int i=0;i<n;++i) if (b->getInt("pindex", i) == track_index) return true;
@@ -328,7 +330,7 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
 
   bool pass = true;
 
-  if (pid == 11) { // electron
+  if (pid == 11) {
     if (hasFT) {
       pass = pass && PassFTFiducial(track_index, ftBank);
     } else {
@@ -343,7 +345,7 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
     return pass;
   }
 
-  if (pid == 22) { // photon
+  if (pid == 22) {
     if (hasFT) {
       pass = pass && PassFTFiducial(track_index, ftBank);
     } else if (hasCal) {
@@ -353,16 +355,13 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
     return pass;
   }
 
-  // charged hadrons
   if (pid== 211 || pid== 321 || pid== 2212 ||
       pid==-211 || pid==-321 || pid==-2212) {
-    // only apply the cut for the subsystem the track actually has
     if (hasCVT) pass = pass && PassCVTFiducial(track_index, trajBank);
     if (hasDC)  pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
     return pass;
   }
 
-  // neutrals/others: no cut
   return true;
 }
 
