@@ -1,5 +1,3 @@
-// src/iguana/algorithms/clas12/RGAFiducialFilter/Validator.cc
-
 #include "Validator.h"
 
 #include <TCanvas.h>
@@ -353,18 +351,18 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     const_cast<RGAFiducialFilterValidator*>(this)->m_cvt_after_n  += (long long) a_seen.size();
   }
 
-  // DC edges pos/neg before/after
+  // DC edges pos/neg before/after (use last-seen edge per (track,region))
   if (m_have_traj) {
     auto& traj = GetBank(banks, b_traj, "REC::Traj");
 
-    std::set<int> pos_b1, pos_b2, pos_b3, neg_b1, neg_b2, neg_b3;
-    std::set<int> pos_a1, pos_a2, pos_a3, neg_a1, neg_a2, neg_a3;
+    std::unordered_map<int,double> pos_r1, pos_r2, pos_r3;
+    std::unordered_map<int,double> neg_r1, neg_r2, neg_r3;
 
     const int n = traj.getRows();
     for (int i=0;i<n;++i) {
       if (traj.getInt("detector", i) != 6) continue; // DC
 
-      int pidx = traj.getInt("pindex", i);
+      int pidx   = traj.getInt("pindex", i);
       double edge = traj.getFloat("edge", i);
       int layer   = traj.getInt("layer", i);
 
@@ -372,27 +370,27 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       bool is_neg_before = neg_before.count(pidx);
       if (!is_pos_before && !is_neg_before) continue;
 
-      bool survived_pos = pos_after.count(pidx);
-      bool survived_neg = neg_after.count(pidx);
-
       if (is_pos_before) {
-        if (layer==6)  { if (!pos_b1.count(pidx)) { m_dc_pos.r1_before->Fill(edge); pos_b1.insert(pidx); }
-          if (survived_pos && !pos_a1.count(pidx)) { m_dc_pos.r1_after->Fill(edge); pos_a1.insert(pidx); } }
-        if (layer==18) { if (!pos_b2.count(pidx)) { m_dc_pos.r2_before->Fill(edge); pos_b2.insert(pidx); }
-          if (survived_pos && !pos_a2.count(pidx)) { m_dc_pos.r2_after->Fill(edge); pos_a2.insert(pidx); } }
-        if (layer==36) { if (!pos_b3.count(pidx)) { m_dc_pos.r3_before->Fill(edge); pos_b3.insert(pidx); }
-          if (survived_pos && !pos_a3.count(pidx)) { m_dc_pos.r3_after->Fill(edge); pos_a3.insert(pidx); } }
-      } else {
-        if (layer==6)  { if (!neg_b1.count(pidx)) { m_dc_neg.r1_before->Fill(edge); neg_b1.insert(pidx); }
-          if (survived_neg && !neg_a1.count(pidx)) { m_dc_neg.r1_after->Fill(edge); neg_a1.insert(pidx); } }
-        if (layer==18) { if (!neg_b2.count(pidx)) { m_dc_neg.r2_before->Fill(edge); neg_b2.insert(pidx); }
-          if (survived_neg && !neg_a2.count(pidx)) { m_dc_neg.r2_after->Fill(edge); neg_a2.insert(pidx); } }
-        if (layer==36) { if (!neg_b3.count(pidx)) { m_dc_neg.r3_before->Fill(edge); neg_b3.insert(pidx); }
-          if (survived_neg && !neg_a3.count(pidx)) { m_dc_neg.r3_after->Fill(edge); neg_a3.insert(pidx); } }
+        if      (layer== 6) pos_r1[pidx] = edge;
+        else if (layer==18) pos_r2[pidx] = edge;
+        else if (layer==36) pos_r3[pidx] = edge;
+      } else { // negative
+        if      (layer== 6) neg_r1[pidx] = edge;
+        else if (layer==18) neg_r2[pidx] = edge;
+        else if (layer==36) neg_r3[pidx] = edge;
       }
     }
 
-    // helper: size of triple intersection
+    for (auto& kv : pos_r1) { if (m_dc_pos.r1_before) m_dc_pos.r1_before->Fill(kv.second); if (pos_after.count(kv.first) && m_dc_pos.r1_after) m_dc_pos.r1_after->Fill(kv.second); }
+    for (auto& kv : pos_r2) { if (m_dc_pos.r2_before) m_dc_pos.r2_before->Fill(kv.second); if (pos_after.count(kv.first) && m_dc_pos.r2_after) m_dc_pos.r2_after->Fill(kv.second); }
+    for (auto& kv : pos_r3) { if (m_dc_pos.r3_before) m_dc_pos.r3_before->Fill(kv.second); if (pos_after.count(kv.first) && m_dc_pos.r3_after) m_dc_pos.r3_after->Fill(kv.second); }
+    for (auto& kv : neg_r1) { if (m_dc_neg.r1_before) m_dc_neg.r1_before->Fill(kv.second); if (neg_after.count(kv.first) && m_dc_neg.r1_after) m_dc_neg.r1_after->Fill(kv.second); }
+    for (auto& kv : neg_r2) { if (m_dc_neg.r2_before) m_dc_neg.r2_before->Fill(kv.second); if (neg_after.count(kv.first) && m_dc_neg.r2_after) m_dc_neg.r2_after->Fill(kv.second); }
+    for (auto& kv : neg_r3) { if (m_dc_neg.r3_before) m_dc_neg.r3_before->Fill(kv.second); if (neg_after.count(kv.first) && m_dc_neg.r3_after) m_dc_neg.r3_after->Fill(kv.second); }
+
+    auto set_from_keys = [](const std::unordered_map<int,double>& m){
+      std::set<int> s; for (auto& kv : m) s.insert(kv.first); return s; };
+
     auto inter3 = [](const std::set<int>& A, 
         const std::set<int>& B, const std::set<int>& C)->size_t {
       const std::set<int>* smallest = &A;
@@ -402,6 +400,19 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       for (int v : *smallest) if (A.count(v) && B.count(v) && C.count(v)) ++cnt;
       return cnt;
     };
+
+    auto keep_if_survived = [](const std::set<int>& S, const std::unordered_set<int>& survivors){
+      std::set<int> out; for (int v : S) if (survivors.count(v)) out.insert(v); return out; };
+
+    std::set<int> pos_b1 = set_from_keys(pos_r1), pos_b2 = set_from_keys(pos_r2), pos_b3 = set_from_keys(pos_r3);
+    std::set<int> neg_b1 = set_from_keys(neg_r1), neg_b2 = set_from_keys(neg_r2), neg_b3 = set_from_keys(neg_r3);
+
+    std::set<int> pos_a1 = keep_if_survived(pos_b1, pos_after);
+    std::set<int> pos_a2 = keep_if_survived(pos_b2, pos_after);
+    std::set<int> pos_a3 = keep_if_survived(pos_b3, pos_after);
+    std::set<int> neg_a1 = keep_if_survived(neg_b1, neg_after);
+    std::set<int> neg_a2 = keep_if_survived(neg_b2, neg_after);
+    std::set<int> neg_a3 = keep_if_survived(neg_b3, neg_after);
 
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n += (long long) inter3(pos_b1, pos_b2, pos_b3);
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  += (long long) inter3(pos_a1, pos_a2, pos_a3);
@@ -667,4 +678,4 @@ void RGAFiducialFilterValidator::Stop() {
     gROOT->GetListOfCanvases()->Delete();
 }
 
-} 
+}
