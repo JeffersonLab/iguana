@@ -155,7 +155,7 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   const int n = cal.getRows();
   for (int i=0; i<n; ++i) {
     if (cal.getInt("pindex", i) != pindex) continue;
-    if (cal.getInt("layer",  i) != 1     ) continue;
+    if (cal.getInt("layer",  i) != DetectorLayer::PCAL) continue; // PCal only
     CalHit h;
     h.sector = cal.getInt ("sector", i);
     h.lv     = cal.getFloat("lv", i);
