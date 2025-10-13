@@ -1,15 +1,5 @@
-// src/iguana/algorithms/clas12/RGAFiducialFilter/Algorithm.cc
 #include "Algorithm.h"
-
-#include <algorithm>
-#include <array>
-#include <cmath>
-#include <limits>
-#include <map>
-#include <stdexcept>
-#include <string>
-#include <utility>
-#include <vector>
+#include "TypeDefs.h"
 
 namespace iguana::clas12 {
 
@@ -230,7 +220,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 
   for (int i = 0; i < n; ++i) {
     if (traj.getInt("pindex", i)   != pindex) continue;
-    if (traj.getInt("detector", i) != 5     ) continue; // CVT
+    if (traj.getInt("detector", i) != DetectorType::CVT     ) continue; // CVT
 
     const int layer   = traj.getInt("layer", i);
     const double edge = static_cast<double>(traj.getFloat("edge", i));
@@ -259,8 +249,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
 
   // Phi veto from YAML 
   if (saw12 && !m_cvt.phi_forbidden_deg.empty()) {
-    constexpr double kPI = 3.141593;
-    double phi = std::atan2(y12, x12) * (180.0 / kPI);
+    double phi = std::atan2(y12, x12) * (180.0 / M_PI);
     if (phi < 0) phi += 360.0;
     for (std::size_t i = 0; i + 1 < m_cvt.phi_forbidden_deg.size(); i += 2) {
       const double lo = m_cvt.phi_forbidden_deg[i];
@@ -292,8 +281,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const double py = particleBank.getFloat("py", pindex);
   const double pz = particleBank.getFloat("pz", pindex);
   const double rho = std::hypot(px, py);
-  const double kPI = 3.141593;
-  const double theta = std::atan2(rho, (pz==0.0 ? 1e-12 : pz)) * (180.0 / kPI);
+  const double theta = std::atan2(rho, pz) * (180.0 / M_PI);
 
   double e1=0.0, e2=0.0, e3=0.0;
   bool   saw_dc = false;
@@ -302,7 +290,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   const int n = traj.getRows();
   for (int i=0; i<n; ++i) {
     if (traj.getInt("pindex", i) != pindex) continue;
-    if (traj.getInt("detector", i) != 6)    continue; // DC
+    if (traj.getInt("detector", i) != DetectorType::DC)    continue; // DC
     saw_dc = true;
     const int layer = traj.getInt("layer", i);
     const double e  = traj.getFloat("edge", i);
@@ -346,8 +334,8 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
 
   const bool hasCal = has_assoc(calBank);
   const bool hasFT  = has_assoc(ftBank);
-  const bool hasCVT = traj_has_detector(trajBank, track_index, 5);
-  const bool hasDC  = traj_has_detector(trajBank, track_index, 6);
+  const bool hasCVT = traj_has_detector(trajBank, track_index, DetectorType::CVT);
+  const bool hasDC  = traj_has_detector(trajBank, track_index, DetectorType::DC);
 
   bool pass = true;
 

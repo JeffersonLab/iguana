@@ -1,12 +1,10 @@
-# etc/iguana/algorithms/clas12/RGAFiducialFilter/Config.yaml
 clas12::RGAFiducialFilter:
   calorimeter:
-    # Default strictness if not overridden programmatically via SetStrictness(1|2|3)
-    # s=1 -> lv,lw >=  9.0 cm
-    # s=2 -> lv,lw >= 13.5 cm
-    # s=3 -> lv,lw >= 18.0 cm
+    # strictness=1 -> lv,lw >=  9.0 cm
+    # strictness=2 -> lv,lw >= 13.5 cm
+    # strictness=3 -> lv,lw >= 18.0 cm
     #
-    # s=1 loosely recommended for spin-asymmetries
+    # strictness=1 loosely recommended for spin-asymmetries
     strictness: 1
 
   forward_tagger:
