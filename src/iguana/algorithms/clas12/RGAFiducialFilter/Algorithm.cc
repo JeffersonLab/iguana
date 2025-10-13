@@ -28,23 +28,6 @@ void RGAFiducialFilter::LoadConfig() {
     throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3");
   }
 
-  // helper: missing key -> empty vector; other errors -> rethrow
-  auto get_vec_or_empty = [&](const char* dotted,
-                              std::initializer_list<const char*> path) {
-    std::vector<double> v;
-    try {
-      v = GetOptionVector<double>(dotted, path);
-    } catch (const std::exception& e) {
-      const std::string msg = e.what();
-      if (msg.find("not found") == std::string::npos &&
-          msg.find("missing")   == std::string::npos) {
-        throw;
-      }
-      v.clear();
-    }
-    return v;
-  };
-
   {
     auto radius = GetOptionVector<double>("forward_tagger.radius", {"forward_tagger","radius"});
     if (radius.size() != 2) {
@@ -58,8 +41,19 @@ void RGAFiducialFilter::LoadConfig() {
     }
 
     u_ft_params.holes.clear();
-    const auto holes_flat =
-      get_vec_or_empty("forward_tagger.holes_flat", {"forward_tagger","holes_flat"});
+    std::vector<double> holes_flat;
+    try {
+      holes_flat = GetOptionVector<double>("forward_tagger.holes_flat",
+                                           {"forward_tagger","holes_flat"});
+    } catch (const std::exception& e) {
+      const std::string msg = e.what();
+      if (msg.find("not found") == std::string::npos &&
+          msg.find("missing")   == std::string::npos) {
+        throw;
+      }
+      holes_flat.clear();
+    }
+
     if (!holes_flat.empty() && (holes_flat.size() % 3) != 0) {
       throw std::runtime_error("[RGAFID] 'forward_tagger.holes_flat' must have 3N values");
     }
@@ -82,8 +76,18 @@ void RGAFiducialFilter::LoadConfig() {
     }
     m_cvt.edge_min = GetOptionScalar<double>("cvt.edge_min", {"cvt","edge_min"});
 
-    m_cvt.phi_forbidden_deg =
-      get_vec_or_empty("cvt.phi_forbidden_deg", {"cvt","phi_forbidden_deg"});
+    m_cvt.phi_forbidden_deg.clear();
+    try {
+      m_cvt.phi_forbidden_deg = GetOptionVector<double>("cvt.phi_forbidden_deg",
+                                                        {"cvt","phi_forbidden_deg"});
+    } catch (const std::exception& e) {
+      const std::string msg = e.what();
+      if (msg.find("not found") == std::string::npos &&
+          msg.find("missing")   == std::string::npos) {
+        throw;
+      }
+      m_cvt.phi_forbidden_deg.clear();
+    }
     if (!m_cvt.phi_forbidden_deg.empty() && (m_cvt.phi_forbidden_deg.size() % 2) != 0) {
       throw std::runtime_error("[RGAFID] 'cvt.phi_forbidden_deg' must have pairs (2N values)");
     }
@@ -365,4 +369,4 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
   return true;
 }
 
-} 
+}
