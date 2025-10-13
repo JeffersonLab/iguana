@@ -359,6 +359,14 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
     return pass;
   }
 
+  // NEW: apply DC fiducial to positrons (were previously skipped)
+  if (pid == -11) {
+    if (hasDC) {
+      pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
+    }
+    return pass;
+  }
+
   if (pid== 211 || pid== 321 || pid== 2212 ||
       pid==-211 || pid==-321 || pid==-2212) {
     if (hasCVT) pass = pass && PassCVTFiducial(track_index, trajBank);
