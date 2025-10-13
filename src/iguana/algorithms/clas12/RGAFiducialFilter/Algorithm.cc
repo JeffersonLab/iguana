@@ -334,7 +334,7 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
 
   bool pass = true;
 
-  if (pid == 11) {
+  if (pid == 11 || pid == -11) {
     if (hasFT) {
       pass = pass && PassFTFiducial(track_index, ftBank);
     } else {
@@ -355,14 +355,6 @@ bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
     } else if (hasCal) {
       auto calhits = CollectCalHitsForTrack(*calBank, track_index);
       pass = pass && PassCalStrictness(calhits, strictness);
-    }
-    return pass;
-  }
-
-  // NEW: apply DC fiducial to positrons (were previously skipped)
-  if (pid == -11) {
-    if (hasDC) {
-      pass = pass && PassDCFiducial(track_index, particleBank, configBank, trajBank);
     }
     return pass;
   }
