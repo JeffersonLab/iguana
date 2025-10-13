@@ -143,8 +143,8 @@ void RGAFiducialFilter::Run(hipo::banklist& banks) const {
   auto* ft       = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
   auto* traj     = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj")          : nullptr;
 
-  particle.getMutableRowList().filter([&](auto, auto row) {
-    const bool keep = Filter(static_cast<int>(row), particle, conf, cal, ft, traj);
+  particle.getMutableRowList().filter([this, &conf, cal, ft, traj](auto bank, auto row) {
+    const bool keep = Filter(static_cast<int>(row), bank, conf, cal, ft, traj);
     return keep ? 1 : 0;
   });
 }
