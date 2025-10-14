@@ -65,6 +65,7 @@ ROOT_dep = dependency(
     'ROOT::Core',
     'ROOT::GenVector',
     'ROOT::Gpad',
+    'ROOT::Graf',
     'ROOT::Hist',
     'ROOT::RIO',
     'ROOT::ROOTDataFrame',

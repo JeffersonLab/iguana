@@ -125,6 +125,15 @@ algo_dict = [
     'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle', 'REC::Calorimeter', 'RUN::config' ]},
   },
+    {
+    'name': 'clas12::RGAFiducialFilter',
+    'has_validator': true,
+    'has_action_yaml': false,
+    'test_args': {
+      # Only the required banks (sometiems REC::ForwardTagger does not exist)
+      'banks': [ 'REC::Particle', 'RUN::config' ],
+    },
+  },
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT
