@@ -15,6 +15,7 @@
 
 namespace iguana::clas12 {
 
+/// @brief `iguana::clas12::RGAFiducialFilter` validator
 class RGAFiducialFilterValidator : public Validator {
   DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
 

@@ -2,28 +2,40 @@
 
 #include "iguana/algorithms/Algorithm.h"
 
-// RGA fiducial filter:
-//   - PCal-only edge cuts on lv & lw with strictness thresholds
-//   - Forward Tagger annulus + low efficiency hole vetoes
-//   - Central detector (CVT) fiducial:
-//       require edge > edge_min (default 0) and vetoes on gaps between CVT sectors
-//   - Drift Chamber (DC) fiducial:
-//       three region edge thresholds with separate inbending/outbending track logic
-//
-//       (see `Config.yaml` for more information)
-
 namespace iguana::clas12 {
 
-  // @brief_algo Filter the `REC::Particle` bank using subsystem-specific fiducial cuts
-  //
-  // @begin_doc_algo{clas12::RGAFiducialFilter | Filter}
-  // @input_banks{REC::Particle, RUN::config, REC::Calorimeter, REC::ForwardTagger, REC::Traj}
-  // @output_banks{REC::Particle}
-  // @end_doc
+  /// @brief_algo Filter the `REC::Particle` bank using subsystem-specific fiducial cuts
+  ///
+  /// RGA fiducial filter:
+  ///
+  /// - PCal-only edge cuts on lv & lw with strictness thresholds
+  /// - Forward Tagger annulus + low efficiency hole vetoes
+  /// - Central detector (CVT) fiducial:
+  ///   - require edge > edge_min (default 0) and vetoes on gaps between CVT sectors
+  /// - Drift Chamber (DC) fiducial:
+  ///   - three region edge thresholds with separate inbending/outbending track logic
+  ///
+  /// @begin_doc_algo{clas12::RGAFiducialFilter | Filter}
+  /// @input_banks{REC::Particle, RUN::config, REC::Calorimeter, REC::ForwardTagger, REC::Traj}
+  /// @output_banks{REC::Particle}
+  /// @end_doc
+  ///
+  /// @begin_doc_config{clas12/RGAFiducialFilter}
+  /// @config_param{calorimeter.strictness      | int          | calorimeter cut strictness}
+  /// @config_param{forward_tagger.radius       | list[double] | FT allowed radial window (cm)}
+  /// @config_param{forward_tagger.holes_flat   | list[double] | FT circular holes (radius, x, y)}
+  /// @config_param{cvt.edge_layers             | list[int]    | layers to apply the edge>edge_min test to (all); missing layers are treated as pass}
+  /// @config_param{cvt.edge_min                | double       | edge > 0 to ensure tracks inside CVT}
+  /// @config_param{cvt.phi_forbidden_deg       | list[double] | forbidden phi wedges in degrees (open intervals)}
+  /// @config_param{dc.theta_small_deg          | double       | theta boundary (degrees) for the special inbending case}
+  /// @config_param{dc.thresholds_out           | list[double] | outbending thresholds [Region1, Region2, Region3] (cm)}
+  /// @config_param{dc.thresholds_in_smallTheta | list[double] | inbending thresholds when theta < theta_small_deg (cm)}
+  /// @config_param{dc.thresholds_in_largeTheta | list[double] | inbending thresholds when theta >= theta_small_deg (cm)}
+  /// @end_doc
   class RGAFiducialFilter : public Algorithm {
     DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
 
-  public:
+  private:
     struct FTParams {
       float rmin = 0;
       float rmax = 0;
@@ -45,15 +57,19 @@ namespace iguana::clas12 {
       double out_e1      = 3.0,  out_e2      = 3.0,  out_e3      = 10.0;
     };
 
+  public:
     // algorithm API
     void Start(hipo::banklist& banks) override;
     void Run  (hipo::banklist& banks) const override;
     void Stop () override {}
 
-    // ---- Read-only accessors for Validator 
+    /// @returns calorimeter strictness
     int                  CalStrictness() const { return m_cal_strictness; }
+    /// @returns FT configuration parameters
     const FTParams&      FT()            const { return u_ft_params; }
+    /// @returns CVT configuration parameters
     const CVTParams&     CVT()           const { return m_cvt; }
+    /// @returns DC configuration parameters
     const DCParams&      DC()            const { return m_dc; }
 
   private:
