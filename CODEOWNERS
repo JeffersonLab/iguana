@@ -14,6 +14,7 @@ src/iguana/algorithms/clas12/FTEnergyCorrection/* @asligonulacar
 src/iguana/algorithms/clas12/FiducialFilter/* @Gregtom3
 src/iguana/algorithms/clas12/MomentumCorrection/* @RichCap @c-dilks
 src/iguana/algorithms/clas12/PhotonGBTFilter/* @Gregtom3
+src/iguana/algorithms/clas12/RGAFiducialFilter/* @tbhayward
 src/iguana/algorithms/clas12/SectorFinder/* @rtysonCLAS12
 src/iguana/algorithms/clas12/ZVertexFilter/* @rtysonCLAS12
 src/iguana/algorithms/physics/DihadronKinematics/* @c-dilks
