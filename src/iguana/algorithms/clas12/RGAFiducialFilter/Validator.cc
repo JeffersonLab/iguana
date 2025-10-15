@@ -175,7 +175,7 @@ static inline void SetDCPadMargins() {
   gPad->SetTopMargin(0.08);
 }
 
-void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
+bool RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto& config   = GetBank(banks, b_config,   "RUN::config");
 
@@ -419,6 +419,7 @@ void RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n += (long long) inter3(neg_b1, neg_b2, neg_b3);
     const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_after_n  += (long long) inter3(neg_a1, neg_a2, neg_a3);
   }
+  return true;
 }
 
 // plotting

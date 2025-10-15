@@ -136,17 +136,29 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
   LoadConfig();
 }
 
-void RGAFiducialFilter::Run(hipo::banklist& banks) const {
-  auto& particle = GetBank(banks, b_particle, "REC::Particle");
-  auto& conf     = GetBank(banks, b_config,   "RUN::config");
-  auto* cal      = m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter")   : nullptr;
-  auto* ft       = m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr;
-  auto* traj     = m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj")          : nullptr;
+bool RGAFiducialFilter::Run(hipo::banklist& banks) const
+{
+  return Run(
+      GetBank(banks, b_particle, "REC::Particle"),
+      GetBank(banks, b_config,   "RUN::config"),
+      m_have_calor ? &GetBank(banks, b_calor, "REC::Calorimeter")   : nullptr,
+      m_have_traj  ? &GetBank(banks, b_traj,  "REC::Traj")          : nullptr,
+      m_have_ft    ? &GetBank(banks, b_ft,    "REC::ForwardTagger") : nullptr
+      );
+}
 
-  particle.getMutableRowList().filter([this, &conf, cal, ft, traj](auto bank, auto row) {
-    const bool keep = Filter(static_cast<int>(row), bank, conf, cal, ft, traj);
+bool RGAFiducialFilter::Run(
+    hipo::bank& particle,
+    hipo::bank const& conf,
+    hipo::bank const* cal,
+    hipo::bank const* traj,
+    hipo::bank const* ft) const
+{
+  particle.getMutableRowList().filter([this, &conf, cal, traj, ft](auto bank, auto row) {
+    const bool keep = Filter(row, bank, conf, cal, traj, ft);
     return keep ? 1 : 0;
   });
+  return true;
 }
 
 RGAFiducialFilter::CalLayers
@@ -315,7 +327,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
 
 bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
   const hipo::bank& configBank, const hipo::bank* calBank,
-  const hipo::bank* ftBank, const hipo::bank* trajBank) const {
+  const hipo::bank* trajBank, const hipo::bank* ftBank) const {
 
   const int pid = particleBank.getInt("pid", track_index);
   const int strictness = m_cal_strictness;
