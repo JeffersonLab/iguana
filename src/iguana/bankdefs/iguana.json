@@ -4,7 +4,7 @@
     "algorithm": "clas12::SectorFinder",
     "group":     30000,
     "item":      1,
-    "info":      "",
+    "info":      "sector information for each particle",
     "entries": [
       { "name": "pindex", "type": "S", "info": "row number in the particle bank" },
       { "name": "sector", "type": "I", "info": "sector for this particle" }
@@ -15,7 +15,7 @@
     "algorithm": "physics::InclusiveKinematics",
     "group":     30000,
     "item":      2,
-    "info":      "",
+    "info":      "inclusive kinematics",
     "entries": [
       { "name": "pindex",  "type": "S", "info": "`REC::Particle` row (`pindex`) of the scattered electron" },
       { "name": "Q2",      "type": "D", "info": "@latex{Q^2} (GeV@latex{^2})" },
@@ -36,7 +36,7 @@
     "algorithm": "physics::SingleHadronKinematics",
     "group":     30000,
     "item":      3,
-    "info":      "",
+    "info":      "SIDIS single-hadron kinematics",
     "entries": [
       { "name": "pindex", "type": "S", "info": "`REC::Particle` row (`pindex`) of the hadron" },
       { "name": "pdg",    "type": "I", "info": "PDG code of the hadron" },
@@ -54,7 +54,7 @@
     "algorithm": "physics::DihadronKinematics",
     "group":     30000,
     "item":      4,
-    "info":      "",
+    "info":      "SIDIS dihadron kinematics",
     "entries": [
       { "name": "pindex_a", "type": "S", "info": "`REC::Particle` row (`pindex`) of hadron A" },
       { "name": "pindex_b", "type": "S", "info": "`REC::Particle` row (`pindex`) of hadron B" },
@@ -76,7 +76,7 @@
     "algorithm": "physics::Depolarization",
     "group":     30000,
     "item":      5,
-    "info":      "",
+    "info":      "SIDIS depolarization factors",
     "entries": [
       { "name": "epsilon", "type": "D", "info": "@latex{\\varepsilon(Q^2, x, y)}, the ratio of transverse and longitudinal photon flux" },
       { "name": "A",       "type": "D", "info": "depolarization factor @latex{A(\\varepsilon, y)}" },
@@ -91,7 +91,7 @@
     "algorithm": "clas12::CalorimeterLinker",
     "group":     30000,
     "item":      6,
-    "info":      "",
+    "info":      "calorimeter information linked to particles",
     "entries": [
       { "name": "pindex",       "type": "S", "info": "row number in the particle bank" },
       { "name": "pcal_found",   "type": "B", "info": "1 if PCAL info found for this particle, 0 otherwise" },
@@ -119,7 +119,7 @@
     "algorithm": "clas12::TrajLinker",
     "group":     30000,
     "item":      7,
-    "info":      "",
+    "info":      "trajectory information linked to particles",
     "entries": [
       { "name": "pindex",   "type": "S", "info": "row number in the particle bank" },
       { "name": "sector",   "type": "I", "info": "sector" },

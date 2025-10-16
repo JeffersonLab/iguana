@@ -7,6 +7,7 @@ This documentation shows how to use the Iguana algorithms. For more documentatio
 | --- | --- |
 | @spacer [List of Algorithms](#algo) @spacer | @spacer [Examples of Code](#mainpageExample) @spacer |
 | @spacer [List of Action Functions](#action) @spacer | @spacer [Configuring Algorithms](#mainpageConfiguring) @spacer |
+| @spacer [Banks Created by Iguana](#created_banks) @spacer | |
 
 <br><hr>
 
@@ -60,44 +61,6 @@ The available algorithms are:
 
 - [Algorithms organized by Namespace](#algo_namespaces)
 - [Full List of Algorithms](#algo)
-
-@anchor mainpageCreatedBanks
-### New Banks from Iguana Creator Algorithms
-
-The definitions of the new banks that are created by **Creator** algorithms are found in:
-- @link src/iguana/bankdefs/iguana.json **Iguana Bank Definitions:** `iguana.json` @endlink
-
-This JSON file follows a similar format as the bank definitions in `coatjava`, where we have:
-
-| Key | Description |
-| --- | --- |
-| name | the name of the new bank |
-| algorithm | the algorithm that creates this bank |
-| group | unique ID numbers for this bank |
-| item | ^ |
-| entries | the list of variables in this bank |
-
-Often the bank name matches the algorithm name, but not always; see the JSON keys \"name\" and \"algorithm\" to be sure.
-
-For each variable in "entries", we have:
-
-| Key | Description |
-| --- | --- |
-| name | the variable name |
-| type | the variable type (see below) |
-| info | the description of this variable |
-
-The variable types and their corresponding accessor methods from `hipo::bank` are:
-
-| Type Specification | `hipo::bank` accessor |
-| --- | --- |
-| B | `getByte` |
-| S | `getShort` |
-| I | `getInt` |
-| L | `getLong` |
-| F | `getFloat` |
-| D | `getDouble` |
-
 
 <br><hr>
 
@@ -156,9 +119,15 @@ typically change the particle momentum components.
 </td> </tr>
 <tr> <td>**Creator**</td> <td>
 Creator-type algorithms will simply create a new `hipo::bank` object, appending
-it to the end of the input `hipo::banklist`. An initial version is created upon calling
-iguana::Algorithm::Start(hipo::banklist&), so that you may begin to reference it; it is helpful to
-use `hipo::getBanklistIndex` (see [the examples for details](#mainpageExample)).
+it to the end of the input `hipo::banklist`.
+<ul>
+<li>[Click here for descriptions of all created banks](#created_banks)</li>
+<li>An initial version is created upon calling iguana::Algorithm::Start(hipo::banklist&), so that you may begin to reference it</li>
+<ul>
+<li>It is helpful to use `hipo::getBanklistIndex`, to get the created bank index within the `hipo::banklist`</li>
+<li>See [the examples for details](#mainpageExample)</li>
+</ul>
+</ul>
 </td> </tr>
 </table>
 
