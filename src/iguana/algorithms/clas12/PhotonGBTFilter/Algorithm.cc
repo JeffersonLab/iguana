@@ -67,7 +67,7 @@ namespace iguana::clas12 {
     // Loop over each photon in the particleBank to classify it
     // Here we loop over the particleBank RowList
     // This ensures we are only concerned with filtering photons that passed upstream filters
-    particleBank.getMutableRowList().filter([this, &caloBank, &calo_map, runnum](auto bank, auto row) {
+    particleBank.getMutableRowList().filter([this](auto bank, auto row) {
         auto pid = bank.getInt("pid", row);
         if (pid != 22) return true;
         return Filter(bank, caloBank, calo_map, row, runnum);
@@ -75,7 +75,7 @@ namespace iguana::clas12 {
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
-    return true;
+    return ! particleBank.getRowList().empty();
   }
 
   bool PhotonGBTFilter::PidPurityPhotonFilter(float const E, float const Epcal, float const theta) const

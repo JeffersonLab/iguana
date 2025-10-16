@@ -53,12 +53,7 @@ namespace iguana::example {
 
   // ############################################################################
   // # define `ExampleAlgorithm::Run` functions
-  // # - note that this method must be _thread safe_, for example, you cannot modify
-  // #   class instance objects
-  // # - try to avoid expensive operations here; instead, put them in the `Start` method
-  // #   if it is reasonable to do so
-  // # - the function's `bool` return value can be used as an event-level filter
-  // # - the `Run` function that acts on `hipo::banklist` should just call the `Run`
+  // # - this `Run` function that acts on `hipo::banklist` should just call the `Run`
   // #   function that acts on `hipo::bank` objects; let's define it first
   // ############################################################################
   bool ExampleAlgorithm::Run(hipo::banklist& banks) const
@@ -71,6 +66,11 @@ namespace iguana::example {
 
   // ############################################################################
   // # here is the `Run` function which acts on `hipo::bank` objects
+  // # - note that this method must be _thread safe_, for example, you cannot modify
+  // #   class instance objects; therefore it _must_ be `const`
+  // # - try to avoid expensive operations here; instead, put them in the `Start` method
+  // #   if it is reasonable to do so
+  // # - the function's `bool` return value can be used as an event-level filter
   // ############################################################################
   bool ExampleAlgorithm::Run(hipo::bank& particleBank) const
   {
@@ -109,9 +109,10 @@ namespace iguana::example {
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
 
     // ############################################################################
-    // # return true or false, used as an event-level filter
+    // # return true or false, used as an event-level filter; in this case, we
+    // # return false if all particles have been filtered out
     // ############################################################################
-    return true;
+    return ! particleBank.getRowList().empty();
   }
 
 

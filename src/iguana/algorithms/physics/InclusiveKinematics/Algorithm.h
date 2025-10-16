@@ -31,7 +31,7 @@ namespace iguana::physics {
       /// @param [in] particle_bank `REC::Particle`
       /// @param [in] config_bank `RUN::config`
       /// @param [out] result_bank `%physics::InclusiveKinematics`, which will be created
-      /// @returns `true` if the kinematics were calculated, _e.g._, if the calculations are performed using
+      /// @returns `true` if the kinematics were calculated; _e.g._, if the calculations are performed using
       /// the scattered lepton, and no scattered lepton was found, `false` will be returned
       bool Run(
           hipo::bank const& particle_bank,

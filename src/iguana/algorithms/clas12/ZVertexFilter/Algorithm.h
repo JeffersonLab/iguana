@@ -25,7 +25,7 @@ namespace iguana::clas12 {
       /// @run_function
       /// @param [in,out] particleBank `REC::Particle`, which will be filtered
       /// @param [in] configBank `RUN::config`
-      /// @run_function_returns_true
+      /// @returns `false` if all particles are filtered out
       bool Run(hipo::bank& particleBank, hipo::bank const& configBank) const;
 
       /// @action_function{reload} prepare the event

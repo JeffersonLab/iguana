@@ -78,7 +78,7 @@ namespace iguana::example {
       // ############################################################################
       /// @run_function
       /// @param [in,out] particleBank `REC::Particle` bank
-      /// @run_function_returns_true
+      /// @returns `false` if all particles are filtered out
       bool Run(hipo::bank& particleBank) const;
 
       // ############################################################################

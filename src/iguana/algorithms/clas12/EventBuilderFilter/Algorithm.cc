@@ -36,7 +36,9 @@ namespace iguana::clas12 {
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
-    return true;
+
+    // return false if everything is filtered out
+    return ! particleBank.getRowList().empty();
   }
 
 

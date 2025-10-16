@@ -158,7 +158,7 @@ bool RGAFiducialFilter::Run(
     const bool keep = Filter(row, bank, conf, cal, traj, ft);
     return keep ? 1 : 0;
   });
-  return true;
+  return ! particle.getRowList().empty();
 }
 
 RGAFiducialFilter::CalLayers

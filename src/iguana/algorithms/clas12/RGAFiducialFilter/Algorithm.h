@@ -70,7 +70,7 @@ namespace iguana::clas12 {
     /// @param [in] cal pointer to `REC::Calorimeter` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
     /// @param [in] traj pointer to `REC::Traj` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
     /// @param [in] ft pointer to `REC::ForwardTagger` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
-    /// @run_function_returns_true
+    /// @returns `false` if all particles are filtered out
     bool Run(
         hipo::bank& particle,
         hipo::bank const& conf,
@@ -83,7 +83,7 @@ namespace iguana::clas12 {
     /// @param [in] conf `RUN::config` bank
     /// @param [in] cal `REC::Calorimeter` bank
     /// @param [in] traj `REC::Traj` bank
-    /// @run_function_returns_true
+    /// @returns `false` if all particles are filtered out
     bool Run(
         hipo::bank& particle,
         hipo::bank const& conf,
@@ -99,7 +99,7 @@ namespace iguana::clas12 {
     /// @param [in] cal `REC::Calorimeter` bank
     /// @param [in] traj `REC::Traj` bank
     /// @param [in] ft `REC::ForwardTagger` bank
-    /// @run_function_returns_true
+    /// @returns `false` if all particles are filtered out
     bool Run(
         hipo::bank& particle,
         hipo::bank const& conf,

@@ -23,7 +23,7 @@ namespace iguana::clas12 {
 
       /// @run_function
       /// @param [in,out] particleBank `REC::Particle`, which will be filtered
-      /// @run_function_returns_true
+      /// @returns `false` if all particles are filtered out
       bool Run(hipo::bank& particleBank) const;
 
       /// @action_function{scalar filter} checks if the PDG `pid` is a part of the list of user-specified PDGs

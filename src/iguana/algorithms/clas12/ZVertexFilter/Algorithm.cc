@@ -45,7 +45,7 @@ namespace iguana::clas12 {
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
-    return true;
+    return ! particleBank.getRowList().empty();
   }
 
   concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum) const {

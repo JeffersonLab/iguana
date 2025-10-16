@@ -74,7 +74,7 @@ namespace iguana::clas12 {
     );
 
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
-    return true;
+    return ! particleBank.getRowList().empty();
   }
 
   //////////////////////////////////////////////////////////////////////////////////

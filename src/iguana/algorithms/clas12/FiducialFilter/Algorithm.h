@@ -44,7 +44,7 @@ namespace iguana::clas12 {
       /// @param [in] configBank `RUN::config`
       /// @param [in] trajBank `REC::Particle::Traj`, created by algorithm `clas12::TrajLinker`
       /// @param [in] calBank `REC::Particle::Calorimeter`, created by algorithm `clas12::CalorimeterLinker`
-      /// @run_function_returns_true
+      /// @returns `false` if all particles are filtered out
       bool Run(
           hipo::bank& particleBank,
           hipo::bank const& configBank,
