@@ -16,6 +16,10 @@ namespace iguana::clas12 {
   /// - Drift Chamber (DC) fiducial:
   ///   - three region edge thresholds with separate inbending/outbending track logic
   ///
+  /// **References:**
+  ///
+  /// - https://clas12-docdb.jlab.org/DocDB/0012/001240/001/rga_fiducial_cuts.pdf
+  ///
   /// **NOTE:** this algorithm has multiple `Run(hipo::bank bank1, ...)` functions, which
   /// take `hipo::bank` parameters, and some parameters may be optional, since you may
   /// be reading data which lack certain banks. If you use these functions, take a look at all them
