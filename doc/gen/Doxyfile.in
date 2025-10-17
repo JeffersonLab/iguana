@@ -285,7 +285,7 @@ TAB_SIZE               = 4
 
 ALIASES =
 # algorithm properties
-ALIASES += algo_brief{1}="@brief **%Algorithm:** \1^^@xrefitem algo \"\" \"\" \1^^@link_to_run_ftn"
+ALIASES += algo_brief{1}="@brief **%Algorithm:** \1^^@xrefitem algo \"\" \"List of Algorithms\" \1^^@link_to_run_ftn"
 ALIASES += algo_type_filter="@par Type: Filter^^This algorithm will filter input bank(s).^^"
 ALIASES += algo_type_transformer="@par Type: Transformer^^This algorithm will change values within input bank(s).^^"
 ALIASES += algo_type_creator="@par Type: Creator^^^^- This algorithm creates new bank(s); \ref created_banks \"click here for a description of all created banks\".^^- See also the return value type of this algorithm's action functions, which may be `struct`s with the same set of variables as the created bank.^^^^"
@@ -2550,7 +2550,7 @@ COLLABORATION_GRAPH    = NO
 # The default value is: YES.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-GROUP_GRAPHS           = YES
+GROUP_GRAPHS           = NO
 
 # If the UML_LOOK tag is set to YES, doxygen will generate inheritance and
 # collaboration diagrams in a style similar to the OMG's Unified Modeling

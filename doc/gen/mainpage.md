@@ -23,42 +23,48 @@ To see Iguana algorithms used in the context of analysis code, with **various la
 | ^                                                     | Includes guidance on how to build Iguana with your C++ code |
 | @spacer [Python examples](#examples_python) @spacer   | For users of Python tools, such as `PyROOT`                 |
 | @spacer [Fortran examples](#examples_fortran) @spacer | See also the [Fortran usage guide](#fortran_usage_guide)    |
-| @spacer Java @spacer                                  | We do not yet support Java, but we plan to soon             |
+| @spacer **Java** @spacer                              | We do not yet support Java, but we plan to soon             |
 
-In summary, the general way to use an Iguana algorithm is as follows; see examples and documentation below for more details.
+<br><br>
 
-1. Decide how you will use Iguana with your analysis code (see also the flowchart, just below)
+## Usage Summary
+
+In summary, the general way to use an Iguana algorithm is the following:
+
+1. Decide how you will use Iguana with your analysis code (see also [the flowchart](#mainpageFlowchart), just below)
    - Use [Iguana Common Functions](#mainpageCommon) if your analysis uses:
-       - The [HIPO C++ API](https://github.com/gavalian/hipo)
-       - [`clas12root`](https://github.com/JeffersonLab/clas12root)
+       - The [**HIPO C++ API**](https://github.com/gavalian/hipo)
+       - [**`clas12root`**](https://github.com/JeffersonLab/clas12root)
        - Our [Our Python bindings](#examples_python)
    - Use [Iguana Action Functions](#mainpageAction) otherwise
-       - Unfortunately, some algorithms are not fully supported by action functions, but we can try to add support upon request
 2. Decide [which algorithms](#algo) you want to use
-    - Tip: you may use `iguana::AlgorithmSequence` to help run a _sequence_ of algorithms
 3. Check each algorithm configuration, and [adjust it if you prefer](#mainpageConfiguring)
 4. Start each algorithm, which "locks in" its configuration:
     - if using Common Functions:
-        - call `Start()` if you will be using individual `hipo::bank` objects (_e.g._, if you are using `clas12root`)
-        - call `Start(hipo::banklist&)` if you use `hipo::banklist`
+        - call @link iguana::Algorithm::Start() `Start()` @endlink if you will be using individual `hipo::bank` objects (_e.g._, if you are using `clas12root`)
+        - call @link iguana::Algorithm::Start(hipo::banklist&) `Start(hipo::banklist&)` @endlink if you use `hipo::banklist`
+            - **Tip:** `hipo::banklist` users may use @link iguana::AlgorithmSequence `AlgorithmSequence` @endlink to help run a _sequence_ of algorithms
     - if using Action Functions:
-        - call `Start()`
+        - call @link iguana::Algorithm::Start() `Start()` @endlink
 5. In the event loop, Run the algorithm for each event:
     - if using Common Functions, either:
-        - call specialized `Run` functions, which act on individual `hipo::bank` objects, or
-        - call `Run(hipo::banklist&)` if you use `hipo::banklist`
-    - call the Action Function(s) otherwise
+        - call specialized `Run` functions, which act on individual `hipo::bank` objects and are unique for each algorithm; users of `clas12root` versions _newer_ than `1.8.6` should use this
+        - call @link iguana::Algorithm::Run(hipo::banklist&) const `Run(hipo::banklist&)` @endlink if you use `hipo::banklist`
+    - call the [Action Function(s)](#action) otherwise
 6. Proceed with your analysis
     - if you called a `Run` function, banks will be filtered, transformed, and/or created
     - if you called Action Functions, you will need to handle their output yourself
     - in either case, see [guidance on how to run algorithms](#mainpageRunning) for more details
-7. After your event loop, stop each algorithm by calling `Stop()`
+7. After your event loop, stop each algorithm by calling @link iguana::Algorithm::Stop() `Stop()` @endlink
 
 Please let the maintainers know if your use case is not covered in any examples or if you need any help.
 
+@anchor mainpageFlowchart
+### Flowchart for Usage
+
 Here is a flowchart, illustrating the above:
 
-<img src="./flowchart_usage.png" width=100%/>
+<img src="./flowchart_usage.png" width=60%/>
 
 <br><hr>
 
@@ -70,9 +76,9 @@ An Iguana algorithm is a function that maps input HIPO bank data to output data.
 
 | Type | Description | Example |
 | --- | --- | --- |
-| **Filter** | Filters rows of a bank based on a Boolean condition | `iguana::clas12::FiducialFilter`: filter particles with fiducial cuts |
-| **Transformer** | Transform (mutate) elements of a bank | `iguana::clas12::MomentumCorrection`: correct particle momenta |
-| **Creator** | Create a new bank | `iguana::physics::InclusiveKinematics`: calculate inclusive kinematics @latex{x}, @latex{Q^2}, _etc_. |
+| **Filter** | Filters rows of a bank based on a Boolean condition | @link iguana::clas12::FiducialFilter @endlink: filter particles with fiducial cuts |
+| **Transformer** | Transform (mutate) elements of a bank | @link iguana::clas12::MomentumCorrection @endlink: correct particle momenta |
+| **Creator** | Create a new bank | @link iguana::physics::InclusiveKinematics @endlink: calculate inclusive kinematics @latex{x}, @latex{Q^2}, _etc_. |
 
 The available algorithms are:
 
@@ -85,7 +91,7 @@ The available algorithms are:
 @anchor mainpageRunning
 ## How to Run Algorithms
 
-Algorithms may be run using either:
+Algorithms may be run using one of the following; see [the usage flowchart](#mainpageFlowchart) for help deciding what to do.
 
 - [Common Functions](#mainpageCommon): for users of the [**the HIPO API**](https://github.com/gavalian/hipo), which is likely the case if you are using C++, _e.g._, via `clas12root`
 - [Action Functions](#mainpageAction): for all other users
@@ -102,22 +108,30 @@ All algorithms have the following **Common Functions**, which may be used in ana
 
 | Common Functions ||
 | --- | --- |
-| `Start(hipo::banklist&)` | To be called before event processing |
-| `Run(hipo::banklist&)` | To be called for every event |
-| `Stop()` | To be called after event processing |
+| `Start` | To be called before event processing |
+| `Run` | To be called for every event |
+| `Stop` | To be called after event processing |
 
-The algorithms are implemented in C++ classes which inherit from the base class `iguana::Algorithm`; these three class methods are overridden in each algorithm.
+- for `Start`:
+    - call @link iguana::Algorithm::Start() `Start()` @endlink if you will be using individual `hipo::bank` objects (_e.g._, if you are using `clas12root`)
+    - call @link iguana::Algorithm::Start(hipo::banklist&) `Start(hipo::banklist&)` @endlink if you use `hipo::banklist`
+        - **Tip:** `hipo::banklist` users may use @link iguana::AlgorithmSequence `AlgorithmSequence` @endlink to help run a _sequence_ of algorithms
+- for `Run`:
+    - call specialized `Run` functions, which act on individual `hipo::bank` objects and are unique for each algorithm; users of `clas12root` versions _newer_ than `1.8.6` should use this
+    - call @link iguana::Algorithm::Run(hipo::banklist&) const `Run(hipo::banklist&)` @endlink if you use `hipo::banklist`
+- the `Stop` function is the same for either case
 
-The `Run(hipo::banklist&)` function should be called on every event; the general consequence, that is, how the user should handle the algorithm's results, depends on the
+The `Run` function should be called on every event; the general consequence, that is, how the user should handle the algorithm's results, depends on the
 algorithm type:
 
 <table>
 <tr> <th>Type</th> <th>How to handle the results</th> </tr>
 <tr> <td>**Filter**</td> <td>
-The involved banks will be filtered.
-To iterate over _filtered_ bank rows, use the function `hipo::bank::getRowList`,
-rather than iterating from `0` up to `hipo::bank::getRows()`; for example, given a
-bank object named `particle_bank`:
+The involved banks will be filtered. To iterate over _filtered_ bank rows, use
+the function `hipo::bank::getRowList`, rather than iterating from `0` up to
+`hipo::bank::getRows()`.
+<br>
+For example, given a bank object named `particle_bank`:
 ```cpp
 for(auto const& row : particle_bank.getRowList()) {
     // loops over only the rows which pass the filter
@@ -130,12 +144,12 @@ for(int row = 0; row < particle_bank.getRows(); row++) {
 ```
 </td> </tr>
 <tr> <td>**Transformer**</td> <td>
-The transformed `hipo::bank` will simply have
-the relevant bank elements changed. For example, momentum correction algorithms
-typically change the particle momentum components.
+The transformed `hipo::bank` will simply have the relevant bank elements changed.
+<br>
+For example, momentum correction algorithms typically change the particle momentum components.
 </td> </tr>
 <tr> <td>**Creator**</td> <td>
-Creator-type algorithms will simply create a new `hipo::bank` object, appending
+Creator-type algorithms will create a new `hipo::bank` object, appending
 it to the end of the input `hipo::banklist`.
 <ul>
 <li>[Click here for descriptions of all created banks](#created_banks)</li>
@@ -153,6 +167,8 @@ Internally, `Run(hipo::banklist&)` calls Action Functions, which are described i
 <br>
 @anchor mainpageAction
 ### Action Functions
+
+@todo **Unfortunately, some algorithms are not yet fully supported by action functions, but we can try to add support upon request.**
 
 The action functions do the _real_ work of the algorithm, and are meant to be
 easily callable from _any_ analysis, even if HIPO banks are not directly used.
@@ -191,8 +207,8 @@ To maximize compatibility with user analysis code, these functions are overloade
 Finally, it is important to note _when_ to call action functions in the analysis code. For example, some action functions should be
 called _once_ every event, while others should be called for every particle of the `REC::Particle` bank. Some algorithms
 have _both_ of these types of functions, for example:
-- `iguana::clas12::ZVertexFilter::PrepareEvent`, which must be called first, at the beginning of an event's analysis
-- `iguana::clas12::ZVertexFilter::Filter`, which must be called on every particle, using the _output_ of `PrepareEvent` in one of its input parameters
+- @link iguana::clas12::ZVertexFilter::PrepareEvent @endlink, which must be called first, at the beginning of an event's analysis
+- @link iguana::clas12::ZVertexFilter::Filter @endlink, which must be called on every particle, using the _output_ of `PrepareEvent` in one of its input parameters
 
 It is highly recommended to read an algorithm's documentation carefully before using it, _especially_ if you use action functions.
 
@@ -209,7 +225,7 @@ Many algorithms are configurable. An algorithm's configuration parameters and th
 
 Iguana provides a few ways to configure algorithms; in general, you may either:
 - use YAML for configuration that gets applied at runtime, _i.e._, no need to recompile
-- use `iguana::Algorithm::SetOption` to configure an algorithm more directly, which may require recompilation, depending on how you use Iguana algorithms
+- use @link iguana::Algorithm::SetOption @endlink to configure an algorithm more directly, which may require recompilation, depending on how you use Iguana algorithms
 
 The default configuration YAML files are installed in the `etc/` subdirectory of the Iguana installation. If you have set the Iguana environment variables using, _e.g._ `source this_iguana.sh`, or if you are using the version of Iguana installed on `ifarm`, you will have the environment variable `$IGUANA_CONFIG_PATH` set to include this `etc/` directory.
 
@@ -257,8 +273,8 @@ physics::AlgorithmB
 ```
 
 Once you have a YAML file, you just need to tell each algorithm to use it:
-- use `iguana::Algorithm::SetConfigFile` on each algorithm
-- if you use `iguana::AlgorithmSequence`, use `iguana::AlgorithmSequence::SetConfigFileForEachAlgorithm` to use this file for each algorithm in the algorithm sequence
+- use @link iguana::Algorithm::SetConfigFile @endlink on each algorithm
+- if you use @link iguana::AlgorithmSequence @endlink, use @link iguana::AlgorithmSequence::SetConfigFileForEachAlgorithm @endlink to use this file for each algorithm in the algorithm sequence
 
 ### Option 2: Copy the default directory, and modify
 
@@ -279,4 +295,4 @@ setenv IGUANA_CONFIG_PATH `pwd`/my_iguana_config:$IGUANA_CONFIG_PATH   # tcsh or
 The algorithms will then search `my_iguana_config` for the configuration before searching the default paths. You may add multiple paths, if needed.
 Paths which appear first in `$IGUANA_CONFIG_PATH` will be prioritized when the algorithm searches for configuration parameters; this behavior is similar to that of `$PATH` or `$LD_LIBRARY_PATH`. Note that `source this_iguana.sh` will _overwrite_ `$IGUANA_CONFIG_PATH`.
 
-2. Use `iguana::Algorithm::SetConfigDirectory` instead of prepending `$IGUANA_CONFIG_PATH` (and if you use an algorithm sequence, use `iguana::AlgorithmSequence::SetConfigDirectoryForEachAlgorithm`)
+2. Use @link iguana::Algorithm::SetConfigDirectory @endlink instead of prepending `$IGUANA_CONFIG_PATH` (and if you use an algorithm sequence, use @link iguana::AlgorithmSequence::SetConfigDirectoryForEachAlgorithm @endlink)

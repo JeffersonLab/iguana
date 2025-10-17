@@ -3,7 +3,7 @@
 # NOTE: this is not automated by `meson`, to avoid introducing `mermaid-cli` dependency;
 # this is okay, since we do not expect this figure to change often
 exec mmdc \
-  -b transparent \
-  -w 1600 \
-  -i flowchart_usage.mmd \
-  -o flowchart_usage.png
+  --backgroundColor transparent \
+  --width 1600 \
+  --input flowchart_usage.mmd \
+  --output flowchart_usage.png
