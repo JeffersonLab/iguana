@@ -1,0 +1,72 @@
+flowchart TB
+
+    %%{init: {
+      'themeVariables': {
+        'fontSize': '20px',
+        'fontFamily': 'arial',
+        'edgeLabelBackground': '#ff8'
+      }
+    }}%%
+    classDef dec  fill:#8f8,color:black
+    classDef cftn  fill:#8ff,color:black
+    classDef sftn  fill:#f8f,color:black
+    classDef aftn  fill:#f88,color:black
+    classDef lang fill:#ff8,color:black
+
+    %% language nodes
+    subgraph "Start Here"
+        language{{"What language do you want to use?"}}:::dec
+        cpp([C++]):::lang
+        python([Python]):::lang
+        fortran([Fortran]):::lang
+        java([Java]):::lang
+    end
+
+    %% decision nodes
+    clas12root{{"Do you use <code>clas12root</code>, a version <i>newer</i> than 1.8.6?"}}:::dec
+    hipo_cpp{{"Do you use the HIPO C++ API directly, <i>e.g.</i>, <code>hipo::bank</code> objects?"}}:::dec
+    hipo_cppyy{{"Do you use <code>cppyy</code> bindings to the HIPO C++ API? (see our Python examples)"}}:::dec
+    hipo_banklist{{"Do you use <code>hipo::banklist</code>?"}}:::dec
+
+    %% function nodes
+    %% common function nodes are prefixed with c_
+    %% action function nodes are prefixed with a_
+    subgraph "before events"
+        c_start_no_arg["<code>Start()</code>"]:::cftn
+        c_start_banklist["<code>Start(banklist)</code>"]:::cftn
+        a_start["<code>Start()</code>"]:::aftn
+    end
+    subgraph "for each event"
+        c_run_banks["<code>Run(bank1, bank2, ...)</code>"]:::cftn
+        c_run_banklist["<code>Run(banklist)</code>"]:::cftn
+        a_action["call action function(s)"]:::aftn
+    end
+    subgraph "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;after events"
+        stop["<code>Stop()</code>"]:::sftn
+    end
+    todo["Not yet supported"]:::lang
+    fortran_note["You will be using C wrapper functions (see documentation)"]:::lang
+
+    %% edges
+    language ==> cpp ===> clas12root
+    language ==> python ===> hipo_cppyy
+    language ==> fortran ===> fortran_note ==> a_start
+    language ==> java ===> todo
+
+    clas12root == | YES | ===> c_start_no_arg
+    clas12root == | NO | ===> hipo_cpp
+
+    hipo_cpp == | YES | ===> hipo_banklist
+    hipo_cpp == | NO | ===> a_start
+
+    hipo_cppyy == | YES | ===> hipo_banklist
+    hipo_cppyy == | NO | ===> a_start
+
+    hipo_banklist == | NO | ===> c_start_no_arg
+    hipo_banklist == | YES | ===> c_start_banklist
+
+    c_start_no_arg ==> c_run_banks ==> stop
+    c_start_banklist ==> c_run_banklist ==> stop
+    a_start ==> a_action ==> stop
+
+
