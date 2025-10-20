@@ -60,7 +60,7 @@ namespace iguana::clas12 {
       }
 
       /// @run_function
-      /// uses track, calorimeter, and scintillator banks for charged particles, and a custom bank for neutral particles
+      /// uses track, calorimeter, and scintillator banks for neutral particles, and a custom bank for charged particles
       /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
       /// @param [in] particleBank `REC::Particle`
       /// @param [in] trackBank `REC::Track`
@@ -81,7 +81,7 @@ namespace iguana::clas12 {
       }
 
       /// @run_function
-      /// uses track, calorimeter, and scintillator banks for neutral particles, and a custom bank for charged particles
+      /// uses track, calorimeter, and scintillator banks for charged particles, and a custom bank for neutral particles
       /// @see this algorithm contains multiple run functions, for if you prefer to use other banks
       /// @param [in] particleBank `REC::Particle`
       /// @param [in] trackBank `REC::Track`
