@@ -95,7 +95,7 @@ namespace iguana::clas12 {
       }
 
       // skip central particle, or unknown sector
-      if(sector == 0)
+      if(!IsValidSector(sector))
         continue;
       m_log->Trace("Filling SectorFinder Validator, pdg {} sector {} pindex {}", pdg, sector, row);
       u_YvsX.at(pdg).at(sector - 1)->Fill(x, y);

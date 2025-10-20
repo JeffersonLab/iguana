@@ -132,6 +132,12 @@ namespace iguana {
 
   //////////////////////////////////////////////////////////////////////////////////
 
+  /// @param sec the sector number to check
+  /// @returns `true` if the sector number is a valid sector number
+  inline bool IsValidSector(int const& sec) {
+    return sec >= 1 && sec <= 6;
+  }
+
   /// detector IDs; this is a _copy_ of `coatjava`'s `DetectorType` `enum`
   enum DetectorType {
     UNDEFINED = 0,

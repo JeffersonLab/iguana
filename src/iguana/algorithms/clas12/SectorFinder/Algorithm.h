@@ -21,6 +21,8 @@ namespace iguana::clas12 {
   ///
   /// Otherwise only the bank(s) specified by `bank_charged` and `bank_neutral` is/are needed, if both of them are non-default.
   ///
+  /// If the sector cannot be determined, the value `UNKNOWN_SECTOR` will be used instead.
+  ///
   /// The action function ::GetStandardSector identifies the sector(s) using these banks in a priority order, whereas
   /// the action function ::GetSector uses a single bank's data.
   /// Note: rows that have been filtered out of `REC::Particle` will still have their sectors determined.
@@ -30,6 +32,9 @@ namespace iguana::clas12 {
       DEFINE_IGUANA_ALGORITHM(SectorFinder, clas12::SectorFinder)
 
     public:
+
+      /// if this algorithm cannot determine the sector, this value will be used
+      static int const UNKNOWN_SECTOR = -1;
 
       void Start(hipo::banklist& banks) override;
       bool Run(hipo::banklist& banks) const override;
@@ -154,7 +159,7 @@ namespace iguana::clas12 {
       /// @param sectors list of sectors in a detector bank
       /// @param pindices list of pindices in a detector bank
       /// @param pindex_particle index in `REC::Particle` bank for which to get sector
-      /// @returns sector for `pindex_particle` in list, -1 if `pindex_particle` not in inputted list
+      /// @returns sector for `pindex_particle` in list, `UNKNOWN_SECTOR` if `pindex_particle` not in inputted list
       int GetSector(
           std::vector<int> const& sectors,
           std::vector<int> const& pindices,
@@ -178,7 +183,7 @@ namespace iguana::clas12 {
       /// @param sectors_scint list of sectors in `REC::Scintillator`
       /// @param pindices_scint list of pindices in `REC::Scintillator`
       /// @param pindex_particle index in `REC::Particle` bank for which to get sector
-      /// @returns sector for `pindex_particle` in lists, -1 if `pindex_particle` not any of the inputted lists
+      /// @returns sector for `pindex_particle` in lists, `UNKNOWN_SECTOR` if `pindex_particle` not any of the inputted lists
       int GetStandardSector(
           std::vector<int> const& sectors_track,
           std::vector<int> const& pindices_track,
@@ -242,8 +247,8 @@ namespace iguana::clas12 {
 
       /// `hipo::banklist` index for the particle bank
       hipo::banklist::size_type b_particle;
-      hipo::banklist::size_type b_calorimeter;
       hipo::banklist::size_type b_track;
+      hipo::banklist::size_type b_calorimeter;
       hipo::banklist::size_type b_scint;
       hipo::banklist::size_type b_user_charged;
       hipo::banklist::size_type b_user_neutral;
