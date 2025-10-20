@@ -71,7 +71,7 @@ namespace iguana::clas12 {
       auto sector = sector_bank.getInt("sector", row);
 
       // skip central particle, or unknown sector
-      if(sector == 0)
+      if(!IsValidSector(sector))
         continue;
 
       double p_corrected = std::hypot(
