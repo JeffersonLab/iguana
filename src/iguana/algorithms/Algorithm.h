@@ -151,6 +151,8 @@ namespace iguana {
       std::string GetCreatedBankName() const noexcept(false);
 
       /// Get a bank created by a creator-type algorithm. The bank must be defined in `src/iguana/bankdefs/iguana.json`.
+      /// Use this function if you intend to use specialized `Run(hipo::bank&, ...)` functions, where one of its parameters
+      /// is a (reference to) a created bank.
       /// @param [in] bank_name the created bank name, which is only needed if the algorithm creates more than one bank
       /// @returns the new bank
       hipo::bank GetCreatedBank(std::string const& bank_name = "") const noexcept(false);
