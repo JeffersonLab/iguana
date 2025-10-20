@@ -26,8 +26,8 @@ namespace iguana::clas12 {
       userSpecifiedBank_charged = true;
     }
     else {
-      b_calorimeter     = GetBankIndex(banks, "REC::Calorimeter");
       b_track           = GetBankIndex(banks, "REC::Track");
+      b_calorimeter     = GetBankIndex(banks, "REC::Calorimeter");
       b_scint           = GetBankIndex(banks, "REC::Scintillator");
       setDefaultBanks   = true;
       userSpecifiedBank_charged = false;
@@ -40,8 +40,8 @@ namespace iguana::clas12 {
     else {
       //avoid setting default banks twice
       if(!setDefaultBanks){
-        b_calorimeter     = GetBankIndex(banks, "REC::Calorimeter");
         b_track           = GetBankIndex(banks, "REC::Track");
+        b_calorimeter     = GetBankIndex(banks, "REC::Calorimeter");
         b_scint           = GetBankIndex(banks, "REC::Scintillator");
         setDefaultBanks = true;
       }
@@ -91,8 +91,8 @@ namespace iguana::clas12 {
     if(!userSpecifiedBank_charged || !userSpecifiedBank_neutral){
       if(trackBank!=nullptr && calBank!=nullptr && scintBank!=nullptr) {
         GetListsSectorPindex(*trackBank,sectors_track,pindices_track);
-        GetListsSectorPindex(*calBank,sectors_cal,pindices_cal);
         GetListsSectorPindex(*scintBank,sectors_scint,pindices_scint);
+        GetListsSectorPindex(*calBank,sectors_cal,pindices_cal);
       }
       else
         throw std::runtime_error("SectorFinder::RunImpl called with unexpected null pointer to either the track, calorimeter, or scintillator bank(s); please contact the maintainers");
@@ -112,21 +112,30 @@ namespace iguana::clas12 {
         throw std::runtime_error("SectorFinder::RunImpl called with unexpected null pointer to a user-specified bank; please contact the maintainers");
     }
 
-    // sync new bank with particle bank, and fill it with zeroes
-    resultBank->setRows(particleBank->getRows());
-    resultBank->getMutableRowList().setList(particleBank->getRowList());
-    for(int row = 0; row < resultBank->getRows(); row++){
-      resultBank->putInt(i_sector, row, 0);
-      resultBank->putShort(i_pindex, row, static_cast<int16_t>(row));
+    // trace logging
+    if(m_log->GetLevel() <= Logger::Level::trace) {
+      m_log->Trace("pindices_track = {}", fmt::join(pindices_track, ","));
+      m_log->Trace("sectors_track  = {}", fmt::join(sectors_track, ","));
+      m_log->Trace("pindices_scint = {}", fmt::join(pindices_scint, ","));
+      m_log->Trace("sectors_scint  = {}", fmt::join(sectors_scint, ","));
+      m_log->Trace("pindices_cal   = {}", fmt::join(pindices_cal, ","));
+      m_log->Trace("sectors_cal    = {}", fmt::join(sectors_cal, ","));
+      m_log->Trace("pindices_user_neutral = {}", fmt::join(pindices_user_neutral, ","));
+      m_log->Trace("sectors_user_neutral  = {}", fmt::join(sectors_user_neutral, ","));
+      m_log->Trace("pindices_user_charged = {}", fmt::join(pindices_user_charged, ","));
+      m_log->Trace("sectors_user_charged  = {}", fmt::join(sectors_user_charged, ","));
     }
 
+    // sync new bank with particle bank
+    resultBank->setRows(particleBank->getRows());
+    resultBank->getMutableRowList().setList(particleBank->getRowList());
 
     // some downstream algorithms may still need sector info, so obtain sector for _all_ particles,
     // not just the ones that were filtered out (use `.getRows()` rather than `.getRowList()`)
     for(int row = 0; row < particleBank->getRows(); row++) {
 
       auto charge=particleBank->getInt("charge",row);
-      int sect = -1;
+      int sect = UNKNOWN_SECTOR;
 
       // if user-specified bank
       if(charge==0 ? userSpecifiedBank_neutral : userSpecifiedBank_charged)
@@ -144,10 +153,8 @@ namespace iguana::clas12 {
             pindices_scint,
             row);
 
-      if (sect!=-1){
-        resultBank->putInt(i_sector, row, sect);
-        resultBank->putShort(i_pindex, row, static_cast<int16_t>(row));
-      }
+      resultBank->putInt(i_sector, row, sect);
+      resultBank->putShort(i_pindex, row, static_cast<int16_t>(row));
     }
 
     ShowBank(*resultBank, Logger::Header("CREATED BANK"));
@@ -156,6 +163,10 @@ namespace iguana::clas12 {
 
   void SectorFinder::GetListsSectorPindex(hipo::bank const& bank, std::vector<int>& sectors, std::vector<int>& pindices) const
   {
+    if(m_log->GetLevel() <= Logger::Level::trace) {
+      m_log->Trace("called `GetListsSectorPindex` for the following bank:");
+      bank.show();
+    }
     for(auto const& row : bank.getRowList()) {
       //check that we're only using FD detectors
       //eg have "sectors" in CND which we don't want to add here
@@ -171,10 +182,11 @@ namespace iguana::clas12 {
   {
     for(std::size_t i=0;i<sectors.size();i++){
       if (pindices.at(i)==pindex_particle){
-        return sectors.at(i);
+        auto sect = sectors.at(i);
+        return IsValidSector(sect) ? sect : UNKNOWN_SECTOR;
       }
     }
-    return -1;
+    return UNKNOWN_SECTOR; // pindex not found
   }
 
   int SectorFinder::GetStandardSector(
@@ -188,7 +200,7 @@ namespace iguana::clas12 {
   {
     enum det_enum {kTrack, kScint, kCal, nDet}; // try to get sector from these detectors, in this order
     for(int d = 0; d < nDet; d++) {
-      int sect = -1;
+      int sect = UNKNOWN_SECTOR;
       std::string det_name;
       switch(d) {
         case kTrack:
@@ -204,12 +216,11 @@ namespace iguana::clas12 {
           det_name = "cal";
           break;
       }
-      if(sect != -1) {
-        m_log->Trace("{} pindex {} sect {}", det_name,  pindex_particle, sect);
+      m_log->Trace("{} pindex {} sect {}", det_name,  pindex_particle, sect);
+      if(IsValidSector(sect)) // return this sector number; if not valid, continue to next detector in `det_enum`
         return sect;
-      }
     }
-    return -1;
+    return UNKNOWN_SECTOR; // not found in any detector in `det_enum`
   }
 
   std::vector<int> SectorFinder::GetStandardSector(

@@ -89,10 +89,12 @@ int main(int argc, char** argv)
     fmt::println("----- BEFORE IGUANA -----");
     bank_particle.show(); // the original particle bank
 
-    // run the sequence of Iguana algorithms, in your preferred order
-    algo_eventbuilder_filter.Run(bank_particle);
-    algo_sector_finder.Run(bank_particle, bank_track, bank_calorimeter, bank_scintillator, bank_sector);
-    algo_momentum_correction.Run(bank_particle, bank_sector, bank_config);
+    // run the sequence of Iguana algorithms, in your preferred order; continue
+    // to the next event if any of the Run functions return `false`, which happens
+    // if, for example, no particles pass a filter
+    if(!algo_eventbuilder_filter.Run(bank_particle)) continue;
+    if(!algo_sector_finder.Run(bank_particle, bank_track, bank_calorimeter, bank_scintillator, bank_sector)) continue;
+    if(!algo_momentum_correction.Run(bank_particle, bank_sector, bank_config)) continue;
 
     // print the banks after Iguana algorithms
     fmt::println("----- AFTER IGUANA -----");

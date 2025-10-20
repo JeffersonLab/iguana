@@ -29,7 +29,7 @@ namespace iguana::clas12 {
   {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
-    auto torus   = configBank.getFloat("torus", 0);
+    auto torus = configBank.getFloat("torus", 0);
 
     for(auto const& row : particleBank.getRowList()) {
 
@@ -73,6 +73,10 @@ namespace iguana::clas12 {
 
     // skip the correction if it's not defined
     if(!(pid == particle::electron || pid == particle::pi_plus || pid == particle::pi_minus || pid == particle::proton))
+      return 1.0;
+
+    // skip if the sector is unknown
+    if(!IsValidSector(sec))
       return 1.0;
 
     // Momentum Magnitude
@@ -251,6 +255,10 @@ namespace iguana::clas12 {
 
     // skip the correction if it's not defined
     if(!(pid == particle::electron || pid == particle::pi_plus || pid == particle::pi_minus))
+      return 1.0;
+
+    // skip if the sector is unknown
+    if(!IsValidSector(sec))
       return 1.0;
 
     // Momentum Magnitude
