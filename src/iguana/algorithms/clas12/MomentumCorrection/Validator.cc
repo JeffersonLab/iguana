@@ -46,7 +46,7 @@ namespace iguana::clas12 {
   }
 
 
-  void MomentumCorrectionValidator::Run(hipo::banklist& banks) const
+  bool MomentumCorrectionValidator::Run(hipo::banklist& banks) const
   {
     // get the momenta before
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -71,7 +71,7 @@ namespace iguana::clas12 {
       auto sector = sector_bank.getInt("sector", row);
 
       // skip central particle, or unknown sector
-      if(sector == 0)
+      if(!IsValidSector(sector))
         continue;
 
       double p_corrected = std::hypot(
@@ -81,6 +81,7 @@ namespace iguana::clas12 {
       auto delta_p = p_corrected - p_measured.at(row);
       u_deltaPvsP.at(pdg).at(sector - 1)->Fill(p_corrected, delta_p);
     }
+    return true;
   }
 
 

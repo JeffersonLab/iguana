@@ -81,7 +81,7 @@ namespace iguana::physics {
   }
 
 
-  void DihadronKinematicsValidator::Run(hipo::banklist& banks) const
+  bool DihadronKinematicsValidator::Run(hipo::banklist& banks) const
   {
     // calculate kinematics
     m_algo_seq->Run(banks);
@@ -90,7 +90,7 @@ namespace iguana::physics {
     // skip events with no dihadrons
     if(result_bank.getRowList().size() == 0) {
       m_log->Debug("skip this event, since it has no kinematics results");
-      return;
+      return false;
     }
 
     // lock mutex and fill the plots
@@ -99,6 +99,7 @@ namespace iguana::physics {
       for(auto& plot : plot_list)
         plot.hist->Fill(plot.get_val(result_bank, row));
     }
+    return true;
   }
 
 

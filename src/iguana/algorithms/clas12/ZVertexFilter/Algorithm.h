@@ -5,12 +5,8 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex
-  ///
-  /// @begin_doc_algo{clas12::ZVertexFilter | Filter}
-  /// @input_banks{REC::Particle, RUN::config}
-  /// @output_banks{REC::Particle}
-  /// @end_doc
+  /// @algo_brief{Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex}
+  /// @algo_type_filter
   ///
   /// @begin_doc_config{clas12/ZVertexFilter}
   /// @config_param{electron_vz | list[double] | lower and upper electron @f$z@f$-vertex cuts; run-range dependent; cuts are not applied to FT electrons (FD and CD only)}
@@ -23,8 +19,14 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in,out] particleBank `REC::Particle`, which will be filtered
+      /// @param [in] configBank `RUN::config`
+      /// @returns `false` if all particles are filtered out
+      bool Run(hipo::bank& particleBank, hipo::bank const& configBank) const;
 
       /// @action_function{reload} prepare the event
       /// @when_to_call{for each event}

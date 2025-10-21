@@ -8,14 +8,10 @@
 namespace iguana::clas12 {
 
   ///
-  /// @brief_algo Filter the `REC::Particle` photons using pretrained GBT models
+  /// @algo_brief{Filter the `REC::Particle` photons using pretrained GBT models}
+  /// @algo_type_filter
   ///
   /// For each photon (labeled the photon of interest or POI), we obtain its intrinsic features (energy, angle, pcal edep, etc.) and features corresponding to its nearest neighbors (angle of proximity, energy difference, etc.). This requires the reading of both the REC::Particle and REC::Calorimeter banks. An input std::vector<float> is produced and passed to the pretrained GBT models, which yield a classification score between 0 and 1. An option variable `threshold` then determines the minimum photon `p-value` to survive the cut.
-  ///
-  /// @begin_doc_algo{clas12::PhotonGBTFilter | Filter}
-  /// @input_banks{REC::Particle, REC::Calorimeter, RUN::config}
-  /// @output_banks{REC::Particle}
-  /// @end_doc
   ///
   /// @begin_doc_config{clas12/PhotonGBTFilter}
   /// @config_param{pass | int | cook type}
@@ -29,8 +25,18 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;   
+
+      /// @run_function
+      /// @param [in,out] particleBank `REC::Particle`, which will be filtered
+      /// @param [in] caloBank `REC::Calorimeter`
+      /// @param [in] configBank `RUN::config`
+      /// @returns `false` if all particles are filtered out
+      bool Run(
+          hipo::bank& particleBank,
+          hipo::bank const& caloBank,
+          hipo::bank const& configBank) const;
 
       /// Applies forward detector cut using REC::Particle Theta
       /// @param theta lab angle of the particle with respect to the beam direction (radians)

@@ -64,9 +64,13 @@ namespace iguana {
       /// use this method if you intend to use "action functions" instead of `Algorithm::Run`.
       void Start();
 
-      /// @brief Run this algorithm for an event.
+      /// @brief **Run Function:** Process an event's `hipo::banklist`
       /// @param banks the list of banks to process
-      virtual void Run(hipo::banklist& banks) const = 0;
+      /// @returns a boolean value, which is typically used to decide whether or not to continue analyzing an event, _i.e._, it can be used
+      /// as an _event-level_ filter; not all algorithms use or need this feature; see the algorithm's more specialized `Run` functions,
+      /// which have `hipo::bank` parameters
+      /// @see Specialized `%Run` function(s) above/below; they take individual `hipo::bank` objects as parameters, and their documentation explains which banks are used by this algorithm and how.
+      virtual bool Run(hipo::banklist& banks) const = 0;
 
       /// @brief Finalize this algorithm after all events are processed.
       virtual void Stop() = 0;
@@ -136,6 +140,29 @@ namespace iguana {
       /// @param name the directory name
       void SetConfigDirectory(std::string const& name);
 
+      /// Get the list of created bank names, for creator-type algorithms
+      /// @see `Algorithm::GetCreatedBankName` for algorithms which create only one bank
+      /// @returns the list of new bank names
+      std::vector<std::string> GetCreatedBankNames() const noexcept(false);
+
+      /// Get the created bank name, for creator-type algorithms which create only one new bank
+      /// @see `Algorithm::GetCreatedBankNames` for algorithms which create more than one new bank
+      /// @returns the new bank name
+      std::string GetCreatedBankName() const noexcept(false);
+
+      /// Get a bank created by a creator-type algorithm. The bank must be defined in `src/iguana/bankdefs/iguana.json`.
+      /// Use this function if you intend to use specialized `Run(hipo::bank&, ...)` functions, where one of its parameters
+      /// is a (reference to) a created bank.
+      /// @param [in] bank_name the created bank name, which is only needed if the algorithm creates more than one bank
+      /// @returns the new bank
+      hipo::bank GetCreatedBank(std::string const& bank_name = "") const noexcept(false);
+
+      /// Get a bank schema created by a creator-type algorithm. The bank must be defined in `src/iguana/bankdefs/iguana.json`.
+      /// @see `Algorithm::GetCreatedBank`
+      /// @param [in] bank_name the created bank name, which is only needed if the algorithm creates more than one bank
+      /// @returns the new bank schema
+      hipo::schema GetCreatedBankSchema(std::string const& bank_name = "") const noexcept(false);
+
     protected: // methods
 
       /// Parse YAML configuration files. Sets `m_yaml_config`.
@@ -168,13 +195,13 @@ namespace iguana {
       /// @param banks the banks to show
       /// @param message if specified, print a header message
       /// @param level the log level
-      void ShowBanks(hipo::banklist& banks, std::string_view message = "", Logger::Level const level = Logger::trace) const;
+      void ShowBanks(hipo::banklist const& banks, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
       /// Dump a single bank
       /// @param bank the bank to show
       /// @param message if specified, print a header message
       /// @param level the log level
-      void ShowBank(hipo::bank& bank, std::string_view message = "", Logger::Level const level = Logger::trace) const;
+      void ShowBank(hipo::bank const& bank, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
       /// Get an option from the option cache
       /// @param key the key name associated with this option
@@ -246,28 +273,36 @@ namespace iguana {
       AlgorithmFactory() = delete;
 
       /// Register an algorithm with a unique name. Algorithms register themselves by calling this function.
-      /// @param name the name of the algorithm (not equivalent to `Object::m_name`)
+      /// @param algo_name the name of the algorithm (not equivalent to `Object::m_name`)
       /// @param creator the creator function
       /// @param new_banks if this algorithm creates *new* banks, list them here
       /// @returns true if the algorithm has not yet been registered
-      static bool Register(std::string const& name, algo_creator_t creator, std::vector<std::string> const new_banks = {}) noexcept;
+      static bool Register(std::string const& algo_name, algo_creator_t creator, std::vector<std::string> const new_banks = {}) noexcept;
 
       /// Create an algorithm. Throws an exception if the algorithm cannot be created
-      /// @param name the name of the algorithm, which was used as an argument in the `AlgorithmFactory::Register` call
+      /// @param algo_name the name of the algorithm, which was used as an argument in the `AlgorithmFactory::Register` call
       /// @returns the algorithm instance
-      static algo_t Create(std::string const& name) noexcept(false);
+      static algo_t Create(std::string const& algo_name) noexcept(false);
 
-      /// Check if a bank is created by an algorithm
-      /// @param bank_name the name of the bank
-      /// @returns the list of algorithms which create it, if any
-      static std::optional<std::vector<std::string>> QueryNewBank(std::string const& bank_name) noexcept;
+      /// Get list of creator-type algorithms which create a particular bank
+      /// @param bank_name the bank name
+      /// @returns the list of algorithms which create the bank, if any
+      static std::optional<std::vector<std::string>> GetCreatorAlgorithms(std::string const& bank_name) noexcept;
+
+      /// Get list of banks which are created by a particular creator-type algorithm
+      /// @param algo_name the algorithm name
+      /// @returns the list of banks which are created by the algorithm, if any
+      static std::optional<std::vector<std::string>> GetCreatedBanks(std::string const& algo_name) noexcept(false);
 
     private:
 
       /// Association between the algorithm names and their creators
       static std::unordered_map<std::string, algo_creator_t> s_creators;
 
-      /// Association between a created bank and its creator algorithms
-      static std::unordered_map<std::string, std::vector<std::string>> s_created_banks;
+      /// Association from a created bank to the creator-type algorithms that create it
+      static std::unordered_map<std::string, std::vector<std::string>> s_bank_to_algos;
+
+      /// Association from a creator-type algorithm to the banks it creates
+      static std::unordered_map<std::string, std::vector<std::string>> s_algo_to_banks;
   };
 }

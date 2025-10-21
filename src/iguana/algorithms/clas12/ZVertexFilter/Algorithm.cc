@@ -18,13 +18,15 @@ namespace iguana::clas12 {
     b_config = GetBankIndex(banks, "RUN::config");
   }
 
-  void ZVertexFilter::Run(hipo::banklist& banks) const
+  bool ZVertexFilter::Run(hipo::banklist& banks) const
   {
+    return Run(
+        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_config, "RUN::config"));
+  }
 
-    // get the banks
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto& configBank = GetBank(banks, b_config, "RUN::config");
-
+  bool ZVertexFilter::Run(hipo::bank& particleBank, hipo::bank const& configBank) const
+  {
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
@@ -43,6 +45,7 @@ namespace iguana::clas12 {
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+    return ! particleBank.getRowList().empty();
   }
 
   concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum) const {

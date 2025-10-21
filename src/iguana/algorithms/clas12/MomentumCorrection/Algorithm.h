@@ -5,14 +5,9 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Momentum Corrections
-  ///
+  /// @algo_brief{Momentum Corrections}
+  /// @algo_type_transformer
   /// Adapted from <https://clasweb.jlab.org/wiki/index.php/CLAS12_Momentum_Corrections#tab=Correction_Code>
-  ///
-  /// @begin_doc_algo{clas12::MomentumCorrection | Transformer}
-  /// @input_banks{RUN::config, REC::Particle, REC::Particle::Sector}
-  /// @output_banks{REC::Particle}
-  /// @end_doc
   class MomentumCorrection : public Algorithm
   {
 
@@ -21,8 +16,18 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in,out] particleBank `REC::Particle`; the momenta will be corrected
+      /// @param [in] sectorBank `REC::Particle::Sector`, from `SectorFinder`
+      /// @param [in] configBank `RUN::config`
+      /// @run_function_returns_true
+      bool Run(
+          hipo::bank& particleBank,
+          hipo::bank const& sectorBank,
+          hipo::bank const& configBank) const;
 
       /// @action_function{scalar transformer} Apply the momentum correction
       /// @param px @f$p_x@f$

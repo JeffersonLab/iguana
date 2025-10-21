@@ -7,13 +7,8 @@
 
 namespace iguana::physics {
 
-  /// @brief_algo Calculate inclusive kinematics quantities
-  ///
-  /// @begin_doc_algo{physics::InclusiveKinematics | Creator}
-  /// @input_banks{REC::Particle, RUN::config}
-  /// @output_banks{%physics::InclusiveKinematics}
-  /// @end_doc
-  ///
+  /// @algo_brief{Calculate inclusive kinematics quantities}
+  /// @algo_type_creator
   /// @begin_doc_config{physics/InclusiveKinematics}
   /// @config_param{beam_direction | list[double] | beam direction vector}
   /// @config_param{target_particle | string | target particle}
@@ -21,8 +16,6 @@ namespace iguana::physics {
   /// @config_param{reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available at this time}
   /// @config_param{lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available at this time}
   /// @end_doc
-  ///
-  /// @creator_note
   class InclusiveKinematics : public Algorithm
   {
 
@@ -31,8 +24,19 @@ namespace iguana::physics {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in] particle_bank `REC::Particle`
+      /// @param [in] config_bank `RUN::config`
+      /// @param [out] result_bank `%physics::InclusiveKinematics`, which will be created
+      /// @returns `true` if the kinematics were calculated; _e.g._, if the calculations are performed using
+      /// the scattered lepton, and no scattered lepton was found, `false` will be returned
+      bool Run(
+          hipo::bank const& particle_bank,
+          hipo::bank const& config_bank,
+          hipo::bank& result_bank) const;
 
       /// @action_function{reload} prepare the event
       /// @when_to_call{for each event}

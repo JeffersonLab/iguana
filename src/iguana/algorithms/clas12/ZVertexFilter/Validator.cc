@@ -47,7 +47,7 @@ namespace iguana::clas12 {
   }
 
 
-  void ZVertexFilterValidator::Run(hipo::banklist& banks) const
+  bool ZVertexFilterValidator::Run(hipo::banklist& banks) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
 
@@ -80,6 +80,7 @@ namespace iguana::clas12 {
         u_zvertexplots.at(pdg).at(1)->Fill(vz);
       }
     }
+    return true;
   }
 
   void ZVertexFilterValidator::Stop()

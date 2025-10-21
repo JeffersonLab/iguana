@@ -4,19 +4,13 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Link particle bank to bank `REC::Traj`
-  ///
-  /// @begin_doc_algo{clas12::TrajLinker | Creator}
-  /// @input_banks{REC::Particle, REC::Traj}
-  /// @output_banks{%REC::Particle::Traj}
-  /// @end_doc
+  /// @algo_brief{Link particle bank to bank `REC::Traj`}
+  /// @algo_type_creator
   ///
   /// This algorithm reads `REC::Traj` and produces a new bank, `REC::Particle::Traj`,
   /// to make it easier to access commonly used `REC::Traj` information for each particle.
   ///
   /// If this algorithm does not provide information you need, ask the maintainers or open a pull request.
-  ///
-  /// @creator_note
   class TrajLinker : public Algorithm
   {
 
@@ -25,8 +19,18 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in] bank_particle `REC::Particle`
+      /// @param [in] bank_traj `REC::Traj`
+      /// @param [out] bank_result `REC::Particle::Traj`, which will be created
+      /// @run_function_returns_true
+      bool Run(
+          hipo::bank const& bank_particle,
+          hipo::bank const& bank_traj,
+          hipo::bank& bank_result) const;
 
       /// @returns the DC sector given (x,y,z), or `-1` if failed
       /// @param x x-position

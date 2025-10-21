@@ -4,7 +4,8 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` bank using subsystem-specific fiducial cuts
+  /// @algo_brief{Filter the `REC::Particle` bank using subsystem-specific fiducial cuts}
+  /// @algo_type_filter
   ///
   /// RGA fiducial filter:
   ///
@@ -15,10 +16,14 @@ namespace iguana::clas12 {
   /// - Drift Chamber (DC) fiducial:
   ///   - three region edge thresholds with separate inbending/outbending track logic
   ///
-  /// @begin_doc_algo{clas12::RGAFiducialFilter | Filter}
-  /// @input_banks{REC::Particle, RUN::config, REC::Calorimeter, REC::ForwardTagger, REC::Traj}
-  /// @output_banks{REC::Particle}
-  /// @end_doc
+  /// **References:**
+  ///
+  /// - https://clas12-docdb.jlab.org/DocDB/0012/001240/001/rga_fiducial_cuts.pdf
+  ///
+  /// **NOTE:** this algorithm has multiple `Run(hipo::bank bank1, ...)` functions, which
+  /// take `hipo::bank` parameters, and some parameters may be optional, since you may
+  /// be reading data which lack certain banks. If you use these functions, take a look at all them
+  /// to decide which one best suits your use case.
   ///
   /// @begin_doc_config{clas12/RGAFiducialFilter}
   /// @config_param{calorimeter.strictness      | int          | calorimeter cut strictness}
@@ -58,10 +63,56 @@ namespace iguana::clas12 {
     };
 
   public:
-    // algorithm API
+
     void Start(hipo::banklist& banks) override;
-    void Run  (hipo::banklist& banks) const override;
+    bool Run  (hipo::banklist& banks) const override;
     void Stop () override {}
+
+    /// @run_function
+    /// @param [in,out] particle `REC::Particle` bank, which will be filtered
+    /// @param [in] conf `RUN::config` bank
+    /// @param [in] cal pointer to `REC::Calorimeter` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
+    /// @param [in] traj pointer to `REC::Traj` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
+    /// @param [in] ft pointer to `REC::ForwardTagger` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
+    /// @returns `false` if all particles are filtered out
+    bool Run(
+        hipo::bank& particle,
+        hipo::bank const& conf,
+        hipo::bank const* cal,
+        hipo::bank const* traj,
+        hipo::bank const* ft) const;
+
+    /// @run_function
+    /// @param [in,out] particle `REC::Particle` bank, which will be filtered
+    /// @param [in] conf `RUN::config` bank
+    /// @param [in] cal `REC::Calorimeter` bank
+    /// @param [in] traj `REC::Traj` bank
+    /// @returns `false` if all particles are filtered out
+    bool Run(
+        hipo::bank& particle,
+        hipo::bank const& conf,
+        hipo::bank const& cal,
+        hipo::bank const& traj) const
+    {
+      return Run(particle, conf, &cal, &traj, nullptr);
+    }
+
+    /// @run_function
+    /// @param [in,out] particle `REC::Particle` bank, which will be filtered
+    /// @param [in] conf `RUN::config` bank
+    /// @param [in] cal `REC::Calorimeter` bank
+    /// @param [in] traj `REC::Traj` bank
+    /// @param [in] ft `REC::ForwardTagger` bank
+    /// @returns `false` if all particles are filtered out
+    bool Run(
+        hipo::bank& particle,
+        hipo::bank const& conf,
+        hipo::bank const& cal,
+        hipo::bank const& traj,
+        hipo::bank const& ft) const
+    {
+      return Run(particle, conf, &cal, &traj, &ft);
+    }
 
     /// @returns calorimeter strictness
     int                  CalStrictness() const { return m_cal_strictness; }
@@ -97,7 +148,7 @@ namespace iguana::clas12 {
     bool PassDCFiducial(int track_index, const hipo::bank& particleBank,
       const hipo::bank& configBank, const hipo::bank* trajBank) const;
     bool Filter(int track_index, const hipo::bank& particleBank, const hipo::bank& configBank,
-        const hipo::bank* calBank, const hipo::bank* ftBank, const hipo::bank* trajBank) const;
+        const hipo::bank* calBank, const hipo::bank* trajBank, const hipo::bank* ftBank) const;
 
     // ---- Config loading
     void LoadConfig();

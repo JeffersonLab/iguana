@@ -6,12 +6,8 @@
 
 namespace iguana::physics {
 
-  /// @brief_algo Calculate semi-inclusive hadron kinematic quantities
-  ///
-  /// @begin_doc_algo{physics::SingleHadronKinematics | Creator}
-  /// @input_banks{REC::Particle, %physics::InclusiveKinematics}
-  /// @output_banks{%physics::SingleHadronKinematics}
-  /// @end_doc
+  /// @algo_brief{Calculate semi-inclusive hadron kinematic quantities}
+  /// @algo_type_creator
   ///
   /// @begin_doc_config{physics/SingleHadronKinematics}
   /// @config_param{hadron_list | list[int] | calculate kinematics for these hadron PDGs}
@@ -25,8 +21,6 @@ namespace iguana::physics {
   ///   corresponding row in the output bank will be zeroed, since no calculations are performed for
   ///   those particles
   /// - particles which are not listed in the configuration parameter `hadron_list` will also be filtered out and zeroed
-  ///
-  /// @creator_note
   class SingleHadronKinematics : public Algorithm
   {
 
@@ -35,8 +29,18 @@ namespace iguana::physics {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in] particle_bank `REC::Particle`
+      /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm
+      /// @param [out] result_bank `%physics::SingleHadronKinematics`, which will be created
+      /// @returns `false` if the input banks do not have enough information, _e.g._, if the inclusive kinematics bank is empty
+      bool Run(
+          hipo::bank const& particle_bank,
+          hipo::bank const& inc_kin_bank,
+          hipo::bank& result_bank) const;
 
     private:
 

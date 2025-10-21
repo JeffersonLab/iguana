@@ -10,10 +10,10 @@ bankdef_tgt = custom_target(
     bankdef_json,
     prog_bankgen_sources,
   ],
-  output: [ 'BankDefs.h', 'BankDefs.cc' ],
+  output: [ 'BankDefs.h', 'BankDefs.cc', 'BankDefs.md' ],
   command: [ prog_bankgen, '@INPUT0@', '@OUTDIR@/BankDefs' ],
   install: true,
-  install_dir: [ get_option('includedir') / meson.project_name() / 'bankdefs', false ],
+  install_dir: [ get_option('includedir') / meson.project_name() / 'bankdefs', false, false ],
 )
 
 # install the JSON data model file; iguana won't need it, but it can be useful for user reference

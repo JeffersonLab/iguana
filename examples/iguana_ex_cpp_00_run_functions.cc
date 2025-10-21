@@ -1,7 +1,12 @@
 /// @begin_doc_example{cpp}
 /// @file iguana_ex_cpp_00_run_functions.cc
-/// @brief Example using **full HIPO banks** with Iguana algorithms' `Run` functions. This example requires the
-/// user to have the C++ `hipo::bank` objects; see other examples if you do not have banks in this format.
+/// @brief Example using **full HIPO banks** with Iguana algorithms' `Run` functions, using `hipo::banklist`
+///
+/// This example requires the user to have the C++ `hipo::banklist` objects, which are lists of `hipo::bank` objects.
+///
+/// - see `iguana_ex_cpp_00_run_functions_with_banks.cc` if you prefer just `hipo::bank` objects, rather than `hipo::banklist`
+/// - see other examples if you do not have `hipo::bank` objects
+///
 /// @par Usage
 /// ```bash
 /// iguana_ex_cpp_00_run_functions [HIPO_FILE] [NUM_EVENTS]
@@ -55,11 +60,14 @@ int main(int argc, char** argv)
   // start the algorithms
   seq.Start(banks);
 
+  // get the name of newly created banks (or you can just get them from the documentation)
+  auto sector_finder_bank_name = seq.GetCreatedBankName("clas12::SectorFinder");
+
   // get bank index, for each bank we want to use after Iguana algorithms run
   // NOTE: new banks from creator algorithms are initialized by `Start`
   auto b_config   = hipo::getBanklistIndex(banks, "RUN::config");
   auto b_particle = hipo::getBanklistIndex(banks, "REC::Particle");
-  auto b_sector   = hipo::getBanklistIndex(banks, "REC::Particle::Sector"); // new created bank
+  auto b_sector   = hipo::getBanklistIndex(banks, sector_finder_bank_name); // new created bank
 
   // run the algorithm sequence on each event
   int iEvent = 0;

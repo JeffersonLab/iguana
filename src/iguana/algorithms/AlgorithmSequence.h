@@ -7,7 +7,12 @@ namespace iguana {
   /// @brief An algorithm that can run a sequence of algorithms
   ///
   /// The `Start`, `Run`, and `Stop` methods will sequentially call the corresponding algorithms' methods,
-  /// in the order the algorithms were added to the sequence by `AlgorithmSequence::Add`.
+  /// in the order the algorithms were added to the sequence by `AlgorithmSequence::Add`. If an algorithm's
+  /// `Run` function returns false, then `AlgorithmSequence`'s `Run` function will stop and return `false`.
+  ///
+  /// This algorithm requires the use of `hipo::banklist`; there are neither `Run` functions which take
+  /// individual `hipo::bank` parameters nor action functions. If you do not use `hipo::banklist`, you
+  /// should use individual algorithms instead of this sequencing algorithm.
   class AlgorithmSequence : public Algorithm
   {
 
@@ -16,7 +21,7 @@ namespace iguana {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
       /// Create and add an algorithm to the sequence, by name.
@@ -25,10 +30,10 @@ namespace iguana {
       /// @code
       /// Add("iguana::MyAlgorithm", "my_algorithm_name");
       /// @endcode
-      /// @param class_name the name of the algorithm class
-      /// @param instance_name a user-specified unique name for this algorithm instance;
-      ///        if not specified, `class_name` will be used
-      void Add(std::string const& class_name, std::string const& instance_name = "");
+      /// @param algo_class_name the name of the algorithm class
+      /// @param algo_instance_name a user-specified unique name for this algorithm instance;
+      ///        if not specified, `algo_class_name` will be used
+      void Add(std::string const& algo_class_name, std::string const& algo_instance_name = "");
 
       /// Create and add an algorithm to the sequence.
       ///
@@ -36,15 +41,15 @@ namespace iguana {
       /// @code
       /// Add<iguana::MyAlgorithm>("my_algorithm_name");
       /// @endcode
-      /// @param instance_name a user-specified unique name for this algorithm instance;
+      /// @param algo_instance_name a user-specified unique name for this algorithm instance;
       ///        if not specified, the class name will be used
       template <class ALGORITHM>
-      void Add(std::string_view instance_name = "")
+      void Add(std::string_view algo_instance_name = "")
       {
-        if(instance_name == "")
+        if(algo_instance_name == "")
           Add(std::make_unique<ALGORITHM>());
         else
-          Add(std::make_unique<ALGORITHM>(instance_name));
+          Add(std::make_unique<ALGORITHM>(algo_instance_name));
       }
 
       /// Add an existing algorithm to the sequence. The `AlgorithmSequence` instance will take ownership of the algorithm
@@ -63,31 +68,43 @@ namespace iguana {
       /// @code
       /// Get<iguana::MyAlgorithm>("my_algorithm_name");
       /// @endcode
-      /// @param instance_name the instance name of the algorithm
+      /// @param algo_instance_name the instance name of the algorithm
       /// @return a reference to the algorithm
       template <class ALGORITHM>
-      ALGORITHM* Get(std::string const& instance_name)
+      ALGORITHM* Get(std::string const& algo_instance_name)
       {
-        if(auto it{m_algo_names.find(instance_name)}; it != m_algo_names.end())
+        if(auto it{m_algo_names.find(algo_instance_name)}; it != m_algo_names.end())
           return dynamic_cast<ALGORITHM*>(m_sequence[it->second].get());
-        m_log->Error("cannot find algorithm '{}' in sequence", instance_name);
+        m_log->Error("cannot find algorithm '{}' in sequence", algo_instance_name);
         throw std::runtime_error("cannot Get algorithm");
       }
 
       /// Set an algorithm option
       /// @see `Algorithm::SetOption`
-      /// @param algo_name the algorithm instance name
+      /// @param algo_instance_name the algorithm instance name
       /// @param key the option name
       /// @param val the option value
       template <typename OPTION_TYPE>
-      void SetOption(std::string const& algo_name, std::string const& key, const OPTION_TYPE val)
+      void SetOption(std::string const& algo_instance_name, std::string const& key, const OPTION_TYPE val)
       {
-        Get<Algorithm>(algo_name)->SetOption(key, val);
+        Get<Algorithm>(algo_instance_name)->SetOption(key, val);
       }
 
       /// Set the name of this sequence
       /// @param name the new name
       void SetName(std::string_view name);
+
+      /// Get the list of created bank names, for creator-type algorithms
+      /// @see `AlgorithmSequence::GetCreatedBankName` for algorithms which create only one bank
+      /// @param algo_instance_name the algorithm instance name
+      /// @returns the list of new bank names
+      std::vector<std::string> GetCreatedBankNames(std::string const& algo_instance_name) const noexcept(false);
+
+      /// Get the created bank name, for creator-type algorithms which create only one new bank
+      /// @see `AlgorithmSequence::GetCreatedBankNames` for algorithms which create more than one new bank
+      /// @param algo_instance_name the algorithm instance name
+      /// @returns the new bank name
+      std::string GetCreatedBankName(std::string const& algo_instance_name) const noexcept(false);
 
       /// Print the names of the algorithms in this sequence
       /// @param level the log level of the printout

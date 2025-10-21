@@ -8,11 +8,6 @@ namespace iguana::clas12 {
   void FiducialFilter::Start(hipo::banklist& banks)
   {
     ParseYAMLConfig();
-    o_pass = GetOptionScalar<int>("pass");
-    if(o_pass!=1){
-      m_log->Warn("FiducialFilter only contains fiducial cuts for pass1...we will default to using those...");
-      o_pass = 1;
-    }
     o_pcal_electron_cut_level = ParseCutLevel(GetOptionScalar<std::string>("pcal_electron_cut_level"));
     o_pcal_photon_cut_level   = ParseCutLevel(GetOptionScalar<std::string>("pcal_photon_cut_level"));
     o_enable_pcal_cuts        = GetOptionScalar<int>("enable_pcal_cuts") == 1;
@@ -20,60 +15,66 @@ namespace iguana::clas12 {
 
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
-    if(o_pass == 1) {
-      b_traj = GetBankIndex(banks, "REC::Particle::Traj");
-      b_cal  = GetBankIndex(banks, "REC::Particle::Calorimeter");
-    }
+    b_traj     = GetBankIndex(banks, "REC::Particle::Traj");
+    b_cal      = GetBankIndex(banks, "REC::Particle::Calorimeter");
   }
 
   //////////////////////////////////////////////////////////////////////////////////
 
-  void FiducialFilter::Run(hipo::banklist& banks) const {
+  bool FiducialFilter::Run(hipo::banklist& banks) const
+  {
+    return Run(
+        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_config, "RUN::config"),
+        GetBank(banks, b_traj, "REC::Particle::Traj"),
+        GetBank(banks, b_cal, "REC::Particle::Calorimeter"));
+  }
 
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto& configBank   = GetBank(banks, b_config, "RUN::config");
-    auto torus         = configBank.getFloat("torus", 0);
-
+  bool FiducialFilter::Run(
+      hipo::bank& particleBank,
+      hipo::bank const& configBank,
+      hipo::bank const& trajBank,
+      hipo::bank const& calBank) const
+  {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
-    if(o_pass == 1) {
-      auto& trajBank = GetBank(banks, b_traj, "REC::Particle::Traj");
-      auto& calBank  = GetBank(banks, b_cal, "REC::Particle::Calorimeter");
-      if(auto num_rows{particleBank.getRows()}; num_rows != trajBank.getRows() || num_rows != calBank.getRows()) {
-        m_log->Error("number of particle bank rows differs from 'REC::Particle::Traj' and/or 'REC::Particle::Calorimeter' rows; are you sure these input banks are being filled?");
-        throw std::runtime_error("cannot proceed");
-      }
-      particleBank.getMutableRowList().filter([this, torus, &trajBank, &calBank](hipo::bank& bank, int row) {
-          auto pid = bank.getInt("pid", row);
-          if(row >= 0 && row < calBank.getRows() && row < trajBank.getRows()) {
-            // call the action function
-            return FilterRgaPass1(
-                calBank.getInt("pcal_sector", row),
-                calBank.getFloat("pcal_lv", row),
-                calBank.getFloat("pcal_lw", row),
-                calBank.getByte("pcal_found", row) == 1,
-                trajBank.getInt("sector", row),
-                trajBank.getFloat("r1_x", row),
-                trajBank.getFloat("r1_y", row),
-                trajBank.getFloat("r1_z", row),
-                trajBank.getByte("r1_found", row) == 1,
-                trajBank.getFloat("r2_x", row),
-                trajBank.getFloat("r2_y", row),
-                trajBank.getFloat("r2_z", row),
-                trajBank.getByte("r2_found", row) == 1,
-                trajBank.getFloat("r3_x", row),
-                trajBank.getFloat("r3_y", row),
-                trajBank.getFloat("r3_z", row),
-                trajBank.getByte("r3_found", row) == 1,
-                torus,
-                pid);
-          }
-          else
-            throw std::runtime_error(fmt::format("FiducialFilter filter encountered bad row number {}", row));
-          });
+    if(auto num_rows{particleBank.getRows()}; num_rows != trajBank.getRows() || num_rows != calBank.getRows()) {
+      m_log->Error("number of particle bank rows differs from 'REC::Particle::Traj' and/or 'REC::Particle::Calorimeter' rows; are you sure these input banks are being filled?");
+      throw std::runtime_error("cannot proceed");
     }
+    auto torus = configBank.getFloat("torus", 0);
+    particleBank.getMutableRowList().filter([this, torus, &trajBank, &calBank](hipo::bank& bank, int row) {
+        auto pid = bank.getInt("pid", row);
+        if(row >= 0 && row < calBank.getRows() && row < trajBank.getRows()) {
+          // call the action function
+          return FilterRgaPass1(
+              calBank.getInt("pcal_sector", row),
+              calBank.getFloat("pcal_lv", row),
+              calBank.getFloat("pcal_lw", row),
+              calBank.getByte("pcal_found", row) == 1,
+              trajBank.getInt("sector", row),
+              trajBank.getFloat("r1_x", row),
+              trajBank.getFloat("r1_y", row),
+              trajBank.getFloat("r1_z", row),
+              trajBank.getByte("r1_found", row) == 1,
+              trajBank.getFloat("r2_x", row),
+              trajBank.getFloat("r2_y", row),
+              trajBank.getFloat("r2_z", row),
+              trajBank.getByte("r2_found", row) == 1,
+              trajBank.getFloat("r3_x", row),
+              trajBank.getFloat("r3_y", row),
+              trajBank.getFloat("r3_z", row),
+              trajBank.getByte("r3_found", row) == 1,
+              torus,
+              pid);
+        }
+        else
+          throw std::runtime_error(fmt::format("FiducialFilter filter encountered bad row number {}", row));
+      }
+    );
 
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+    return ! particleBank.getRowList().empty();
   }
 
   //////////////////////////////////////////////////////////////////////////////////

@@ -30,6 +30,15 @@ type_dict = {
     'D': 'double',
     'L': 'long',
 }
+# and to a more standard name, for documentation
+type_name_dict = {
+    'B': 'byte',
+    'S': 'short',
+    'I': 'int',
+    'F': 'float',
+    'D': 'double',
+    'L': 'long',
+}
 
 # all iguana banks should have this group ID
 iguana_group_id = 30000
@@ -40,9 +49,10 @@ with open(input_file_name) as input_file:
     try:
         bank_defs = json.load(input_file)
 
-        # start the output C++ files
+        # start the output files
         out_h  = open(f'{output_base_name}.h', 'w')
         out_cc = open(f'{output_base_name}.cc', 'w')
+        out_md = open(f'{output_base_name}.md', 'w')
 
         # start the header file with some common structs
         out_h.write(textwrap.dedent('''\
@@ -87,6 +97,24 @@ with open(input_file_name) as input_file:
           std::vector<BankDef> const BANK_DEFS = {{
         '''))
 
+        # start the documentation `.md` file
+        out_md.write(textwrap.dedent('''\
+        @defgroup created_banks Banks Created by Iguana Algorithms
+
+        The following tables describe banks created by creator-type algorithms. Often the bank name matches the algorithm name, but not always.
+
+        The variable types and their corresponding accessor methods from `hipo::bank` are:
+
+        | Type Specification | `hipo::bank` accessor |
+        | --- | --- |
+        | `byte` | `getByte` |
+        | `short` | `getShort` |
+        | `int` | `getInt` |
+        | `long` | `getLong` |
+        | `float` | `getFloat` |
+        | `double` | `getDouble` |
+        '''))
+
         # loop over bank definitions in the JSON file
         i_bank_def = 0
         unique_item_ids = []
@@ -121,12 +149,11 @@ with open(input_file_name) as input_file:
             out_cc.write(f'    }}{trail_bank_def}\n')
 
             # make a struct for this algorithm's action function output
-            algo_name      = bank_def["algorithm"]
-            namespace_name = '::'.join(['iguana', *algo_name.split('::')[0:-1]])
-            struct_name    = algo_name.split('::')[-1] + 'Vars'
+            namespace_name = '::'.join(['iguana', *bank_def['algorithm'].split('::')[0:-1]])
+            struct_name    = bank_def['algorithm'].split('::')[-1] + 'Vars'
             out_h.write(textwrap.dedent(f'''\
             namespace {namespace_name} {{
-              /// Set of variables created by creator algorithm `iguana::{algo_name}`
+              /// Set of variables created by creator algorithm `iguana::{bank_def['algorithm']}`
               struct {struct_name} {{
             '''))
             for entry in bank_def['entries']:
@@ -141,10 +168,27 @@ with open(input_file_name) as input_file:
             out_h.write('  };\n')
             out_h.write('}\n\n')
 
+            # add a table to the documentation
+            out_md.write(textwrap.dedent(f'''\
+
+            <br><br>
+            ## `{bank_def['name']}`
+
+            **Description:** {bank_def['info']}
+
+            **Creator Algorithm:** `iguana::{bank_def['algorithm']}`
+
+            | Variable | Type | Description |
+            | --- | --- | --- |
+            '''))
+            for entry in bank_def['entries']:
+                out_md.write(f'| `{entry["name"]}` | `{type_name_dict[entry["type"]]}` | {entry["info"]} |\n')
+
         out_cc.write('  };\n')
         out_cc.write('}\n')
         out_cc.close()
         out_h.close()
+        out_md.close()
 
     except json.decoder.JSONDecodeError:
         print(f'ERROR: failed to parse {input_file_name}; check its JSON syntax', file=sys.stderr)
