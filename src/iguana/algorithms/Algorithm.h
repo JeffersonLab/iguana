@@ -209,6 +209,12 @@ namespace iguana {
       template <typename OPTION_TYPE>
       std::optional<OPTION_TYPE> GetCachedOption(std::string const& key) const;
 
+      /// Throw a runtime exception since this algorithm has been renamed.
+      /// Guidance will be printed for the user.
+      /// @param new_name the new name of the algorithm
+      /// @param version the first software version where this change applies
+      void ThrowSinceRenamed(std::string const& new_name, std::string const& version) const noexcept(false);
+
     private: // methods
 
       /// Prepend `node_path` with the full algorithm name. If `node_path` is empty, set it to `{key}`.
