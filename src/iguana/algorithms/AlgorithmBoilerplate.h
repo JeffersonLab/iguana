@@ -81,10 +81,9 @@ public:                                                                  \
 
 /////////////////////////////////////////////////////////////////////////////////
 
-/// Define `Start`, `Run`, and `Stop` functions for a deprecated algorithm.
+/// Override `Start`, `Run`, and `Stop` functions for a deprecated algorithm.
 /// @param CODE the code to run within each of these functions; it should throw a runtime exception.
 #define DEPRECATE_IGUANA_ALGORITHM(CODE)         \
-public:                                          \
   void Start(hipo::banklist& banks) override     \
   {                                              \
     CODE                                         \
