@@ -170,6 +170,8 @@ namespace iguana::clas12 {
 
     protected: // members
 
+      /// @doxygen_off
+
       // `hipo::banklist`
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_traj;
@@ -181,6 +183,8 @@ namespace iguana::clas12 {
       CutLevel o_pcal_photon_cut_level;
       bool o_enable_pcal_cuts;
       bool o_enable_dc_cuts;
+
+      /// @doxygen_on
 
   };
 

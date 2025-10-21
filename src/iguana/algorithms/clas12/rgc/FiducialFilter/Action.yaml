@@ -1,1 +1,11 @@
-../../FiducialFilter/Action.yaml
+algorithm:
+  name: 'clas12::rgc::FiducialFilter'
+
+# use `include` to include action functions from another algorithm (base class)
+# FIXME: currently using a relative path, can we do better?
+include:
+  - '../../../clas12/FiducialFilter/Action.yaml'
+
+# any action functions defined here should override those from `include:`
+# FIXME: test this
+# actions:
