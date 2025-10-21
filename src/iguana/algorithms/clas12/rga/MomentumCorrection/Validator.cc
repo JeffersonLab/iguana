@@ -2,7 +2,7 @@
 
 #include <TProfile.h>
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
   REGISTER_IGUANA_VALIDATOR(MomentumCorrectionValidator);
 
@@ -12,7 +12,7 @@ namespace iguana::clas12 {
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::EventBuilderFilter");
     m_algo_seq->Add("clas12::SectorFinder");
-    m_algo_seq->Add("clas12::MomentumCorrection");
+    m_algo_seq->Add("clas12::rga::MomentumCorrection");
     m_algo_seq->SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", u_pdg_list);
     m_algo_seq->Start(banks);
 

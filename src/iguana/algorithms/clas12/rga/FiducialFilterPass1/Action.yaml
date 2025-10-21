@@ -1,5 +1,5 @@
 algorithm:
-  name: 'clas12::FiducialFilter'
+  name: 'clas12::rga::FiducialFilterPass1'
 
 actions:
   - name: FilterRgaPass1

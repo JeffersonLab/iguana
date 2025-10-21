@@ -13,11 +13,11 @@
 #include <vector>
 #include <mutex>
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
-/// @brief `iguana::clas12::RGAFiducialFilter` validator
-class RGAFiducialFilterValidator : public Validator {
-  DEFINE_IGUANA_VALIDATOR(RGAFiducialFilterValidator, clas12::RGAFiducialFilterValidator)
+/// @brief `iguana::clas12::rga::FiducialFilterPass2` validator
+class FiducialFilterPass2Validator : public Validator {
+  DEFINE_IGUANA_VALIDATOR(FiducialFilterPass2Validator, clas12::rga::FiducialFilterPass2Validator)
 
 public:
   void Start(hipo::banklist& banks) override;

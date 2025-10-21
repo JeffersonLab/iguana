@@ -11,13 +11,13 @@
 #include <TFile.h>
 #include <TH2.h>
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
-  /// @brief `iguana::clas12::FiducialFilter` validator
-  class FiducialFilterValidator : public Validator
+  /// @brief `iguana::clas12::rga::FiducialFilterPass1` validator
+  class FiducialFilterPass1Validator : public Validator
   {
 
-      DEFINE_IGUANA_VALIDATOR(FiducialFilterValidator, clas12::FiducialFilterValidator)
+      DEFINE_IGUANA_VALIDATOR(FiducialFilterPass1Validator, clas12::rga::FiducialFilterPass1Validator)
 
     public:
 
@@ -30,7 +30,7 @@ namespace iguana::clas12 {
       iguana::clas12::EventBuilderFilter m_algo_eb;
       iguana::clas12::TrajLinker m_algo_traj;
       iguana::clas12::CalorimeterLinker m_algo_cal;
-      iguana::clas12::FiducialFilter m_algo_fidu;
+      iguana::clas12::rga::FiducialFilterPass1 m_algo_fidu;
       
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_traj;

@@ -17,9 +17,9 @@
 #include <unordered_set>
 #include <vector>
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
-REGISTER_IGUANA_VALIDATOR(RGAFiducialFilterValidator);
+REGISTER_IGUANA_VALIDATOR(FiducialFilterPass2Validator);
 
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
@@ -37,7 +37,7 @@ static inline void SaveAndDisposeCanvas(TCanvas* c, const char* path_png) {
   delete c;
 }
 
-void RGAFiducialFilterValidator::BookIfNeeded() {
+void FiducialFilterPass2Validator::BookIfNeeded() {
   // PCal: 0–45 cm with 4.5 cm bins (bar width)
   const int nb = 10;
   const double lo = 0.0, hi = 45.0;
@@ -130,7 +130,7 @@ void RGAFiducialFilterValidator::BookIfNeeded() {
   }
 }
 
-void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
+void FiducialFilterPass2Validator::Start(hipo::banklist& banks) {
 
   if (gROOT) gROOT->SetBatch(kTRUE);
   if (gStyle) gStyle->SetOptStat(0);
@@ -152,7 +152,7 @@ void RGAFiducialFilterValidator::Start(hipo::banklist& banks) {
   b_config = GetBankIndex(banks, "RUN::config");
 
   m_algo_seq = std::make_unique<AlgorithmSequence>();
-  m_algo_seq->Add("clas12::RGAFiducialFilter");
+  m_algo_seq->Add("clas12::rga::FiducialFilterPass2");
   m_algo_seq->Start(banks);
 
   // Output
@@ -175,15 +175,15 @@ static inline void SetDCPadMargins() {
   gPad->SetTopMargin(0.08);
 }
 
-bool RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
+bool FiducialFilterPass2Validator::Run(hipo::banklist& banks) const {
   auto& particle = GetBank(banks, b_particle, "REC::Particle");
   auto& config   = GetBank(banks, b_config,   "RUN::config");
 
   // track torus polarity stats (labels for DC summary)
   {
     bool e_out = (config.getFloat("torus", 0) == 1.0f);
-    if (e_out) const_cast<RGAFiducialFilterValidator*>(this)->m_torus_out_events++;
-    else       const_cast<RGAFiducialFilterValidator*>(this)->m_torus_in_events++;
+    if (e_out) const_cast<FiducialFilterPass2Validator*>(this)->m_torus_out_events++;
+    else       const_cast<FiducialFilterPass2Validator*>(this)->m_torus_in_events++;
   }
 
   // snapshot before sets of pindex
@@ -252,7 +252,7 @@ bool RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       pid = itpb->second;
       if (pid!=11 && pid!=22) continue;
 
-      auto& H = const_cast<RGAFiducialFilterValidator*>(this)->m_cal[pid][sector];
+      auto& H = const_cast<FiducialFilterPass2Validator*>(this)->m_cal[pid][sector];
 
       if (lv >= 0.0 && lv <= 45.0) H.lv_before->Fill(lv);
       if (lw >= 0.0 && lw <= 45.0) H.lw_before->Fill(lw);
@@ -275,10 +275,10 @@ bool RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     }
 
     for (int s=1;s<=6;++s) {
-      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[11][s].before += be_e[s].size();
-      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[11][s].after  += af_e[s].size();
-      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[22][s].before += be_g[s].size();
-      const_cast<RGAFiducialFilterValidator*>(this)->m_cal_counts[22][s].after  += af_g[s].size();
+      const_cast<FiducialFilterPass2Validator*>(this)->m_cal_counts[11][s].before += be_e[s].size();
+      const_cast<FiducialFilterPass2Validator*>(this)->m_cal_counts[11][s].after  += af_e[s].size();
+      const_cast<FiducialFilterPass2Validator*>(this)->m_cal_counts[22][s].before += be_g[s].size();
+      const_cast<FiducialFilterPass2Validator*>(this)->m_cal_counts[22][s].after  += af_g[s].size();
     }
   }
 
@@ -299,7 +299,7 @@ bool RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       pid = itpb->second;
       if (pid!=11 && pid!=22) continue;
 
-      auto& HH = const_cast<RGAFiducialFilterValidator*>(this)->m_ft_h.at(pid);
+      auto& HH = const_cast<FiducialFilterPass2Validator*>(this)->m_ft_h.at(pid);
 
       double x = ft.getFloat("x", i);
       double y = ft.getFloat("y", i);
@@ -312,10 +312,10 @@ bool RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       }
     }
 
-    const_cast<RGAFiducialFilterValidator*>(this)->m_ft_before_n[11] += seen_b_e.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_ft_after_n [11] += seen_a_e.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_ft_before_n[22] += seen_b_g.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_ft_after_n [22] += seen_a_g.size();
+    const_cast<FiducialFilterPass2Validator*>(this)->m_ft_before_n[11] += seen_b_e.size();
+    const_cast<FiducialFilterPass2Validator*>(this)->m_ft_after_n [11] += seen_a_e.size();
+    const_cast<FiducialFilterPass2Validator*>(this)->m_ft_before_n[22] += seen_b_g.size();
+    const_cast<FiducialFilterPass2Validator*>(this)->m_ft_after_n [22] += seen_a_g.size();
   }
 
   // CVT layer 12 phi/theta before/after (hadrons)
@@ -347,8 +347,8 @@ bool RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
       }
     }
 
-    const_cast<RGAFiducialFilterValidator*>(this)->m_cvt_before_n += (long long) b_seen.size();
-    const_cast<RGAFiducialFilterValidator*>(this)->m_cvt_after_n  += (long long) a_seen.size();
+    const_cast<FiducialFilterPass2Validator*>(this)->m_cvt_before_n += (long long) b_seen.size();
+    const_cast<FiducialFilterPass2Validator*>(this)->m_cvt_after_n  += (long long) a_seen.size();
   }
 
   // DC edges pos/neg before/after (use last-seen edge per (track,region))
@@ -414,16 +414,16 @@ bool RGAFiducialFilterValidator::Run(hipo::banklist& banks) const {
     std::set<int> neg_a2 = keep_if_survived(neg_b2, neg_after);
     std::set<int> neg_a3 = keep_if_survived(neg_b3, neg_after);
 
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_before_n += (long long) inter3(pos_b1, pos_b2, pos_b3);
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_pos_after_n  += (long long) inter3(pos_a1, pos_a2, pos_a3);
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_before_n += (long long) inter3(neg_b1, neg_b2, neg_b3);
-    const_cast<RGAFiducialFilterValidator*>(this)->m_dc_neg_after_n  += (long long) inter3(neg_a1, neg_a2, neg_a3);
+    const_cast<FiducialFilterPass2Validator*>(this)->m_dc_pos_before_n += (long long) inter3(pos_b1, pos_b2, pos_b3);
+    const_cast<FiducialFilterPass2Validator*>(this)->m_dc_pos_after_n  += (long long) inter3(pos_a1, pos_a2, pos_a3);
+    const_cast<FiducialFilterPass2Validator*>(this)->m_dc_neg_before_n += (long long) inter3(neg_b1, neg_b2, neg_b3);
+    const_cast<FiducialFilterPass2Validator*>(this)->m_dc_neg_after_n  += (long long) inter3(neg_a1, neg_a2, neg_a3);
   }
   return true;
 }
 
 // plotting
-void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title) {
+void FiducialFilterPass2Validator::DrawCalCanvas(int pid, const char* title) {
   auto it = m_cal.find(pid);
   if (it == m_cal.end()) return;
 
@@ -469,7 +469,7 @@ void RGAFiducialFilterValidator::DrawCalCanvas(int pid, const char* title) {
   SaveAndDisposeCanvas(c, Form("%s_pcal_lv_lw_pid%d.png", m_base.Data(), pid));
 }
 
-void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
+void FiducialFilterPass2Validator::DrawFTCanvas2x2() {
   if (!m_have_ft) return;
 
   auto* c = new TCanvas("rgafid_ft_xy_2x2", "FT x-y Before/After", 1200, 900);
@@ -500,7 +500,7 @@ void RGAFiducialFilterValidator::DrawFTCanvas2x2() {
   SaveAndDisposeCanvas(c, Form("%s_ft_xy_2x2.png", m_base.Data()));
 }
 
-void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title) {
+void FiducialFilterPass2Validator::DrawCVTCanvas1x2(const char* title) {
   if (!m_have_traj || !m_cvt_before || !m_cvt_after) return;
 
   auto* c = new TCanvas("rgafid_cvt_l12_all", title, 1200, 600);
@@ -532,7 +532,7 @@ void RGAFiducialFilterValidator::DrawCVTCanvas1x2(const char* title) {
   SaveAndDisposeCanvas(c, Form("%s_cvt_l12_phi_theta_hadrons.png", m_base.Data()));
 }
 
-void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H,
+void FiducialFilterPass2Validator::DrawDCCanvas2x3(const DCHists& H,
   const char* bend, double survive_pct) {
 
   TString bendTitle = (TString(bend)=="inb") ? "Inb" : "Out";
@@ -572,7 +572,7 @@ void RGAFiducialFilterValidator::DrawDCCanvas2x3(const DCHists& H,
   SaveAndDisposeCanvas(c, Form("%s_dc_%s_2x3.png", m_base.Data(), bend));
 }
 
-void RGAFiducialFilterValidator::Stop() {
+void FiducialFilterPass2Validator::Stop() {
   // PCAL canvases
   DrawCalCanvas(11, "PCAL lv & lw (Electrons): before solid, after dashed");
   DrawCalCanvas(22, "PCAL lv & lw (Photons): before solid, after dashed");

@@ -1,11 +1,11 @@
 #include "Algorithm.h"
 #include "Pass1CutData.h"
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
-  REGISTER_IGUANA_ALGORITHM(FiducialFilter);
+  REGISTER_IGUANA_ALGORITHM(FiducialFilterPass1);
 
-  void FiducialFilter::Start(hipo::banklist& banks)
+  void FiducialFilterPass1::Start(hipo::banklist& banks)
   {
     ParseYAMLConfig();
     o_pcal_electron_cut_level = ParseCutLevel(GetOptionScalar<std::string>("pcal_electron_cut_level"));
@@ -21,7 +21,7 @@ namespace iguana::clas12 {
 
   //////////////////////////////////////////////////////////////////////////////////
 
-  bool FiducialFilter::Run(hipo::banklist& banks) const
+  bool FiducialFilterPass1::Run(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, "REC::Particle"),
@@ -30,7 +30,7 @@ namespace iguana::clas12 {
         GetBank(banks, b_cal, "REC::Particle::Calorimeter"));
   }
 
-  bool FiducialFilter::Run(
+  bool FiducialFilterPass1::Run(
       hipo::bank& particleBank,
       hipo::bank const& configBank,
       hipo::bank const& trajBank,
@@ -69,7 +69,7 @@ namespace iguana::clas12 {
               pid);
         }
         else
-          throw std::runtime_error(fmt::format("FiducialFilter filter encountered bad row number {}", row));
+          throw std::runtime_error(fmt::format("FiducialFilterPass1 filter encountered bad row number {}", row));
       }
     );
 
@@ -79,13 +79,13 @@ namespace iguana::clas12 {
 
   //////////////////////////////////////////////////////////////////////////////////
 
-  void FiducialFilter::Stop()
+  void FiducialFilterPass1::Stop()
   {
   }
 
   //////////////////////////////////////////////////////////////////////////////////
 
-  FiducialFilter::CutLevel FiducialFilter::ParseCutLevel(std::string const& level) const
+  FiducialFilterPass1::CutLevel FiducialFilterPass1::ParseCutLevel(std::string const& level) const
   {
     if(level == "loose")
       return loose;
@@ -101,7 +101,7 @@ namespace iguana::clas12 {
   //////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////
 
-  bool FiducialFilter::FilterRgaPass1(
+  bool FiducialFilterPass1::FilterRgaPass1(
       int const pcal_sector,
       float const pcal_lv,
       float const pcal_lw,
@@ -170,7 +170,7 @@ namespace iguana::clas12 {
   //////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////
 
-  bool FiducialFilter::FilterPcalHomogeneous(
+  bool FiducialFilterPass1::FilterPcalHomogeneous(
       int const pcal_sector,
       float const lv,
       float const lw,
@@ -251,7 +251,7 @@ namespace iguana::clas12 {
 
   //////////////////////////////////////////////////////////////////////////////////
 
-  bool FiducialFilter::FilterDcXY(
+  bool FiducialFilterPass1::FilterDcXY(
       int const dc_sector,
       float const r1_x,
       float const r1_y,
@@ -355,7 +355,7 @@ namespace iguana::clas12 {
 
   //////////////////////////////////////////////////////////////////////////////////
 
-  bool FiducialFilter::FilterDcThetaPhi(
+  bool FiducialFilterPass1::FilterDcThetaPhi(
       int const dc_sector,
       float const r1_x,
       float const r1_y,

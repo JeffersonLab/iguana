@@ -1,5 +1,5 @@
 algorithm:
-  name: 'clas12::FTEnergyCorrection'
+  name: 'clas12::rga::FTEnergyCorrection'
 
 actions:
 

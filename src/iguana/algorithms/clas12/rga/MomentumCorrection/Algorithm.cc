@@ -1,7 +1,7 @@
 #include "Algorithm.h"
 #include <cmath>
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
   REGISTER_IGUANA_ALGORITHM(MomentumCorrection);
 

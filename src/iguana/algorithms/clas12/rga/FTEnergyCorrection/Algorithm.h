@@ -3,13 +3,17 @@
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
   /// @algo_brief{Forward Tagger energy correction}
   /// @algo_type_transformer
+  ///
+  /// This has been validated only for RG-A Fall 2018 Outbending data. It _may_ also be
+  /// appropriate for Pass-2 data from RG-A, RG-B, and RG-K, but they should
+  /// be validated.
   class FTEnergyCorrection : public Algorithm {
 
-    DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::FTEnergyCorrection)
+    DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::rga::FTEnergyCorrection)
 
     public:
 

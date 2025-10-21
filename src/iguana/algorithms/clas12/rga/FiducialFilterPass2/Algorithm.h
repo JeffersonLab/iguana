@@ -2,7 +2,7 @@
 
 #include "iguana/algorithms/Algorithm.h"
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
   /// @algo_brief{Filter the `REC::Particle` bank using subsystem-specific fiducial cuts}
   /// @algo_type_filter
@@ -25,7 +25,7 @@ namespace iguana::clas12 {
   /// be reading data which lack certain banks. If you use these functions, take a look at all them
   /// to decide which one best suits your use case.
   ///
-  /// @begin_doc_config{clas12/RGAFiducialFilter}
+  /// @begin_doc_config{clas12/rga/FiducialFilterPass2}
   /// @config_param{calorimeter.strictness      | int          | calorimeter cut strictness}
   /// @config_param{forward_tagger.radius       | list[double] | FT allowed radial window (cm)}
   /// @config_param{forward_tagger.holes_flat   | list[double] | FT circular holes (radius, x, y)}
@@ -37,8 +37,8 @@ namespace iguana::clas12 {
   /// @config_param{dc.thresholds_in_smallTheta | list[double] | inbending thresholds when theta < theta_small_deg (cm)}
   /// @config_param{dc.thresholds_in_largeTheta | list[double] | inbending thresholds when theta >= theta_small_deg (cm)}
   /// @end_doc
-  class RGAFiducialFilter : public Algorithm {
-    DEFINE_IGUANA_ALGORITHM(RGAFiducialFilter, clas12::RGAFiducialFilter)
+  class FiducialFilterPass2 : public Algorithm {
+    DEFINE_IGUANA_ALGORITHM(FiducialFilterPass2, clas12::rga::FiducialFilterPass2)
 
   private:
     struct FTParams {

@@ -1,9 +1,9 @@
 #include "Algorithm.h"
 #include "TypeDefs.h"
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
-REGISTER_IGUANA_ALGORITHM(RGAFiducialFilter, "clas12::RGAFiducialFilter");
+REGISTER_IGUANA_ALGORITHM(FiducialFilterPass2, "clas12::rga::FiducialFilterPass2");
 
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;
@@ -22,7 +22,7 @@ static bool traj_has_detector(const hipo::bank* trajBank, int pindex, int detect
   return false;
 }
 
-void RGAFiducialFilter::LoadConfig() {
+void FiducialFilterPass2::LoadConfig() {
   m_cal_strictness = GetOptionScalar<int>("calorimeter.strictness", {"calorimeter", "strictness"});
   if (m_cal_strictness < 1 || m_cal_strictness > 3) {
     throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3");
@@ -115,7 +115,7 @@ void RGAFiducialFilter::LoadConfig() {
   }
 }
 
-void RGAFiducialFilter::Start(hipo::banklist& banks)
+void FiducialFilterPass2::Start(hipo::banklist& banks)
 {
   b_particle = GetBankIndex(banks, "REC::Particle");
   b_config   = GetBankIndex(banks, "RUN::config");
@@ -136,7 +136,7 @@ void RGAFiducialFilter::Start(hipo::banklist& banks)
   LoadConfig();
 }
 
-bool RGAFiducialFilter::Run(hipo::banklist& banks) const
+bool FiducialFilterPass2::Run(hipo::banklist& banks) const
 {
   return Run(
       GetBank(banks, b_particle, "REC::Particle"),
@@ -147,7 +147,7 @@ bool RGAFiducialFilter::Run(hipo::banklist& banks) const
       );
 }
 
-bool RGAFiducialFilter::Run(
+bool FiducialFilterPass2::Run(
     hipo::bank& particle,
     hipo::bank const& conf,
     hipo::bank const* cal,
@@ -161,8 +161,8 @@ bool RGAFiducialFilter::Run(
   return ! particle.getRowList().empty();
 }
 
-RGAFiducialFilter::CalLayers
-RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
+FiducialFilterPass2::CalLayers
+FiducialFilterPass2::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   CalLayers out;
   const int n = cal.getRows();
   for (int i=0; i<n; ++i) {
@@ -179,7 +179,7 @@ RGAFiducialFilter::CollectCalHitsForTrack(const hipo::bank& cal, int pindex) {
   return out;
 }
 
-bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness) {
+bool FiducialFilterPass2::PassCalStrictness(const CalLayers& H, int strictness) {
   if (!H.has_any) return true;
 
   float min_lv = std::numeric_limits<float>::infinity();
@@ -193,7 +193,7 @@ bool RGAFiducialFilter::PassCalStrictness(const CalLayers& H, int strictness) {
   return !(min_lv < thr || min_lw < thr);
 }
 
-bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) const {
+bool FiducialFilterPass2::PassFTFiducial(int pindex, const hipo::bank* ftBank) const {
   if (!ftBank) return true;
 
   const auto& ft = *ftBank;
@@ -218,7 +218,7 @@ bool RGAFiducialFilter::PassFTFiducial(int pindex, const hipo::bank* ftBank) con
   return true;
 }
 
-bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) const {
+bool FiducialFilterPass2::PassCVTFiducial(int pindex, const hipo::bank* trajBank) const {
   if (!trajBank) return true;
 
   const auto& traj = *trajBank;
@@ -272,7 +272,7 @@ bool RGAFiducialFilter::PassCVTFiducial(int pindex, const hipo::bank* trajBank) 
   return true;
 }
 
-bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBank,
+bool FiducialFilterPass2::PassDCFiducial(int pindex, const hipo::bank& particleBank,
     const hipo::bank& configBank, const hipo::bank* trajBank) const {
   if (!trajBank) return true;
 
@@ -325,7 +325,7 @@ bool RGAFiducialFilter::PassDCFiducial(int pindex, const hipo::bank& particleBan
   return true;
 }
 
-bool RGAFiducialFilter::Filter(int track_index, const hipo::bank& particleBank,
+bool FiducialFilterPass2::Filter(int track_index, const hipo::bank& particleBank,
   const hipo::bank& configBank, const hipo::bank* calBank,
   const hipo::bank* trajBank, const hipo::bank* ftBank) const {
 

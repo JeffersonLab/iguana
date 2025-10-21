@@ -37,7 +37,7 @@ algo_dict = [
     'test_args': {'banks': [ 'REC::Particle', 'RUN::config' ]},
   },
   {
-    'name': 'clas12::FiducialFilter',
+    'name': 'clas12::rga::FiducialFilterPass1',
     'test_args': {
       'banks': [ 'REC::Particle', 'RUN::config', 'REC::Traj', 'REC::Calorimeter' ],
       'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
@@ -68,13 +68,13 @@ algo_dict = [
     },
   },
   {
-    'name': 'clas12::FTEnergyCorrection',
+    'name': 'clas12::rga::FTEnergyCorrection',
     'has_config': false,
     'has_validator': false,
     'test_args': {'banks': [ 'RECFT::Particle' ]},
   },
   {
-    'name': 'clas12::MomentumCorrection',
+    'name': 'clas12::rga::MomentumCorrection',
     'has_config': false,
     'test_args': {
       'banks': [
@@ -126,7 +126,7 @@ algo_dict = [
     'test_args': {'banks': [ 'REC::Particle', 'REC::Calorimeter', 'RUN::config' ]},
   },
     {
-    'name': 'clas12::RGAFiducialFilter',
+    'name': 'clas12::rga::FiducialFilterPass2',
     'has_validator': true,
     'has_action_yaml': false,
     'test_args': {

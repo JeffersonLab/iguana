@@ -1,5 +1,5 @@
 algorithm:
-  name: 'clas12::MomentumCorrection'
+  name: 'clas12::rga::MomentumCorrection'
 
 actions:
 

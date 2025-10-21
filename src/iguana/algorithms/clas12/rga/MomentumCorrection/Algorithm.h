@@ -3,7 +3,7 @@
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
   /// @algo_brief{Momentum Corrections}
   /// @algo_type_transformer
@@ -11,7 +11,7 @@ namespace iguana::clas12 {
   class MomentumCorrection : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(MomentumCorrection, clas12::MomentumCorrection)
+      DEFINE_IGUANA_ALGORITHM(MomentumCorrection, clas12::rga::MomentumCorrection)
 
     public:
 

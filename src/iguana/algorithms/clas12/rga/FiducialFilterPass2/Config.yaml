@@ -1,4 +1,4 @@
-clas12::RGAFiducialFilter:
+clas12::rga::FiducialFilterPass2:
   calorimeter:
     # strictness=1 -> lv,lw >=  9.0 cm
     # strictness=2 -> lv,lw >= 13.5 cm

@@ -1,4 +1,4 @@
-clas12::FiducialFilter:
+clas12::rga::FiducialFilterPass1:
 
   # cut levels for PCAL homogeneous cuts; one of 'loose', 'medium', or 'tight'
   pcal_electron_cut_level: loose # for electrons and positrons

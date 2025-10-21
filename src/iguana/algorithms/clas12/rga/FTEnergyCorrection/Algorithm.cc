@@ -1,6 +1,6 @@
 #include "Algorithm.h"
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
   REGISTER_IGUANA_ALGORITHM(FTEnergyCorrection);
 
   void FTEnergyCorrection::Start(hipo::banklist& banks) {
