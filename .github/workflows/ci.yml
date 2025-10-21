@@ -97,7 +97,7 @@ jobs:
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
-    output:
+    outputs:
       validation_name: ${{ steps.artifact_names.outputs.validation_name }}
       validation_dir: ${{ steps.artifact_names.outputs.validation_dir }}
     steps:
