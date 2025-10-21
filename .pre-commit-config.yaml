@@ -1,0 +1,8 @@
+repos:
+- repo: local
+  hooks:
+    - id: auto-format
+      name: auto-format
+      entry: .github/auto-format.sh
+      language: script
+      pass_filenames: false
