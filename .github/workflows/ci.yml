@@ -97,6 +97,9 @@ jobs:
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
+    outputs:
+      validation_name: ${{ steps.artifact_names.outputs.validation_name }}
+      validation_dir: ${{ steps.artifact_names.outputs.validation_dir }}
     steps:
       - run: whoami
       - run: container_info
@@ -143,19 +146,27 @@ jobs:
           source .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
           python -m pip install -r iguana_src/bind/python/requirements.txt
+      ### artifact control
+      - name: set artifact names
+        id: artifact_names
+        run: |
+          validation_name=_validation_results__$(echo ${GITHUB_REF} | sed 's;/;__;g')
+          validation_dir=$GITHUB_WORKSPACE/validation_results/$validation_name
+          echo validation_name=$validation_name | tee -a $GITHUB_OUTPUT
+          echo validation_dir=$validation_dir | tee -a $GITHUB_OUTPUT
       ### build
       - name: meson setup
         run: |
-          meson setup iguana_build iguana_src                      \
-            --prefix=$GITHUB_WORKSPACE/iguana                      \
-            -Drcdb:home=$RCDB_HOME                                 \
-            -Dz_require_rcdb=true                                  \
-            -Dwerror=true                                          \
-            -Dinstall_examples=true                                \
-            -Dtest_data_file=$GITHUB_WORKSPACE/test_data.hipo      \
-            -Dtest_num_events=${{ env.num_events }}                \
-            -Dtest_output_dir=$GITHUB_WORKSPACE/validation_results \
-            -Dtest_num_threads=${{ env.num_threads }}              \
+          meson setup iguana_build iguana_src \
+            --prefix=$GITHUB_WORKSPACE/iguana \
+            -Drcdb:home=$RCDB_HOME \
+            -Dz_require_rcdb=true \
+            -Dwerror=true \
+            -Dinstall_examples=true \
+            -Dtest_data_file=$GITHUB_WORKSPACE/test_data.hipo \
+            -Dtest_num_events=${{ env.num_events }} \
+            -Dtest_output_dir=${{ steps.artifact_names.outputs.validation_dir }} \
+            -Dtest_num_threads=${{ env.num_threads }} \
             ${{ matrix.opts }}
       - name: dump all build options
         run: meson configure iguana_build --no-pager
@@ -318,7 +329,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ matrix.id == 'cpp' }}
         with:
-          name: _validation_results
+          name: ${{ steps.artifact_names.outputs.validation_name }}
           retention-days: 90
           path: validation_results
       - name: upload documentation artifacts
