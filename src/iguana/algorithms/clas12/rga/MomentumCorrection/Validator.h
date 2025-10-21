@@ -7,13 +7,13 @@
 #include <TFile.h>
 #include <TH2.h>
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
-  /// @brief `iguana::clas12::MomentumCorrection` validator
+  /// @brief `iguana::clas12::rga::MomentumCorrection` validator
   class MomentumCorrectionValidator : public Validator
   {
 
-      DEFINE_IGUANA_VALIDATOR(MomentumCorrectionValidator, clas12::MomentumCorrectionValidator)
+      DEFINE_IGUANA_VALIDATOR(MomentumCorrectionValidator, clas12::rga::MomentumCorrectionValidator)
 
     public:
 

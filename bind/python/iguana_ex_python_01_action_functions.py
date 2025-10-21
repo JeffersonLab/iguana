@@ -17,7 +17,7 @@ pyiguana.include(
         'hipo4/reader.h',
         'iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h',
         'iguana/algorithms/clas12/SectorFinder/Algorithm.h',
-        'iguana/algorithms/clas12/MomentumCorrection/Algorithm.h',
+        'iguana/algorithms/clas12/rga/MomentumCorrection/Algorithm.h',
         )
 # then import the bound namespaces (must be after including the headers)
 from cppyy.gbl import hipo, iguana
@@ -49,7 +49,7 @@ b_scintillator = hipo.getBanklistIndex(banks, "REC::Scintillator");
 # create the algorithms
 algo_eventbuilder_filter = iguana.clas12.EventBuilderFilter() # filter by Event Builder PID (a filter algorithm)
 algo_sector_finder       = iguana.clas12.SectorFinder() # get the sector for each particle (a creator algorithm)
-algo_momentum_correction = iguana.clas12.MomentumCorrection() # momentum corrections (a transformer algorithm)
+algo_momentum_correction = iguana.clas12.rga.MomentumCorrection() # momentum corrections (a transformer algorithm)
 
 # set log levels
 algo_eventbuilder_filter.SetOption('log', 'info')

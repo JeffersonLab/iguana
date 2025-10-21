@@ -35,6 +35,7 @@ foreach algo : algo_dict
       foreach prerequisite : algo['test_args'].get('prerequisites', [])
         test_args += [ '-p', prerequisite ]
       endforeach
+      should_fail = algo['test_args'].get('should_fail', false)
 
       # single threaded tests
       test(
@@ -44,15 +45,18 @@ foreach algo : algo_dict
         args: [ 'algorithm', '-n', get_option('test_num_events') ] + test_args,
         env: project_test_env,
         timeout: 0,
+        should_fail: should_fail,
       )
-      benchmark(
-        '-'.join(['benchmark', 'single_threaded', test_name_algo]),
-        test_exe,
-        suite: [ 'algorithm', 'single_threaded' ],
-        args: [ 'algorithm', '-n', '0' ] + test_args, # benchmark all the events
-        env: project_test_env,
-        timeout: 0,
-      )
+      if not should_fail
+        benchmark(
+          '-'.join(['benchmark', 'single_threaded', test_name_algo]),
+          test_exe,
+          suite: [ 'algorithm', 'single_threaded' ],
+          args: [ 'algorithm', '-n', '0' ] + test_args, # benchmark all the events
+          env: project_test_env,
+          timeout: 0,
+        )
+      endif
 
       # multithreaded tests
       if get_option('z_test_multithreading')
@@ -71,15 +75,18 @@ foreach algo : algo_dict
             is_parallel: false,
             env: project_test_env,
             timeout: 0,
+            should_fail: should_fail,
           )
-          benchmark(
-            '-'.join(['benchmark', f'multithreading_@concurrency_model@', test_name_algo]),
-            test_exe,
-            suite: [ 'algorithm', 'multithreading', concurrency_model ],
-            args: multithreading_args + [ '-n', '0' ] + test_args, # benchmark all the events
-            env: project_test_env,
-            timeout: 0,
-          )
+          if not should_fail
+            benchmark(
+              '-'.join(['benchmark', f'multithreading_@concurrency_model@', test_name_algo]),
+              test_exe,
+              suite: [ 'algorithm', 'multithreading', concurrency_model ],
+              args: multithreading_args + [ '-n', '0' ] + test_args, # benchmark all the events
+              env: project_test_env,
+              timeout: 0,
+            )
+          endif
         endforeach
       endif
 

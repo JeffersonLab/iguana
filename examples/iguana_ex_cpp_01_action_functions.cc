@@ -21,7 +21,7 @@
 #include <hipo4/reader.h>
 #include <iguana/algorithms/clas12/EventBuilderFilter/Algorithm.h>
 #include <iguana/algorithms/clas12/SectorFinder/Algorithm.h>
-#include <iguana/algorithms/clas12/MomentumCorrection/Algorithm.h>
+#include <iguana/algorithms/clas12/rga/MomentumCorrection/Algorithm.h>
 
 /// main function
 int main(int argc, char** argv)
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
   // create the algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter; // filter by Event Builder PID (a filter algorithm)
   iguana::clas12::SectorFinder algo_sector_finder; // get the sector for each particle (a creator algorithm)
-  iguana::clas12::MomentumCorrection algo_momentum_correction; // momentum corrections (a transformer algorithm)
+  iguana::clas12::rga::MomentumCorrection algo_momentum_correction; // momentum corrections (a transformer algorithm)
 
   // set log levels
   algo_eventbuilder_filter.SetOption("log", "info");

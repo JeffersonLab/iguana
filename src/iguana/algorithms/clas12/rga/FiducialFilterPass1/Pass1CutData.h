@@ -1,6 +1,6 @@
 #pragma once
 
-namespace iguana::clas12::fiducial_pass1 {
+namespace iguana::clas12::rga::fiducial_pass1 {
 
     ///////////////////////////////////////////////////////////////////
     /// inbending:

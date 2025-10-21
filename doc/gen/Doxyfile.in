@@ -1040,7 +1040,7 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = @top_srcdir@/src/iguana/algorithms/clas12/FiducialFilter/Pass1CutData.h
+EXCLUDE                = @top_srcdir@/src/iguana/algorithms/clas12/rga/FiducialFilterPass1/Pass1CutData.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded

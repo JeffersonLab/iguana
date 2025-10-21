@@ -38,16 +38,17 @@
 
 /////////////////////////////////////////////////////////////////////////////////
 
-/// Implementation for definining the public and private members of an `Algorithm`-derived class
+/// Define the public and private members of an algorithm, with a custom base-class algorithm, along with its constructor and destructor; this
+/// macro should be called in the `class` body in the algorithm's header file
 /// @param ALGO_NAME the name of the algorithm class
 /// @param ALGO_FULL_NAME the full name of this algorithm, used by `iguana::AlgorithmFactory`
 /// @param BASE_NAME the name of the base class, which may be `Algorithm` or one of its derived classes
-#define DEFINE_IGUANA_ALGORITHM_IMPL(ALGO_NAME, ALGO_FULL_NAME, BASE_NAME) \
-private:                                                                   \
-  IGUANA_ALGORITHM_PRIVATE_MEMBERS                                         \
-public:                                                                    \
-  CONSTRUCT_IGUANA_ALGORITHM(ALGO_NAME, BASE_NAME)                         \
-  DESTROY_IGUANA_ALGORITHM(ALGO_NAME)                                      \
+#define DEFINE_IGUANA_SUBALGORITHM(ALGO_NAME, ALGO_FULL_NAME, BASE_NAME) \
+private:                                                                 \
+  IGUANA_ALGORITHM_PRIVATE_MEMBERS                                       \
+public:                                                                  \
+  CONSTRUCT_IGUANA_ALGORITHM(ALGO_NAME, BASE_NAME)                       \
+  DESTROY_IGUANA_ALGORITHM(ALGO_NAME)                                    \
   IGUANA_ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME, BASE_NAME)
 
 /// Define the public and private members of an algorithm, along with its constructor and destructor; this
@@ -55,14 +56,14 @@ public:                                                                    \
 /// @param ALGO_NAME the name of the algorithm class
 /// @param ALGO_FULL_NAME the full name of this algorithm, used by `iguana::AlgorithmFactory`
 #define DEFINE_IGUANA_ALGORITHM(ALGO_NAME, ALGO_FULL_NAME) \
-  DEFINE_IGUANA_ALGORITHM_IMPL(ALGO_NAME, ALGO_FULL_NAME, Algorithm)
+  DEFINE_IGUANA_SUBALGORITHM(ALGO_NAME, ALGO_FULL_NAME, Algorithm)
 
 /// Define the public and private members of a validator, along with its constructor and destructor; this
 /// macro should be called in the `class` body in the validator's header file
 /// @param VDOR_NAME the name of the validator class
 /// @param VDOR_FULL_NAME the full name of this validator, used by `iguana::AlgorithmFactory`
 #define DEFINE_IGUANA_VALIDATOR(VDOR_NAME, VDOR_FULL_NAME) \
-  DEFINE_IGUANA_ALGORITHM_IMPL(VDOR_NAME, VDOR_FULL_NAME, Validator)
+  DEFINE_IGUANA_SUBALGORITHM(VDOR_NAME, VDOR_FULL_NAME, Validator)
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -77,3 +78,22 @@ public:                                                                    \
 /// @param VDOR_NAME the name of the validator class
 #define REGISTER_IGUANA_VALIDATOR(VDOR_NAME) \
   REGISTER_IGUANA_ALGORITHM(VDOR_NAME)
+
+/////////////////////////////////////////////////////////////////////////////////
+
+/// Override `Start`, `Run`, and `Stop` functions for a deprecated algorithm.
+/// @param CODE the code to run within each of these functions; it should throw a runtime exception.
+#define DEPRECATE_IGUANA_ALGORITHM(CODE)         \
+  void Start(hipo::banklist& banks) override     \
+  {                                              \
+    CODE                                         \
+  }                                              \
+  bool Run(hipo::banklist& banks) const override \
+  {                                              \
+    CODE                                         \
+    return false;                                \
+  }                                              \
+  void Stop() override                           \
+  {                                              \
+    CODE                                         \
+  }

@@ -15,8 +15,9 @@
 #     'add_validator_sources': list[str] # list of additional validator source files (default=[])
 #     'add_validator_headers': list[str] # list of additional validator header files (default=[])
 #     'test_args': {    dict[str],       # if excluded, tests won't run for this algorithm
-#       'banks':          list[str]      # list of banks that are needed to test this algorithm; exclude banks produced by 'prerequisites' algorithms
-#       'prerequisites':  list[str]      # list of algorithms that that are required to `Run` before this one
+#       'banks':          list[str]      # list of banks that are needed to test this algorithm; exclude banks produced by 'prerequisites' algorithms (default=[])
+#       'prerequisites':  list[str]      # list of algorithms that that are required to `Run` before this one (default=[])
+#       'should_fail':    bool           # if true, test should fail; use this for deprecated algorithms (default=false)
 #     },
 #   }
 #
@@ -37,12 +38,13 @@ algo_dict = [
     'test_args': {'banks': [ 'REC::Particle', 'RUN::config' ]},
   },
   {
-    'name': 'clas12::FiducialFilter',
+    'name': 'clas12::rga::FiducialFilterPass1',
     'test_args': {
       'banks': [ 'REC::Particle', 'RUN::config', 'REC::Traj', 'REC::Calorimeter' ],
       'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
     },
   },
+  { 'name': 'clas12::FiducialFilter', 'has_config': false, 'has_validator': false, 'test_args': { 'should_fail': true } }, # deprecated
   {
     'name': 'clas12::SectorFinder',
     'test_args': {
@@ -68,13 +70,14 @@ algo_dict = [
     },
   },
   {
-    'name': 'clas12::FTEnergyCorrection',
+    'name': 'clas12::rga::FTEnergyCorrection',
     'has_config': false,
     'has_validator': false,
     'test_args': {'banks': [ 'RECFT::Particle' ]},
   },
+  { 'name': 'clas12::FTEnergyCorrection', 'has_config': false, 'has_validator': false, 'test_args': { 'should_fail': true } }, # deprecated
   {
-    'name': 'clas12::MomentumCorrection',
+    'name': 'clas12::rga::MomentumCorrection',
     'has_config': false,
     'test_args': {
       'banks': [
@@ -87,6 +90,7 @@ algo_dict = [
       'prerequisites': [ 'clas12::SectorFinder' ],
     },
   },
+  { 'name': 'clas12::MomentumCorrection', 'has_config': false, 'has_validator': false, 'test_args': { 'should_fail': true } }, # deprecated
   {
     'name': 'physics::InclusiveKinematics',
     'algorithm_needs_ROOT': true,
@@ -125,8 +129,8 @@ algo_dict = [
     'has_action_yaml': false,
     'test_args': {'banks': [ 'REC::Particle', 'REC::Calorimeter', 'RUN::config' ]},
   },
-    {
-    'name': 'clas12::RGAFiducialFilter',
+  {
+    'name': 'clas12::rga::FiducialFilterPass2',
     'has_validator': true,
     'has_action_yaml': false,
     'test_args': {
@@ -134,6 +138,7 @@ algo_dict = [
       'banks': [ 'REC::Particle', 'RUN::config' ],
     },
   },
+  { 'name': 'clas12::RGAFiducialFilter', 'has_config': false, 'has_validator': false, 'has_action_yaml': false, 'test_args': { 'should_fail': true } }, # deprecated
 ]
 
 # make lists of objects to build; inclusion depends on whether ROOT is needed or not, and if we have ROOT

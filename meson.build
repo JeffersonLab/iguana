@@ -1,7 +1,7 @@
 project(
   'iguana',
   'cpp',
-  version: '0.9.0',
+  version: '1.0.0',
   license: [ 'LGPLv3' ],
   license_files: [ 'LICENSE' ],
   meson_version: '>=1.2',

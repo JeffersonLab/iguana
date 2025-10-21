@@ -1,0 +1,110 @@
+algorithm:
+  name: 'clas12::rga::MomentumCorrection'
+
+actions:
+
+  - name: Transform
+    type: transformer
+    rank: scalar
+    inputs:
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
+      - name: sec
+        type: int
+      - name: pid
+        type: int
+      - name: torus
+        type: float
+    outputs:
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
+
+  - name: CorrectionInbending
+    type: creator
+    rank: scalar
+    inputs:
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
+      - name: sec
+        type: int
+      - name: pid
+        type: int
+    outputs:
+      - type: double
+
+  - name: CorrectionOutbending
+    type: creator
+    rank: scalar
+    inputs:
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
+      - name: sec
+        type: int
+      - name: pid
+        type: int
+    outputs:
+      - type: double
+
+  - name: EnergyLossInbending
+    type: creator
+    rank: scalar
+    inputs:
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
+      - name: pid
+        type: int
+    outputs:
+      - type: double
+
+  - name: EnergyLossOutbending
+    type: creator
+    rank: scalar
+    inputs:
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
+      - name: pid
+        type: int
+    outputs:
+      - type: double

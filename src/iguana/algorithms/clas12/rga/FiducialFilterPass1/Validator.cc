@@ -2,11 +2,11 @@
 
 #include <TProfile.h>
 
-namespace iguana::clas12 {
+namespace iguana::clas12::rga {
 
-  REGISTER_IGUANA_VALIDATOR(FiducialFilterValidator);
+  REGISTER_IGUANA_VALIDATOR(FiducialFilterPass1Validator);
 
-  void FiducialFilterValidator::Start(hipo::banklist& banks)
+  void FiducialFilterPass1Validator::Start(hipo::banklist& banks)
   {
     // set algorithm options
     m_algo_eb.SetOption<std::vector<int>>("pids", u_pdg_list);
@@ -83,7 +83,7 @@ namespace iguana::clas12 {
   }
 
 
-  bool FiducialFilterValidator::Run(hipo::banklist& banks) const
+  bool FiducialFilterPass1Validator::Run(hipo::banklist& banks) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& traj_bank     = GetBank(banks, b_traj, "REC::Particle::Traj");
@@ -123,7 +123,7 @@ namespace iguana::clas12 {
   }
 
 
-  void FiducialFilterValidator::Stop()
+  void FiducialFilterPass1Validator::Stop()
   {
     m_algo_eb.Stop();
     m_algo_traj.Stop();

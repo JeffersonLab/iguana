@@ -357,6 +357,22 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  void Algorithm::ThrowSinceRenamed(std::string const& new_name, std::string const& version) const noexcept(false)
+  {
+    std::string new_path = new_name;
+    std::string::size_type it = 0;
+    while((it = new_path.find("::", it)) != std::string::npos)
+      new_path.replace(it, 2, "/");
+    m_log->Error("As of Iguana version {}, the algorithm {:?} has been renamed:", version, m_class_name);
+    m_log->Error("- the new name is: {:?}", new_name);
+    m_log->Error("- the new C++ header is: \"iguana/algorithms/{}/Algorithm.h\"", new_path);
+    m_log->Error("- please update your code (and custom configuration YAML, if you have one)");
+    m_log->Error("- sorry for the inconvenience!");
+    throw std::runtime_error("algorithm has been renamed");
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::CompleteOptionNodePath(std::string const& key, YAMLReader::node_path_t& node_path) const
   {
     if(node_path.empty())
