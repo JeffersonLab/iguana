@@ -150,7 +150,7 @@ jobs:
       - name: set artifact names
         id: artifact_names
         run: |
-          validation_name=validation_results__$(echo ${GITHUB_REF} | sed 's;/;__;g')
+          validation_name=_validation_results__$(echo ${GITHUB_REF} | sed 's;/;__;g')
           validation_dir=$GITHUB_WORKSPACE/validation_results/$validation_name
           echo validation_name=$validation_name | tee -a $GITHUB_OUTPUT
           echo validation_dir=$validation_dir | tee -a $GITHUB_OUTPUT
@@ -329,7 +329,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ matrix.id == 'cpp' }}
         with:
-          name: _${{ steps.artifact_names.outputs.validation_name }}
+          name: ${{ steps.artifact_names.outputs.validation_name }}
           retention-days: 90
           path: validation_results
       - name: upload documentation artifacts
