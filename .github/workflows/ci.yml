@@ -150,7 +150,7 @@ jobs:
       - name: set artifact names
         id: artifact_names
         run: |
-          validation_name=_validation_results__$(echo ${GITHUB_REF} | sed 's;/;__;g')
+          validation_name=_validation_results__$(echo ${GITHUB_REF} | sed 's;refs/heads/;;g' | sed 's;refs/pull/;PR_;g' | sed 's;/merge$;;' | sed 's;/;__;g')
           validation_dir=$GITHUB_WORKSPACE/validation_results/$validation_name
           echo validation_name=$validation_name | tee -a $GITHUB_OUTPUT
           echo validation_dir=$validation_dir | tee -a $GITHUB_OUTPUT
