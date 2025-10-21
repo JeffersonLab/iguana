@@ -44,14 +44,14 @@ int main(int argc, char** argv)
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::EventBuilderFilter"); // filter by Event Builder PID (a filter algorithm)
   seq.Add("clas12::SectorFinder"); // get the sector for each particle (a creator algorithm)
-  seq.Add("clas12::MomentumCorrection"); // momentum corrections (a transformer algorithm)
+  seq.Add("clas12::rga::MomentumCorrection"); // momentum corrections (a transformer algorithm)
   // seq.PrintSequence();
 
   // set log levels
   // NOTE: this can also be done in a config file
   seq.SetOption("clas12::EventBuilderFilter", "log", "info");
   seq.SetOption("clas12::SectorFinder", "log", "info");
-  seq.SetOption("clas12::MomentumCorrection", "log", "info");
+  seq.SetOption("clas12::rga::MomentumCorrection", "log", "info");
 
   // set algorithm options
   // NOTE: this can also be done in a config file, but setting options here OVERRIDES config file settings

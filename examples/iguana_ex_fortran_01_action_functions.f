@@ -157,7 +157,7 @@ c                  `//c_null_char`
      &  'clas12::SectorFinder'//c_null_char)
       call iguana_algo_create(
      &  algo_mom_cor,
-     &  'clas12::MomentumCorrection'//c_null_char)
+     &  'clas12::rga::MomentumCorrection'//c_null_char)
 
 c     ------------------------------------------------------------------
 c     configure and start iguana algorithms
@@ -301,7 +301,7 @@ c       momentum corrections
               print *, 'Particle PDG =', pid(i)
               print *, '  sector =', sector(i)
               print *, '  p_old = (', px(i), ',', py(i), ',', pz(i), ')'
-              call iguana_clas12_momentumcorrection_transform(
+              call iguana_clas12_rga_momentumcorrection_transform(
      &          algo_mom_cor,
      &          px(i), py(i), pz(i),
      &          sector(i), pid(i), torus(1),
