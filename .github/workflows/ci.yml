@@ -320,7 +320,7 @@ jobs:
         with:
           name: _validation_results
           retention-days: 90
-          path: validation_results
+          path: ./validation_results
       - name: upload documentation artifacts
         uses: actions/upload-artifact@v4
         if: ${{ matrix.id == 'documentation' }}
