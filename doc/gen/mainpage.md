@@ -5,9 +5,9 @@ This documentation shows how to use the Iguana algorithms. For more documentatio
 
 | Quick Links ||
 | --- | --- |
-| @spacer [List of Algorithms](#algo) @spacer | @spacer [Examples of Code](#mainpageExample) @spacer |
+| @spacer [List of All Algorithms](#algo) @spacer | @spacer [List of Algorithms Organized by Run Group, <i>etc</i>.](#algo_namespaces) @spacer |
 | @spacer [List of Action Functions](#action) @spacer | @spacer [Configuring Algorithms](#mainpageConfiguring) @spacer |
-| @spacer [Banks Created by Iguana](#created_banks) @spacer | |
+| @spacer [Banks Created by Iguana](#created_banks) @spacer | @spacer [Examples of Code](#mainpageExample) @spacer |
 
 <br><hr>
 
@@ -32,12 +32,14 @@ To see Iguana algorithms used in the context of analysis code, with **various la
 In summary, the general way to use an Iguana algorithm is the following:
 
 1. Decide how you will use Iguana with your analysis code (see also [the flowchart](#mainpageFlowchart), just below)
-   - Use [Iguana Common Functions](#mainpageCommon) if your analysis uses:
-       - The [**HIPO C++ API**](https://github.com/gavalian/hipo)
-       - [**`clas12root`**](https://github.com/JeffersonLab/clas12root)
-       - Our [Our Python bindings](#examples_python)
-   - Use [Iguana Action Functions](#mainpageAction) otherwise
-2. Decide [which algorithms](#algo) you want to use
+    - Use [Iguana Common Functions](#mainpageCommon) if your analysis uses:
+        - The [**HIPO C++ API**](https://github.com/gavalian/hipo)
+        - [**`clas12root`**](https://github.com/JeffersonLab/clas12root)
+        - Our [Our Python bindings](#examples_python)
+    - Use [Iguana Action Functions](#mainpageAction) otherwise
+2. Decide which algorithms you want to use:
+    - [Algorithms organized by Namespace](#algo_namespaces)
+    - [Full List of Algorithms](#algo)
 3. Check each algorithm configuration, and [adjust it if you prefer](#mainpageConfiguring)
 4. Start each algorithm, which "locks in" its configuration:
     - if using Common Functions:
@@ -76,8 +78,8 @@ An Iguana algorithm is a function that maps input HIPO bank data to output data.
 
 | Type | Description | Example |
 | --- | --- | --- |
-| **Filter** | Filters rows of a bank based on a Boolean condition | @link iguana::clas12::FiducialFilter @endlink: filter particles with fiducial cuts |
-| **Transformer** | Transform (mutate) elements of a bank | @link iguana::clas12::MomentumCorrection @endlink: correct particle momenta |
+| **Filter** | Filters rows of a bank based on a Boolean condition | @link iguana::clas12::rga::FiducialFilterPass2 @endlink: filter particles with fiducial cuts |
+| **Transformer** | Transform (mutate) elements of a bank | @link iguana::clas12::rga::MomentumCorrection @endlink: correct particle momenta |
 | **Creator** | Create a new bank | @link iguana::physics::InclusiveKinematics @endlink: calculate inclusive kinematics @latex{x}, @latex{Q^2}, _etc_. |
 
 The available algorithms are:

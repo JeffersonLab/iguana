@@ -2,20 +2,21 @@
 @defgroup algo_namespaces List of all Algorithms
 @brief Algorithms organized by namespace
 
-The algorithms are organized into **namespaces**; click the links to view each of their algorithms,
-or @ref algo "browse the full list".
+The algorithms are organized into **namespaces**, such as the iguana::clas12::rga namespace for Run Group A.
+
+Click the links to view each of their algorithms, or @ref algo "browse the full list".
 */
 
 /// @{
 
-/// General, top-level namespace for algorithms and infrastructure. For algorithms and bindings, see its sub-namespaces.
-namespace iguana {}
-
 /// Example algorithms
 namespace iguana::example {}
 
-/// CLAS12 algorithms
+/// General CLAS12 algorithms
 namespace iguana::clas12 {}
+
+/// CLAS12 Run Group A algorithms
+namespace iguana::clas12::rga {}
 
 /// Physics algorithms
 namespace iguana::physics {}

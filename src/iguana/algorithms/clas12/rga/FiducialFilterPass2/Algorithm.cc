@@ -3,7 +3,7 @@
 
 namespace iguana::clas12::rga {
 
-REGISTER_IGUANA_ALGORITHM(FiducialFilterPass2, "clas12::rga::FiducialFilterPass2");
+REGISTER_IGUANA_ALGORITHM(FiducialFilterPass2);
 
 static bool banklist_has(hipo::banklist& banks, const char* name) {
   for (auto& b : banks) if (b.getSchema().getName() == name) return true;

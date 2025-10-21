@@ -52,6 +52,17 @@ main_spec = YAML.load_file ACTION_YAML
 algo_name = @main.get_spec main_spec, 'algorithm', 'name'
 @main.verbose "algorithm name: #{algo_name}"
 
+# merge "included" YAML specs
+if main_spec.has_key? 'include'
+  orig_spec = main_spec
+  main_spec = {}
+  orig_spec['include'].each do |inc_spec_file|
+    inc_spec_file = File.join File.dirname(ACTION_YAML), inc_spec_file
+    inc_spec = YAML.load_file inc_spec_file
+    main_spec = inc_spec.merge orig_spec # FIXME: this doesn't quite work, but we want action functions in 'orig_spec' to OVERRIDE those in 'inc_spec'
+  end
+end
+
 # make output files
 def out_name(name)
   [ @args.out_prefix, name ].reject(&:empty?).join '_'
