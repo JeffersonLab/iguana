@@ -295,7 +295,7 @@ ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
 ALIASES += end_doc="</table>^^"
 # run functions
 ALIASES += run_function="@brief **Run Function:** Process an event's `hipo::bank` objects^^^^The parameter list explains which banks are input (\"in\"), output (\"out\"), or both (\"in,out\").^^"
-ALIASES += link_to_run_ftn="@par Input and Output Banks:^^See @link ::Run `Run` function(s) for the banks @endlink that are processed by this algorithm.^^"
+ALIASES += link_to_run_ftn="@par Input and Output Banks:^^See @link Run `Run` function(s) for the banks @endlink that are processed by this algorithm.^^"
 ALIASES += run_function_returns_true="@returns `true`, _i.e._, this `%Run` function does not provide an event-level filter"
 # action functions
 ALIASES += action_function{1}="\xrefitem action \"Function Type\" \"List of all Action Functions\" \1 \brief **Action Function:** "
