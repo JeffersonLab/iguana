@@ -16,13 +16,15 @@ namespace iguana {
   }
 
   template <typename T>
-  SingleThreadParam<T>::SingleThreadParam() : ConcurrentParam<T>("single")
+  SingleThreadParam<T>::SingleThreadParam()
+      : ConcurrentParam<T>("single")
   {
     this->m_needs_hashing = false;
   }
 
   template <typename T>
-  MemoizedParam<T>::MemoizedParam() : ConcurrentParam<T>("memoize")
+  MemoizedParam<T>::MemoizedParam()
+      : ConcurrentParam<T>("memoize")
   {
     this->m_needs_hashing = true;
   }
@@ -53,7 +55,7 @@ namespace iguana {
   void SingleThreadParam<T>::Save(T const& value, concurrent_key_t const key)
   {
     this->m_empty = false;
-    m_value = value;
+    m_value       = value;
   }
 
   template <typename T>

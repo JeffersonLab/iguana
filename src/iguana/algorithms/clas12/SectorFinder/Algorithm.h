@@ -264,15 +264,14 @@ namespace iguana::clas12 {
       std::string o_bankname_charged;
       std::string o_bankname_neutral;
 
-      //only want sectors from FD detectors
+      // only want sectors from FD detectors
       std::set<int> const listFDDets{
-        DetectorType::DC,
-        DetectorType::ECAL,
-        DetectorType::FTOF,
-        DetectorType::HTCC,
-        DetectorType::LTCC,
-        DetectorType::RICH
-      };
+          DetectorType::DC,
+          DetectorType::ECAL,
+          DetectorType::FTOF,
+          DetectorType::HTCC,
+          DetectorType::LTCC,
+          DetectorType::RICH};
   };
 
 }

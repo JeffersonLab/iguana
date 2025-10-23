@@ -26,8 +26,8 @@ namespace iguana::physics {
       hipo::banklist::size_type b_depol;
 
       struct Plot2D {
-        TH2D* hist;
-        std::function<double(hipo::bank const&, int const)> get_val;
+          TH2D* hist;
+          std::function<double(hipo::bank const&, int const)> get_val;
       };
       std::vector<Plot2D> plots_vs_Q2;
       std::vector<Plot2D> plots_vs_x;

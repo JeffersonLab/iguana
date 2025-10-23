@@ -28,17 +28,17 @@ namespace iguana::clas12 {
 
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this](auto bank, auto row) {
-        auto pid    = bank.getInt("pid", row);
-        auto accept = Filter(pid);
-        m_log->Debug("input PID {} -- accept = {}", pid, accept);
-        return accept ? 1 : 0;
-        });
+      auto pid    = bank.getInt("pid", row);
+      auto accept = Filter(pid);
+      m_log->Debug("input PID {} -- accept = {}", pid, accept);
+      return accept ? 1 : 0;
+    });
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
 
     // return false if everything is filtered out
-    return ! particleBank.getRowList().empty();
+    return !particleBank.getRowList().empty();
   }
 
 

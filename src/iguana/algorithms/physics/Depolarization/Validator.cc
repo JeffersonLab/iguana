@@ -25,70 +25,60 @@ namespace iguana::physics {
     }
 
     // plot binning
-    int const n_bins = 100;
-    std::pair<double,double> const depol_range = {-0.5, 2.5};
-    std::map<TString, std::pair<double,double>> const kin_range = {
-      {"Q2", {0, 10}},
-      {"x", {0, 1}},
-      {"y", {0, 1}}
-    };
+    int const n_bins                                             = 100;
+    std::pair<double, double> const depol_range                  = {-0.5, 2.5};
+    std::map<TString, std::pair<double, double>> const kin_range = {
+        {"Q2", {0, 10}},
+        {"x", {0, 1}},
+        {"y", {0, 1}}};
 
     // plot names, in preferred order for the canvas
     std::vector<TString> const depol_names = {
-      "A",
-      "B",
-      "C",
-      "V",
-      "W",
-      "epsilon",
-      "BA",
-      "CA",
-      "VA",
-      "WA"
-    };
+        "A",
+        "B",
+        "C",
+        "V",
+        "W",
+        "epsilon",
+        "BA",
+        "CA",
+        "VA",
+        "WA"};
 
     // plot titles
-    std::map<TString,TString> const depol_titles = {
-      {"epsilon", "#varepsilon"},
-      {"A", "A"},
-      {"B", "B"},
-      {"C", "C"},
-      {"V", "V"},
-      {"W", "W"},
-      {"BA", "B/A"},
-      {"CA", "C/A"},
-      {"VA", "V/A"},
-      {"WA", "W/A"}
-    };
+    std::map<TString, TString> const depol_titles = {
+        {"epsilon", "#varepsilon"},
+        {"A", "A"},
+        {"B", "B"},
+        {"C", "C"},
+        {"V", "V"},
+        {"W", "W"},
+        {"BA", "B/A"},
+        {"CA", "C/A"},
+        {"VA", "V/A"},
+        {"WA", "W/A"}};
 
     // bank accessors
     std::map<TString, std::function<double(hipo::bank const&, int const)>> const accessors = {
-      {"epsilon", [](auto const& b, auto const r) { return b.getDouble("epsilon", r); }},
-      {"A", [](auto const& b, auto const r) { return b.getDouble("A", r); }},
-      {"B", [](auto const& b, auto const r) { return b.getDouble("B", r); }},
-      {"C", [](auto const& b, auto const r) { return b.getDouble("C", r); }},
-      {"V", [](auto const& b, auto const r) { return b.getDouble("V", r); }},
-      {"W", [](auto const& b, auto const r) { return b.getDouble("W", r); }},
-      {"BA", [](auto const& b, auto const r) { return b.getDouble("B", r) / b.getDouble("A", r); }},
-      {"CA", [](auto const& b, auto const r) { return b.getDouble("C", r) / b.getDouble("A", r); }},
-      {"VA", [](auto const& b, auto const r) { return b.getDouble("V", r) / b.getDouble("A", r); }},
-      {"WA", [](auto const& b, auto const r) { return b.getDouble("W", r) / b.getDouble("A", r); }}
-    };
+        {"epsilon", [](auto const& b, auto const r) { return b.getDouble("epsilon", r); }},
+        {"A", [](auto const& b, auto const r) { return b.getDouble("A", r); }},
+        {"B", [](auto const& b, auto const r) { return b.getDouble("B", r); }},
+        {"C", [](auto const& b, auto const r) { return b.getDouble("C", r); }},
+        {"V", [](auto const& b, auto const r) { return b.getDouble("V", r); }},
+        {"W", [](auto const& b, auto const r) { return b.getDouble("W", r); }},
+        {"BA", [](auto const& b, auto const r) { return b.getDouble("B", r) / b.getDouble("A", r); }},
+        {"CA", [](auto const& b, auto const r) { return b.getDouble("C", r) / b.getDouble("A", r); }},
+        {"VA", [](auto const& b, auto const r) { return b.getDouble("V", r) / b.getDouble("A", r); }},
+        {"WA", [](auto const& b, auto const r) { return b.getDouble("W", r) / b.getDouble("A", r); }}};
 
     // construct plots
     for(auto const& name : depol_names) {
-      plots_vs_Q2.push_back({
-          new TH2D(name + "_vs_Q2", depol_titles.at(name) + " vs. Q^{2}", n_bins, kin_range.at("Q2").first, kin_range.at("Q2").second, n_bins, depol_range.first, depol_range.second),
-          accessors.at(name)
-          });
-      plots_vs_x.push_back({
-          new TH2D(name + "_vs_x", depol_titles.at(name) + " vs. x", n_bins, kin_range.at("x").first, kin_range.at("x").second, n_bins, depol_range.first, depol_range.second),
-          accessors.at(name)
-          });
-      plots_vs_y.push_back({
-          new TH2D(name + "_vs_y", depol_titles.at(name) + " vs. y", n_bins, kin_range.at("y").first, kin_range.at("y").second, n_bins, depol_range.first, depol_range.second),
-          accessors.at(name)
-          });
+      plots_vs_Q2.push_back({new TH2D(name + "_vs_Q2", depol_titles.at(name) + " vs. Q^{2}", n_bins, kin_range.at("Q2").first, kin_range.at("Q2").second, n_bins, depol_range.first, depol_range.second),
+                             accessors.at(name)});
+      plots_vs_x.push_back({new TH2D(name + "_vs_x", depol_titles.at(name) + " vs. x", n_bins, kin_range.at("x").first, kin_range.at("x").second, n_bins, depol_range.first, depol_range.second),
+                            accessors.at(name)});
+      plots_vs_y.push_back({new TH2D(name + "_vs_y", depol_titles.at(name) + " vs. y", n_bins, kin_range.at("y").first, kin_range.at("y").second, n_bins, depol_range.first, depol_range.second),
+                            accessors.at(name)});
     }
   }
 
@@ -127,7 +117,7 @@ namespace iguana::physics {
       auto make_plots = [this](TString const& name, std::vector<Plot2D> const& plot_list) {
         int const n_cols = 5;
         int const n_rows = (plot_list.size() - 1) / n_cols + 1;
-        auto canv = new TCanvas("canv_" + name, name, n_cols * 800, n_rows * 1000);
+        auto canv        = new TCanvas("canv_" + name, name, n_cols * 800, n_rows * 1000);
         canv->Divide(n_cols, n_rows);
         int pad_num = 0;
         for(auto& plot : plot_list) {

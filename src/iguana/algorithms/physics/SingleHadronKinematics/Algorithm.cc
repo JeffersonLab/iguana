@@ -15,15 +15,15 @@ namespace iguana::physics {
 
     // create the output bank
     auto result_schema = CreateBank(banks, b_result, GetClassName());
-    i_pindex = result_schema.getEntryOrder("pindex");
-    i_pdg    = result_schema.getEntryOrder("pdg");
-    i_z      = result_schema.getEntryOrder("z");
-    i_PhPerp = result_schema.getEntryOrder("PhPerp");
-    i_MX2    = result_schema.getEntryOrder("MX2");
-    i_xF     = result_schema.getEntryOrder("xF");
-    i_yB     = result_schema.getEntryOrder("yB");
-    i_phiH   = result_schema.getEntryOrder("phiH");
-    i_xi     = result_schema.getEntryOrder("xi");
+    i_pindex           = result_schema.getEntryOrder("pindex");
+    i_pdg              = result_schema.getEntryOrder("pdg");
+    i_z                = result_schema.getEntryOrder("z");
+    i_PhPerp           = result_schema.getEntryOrder("PhPerp");
+    i_MX2              = result_schema.getEntryOrder("MX2");
+    i_xF               = result_schema.getEntryOrder("xF");
+    i_yB               = result_schema.getEntryOrder("yB");
+    i_phiH             = result_schema.getEntryOrder("phiH");
+    i_xi               = result_schema.getEntryOrder("xi");
 
     // parse config file
     ParseYAMLConfig();
@@ -97,8 +97,8 @@ namespace iguana::physics {
 
       // if the particle is in `o_hadron_pdgs` AND the row is in `particle_bank`'s filtered row list
       if(auto pdg{particle_bank.getInt("pid", row)};
-          o_hadron_pdgs.find(pdg) != o_hadron_pdgs.end() &&
-          std::find(particle_bank_rowlist.begin(), particle_bank_rowlist.end(), row) != particle_bank_rowlist.end()) {
+         o_hadron_pdgs.find(pdg) != o_hadron_pdgs.end() &&
+         std::find(particle_bank_rowlist.begin(), particle_bank_rowlist.end(), row) != particle_bank_rowlist.end()) {
 
         // hadron momentum
         auto p_Ph = ROOT::Math::PxPyPzMVector(
@@ -127,10 +127,11 @@ namespace iguana::physics {
 
         // calculate phiH
         double phiH = tools::PlaneAngle(
-            p_q.Vect(),
-            p_beam.Vect(),
-            p_q.Vect(),
-            p_Ph.Vect()).value_or(tools::UNDEF);
+                          p_q.Vect(),
+                          p_beam.Vect(),
+                          p_q.Vect(),
+                          p_Ph.Vect())
+                          .value_or(tools::UNDEF);
 
         // calculate xi
         double xi = p_q.Dot(p_Ph) / p_target.Dot(p_q);
@@ -139,27 +140,27 @@ namespace iguana::physics {
         result_bank_rowlist.push_back(row);
 
         // fill the bank
-        result_bank.putShort(i_pindex,  row, static_cast<int16_t>(row));
-        result_bank.putInt(i_pdg,       row, pdg);
-        result_bank.putDouble(i_z,      row, z);
+        result_bank.putShort(i_pindex, row, static_cast<int16_t>(row));
+        result_bank.putInt(i_pdg, row, pdg);
+        result_bank.putDouble(i_z, row, z);
         result_bank.putDouble(i_PhPerp, row, PhPerp);
-        result_bank.putDouble(i_MX2,    row, MX2);
-        result_bank.putDouble(i_xF,     row, xF);
-        result_bank.putDouble(i_yB,     row, yB);
-        result_bank.putDouble(i_phiH,   row, phiH);
-        result_bank.putDouble(i_xi,     row, xi);
+        result_bank.putDouble(i_MX2, row, MX2);
+        result_bank.putDouble(i_xF, row, xF);
+        result_bank.putDouble(i_yB, row, yB);
+        result_bank.putDouble(i_phiH, row, phiH);
+        result_bank.putDouble(i_xi, row, xi);
       }
       else {
         // zero the row
-        result_bank.putShort(i_pindex,  row, static_cast<int16_t>(row));
-        result_bank.putInt(i_pdg,       row, pdg);
-        result_bank.putDouble(i_z,      row, 0);
+        result_bank.putShort(i_pindex, row, static_cast<int16_t>(row));
+        result_bank.putInt(i_pdg, row, pdg);
+        result_bank.putDouble(i_z, row, 0);
         result_bank.putDouble(i_PhPerp, row, 0);
-        result_bank.putDouble(i_MX2,    row, 0);
-        result_bank.putDouble(i_xF,     row, 0);
-        result_bank.putDouble(i_yB,     row, 0);
-        result_bank.putDouble(i_phiH,   row, 0);
-        result_bank.putDouble(i_xi,     row, 0);
+        result_bank.putDouble(i_MX2, row, 0);
+        result_bank.putDouble(i_xF, row, 0);
+        result_bank.putDouble(i_yB, row, 0);
+        result_bank.putDouble(i_phiH, row, 0);
+        result_bank.putDouble(i_xi, row, 0);
       }
     }
 

@@ -14,18 +14,18 @@ namespace iguana::physics {
 
     // create the output bank
     auto result_schema = CreateBank(banks, b_result, GetClassName());
-    i_pindex  = result_schema.getEntryOrder("pindex");
-    i_Q2      = result_schema.getEntryOrder("Q2");
-    i_x       = result_schema.getEntryOrder("x");
-    i_y       = result_schema.getEntryOrder("y");
-    i_W       = result_schema.getEntryOrder("W");
-    i_nu      = result_schema.getEntryOrder("nu");
-    i_qx      = result_schema.getEntryOrder("qx");
-    i_qy      = result_schema.getEntryOrder("qy");
-    i_qz      = result_schema.getEntryOrder("qz");
-    i_qE      = result_schema.getEntryOrder("qE");
-    i_beamPz  = result_schema.getEntryOrder("beamPz");
-    i_targetM = result_schema.getEntryOrder("targetM");
+    i_pindex           = result_schema.getEntryOrder("pindex");
+    i_Q2               = result_schema.getEntryOrder("Q2");
+    i_x                = result_schema.getEntryOrder("x");
+    i_y                = result_schema.getEntryOrder("y");
+    i_W                = result_schema.getEntryOrder("W");
+    i_nu               = result_schema.getEntryOrder("nu");
+    i_qx               = result_schema.getEntryOrder("qx");
+    i_qy               = result_schema.getEntryOrder("qy");
+    i_qz               = result_schema.getEntryOrder("qz");
+    i_qE               = result_schema.getEntryOrder("qE");
+    i_beamPz           = result_schema.getEntryOrder("beamPz");
+    i_targetM          = result_schema.getEntryOrder("targetM");
 
     // instantiate RCDB reader
     m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
@@ -57,7 +57,7 @@ namespace iguana::physics {
     }
 
     // get beam PDG and mass
-    o_beam_pdg = 0;
+    o_beam_pdg         = 0;
     auto beam_particle = GetOptionScalar<std::string>("beam_particle", {"method", "beam_particle"});
     for(auto const& [pdg, name] : particle::name) {
       if(name == beam_particle) {
@@ -89,7 +89,7 @@ namespace iguana::physics {
   {
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
-    auto key = PrepareEvent(config_bank.getInt("run",0));
+    auto key = PrepareEvent(config_bank.getInt("run", 0));
 
     auto lepton_pindex = FindScatteredLepton(particle_bank, key);
     if(lepton_pindex < 0) {
@@ -174,7 +174,8 @@ namespace iguana::physics {
       if(!o_runnum->HasKey(hash_key))
         Reload(runnum, beam_energy, hash_key);
       return hash_key;
-    } else {
+    }
+    else {
       if(o_runnum->IsEmpty() || o_runnum->Load(0) != runnum)
         Reload(runnum, beam_energy, 0);
       return 0;
@@ -241,14 +242,16 @@ namespace iguana::physics {
       vector_element_t const lepton_px,
       vector_element_t const lepton_py,
       vector_element_t const lepton_pz,
-      concurrent_key_t const key
-      ) const
+      concurrent_key_t const key) const
   {
     InclusiveKinematicsVars result;
 
     m_log->Trace("Reconstruct inclusive kinematics from lepton with p=({}, {}, {}), key={}", lepton_px, lepton_py, lepton_pz, key);
 
-    enum {px, py, pz, m};
+    enum { px,
+           py,
+           pz,
+           m };
     auto beam   = o_beam_PxPyPzM->Load(key);
     auto target = o_target_PxPyPzM->Load(key);
 

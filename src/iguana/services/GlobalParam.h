@@ -17,12 +17,16 @@ namespace iguana {
   /// @par Available global parameters
   /// - `iguana::GlobalConcurrencyModel`
   template <typename T>
-  class GlobalParam : public Object {
+  class GlobalParam : public Object
+  {
 
     public:
 
       /// @param val the initial value of this parameter
-      GlobalParam(T val) : Object("IGUANA"), m_val(val) {}
+      GlobalParam(T val)
+          : Object("IGUANA")
+          , m_val(val)
+      {}
 
       /// @brief assign a new value to this parameter
       /// @warning this may _only_ be used one time; a second attempt to set the parameter will fail
@@ -48,7 +52,6 @@ namespace iguana {
       T m_val;
       std::once_flag m_once;
       std::mutex m_mutex;
-
   };
 
   // ==================================================================================

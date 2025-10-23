@@ -37,126 +37,133 @@ namespace iguana::clas12::rga {
   /// @config_param{dc.thresholds_in_smallTheta | list[double] | inbending thresholds when theta < theta_small_deg (cm)}
   /// @config_param{dc.thresholds_in_largeTheta | list[double] | inbending thresholds when theta >= theta_small_deg (cm)}
   /// @end_doc
-  class FiducialFilterPass2 : public Algorithm {
-    DEFINE_IGUANA_ALGORITHM(FiducialFilterPass2, clas12::rga::FiducialFilterPass2)
+  class FiducialFilterPass2 : public Algorithm
+  {
+      DEFINE_IGUANA_ALGORITHM(FiducialFilterPass2, clas12::rga::FiducialFilterPass2)
 
-  private:
-    struct FTParams {
-      float rmin = 0;
-      float rmax = 0;
-      std::vector<std::array<float,3>> holes; // {R,cx,cy}
-    };
-    struct CVTParams {
-      std::vector<int>    edge_layers;        // e.g. {1,3,5,7,12}
-      double              edge_min = 0.0;     // > edge_min
-      std::vector<double> phi_forbidden_deg;  
-    };
-    struct DCParams {
-      // thresholds (cm)
-      double theta_small_deg   = 10.0;   // tighter boundary for inbending
-      // inbending, theta < theta_small_deg
-      double in_small_e1 = 10.0, in_small_e2 = 10.0, in_small_e3 = 10.0;
-      // inbending, theta >= theta_small_deg
-      double in_large_e1 = 3.0,  in_large_e2 = 3.0,  in_large_e3 = 10.0;
-      // outbending (any theta)
-      double out_e1      = 3.0,  out_e2      = 3.0,  out_e3      = 10.0;
-    };
+    private:
+      struct FTParams {
+          float rmin = 0;
+          float rmax = 0;
+          std::vector<std::array<float, 3>> holes; // {R,cx,cy}
+      };
+      struct CVTParams {
+          std::vector<int> edge_layers; // e.g. {1,3,5,7,12}
+          double edge_min = 0.0; // > edge_min
+          std::vector<double> phi_forbidden_deg;
+      };
+      struct DCParams {
+          // thresholds (cm)
+          double theta_small_deg = 10.0; // tighter boundary for inbending
+          // inbending, theta < theta_small_deg
+          double in_small_e1 = 10.0, in_small_e2 = 10.0, in_small_e3 = 10.0;
+          // inbending, theta >= theta_small_deg
+          double in_large_e1 = 3.0, in_large_e2 = 3.0, in_large_e3 = 10.0;
+          // outbending (any theta)
+          double out_e1 = 3.0, out_e2 = 3.0, out_e3 = 10.0;
+      };
 
-  public:
+    public:
 
-    void Start(hipo::banklist& banks) override;
-    bool Run  (hipo::banklist& banks) const override;
-    void Stop () override {}
+      void Start(hipo::banklist& banks) override;
+      bool Run(hipo::banklist& banks) const override;
+      void Stop() override {}
 
-    /// @run_function
-    /// @param [in,out] particle `REC::Particle` bank, which will be filtered
-    /// @param [in] conf `RUN::config` bank
-    /// @param [in] cal pointer to `REC::Calorimeter` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
-    /// @param [in] traj pointer to `REC::Traj` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
-    /// @param [in] ft pointer to `REC::ForwardTagger` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
-    /// @returns `false` if all particles are filtered out
-    bool Run(
-        hipo::bank& particle,
-        hipo::bank const& conf,
-        hipo::bank const* cal,
-        hipo::bank const* traj,
-        hipo::bank const* ft) const;
+      /// @run_function
+      /// @param [in,out] particle `REC::Particle` bank, which will be filtered
+      /// @param [in] conf `RUN::config` bank
+      /// @param [in] cal pointer to `REC::Calorimeter` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
+      /// @param [in] traj pointer to `REC::Traj` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
+      /// @param [in] ft pointer to `REC::ForwardTagger` bank; it is a _pointer_ since it is _optional_ (use `nullptr` for "unused")
+      /// @returns `false` if all particles are filtered out
+      bool Run(
+          hipo::bank& particle,
+          hipo::bank const& conf,
+          hipo::bank const* cal,
+          hipo::bank const* traj,
+          hipo::bank const* ft) const;
 
-    /// @run_function
-    /// @param [in,out] particle `REC::Particle` bank, which will be filtered
-    /// @param [in] conf `RUN::config` bank
-    /// @param [in] cal `REC::Calorimeter` bank
-    /// @param [in] traj `REC::Traj` bank
-    /// @returns `false` if all particles are filtered out
-    bool Run(
-        hipo::bank& particle,
-        hipo::bank const& conf,
-        hipo::bank const& cal,
-        hipo::bank const& traj) const
-    {
-      return Run(particle, conf, &cal, &traj, nullptr);
-    }
+      /// @run_function
+      /// @param [in,out] particle `REC::Particle` bank, which will be filtered
+      /// @param [in] conf `RUN::config` bank
+      /// @param [in] cal `REC::Calorimeter` bank
+      /// @param [in] traj `REC::Traj` bank
+      /// @returns `false` if all particles are filtered out
+      bool Run(
+          hipo::bank& particle,
+          hipo::bank const& conf,
+          hipo::bank const& cal,
+          hipo::bank const& traj) const
+      {
+        return Run(particle, conf, &cal, &traj, nullptr);
+      }
 
-    /// @run_function
-    /// @param [in,out] particle `REC::Particle` bank, which will be filtered
-    /// @param [in] conf `RUN::config` bank
-    /// @param [in] cal `REC::Calorimeter` bank
-    /// @param [in] traj `REC::Traj` bank
-    /// @param [in] ft `REC::ForwardTagger` bank
-    /// @returns `false` if all particles are filtered out
-    bool Run(
-        hipo::bank& particle,
-        hipo::bank const& conf,
-        hipo::bank const& cal,
-        hipo::bank const& traj,
-        hipo::bank const& ft) const
-    {
-      return Run(particle, conf, &cal, &traj, &ft);
-    }
+      /// @run_function
+      /// @param [in,out] particle `REC::Particle` bank, which will be filtered
+      /// @param [in] conf `RUN::config` bank
+      /// @param [in] cal `REC::Calorimeter` bank
+      /// @param [in] traj `REC::Traj` bank
+      /// @param [in] ft `REC::ForwardTagger` bank
+      /// @returns `false` if all particles are filtered out
+      bool Run(
+          hipo::bank& particle,
+          hipo::bank const& conf,
+          hipo::bank const& cal,
+          hipo::bank const& traj,
+          hipo::bank const& ft) const
+      {
+        return Run(particle, conf, &cal, &traj, &ft);
+      }
 
-    /// @returns calorimeter strictness
-    int                  CalStrictness() const { return m_cal_strictness; }
-    /// @returns FT configuration parameters
-    const FTParams&      FT()            const { return u_ft_params; }
-    /// @returns CVT configuration parameters
-    const CVTParams&     CVT()           const { return m_cvt; }
-    /// @returns DC configuration parameters
-    const DCParams&      DC()            const { return m_dc; }
+      /// @returns calorimeter strictness
+      int CalStrictness() const { return m_cal_strictness; }
+      /// @returns FT configuration parameters
+      FTParams const& FT() const { return u_ft_params; }
+      /// @returns CVT configuration parameters
+      CVTParams const& CVT() const { return m_cvt; }
+      /// @returns DC configuration parameters
+      DCParams const& DC() const { return m_dc; }
 
-  private:
-    // bank indices and presence flags
-    hipo::banklist::size_type b_particle{};
-    hipo::banklist::size_type b_config{};
-    hipo::banklist::size_type b_calor{};
-    hipo::banklist::size_type b_ft{};
-    hipo::banklist::size_type b_traj{};
-    bool m_have_calor = false;
-    bool m_have_ft    = false;
-    bool m_have_traj  = false;
+    private:
+      // bank indices and presence flags
+      hipo::banklist::size_type b_particle{};
+      hipo::banklist::size_type b_config{};
+      hipo::banklist::size_type b_calor{};
+      hipo::banklist::size_type b_ft{};
+      hipo::banklist::size_type b_traj{};
+      bool m_have_calor = false;
+      bool m_have_ft    = false;
+      bool m_have_traj  = false;
 
-    // FT params (loaded from YAML)
-    FTParams u_ft_params{};       
+      // FT params (loaded from YAML)
+      FTParams u_ft_params{};
 
-    // core filter functions
-    struct CalHit { int sector=0; float lv=0, lw=0, lu=0; };
-    struct CalLayers { std::vector<CalHit> L1; bool has_any=false; };
+      // core filter functions
+      struct CalHit {
+          int sector = 0;
+          float lv = 0, lw = 0, lu = 0;
+      };
+      struct CalLayers {
+          std::vector<CalHit> L1;
+          bool has_any = false;
+      };
 
-    static CalLayers CollectCalHitsForTrack(const hipo::bank& cal, int pindex);
-    static bool PassCalStrictness(const CalLayers& h, int strictness);
-    bool PassFTFiducial (int track_index, const hipo::bank* ftBank) const;
-    bool PassCVTFiducial(int track_index, const hipo::bank* trajBank) const;
-    bool PassDCFiducial(int track_index, const hipo::bank& particleBank,
-      const hipo::bank& configBank, const hipo::bank* trajBank) const;
-    bool Filter(int track_index, const hipo::bank& particleBank, const hipo::bank& configBank,
-        const hipo::bank* calBank, const hipo::bank* trajBank, const hipo::bank* ftBank) const;
+      static CalLayers CollectCalHitsForTrack(hipo::bank const& cal, int pindex);
+      static bool PassCalStrictness(CalLayers const& h, int strictness);
+      bool PassFTFiducial(int track_index, hipo::bank const* ftBank) const;
+      bool PassCVTFiducial(int track_index, hipo::bank const* trajBank) const;
+      bool PassDCFiducial(int track_index, hipo::bank const& particleBank,
+                          hipo::bank const& configBank, hipo::bank const* trajBank) const;
+      bool Filter(int track_index, hipo::bank const& particleBank, hipo::bank const& configBank,
+                  hipo::bank const* calBank, hipo::bank const* trajBank, hipo::bank const* ftBank) const;
 
-    // ---- Config loading
-    void LoadConfig();
+      // ---- Config loading
+      void LoadConfig();
 
-    // CVT/DC params; 
-    int       m_cal_strictness = 1;
-    CVTParams m_cvt{};
-    DCParams  m_dc{};
+      // CVT/DC params;
+      int m_cal_strictness = 1;
+      CVTParams m_cvt{};
+      DCParams m_dc{};
   };
 
 }

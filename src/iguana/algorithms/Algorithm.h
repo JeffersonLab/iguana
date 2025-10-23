@@ -259,7 +259,6 @@ namespace iguana {
 
       /// Data structure to hold configuration options set by `Algorithm::SetOption`
       std::unordered_map<std::string, option_t> m_option_cache;
-
   };
 
   //////////////////////////////////////////////////////////////////////////////

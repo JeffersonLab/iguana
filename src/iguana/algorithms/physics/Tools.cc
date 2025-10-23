@@ -30,7 +30,7 @@ namespace iguana::physics::tools {
     auto denom = v_b.Dot(v_b);
     if(!(std::abs(denom) > 0))
       return std::nullopt;
-    return v_b * ( v_a.Dot(v_b) / denom );
+    return v_b * (v_a.Dot(v_b) / denom);
   }
 
   std::optional<ROOT::Math::XYZVector> RejectVector(
@@ -74,4 +74,3 @@ namespace iguana::physics::tools {
       ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> const& axis_vec);
 
 }
-

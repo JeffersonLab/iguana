@@ -10,12 +10,12 @@ namespace iguana::physics {
 
     // create the output bank
     auto result_schema = CreateBank(banks, b_result, GetClassName());
-    i_epsilon = result_schema.getEntryOrder("epsilon");
-    i_A       = result_schema.getEntryOrder("A");
-    i_B       = result_schema.getEntryOrder("B");
-    i_C       = result_schema.getEntryOrder("C");
-    i_V       = result_schema.getEntryOrder("V");
-    i_W       = result_schema.getEntryOrder("W");
+    i_epsilon          = result_schema.getEntryOrder("epsilon");
+    i_A                = result_schema.getEntryOrder("A");
+    i_B                = result_schema.getEntryOrder("B");
+    i_C                = result_schema.getEntryOrder("C");
+    i_V                = result_schema.getEntryOrder("V");
+    i_W                = result_schema.getEntryOrder("W");
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -73,13 +73,12 @@ namespace iguana::physics {
   DepolarizationVars Depolarization::Compute(double const Q2, double const x, double const y, double const targetM) const
   {
     DepolarizationVars const zero_result{
-      .epsilon = 0,
-      .A = 0,
-      .B = 0,
-      .C = 0,
-      .V = 0,
-      .W = 0
-    };
+        .epsilon = 0,
+        .A       = 0,
+        .B       = 0,
+        .C       = 0,
+        .V       = 0,
+        .W       = 0};
 
     // calculate gamma
     if(Q2 <= 0) {
@@ -89,30 +88,29 @@ namespace iguana::physics {
     auto gamma = 2 * targetM * x / std::sqrt(Q2);
 
     // calculate epsilon
-    auto epsilon_denom = 1 - y + y*y/2 + std::pow(gamma*y,2) / 4;
+    auto epsilon_denom = 1 - y + y * y / 2 + std::pow(gamma * y, 2) / 4;
     if(!(std::abs(epsilon_denom) > 0)) {
       m_log->Warn("epsilon denominator is zero");
       return zero_result;
     }
-    auto epsilon = ( 1 - y - std::pow(gamma*y,2)/4 ) / epsilon_denom;
+    auto epsilon = (1 - y - std::pow(gamma * y, 2) / 4) / epsilon_denom;
 
     // calculate A
-    auto A_denom = 2 - 2*epsilon;
+    auto A_denom = 2 - 2 * epsilon;
     if(!(std::abs(A_denom) > 0)) {
       m_log->Warn("depol. factor A denominator is zero");
       return zero_result;
     }
-    auto A = y*y / A_denom;
+    auto A = y * y / A_denom;
 
     // calculate B,C,V,W
     return {
-      .epsilon = epsilon,
-      .A = A,
-      .B = A * epsilon,
-      .C = A * std::sqrt(1-epsilon*epsilon),
-      .V = A * std::sqrt(2*epsilon*(1+epsilon)),
-      .W = A * std::sqrt(2*epsilon*(1-epsilon))
-    };
+        .epsilon = epsilon,
+        .A       = A,
+        .B       = A * epsilon,
+        .C       = A * std::sqrt(1 - epsilon * epsilon),
+        .V       = A * std::sqrt(2 * epsilon * (1 + epsilon)),
+        .W       = A * std::sqrt(2 * epsilon * (1 - epsilon))};
   }
 
   ///////////////////////////////////////////////////////////////////////////////

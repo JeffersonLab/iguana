@@ -90,8 +90,7 @@ public:                                                                  \
   }                                              \
   bool Run(hipo::banklist& banks) const override \
   {                                              \
-    CODE                                         \
-    return false;                                \
+    CODE return false;                           \
   }                                              \
   void Stop() override                           \
   {                                              \

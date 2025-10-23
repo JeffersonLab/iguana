@@ -50,7 +50,6 @@ namespace iguana::physics {
       int i_C;
       int i_V;
       int i_W;
-
   };
 
 }

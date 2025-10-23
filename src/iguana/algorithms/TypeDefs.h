@@ -2,8 +2,8 @@
 /// @brief common objects used in algorithms
 #pragma once
 
-#include <string>
 #include <optional>
+#include <string>
 #include <unordered_map>
 
 namespace iguana {
@@ -13,24 +13,24 @@ namespace iguana {
 
   /// 3-momentum type
   struct Momentum3 {
-    /// @f$x@f$-component
-    vector_element_t px;
-    /// @f$y@f$-component
-    vector_element_t py;
-    /// @f$z@f$-component
-    vector_element_t pz;
+      /// @f$x@f$-component
+      vector_element_t px;
+      /// @f$y@f$-component
+      vector_element_t py;
+      /// @f$z@f$-component
+      vector_element_t pz;
   };
 
   /// 4-momentum type
   struct Momentum4 {
-    /// @f$x@f$-component
-    vector_element_t px;
-    /// @f$y@f$-component
-    vector_element_t py;
-    /// @f$z@f$-component
-    vector_element_t pz;
-    /// @f$E@f$-component
-    vector_element_t E;
+      /// @f$x@f$-component
+      vector_element_t px;
+      /// @f$y@f$-component
+      vector_element_t py;
+      /// @f$z@f$-component
+      vector_element_t pz;
+      /// @f$E@f$-component
+      vector_element_t E;
   };
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -134,7 +134,8 @@ namespace iguana {
 
   /// @param sec the sector number to check
   /// @returns `true` if the sector number is a valid sector number
-  inline bool IsValidSector(int const& sec) {
+  inline bool IsValidSector(int const& sec)
+  {
     return sec >= 1 && sec <= 6;
   }
 
@@ -171,51 +172,52 @@ namespace iguana {
   };
 
   /// detector layer IDs; this is a _copy_ of `coatjava`'s `DetectorLayer` class
-  class DetectorLayer {
+  class DetectorLayer
+  {
     public:
       /// @doxygen_off
-      static int const CND_INNER=1;
-      static int const CND_MIDDLE=2;
-      static int const CND_OUTER=3;
+      static int const CND_INNER  = 1;
+      static int const CND_MIDDLE = 2;
+      static int const CND_OUTER  = 3;
 
-      static int const PCAL_U=1;
-      static int const PCAL_V=2;
-      static int const PCAL_W=3;
-      static int const PCAL_Z=9; // layer number used to define the longitudinal coordinate of the cluster
+      static int const PCAL_U = 1;
+      static int const PCAL_V = 2;
+      static int const PCAL_W = 3;
+      static int const PCAL_Z = 9; // layer number used to define the longitudinal coordinate of the cluster
 
-      static int const EC_INNER_U=4;
-      static int const EC_INNER_V=5;
-      static int const EC_INNER_W=6;
-      static int const EC_INNER_Z=9; // layer number used to define the longitudinal coordinate of the cluster
+      static int const EC_INNER_U = 4;
+      static int const EC_INNER_V = 5;
+      static int const EC_INNER_W = 6;
+      static int const EC_INNER_Z = 9; // layer number used to define the longitudinal coordinate of the cluster
 
-      static int const EC_OUTER_U=7;
-      static int const EC_OUTER_V=8;
-      static int const EC_OUTER_W=9;
-      static int const EC_OUTER_Z=9; // layer number used to define the longitudinal coordinate of the cluster
+      static int const EC_OUTER_U = 7;
+      static int const EC_OUTER_V = 8;
+      static int const EC_OUTER_W = 9;
+      static int const EC_OUTER_Z = 9; // layer number used to define the longitudinal coordinate of the cluster
 
-      static int const PCAL=PCAL_U;
-      static int const EC_INNER=EC_INNER_U;
-      static int const EC_OUTER=EC_OUTER_U;
+      static int const PCAL     = PCAL_U;
+      static int const EC_INNER = EC_INNER_U;
+      static int const EC_OUTER = EC_OUTER_U;
 
-      static int const FTOF1A=1;
-      static int const FTOF1B=2;
-      static int const FTOF2=3;
+      static int const FTOF1A = 1;
+      static int const FTOF1B = 2;
+      static int const FTOF2  = 3;
 
-      static int const TARGET_CENTER=1;
-      static int const TARGET_DOWNSTREAM=2;
-      static int const TARGET_UPSTREAM=3;
+      static int const TARGET_CENTER     = 1;
+      static int const TARGET_DOWNSTREAM = 2;
+      static int const TARGET_UPSTREAM   = 3;
 
-      static int const FTTRK_MODULE1=1;
-      static int const FTTRK_MODULE2=2;
-      static int const FTTRK_LAYER1=1;
-      static int const FTTRK_LAYER2=2;
-      static int const FTTRK_LAYER3=3;
-      static int const FTTRK_LAYER4=4;
+      static int const FTTRK_MODULE1 = 1;
+      static int const FTTRK_MODULE2 = 2;
+      static int const FTTRK_LAYER1  = 1;
+      static int const FTTRK_LAYER2  = 2;
+      static int const FTTRK_LAYER3  = 3;
+      static int const FTTRK_LAYER4  = 4;
 
-      static int const RICH_MAPMT=1;
-      static int const RICH_AEROGEL_B1=2;
-      static int const RICH_AEROGEL_B2=3;
-      static int const RICH_AEROGEL_L1=4;
+      static int const RICH_MAPMT      = 1;
+      static int const RICH_AEROGEL_B1 = 2;
+      static int const RICH_AEROGEL_B2 = 3;
+      static int const RICH_AEROGEL_L1 = 4;
       /// @doxygen_on
   };
 

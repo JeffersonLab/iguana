@@ -147,7 +147,8 @@ namespace iguana {
       auto idx = hipo::getBanklistIndex(banks, bank_name);
       m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
       return idx;
-    } catch(std::runtime_error const& ex) {
+    }
+    catch(std::runtime_error const& ex) {
       m_log->Error("required input bank '{}' not found; cannot `Start` algorithm '{}'", bank_name, m_class_name);
       auto creators = AlgorithmFactory::GetCreatorAlgorithms(bank_name);
       if(creators)
@@ -232,17 +233,17 @@ namespace iguana {
   {
     auto created_banks = GetCreatedBankNames();
     switch(created_banks.size()) {
-      case 0:
-        m_log->Error("algorithm {:?} creates no new banks", m_class_name);
-        break;
-      case 1:
-        return created_banks.at(0);
-        break;
-      default:
-        m_log->Error("algorithm {:?} creates more than one bank; they are: [{}]", m_class_name, fmt::join(created_banks, ", "));
-        m_log->Error("- if you called `GetCreatedBank` or `GetCreatedBankSchema`, please specify which bank you want");
-        m_log->Error("- if you called `GetCreatedBankName`, call `GetCreatedBankNames` instead");
-        break;
+    case 0:
+      m_log->Error("algorithm {:?} creates no new banks", m_class_name);
+      break;
+    case 1:
+      return created_banks.at(0);
+      break;
+    default:
+      m_log->Error("algorithm {:?} creates more than one bank; they are: [{}]", m_class_name, fmt::join(created_banks, ", "));
+      m_log->Error("- if you called `GetCreatedBank` or `GetCreatedBankSchema`, please specify which bank you want");
+      m_log->Error("- if you called `GetCreatedBankName`, call `GetCreatedBankNames` instead");
+      break;
     }
     throw std::runtime_error("failed to get created bank names");
   }
@@ -359,7 +360,7 @@ namespace iguana {
 
   void Algorithm::ThrowSinceRenamed(std::string const& new_name, std::string const& version) const noexcept(false)
   {
-    std::string new_path = new_name;
+    std::string new_path      = new_name;
     std::string::size_type it = 0;
     while((it = new_path.find("::", it)) != std::string::npos)
       new_path.replace(it, 2, "/");

@@ -1,8 +1,8 @@
 /// @file Tools.h
 
-#include <optional>
 #include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
+#include <optional>
 
 namespace iguana::physics::tools {
 

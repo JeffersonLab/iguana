@@ -32,16 +32,14 @@ int main(int argc, char** argv)
   int const numEvents    = argc > 2 ? std::stoi(argv[2]) : 3;
 
   // read input file
-  hipo::reader reader(inFileName,{0});
+  hipo::reader reader(inFileName, {0});
 
   // set list of banks to be read
-  hipo::banklist banks = reader.getBanks({
-      "REC::Particle",
-      "RUN::config",
-      "REC::Track",
-      "REC::Calorimeter",
-      "REC::Scintillator"
-      });
+  hipo::banklist banks = reader.getBanks({"REC::Particle",
+                                          "RUN::config",
+                                          "REC::Track",
+                                          "REC::Calorimeter",
+                                          "REC::Scintillator"});
 
   // get bank index, for each bank we want to use after Iguana algorithms run
   auto b_particle     = hipo::getBanklistIndex(banks, "REC::Particle");
