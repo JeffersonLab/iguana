@@ -289,39 +289,33 @@ namespace iguana::clas12::rga {
         Y = r3_y;
         break;
       }
-      if(dc_sector == 2)
-      {
+      if(dc_sector == 2) {
         double const X_new = X * std::cos(-60 * M_PI / 180) - Y * std::sin(-60 * M_PI / 180);
         Y                  = X * std::sin(-60 * M_PI / 180) + Y * std::cos(-60 * M_PI / 180);
         X                  = X_new;
       }
-      if(dc_sector == 3)
-      {
+      if(dc_sector == 3) {
         double const X_new = X * std::cos(-120 * M_PI / 180) - Y * std::sin(-120 * M_PI / 180);
         Y                  = X * std::sin(-120 * M_PI / 180) + Y * std::cos(-120 * M_PI / 180);
         X                  = X_new;
       }
-      if(dc_sector == 4)
-      {
+      if(dc_sector == 4) {
         double const X_new = X * std::cos(-180 * M_PI / 180) - Y * std::sin(-180 * M_PI / 180);
         Y                  = X * std::sin(-180 * M_PI / 180) + Y * std::cos(-180 * M_PI / 180);
         X                  = X_new;
       }
-      if(dc_sector == 5)
-      {
+      if(dc_sector == 5) {
         double const X_new = X * std::cos(120 * M_PI / 180) - Y * std::sin(120 * M_PI / 180);
         Y                  = X * std::sin(120 * M_PI / 180) + Y * std::cos(120 * M_PI / 180);
         X                  = X_new;
       }
-      if(dc_sector == 6)
-      {
+      if(dc_sector == 6) {
         double const X_new = X * std::cos(60 * M_PI / 180) - Y * std::sin(60 * M_PI / 180);
         Y                  = X * std::sin(60 * M_PI / 180) + Y * std::cos(60 * M_PI / 180);
         X                  = X_new;
       }
       int this_pid = 0;
-      switch(pid)
-      {
+      switch(pid) {
       case 11:
         this_pid = 0;
         break;
@@ -421,8 +415,7 @@ namespace iguana::clas12::rga {
       if(dc_sector == 6)
         phi_DCr = phi_DCr_raw + 60;
       int this_pid = 0;
-      switch(pid)
-      {
+      switch(pid) {
       case 11:
         this_pid = 0;
         break;

@@ -17,7 +17,7 @@ namespace iguana {
     public:
 
       /// A function `f : Node A -> Node B` which searches `YAML::Node A` for a specific `YAML::Node B`, returning it
-      using node_finder_t = std::function<YAML::Node(const YAML::Node)>;
+      using node_finder_t = std::function<YAML::Node(YAML::Node const)>;
 
       /// Variant for identifying a `YAML::Node`:
       /// - `std::string`: the key name of the node
