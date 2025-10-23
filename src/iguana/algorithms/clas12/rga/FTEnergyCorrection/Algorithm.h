@@ -11,9 +11,10 @@ namespace iguana::clas12::rga {
   /// This has been validated only for RG-A Fall 2018 Outbending data. It _may_ also be
   /// appropriate for Pass-2 data from RG-A, RG-B, and RG-K, but they should
   /// be validated.
-  class FTEnergyCorrection : public Algorithm {
+  class FTEnergyCorrection : public Algorithm
+  {
 
-    DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::rga::FTEnergyCorrection)
+      DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::rga::FTEnergyCorrection)
 
     public:
 
@@ -51,7 +52,6 @@ namespace iguana::clas12::rga {
 
       hipo::banklist::size_type b_ft_particle;
       double electron_mass;
-
   };
 
 }

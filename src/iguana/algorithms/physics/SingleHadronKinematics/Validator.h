@@ -26,8 +26,8 @@ namespace iguana::physics {
       hipo::banklist::size_type b_result;
 
       struct Plot1D {
-        TH1D* hist;
-        std::function<double(hipo::bank const&, int const)> get_val;
+          TH1D* hist;
+          std::function<double(hipo::bank const&, int const)> get_val;
       };
       std::vector<Plot1D> plot_list;
 

@@ -57,13 +57,11 @@ int main(int argc, char** argv)
   auto frame_filtered = frame_init
                             .Define( // define a filter column, type std::deque<bool> (to avoid std::vector<bool>)
                                 "REC_Particle_EventBuilderFilter",
-                                [&](std::vector<int> const& pids)
-                                { return algo_eventbuilder_filter.Filter(pids); },
+                                [&](std::vector<int> const& pids) { return algo_eventbuilder_filter.Filter(pids); },
                                 {"REC_Particle_pid"})
                             .Define( // apply the filtering column to `REC_Particle_pid`
                                 "REC_Particle_pid_good",
-                                [](std::vector<int> const& pids, std::deque<bool>& filter)
-                                {
+                                [](std::vector<int> const& pids, std::deque<bool>& filter) {
                                   std::vector<int> result;
                                   for(std::deque<bool>::size_type i = 0; i < filter.size(); i++) {
                                     if(filter.at(i))

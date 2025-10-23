@@ -101,7 +101,7 @@ namespace iguana::example {
       // ############################################################################
       m_log->Debug("input PID {} -- accept = {}", pid, accept);
       return accept ? 1 : 0;
-      });
+    });
 
     // ############################################################################
     // # dump the modified bank (only if the log level is low enough); this is also optional
@@ -112,7 +112,7 @@ namespace iguana::example {
     // # return true or false, used as an event-level filter; in this case, we
     // # return false if all particles have been filtered out
     // ############################################################################
-    return ! particleBank.getRowList().empty();
+    return !particleBank.getRowList().empty();
   }
 
 

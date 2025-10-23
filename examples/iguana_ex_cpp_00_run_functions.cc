@@ -30,7 +30,7 @@ int main(int argc, char** argv)
   int const numEvents    = argc > 2 ? std::stoi(argv[2]) : 3;
 
   // read input file
-  hipo::reader reader(inFileName,{0});
+  hipo::reader reader(inFileName, {0});
 
   // set list of banks to be read
   hipo::banklist banks = reader.getBanks({"RUN::config",
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     // print the banks after Iguana algorithms
     fmt::println("----- AFTER IGUANA -----");
     bank_particle.show(); // the filtered particle bank, with corrected momenta
-    bank_sector.show();   // the new sector bank
+    bank_sector.show(); // the new sector bank
 
     // print a table; first the header
     fmt::print("----- Analysis Particles -----\n");
@@ -104,12 +104,11 @@ int main(int argc, char** argv)
           bank_particle.getFloat("px", row),
           bank_particle.getFloat("py", row),
           bank_particle.getFloat("pz", row));
-      auto pdg = bank_particle.getInt("pid", row);
+      auto pdg    = bank_particle.getInt("pid", row);
       auto sector = bank_sector.getInt("sector", row);
       fmt::print("  {:<20} {:<20} {:<20.3f} {:<20}\n", row, pdg, p, sector);
     }
     fmt::print("\n");
-
   }
 
   // stop algorithms

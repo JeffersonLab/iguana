@@ -92,14 +92,17 @@ int main(int argc, char** argv)
     // run the sequence of Iguana algorithms, in your preferred order; continue
     // to the next event if any of the Run functions return `false`, which happens
     // if, for example, no particles pass a filter
-    if(!algo_eventbuilder_filter.Run(bank_particle)) continue;
-    if(!algo_sector_finder.Run(bank_particle, bank_track, bank_calorimeter, bank_scintillator, bank_sector)) continue;
-    if(!algo_momentum_correction.Run(bank_particle, bank_sector, bank_config)) continue;
+    if(!algo_eventbuilder_filter.Run(bank_particle))
+      continue;
+    if(!algo_sector_finder.Run(bank_particle, bank_track, bank_calorimeter, bank_scintillator, bank_sector))
+      continue;
+    if(!algo_momentum_correction.Run(bank_particle, bank_sector, bank_config))
+      continue;
 
     // print the banks after Iguana algorithms
     fmt::println("----- AFTER IGUANA -----");
     bank_particle.show(); // the filtered particle bank, with corrected momenta
-    bank_sector.show();   // the new sector bank
+    bank_sector.show(); // the new sector bank
 
     // print a table; first the header
     fmt::print("----- Analysis Particles -----\n");
@@ -112,12 +115,11 @@ int main(int argc, char** argv)
           bank_particle.getFloat("px", row),
           bank_particle.getFloat("py", row),
           bank_particle.getFloat("pz", row));
-      auto pdg = bank_particle.getInt("pid", row);
+      auto pdg    = bank_particle.getInt("pid", row);
       auto sector = bank_sector.getInt("sector", row);
       fmt::print("  {:<20} {:<20} {:<20.3f} {:<20}\n", row, pdg, p, sector);
     }
     fmt::print("\n");
-
   }
 
   // stop algorithms

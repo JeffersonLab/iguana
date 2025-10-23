@@ -45,19 +45,20 @@ inline int TestMultithreading(
 
   // number of events per thread
   int const default_frame_size = 50;
-  int num_events_per_thread = (int) std::round((double) num_events / num_threads);
-  int num_events_per_frame  = num_events > 0 ? std::min(num_events_per_thread, default_frame_size) : default_frame_size;
-  int num_frames_per_thread = num_events > 0 ? (int) std::ceil((double) num_events_per_thread / num_events_per_frame) : 0;
-  int num_events_actual     = num_events_per_frame * num_frames_per_thread * num_threads;
+  int num_events_per_thread    = (int)std::round((double)num_events / num_threads);
+  int num_events_per_frame     = num_events > 0 ? std::min(num_events_per_thread, default_frame_size) : default_frame_size;
+  int num_frames_per_thread    = num_events > 0 ? (int)std::ceil((double)num_events_per_thread / num_events_per_frame) : 0;
+  int num_events_actual        = num_events_per_frame * num_frames_per_thread * num_threads;
   log.Info("num_events_per_thread = {}", num_events_per_thread);
-  log.Info("num_events_per_frame  = {}", num_events_per_frame );
+  log.Info("num_events_per_frame  = {}", num_events_per_frame);
   log.Info("num_frames_per_thread = {}", num_frames_per_thread);
   if(num_events > 0) {
     log.Info("=> will actually process num_events = {}", num_events_actual);
     if(num_events != num_events_actual)
       log.Warn("argument's num_events ({}) differs from the actual num_events that will be processed ({})",
-          num_events, num_events_actual);
-  } else {
+               num_events, num_events_actual);
+  }
+  else {
     log.Info("=> will actually process num_events = ALL OF THEM");
   }
 
@@ -66,18 +67,15 @@ inline int TestMultithreading(
   stream.open(data_file.c_str());
 
   // define the worker function
-  auto ftn = [
-    &stream,
-    algo_name,
-    prerequisite_algos,
-    bank_names,
-    vary_run,
-    verbose,
-    num_events_per_thread,
-    num_events_per_frame,
-    run_config_bank_idx
-  ](int order) {
-
+  auto ftn = [&stream,
+              algo_name,
+              prerequisite_algos,
+              bank_names,
+              vary_run,
+              verbose,
+              num_events_per_thread,
+              num_events_per_frame,
+              run_config_bank_idx](int order) {
     // fill a frame
     std::vector<hipo::event> events;
     for(int i = 0; i < num_events_per_frame; i++)
@@ -86,7 +84,7 @@ inline int TestMultithreading(
     // bank list
     hipo::banklist banks;
     for(auto const& bank_name : bank_names)
-      banks.push_back(hipo::bank(stream.dictionary().getSchema(bank_name.c_str()),48));
+      banks.push_back(hipo::bank(stream.dictionary().getSchema(bank_name.c_str()), 48));
 
     // define the algorithm
     iguana::AlgorithmSequence seq;

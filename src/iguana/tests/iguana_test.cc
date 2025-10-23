@@ -1,31 +1,30 @@
 #include <getopt.h>
 
 #include "TestAlgorithm.h"
-#include "TestMultithreading.h"
 #include "TestConfig.h"
 #include "TestLogger.h"
+#include "TestMultithreading.h"
 #include "TestValidator.h"
 
 int main(int argc, char** argv)
 {
   // user parameters
-  std::string command    = "";
-  std::string data_file  = "";
-  int num_events         = 10;
-  std::string algo_name  = "";
-  int test_num           = 0;
-  int num_threads        = 0;
+  std::string command           = "";
+  std::string data_file         = "";
+  int num_events                = 10;
+  std::string algo_name         = "";
+  int test_num                  = 0;
+  int num_threads               = 0;
   std::string concurrency_model = "";
-  bool vary_run          = false;
-  std::string output_dir = "";
-  bool verbose           = false;
+  bool vary_run                 = false;
+  std::string output_dir        = "";
+  bool verbose                  = false;
   std::vector<std::string> bank_names;
   std::vector<std::string> prerequisite_algos;
 
   // get the command
   auto exe           = std::string(argv[0]);
-  auto UsageCommands = [&](int exit_code)
-  {
+  auto UsageCommands = [&](int exit_code) {
     fmt::print("\nUSAGE: {} [COMMAND] [OPTIONS]...\n", exe);
     fmt::print("\n  COMMANDS:\n\n");
     fmt::print("    {:<20} {}\n", "algorithm", "call `Run` on an algorithm");

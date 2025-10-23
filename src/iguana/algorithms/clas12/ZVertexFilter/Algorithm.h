@@ -71,7 +71,6 @@ namespace iguana::clas12 {
 
       /// Electron Z-vertex cuts
       mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_electron_vz_cuts;
-
   };
 
 }

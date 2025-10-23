@@ -19,7 +19,7 @@ namespace iguana::clas12 {
 
 
     b_particle = GetBankIndex(banks, "REC::Particle");
-    b_cal = GetBankIndex(banks, "REC::Calorimeter");
+    b_cal      = GetBankIndex(banks, "REC::Calorimeter");
     b_sector   = GetBankIndex(banks, "REC::Particle::Sector");
 
     // set an output file
@@ -46,20 +46,19 @@ namespace iguana::clas12 {
       u_YvsX.insert({pdg, YvsX});
     }
     u_IsInFD = new TH1D(
-            "IsInFD",
-            "e^{-} with #theta>6.5^{o} Sector; e^{-} Sector",
-            7, -0.5, 6.5);
-
+        "IsInFD",
+        "e^{-} with #theta>6.5^{o} Sector; e^{-} Sector",
+        7, -0.5, 6.5);
   }
 
   bool SectorFinderValidator::Run(hipo::banklist& banks) const
   {
-    
+
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& sector_bank   = GetBank(banks, b_sector, "REC::Particle::Sector");
-    auto& cal_bank = GetBank(banks, b_cal, "REC::Calorimeter");
+    auto& cal_bank      = GetBank(banks, b_cal, "REC::Calorimeter");
 
-    
+
     m_algo_seq->Run(banks);
 
     // lock the mutex, so we can mutate plots
@@ -70,26 +69,26 @@ namespace iguana::clas12 {
       auto pdg    = particle_bank.getInt("pid", row);
       auto sector = sector_bank.getInt("sector", row);
 
-      double x=0,y=0;
-      for(auto const& rowcal : cal_bank.getRowList()){
-        if(cal_bank.getShort("pindex", rowcal)==row){
-          x=cal_bank.getFloat("x", rowcal);
-          y=cal_bank.getFloat("y", rowcal);
+      double x = 0, y = 0;
+      for(auto const& rowcal : cal_bank.getRowList()) {
+        if(cal_bank.getShort("pindex", rowcal) == row) {
+          x = cal_bank.getFloat("x", rowcal);
+          y = cal_bank.getFloat("y", rowcal);
         }
       }
 
-      if(pdg==11){
-        double Px=particle_bank.getFloat("px", row);
-        double Py=particle_bank.getFloat("py", row);
-        double Pz=particle_bank.getFloat("pz", row);
-        double P=sqrt(Px*Px+Py*Py+Pz*Pz);
-        double Theta=acos(Pz/P) * 180./M_PI ;
-        //electrons are in FT or FD
-        //sector should always be 1 if theta is larger than 5.5 degrees
-        if (Theta>6.5){
+      if(pdg == 11) {
+        double Px    = particle_bank.getFloat("px", row);
+        double Py    = particle_bank.getFloat("py", row);
+        double Pz    = particle_bank.getFloat("pz", row);
+        double P     = sqrt(Px * Px + Py * Py + Pz * Pz);
+        double Theta = acos(Pz / P) * 180. / M_PI;
+        // electrons are in FT or FD
+        // sector should always be 1 if theta is larger than 5.5 degrees
+        if(Theta > 6.5) {
           u_IsInFD->Fill(sector);
-          if(sector==0){  
-             m_log->Trace("e' with theta={} and sector==0, this should not happen", Theta);
+          if(sector == 0) {
+            m_log->Trace("e' with theta={} and sector==0, this should not happen", Theta);
           }
         }
       }
@@ -125,12 +124,11 @@ namespace iguana::clas12 {
           plot->Draw("colz");
         }
         canv->SaveAs(m_output_file_basename + "_" + std::to_string(pdg) + ".png");
-        
       }
 
-      auto canv1D         = new TCanvas("1D canvas","1D canvas",800, 600);
+      auto canv1D = new TCanvas("1D canvas", "1D canvas", 800, 600);
       u_IsInFD->Draw();
-      canv1D->SaveAs(m_output_file_basename+"_elIsInFD.png");
+      canv1D->SaveAs(m_output_file_basename + "_elIsInFD.png");
 
       m_output_file->Write();
       m_log->Info("Wrote output file {}", m_output_file->GetName());

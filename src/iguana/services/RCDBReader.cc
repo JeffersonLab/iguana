@@ -3,7 +3,8 @@
 
 namespace iguana {
 
-  RCDBReader::RCDBReader(std::string_view name, Logger::Level lev) : Object(name, lev)
+  RCDBReader::RCDBReader(std::string_view name, Logger::Level lev)
+      : Object(name, lev)
   {
 #ifdef USE_RCDB
 

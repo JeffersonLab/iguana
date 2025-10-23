@@ -32,15 +32,17 @@ namespace iguana::clas12 {
       TString particle_name  = particle::name.at(particle::PDG(pdg));
       TString particle_title = particle::title.at(particle::PDG(pdg));
       for(int i = 0; i < 2; i++) {
-        TString beforeafter_name  = "before";
-        if (i == 1){ beforeafter_name = "after";}
-        
+        TString beforeafter_name = "before";
+        if(i == 1) {
+          beforeafter_name = "after";
+        }
+
         zvertexplots.push_back(new TH1D(
             "zvertexplots_" + particle_name + "_" + beforeafter_name,
             particle_title + " Z Vertex ; Z Vertex [cm]",
             200, -40, 40));
 
-        //std::cout<<"Adding plots for "<<pdg<<" "<<beforeafter_name<<std::endl;
+        // std::cout<<"Adding plots for "<<pdg<<" "<<beforeafter_name<<std::endl;
       }
       u_zvertexplots.insert({pdg, zvertexplots});
     }
@@ -56,27 +58,27 @@ namespace iguana::clas12 {
 
     // fill the plots before
     for(auto const& row : particle_bank.getRowList()) {
-      double vz = particle_bank.getFloat("vz", row);
-      int pdg = particle_bank.getInt("pid", row);
+      double vz  = particle_bank.getFloat("vz", row);
+      int pdg    = particle_bank.getInt("pid", row);
       int status = particle_bank.getShort("status", row);
-      auto it = u_zvertexplots.find(pdg);
-      //check if pdg is amongs those that we want to plot
-      if (it != u_zvertexplots.end() && abs(status)>=2000) {
+      auto it    = u_zvertexplots.find(pdg);
+      // check if pdg is amongs those that we want to plot
+      if(it != u_zvertexplots.end() && abs(status) >= 2000) {
         u_zvertexplots.at(pdg).at(0)->Fill(vz);
       }
     }
-      
+
     // run the momentum corrections
     m_algo_seq->Run(banks);
 
     // fill the plots after
     for(auto const& row : particle_bank.getRowList()) {
-      double vz = particle_bank.getFloat("vz", row);
-      int pdg = particle_bank.getInt("pid", row);
+      double vz  = particle_bank.getFloat("vz", row);
+      int pdg    = particle_bank.getInt("pid", row);
       int status = particle_bank.getShort("status", row);
-      auto it = u_zvertexplots.find(pdg);
-      //check if pdg is amongs those that we want to plot
-      if (it != u_zvertexplots.end() && abs(status)>=2000) {
+      auto it    = u_zvertexplots.find(pdg);
+      // check if pdg is amongs those that we want to plot
+      if(it != u_zvertexplots.end() && abs(status) >= 2000) {
         u_zvertexplots.at(pdg).at(1)->Fill(vz);
       }
     }

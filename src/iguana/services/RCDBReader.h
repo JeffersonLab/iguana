@@ -44,6 +44,5 @@ namespace iguana {
 #ifdef USE_RCDB
       std::unique_ptr<rcdb::Connection> m_rcdb_connection;
 #endif
-
   };
 }

@@ -56,7 +56,7 @@ namespace iguana::physics {
       /// @brief form dihadrons by pairing hadrons
       /// @param particle_bank the particle bank (`REC::Particle`)
       /// @returns a list of pairs of hadron rows
-      std::vector<std::pair<int,int>> PairHadrons(hipo::bank const& particle_bank) const;
+      std::vector<std::pair<int, int>> PairHadrons(hipo::bank const& particle_bank) const;
 
     private:
 
@@ -85,18 +85,17 @@ namespace iguana::physics {
       std::set<int> o_hadron_b_pdgs;
       std::string o_phi_r_method;
       std::string o_theta_method;
-      enum {e_RT_via_covariant_kT} m_phi_r_method;
-      enum {e_hadron_a} m_theta_method;
+      enum { e_RT_via_covariant_kT } m_phi_r_method;
+      enum { e_hadron_a } m_theta_method;
 
       // storage for a single hadron
       struct Hadron {
-        int row;
-        int pdg;
-        ROOT::Math::PxPyPzMVector p;
-        double z;
-        std::optional<ROOT::Math::XYZVector> p_perp;
+          int row;
+          int pdg;
+          ROOT::Math::PxPyPzMVector p;
+          double z;
+          std::optional<ROOT::Math::XYZVector> p_perp;
       };
-
   };
 
 }

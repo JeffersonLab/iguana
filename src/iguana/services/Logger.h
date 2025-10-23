@@ -100,21 +100,17 @@ namespace iguana {
       {
         if(lev >= m_level) {
           if(auto it{m_level_names.find(lev)}; it != m_level_names.end()) {
-            std::function<std::string(std::string)> style = [](std::string s)
-            { return fmt::format("[{}]", s); };
+            std::function<std::string(std::string)> style = [](std::string s) { return fmt::format("[{}]", s); };
             if(m_enable_style) {
               switch(lev) {
               case warn:
-                style = [](std::string s)
-                { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::magenta))); };
+                style = [](std::string s) { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::magenta))); };
                 break;
               case error:
-                style = [](std::string s)
-                { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::red))); };
+                style = [](std::string s) { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold | fmt::fg(fmt::terminal_color::red))); };
                 break;
               default:
-                style = [](std::string s)
-                { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold)); };
+                style = [](std::string s) { return fmt::format("[{}]", fmt::styled(s, fmt::emphasis::bold)); };
               }
             }
             fmt::print(

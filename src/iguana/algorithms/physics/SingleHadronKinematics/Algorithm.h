@@ -62,7 +62,6 @@ namespace iguana::physics {
 
       // config options
       std::set<int> o_hadron_pdgs;
-
   };
 
 }

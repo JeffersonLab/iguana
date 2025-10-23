@@ -181,7 +181,6 @@ namespace iguana::clas12::rga {
       CutLevel o_pcal_photon_cut_level;
       bool o_enable_pcal_cuts;
       bool o_enable_dc_cuts;
-
   };
 
 }

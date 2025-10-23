@@ -24,7 +24,7 @@ namespace iguana::clas12 {
 
       hipo::banklist::size_type b_particle;
 
-      // add pdgs not to cut to check we're 
+      // add pdgs not to cut to check we're
       // only cutting on right particles
       std::vector<int> const u_pdg_list = {
           particle::PDG::electron,

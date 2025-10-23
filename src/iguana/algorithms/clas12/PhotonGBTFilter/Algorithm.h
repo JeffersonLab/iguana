@@ -26,7 +26,7 @@ namespace iguana::clas12 {
 
       void Start(hipo::banklist& banks) override;
       bool Run(hipo::banklist& banks) const override;
-      void Stop() override;   
+      void Stop() override;
 
       /// @run_function
       /// @param [in,out] particleBank `REC::Particle`, which will be filtered
@@ -44,28 +44,28 @@ namespace iguana::clas12 {
       bool ForwardDetectorFilter(float const theta) const;
 
     private:
-      
+
       struct calo_row_data {
-        double pcal_x = 0;
-        double pcal_y = 0;
-        double pcal_z = 0;
-        double ecin_x = 0;
-        double ecin_y = 0;
-        double ecin_z = 0;
-        double ecout_x = 0;
-        double ecout_y = 0;
-        double ecout_z = 0;
-        double pcal_e = 0;
-        double pcal_m2u = 0;
-        double pcal_m2v = 0;
-        double ecin_e = 0;
-        double ecin_m2u = 0;
-        double ecin_m2v = 0;
-        double ecout_e = 0;
-        double ecout_m2u = 0;
-        double ecout_m2v = 0;
-      }; 
-      
+          double pcal_x    = 0;
+          double pcal_y    = 0;
+          double pcal_z    = 0;
+          double ecin_x    = 0;
+          double ecin_y    = 0;
+          double ecin_z    = 0;
+          double ecout_x   = 0;
+          double ecout_y   = 0;
+          double ecout_z   = 0;
+          double pcal_e    = 0;
+          double pcal_m2u  = 0;
+          double pcal_m2v  = 0;
+          double ecin_e    = 0;
+          double ecin_m2u  = 0;
+          double ecin_m2v  = 0;
+          double ecout_e   = 0;
+          double ecout_m2u = 0;
+          double ecout_m2v = 0;
+      };
+
       /// Applies pid purity cuts to photons, compatible to how the GBT models are trained
       /// @param E energy of the photon
       /// @param Epcal energy the photon has deposited in the pre-shower calorimeter
@@ -80,45 +80,45 @@ namespace iguana::clas12 {
       /// @param row the row corresponding to the photon being classified
       /// @param runnum the current run number
       /// @returns `true` if the photon is to be considered signal, otherwise `false`
-      bool Filter(hipo::bank const &particleBank, hipo::bank const &caloBank, std::map<int, PhotonGBTFilter::calo_row_data> calo_map, int const row, int const runnum) const;
-      
-      
+      bool Filter(hipo::bank const& particleBank, hipo::bank const& caloBank, std::map<int, PhotonGBTFilter::calo_row_data> calo_map, int const row, int const runnum) const;
+
+
       /// Calls the appropriate CatBoost model for the given run group, classifying the photon of interest
       /// @param input_data the input features of the model
       /// @param runnum the run number associated to the event
-      /// @returns `true` if the 
-      bool ClassifyPhoton(std::vector<float> const &input_data, int const runnum) const;
-      
-      
+      /// @returns `true` if the
+      bool ClassifyPhoton(std::vector<float> const& input_data, int const runnum) const;
+
+
       /// Gets calorimeter data for particles in the event
       /// @param bank the bank to get data from
       /// @returns a map with keys as particle indices (pindex) and values as calo_row_data structs
-      std::map<int, PhotonGBTFilter::calo_row_data> GetCaloMap(hipo::bank const &bank) const;
-      
-      
+      std::map<int, PhotonGBTFilter::calo_row_data> GetCaloMap(hipo::bank const& bank) const;
+
+
       /// Gets the calorimeter vector for a particle in the event
       /// @param crd data struct of a single REC::Calorimeter's row data
       /// @returns a ROOT::Math::XYZVector with the coordinates of the particle in the calorimeter
       ROOT::Math::XYZVector GetParticleCaloVector(PhotonGBTFilter::calo_row_data calo_row) const;
-      
+
       /// Gets the model function for the run number
       /// @param runnum the run of the associated event
       /// @returns GBT function for the run period
-      std::function<double(std::vector<float> const &)> getModelFunction(int runnum) const;
-      
-      /// `hipo::banklist` 
+      std::function<double(std::vector<float> const&)> getModelFunction(int runnum) const;
+
+      /// `hipo::banklist`
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_calorimeter;
       hipo::banklist::size_type b_config; // RUN::config
-      
+
       /// Threshold value for model predictions
       double o_threshold = 0.78;
-      
+
       /// Integer for the event reconstruction pass
       int o_pass = 1;
-    
+
       /// Map for the GBT Models to use depending on pass and run number
-      static std::map<std::tuple<int, int, int>, std::function<double(std::vector<float> const &)>> const modelMap;
+      static std::map<std::tuple<int, int, int>, std::function<double(std::vector<float> const&)>> const modelMap;
   };
-    
+
 }
