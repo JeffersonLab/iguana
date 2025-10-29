@@ -5,6 +5,7 @@
 namespace iguana::clas12 {
 
   /// @algo_brief{RENAMED to iguana::clas12::rga::FiducialFilterPass2}
+  /// @algo_type_filter
   /// @deprecated This algorithm has been RENAMED to iguana::clas12::rga::FiducialFilterPass2, as of Iguana version 1.0.0.
   class RGAFiducialFilter : public rga::FiducialFilterPass2
   {

@@ -5,6 +5,7 @@
 namespace iguana::clas12 {
 
   /// @algo_brief{RENAMED to iguana::clas12::rga::FTEnergyCorrection}
+  /// @algo_type_transformer
   /// @deprecated This algorithm has been RENAMED to iguana::clas12::rga::FTEnergyCorrection, as of Iguana version 1.0.0.
   class FTEnergyCorrection : public rga::FTEnergyCorrection
   {
