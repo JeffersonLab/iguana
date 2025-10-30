@@ -342,6 +342,70 @@ jobs:
           retention-days: 5
           path: iguana/share/doc/iguana/html/
 
+  # documentation
+  #########################################################
+
+  tags_for_docs:
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.get_tags.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: get tags
+        id: get_tags
+        run: |
+          git tag -l |\
+            grep -v v0.1.0 |\
+            grep -v v0.2.0 |\
+            grep -v v0.3.0 |\
+            grep -v v0.4.0 |\
+            grep -v v0.4.1 |\
+            grep -v v0.5.0 |\
+            grep -v v0.6.0 |\
+            tee tag_list
+          tags=$(cat tag_list | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "tags=$tags" | tee -a $GITHUB_OUTPUT
+
+  doc_matrix:
+    needs: [ tags_for_docs ]
+    runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/base_root:latest
+      options: --user root
+    strategy:
+      matrix:
+        tag: ${{ fromJson(needs.tags_for_docs.outputs.tags) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.tag }}
+      ### dependencies
+      - name: install packages for iguana
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm \
+            doxygen \
+            fmt \
+            graphviz \
+            yaml-cpp
+      ### build
+      - name: meson setup
+        run: |
+          meson setup iguana_build \
+            --prefix=$GITHUB_WORKSPACE/iguana \
+            -Drcdb:home=$RCDB_HOME \
+            -Dz_require_rcdb=true \
+            -Dz_require_root=true \
+            -Dinstall_examples=false \
+            -Dinstall_documentation=true
+      - run: meson compile
+        working-directory: iguana_build
+      - run: meson install
+        working-directory: iguana_build
+
   # deployment
   #########################################################
 
