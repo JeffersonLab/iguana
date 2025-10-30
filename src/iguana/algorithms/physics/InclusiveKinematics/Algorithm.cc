@@ -126,14 +126,16 @@ namespace iguana::physics {
 
   int InclusiveKinematics::FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const
   {
+    int const not_found  = -1;
     bool lepton_found    = false;
-    int lepton_row       = -1;
+    int lepton_row       = not_found;
     double lepton_energy = 0;
 
     switch(o_method_lepton_finder) {
     case method_lepton_finder::highest_energy_FD_trigger: {
 
-      for(auto const& row : particle_bank.getRowList()) {
+      // loop over ALL rows, not just filtered rows, since we don't want to accidentally pick the wrong electron
+      for(int row = 0; row < particle_bank.getRows(); row++) {
         if(particle_bank.getInt("pid", row) == o_beam_pdg) { // if beam PDG
           auto status = particle_bank.getShort("status", row);
           if(status > -3000 && status <= -2000) { // if in FD trigger
@@ -151,16 +153,25 @@ namespace iguana::physics {
           }
         }
       }
-      if(lepton_found && lepton_row != 0)
-        m_log->Warn("Found scattered lepton which is NOT at pindex 0");
+      if(lepton_found) {
+        if(lepton_row != 0)
+          m_log->Warn("Found scattered lepton which is NOT at pindex 0");
+        // make sure `lepton_row` was not filtered
+        auto rowlist = particle_bank.getRowList();
+        if(std::find(rowlist.begin(), rowlist.end(), lepton_row) == rowlist.end())
+          lepton_found = false;
+      }
       break;
     }
     }
-    if(lepton_found)
+    if(lepton_found) {
       m_log->Debug("Found scattered lepton: row={}, energy={}", lepton_row, lepton_energy);
-    else
+      return lepton_row;
+    }
+    else {
       m_log->Debug("Scattered lepton not found");
-    return lepton_row;
+      return not_found;
+    }
   }
 
   ///////////////////////////////////////////////////////////////////////////////
