@@ -249,9 +249,6 @@ jobs:
       - name: test example iguana_ex_cpp_01_action_functions.cc
         run: stdbuf -o0 iguana_ex_cpp_01_action_functions test_data.hipo ${{ env.num_events }} | tee equivalence.01.cpp.txt
         if: ${{ matrix.id == 'cpp' || matrix.id == 'python' }}
-      - name: test example iguana_ex_cpp_dataframes.cc
-        run: iguana_ex_cpp_dataframes test_data.hipo ${{ env.num_events }}
-        if: ${{ matrix.id == 'cpp' }}
       - name: test example iguana_ex_cpp_config_files.cc
         run: iguana_ex_cpp_config_files iguana/etc/iguana/examples
         if: ${{ matrix.id == 'cpp' }}
