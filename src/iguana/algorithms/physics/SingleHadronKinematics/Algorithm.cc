@@ -168,7 +168,7 @@ namespace iguana::physics {
     result_bank.getMutableRowList().setList(result_bank_rowlist);
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
-    return true;
+    return result_bank.getRows() > 0;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

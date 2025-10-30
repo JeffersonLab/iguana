@@ -47,7 +47,8 @@ namespace iguana::physics {
       /// @param [in] particle_bank `REC::Particle`
       /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm
       /// @param [out] result_bank `%physics::DihadronKinematics`, which will be created
-      /// @returns `false` if the input banks do not have enough information, _e.g._, if the inclusive kinematics bank is empty
+      /// @returns `false` if the input banks do not have enough information, _e.g._, if the inclusive kinematics bank is empty,
+      /// or if the created bank is empty
       bool Run(
           hipo::bank const& particle_bank,
           hipo::bank const& inc_kin_bank,

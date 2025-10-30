@@ -204,7 +204,7 @@ namespace iguana::physics {
     }
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
-    return true;
+    return result_bank.getRows() > 0;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
