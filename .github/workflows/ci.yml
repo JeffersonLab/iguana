@@ -198,6 +198,11 @@ jobs:
           else
             meson test --print-errorlogs
           fi
+      ### run algorithm checks
+      - name: algorithm code checks
+        if: ${{ matrix.id == 'cpp' }}
+        working-directory: iguana_src
+        run: src/iguana/tests/algo_check.rb
       ### run benchmarks
       - name: benchmark algorithms
         if: ${{ matrix.id == 'cpp' }}

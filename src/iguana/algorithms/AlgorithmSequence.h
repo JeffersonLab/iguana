@@ -4,15 +4,44 @@
 
 namespace iguana {
 
-  /// @brief An algorithm that can run a sequence of algorithms
-  ///
-  /// The `Start`, `Run`, and `Stop` methods will sequentially call the corresponding algorithms' methods,
-  /// in the order the algorithms were added to the sequence by `AlgorithmSequence::Add`. If an algorithm's
-  /// `Run` function returns false, then `AlgorithmSequence`'s `Run` function will stop and return `false`.
+  /// @algo_brief{An algorithm that can run a sequence of algorithms}
   ///
   /// This algorithm requires the use of `hipo::banklist`; there are neither `Run` functions which take
   /// individual `hipo::bank` parameters nor action functions. If you do not use `hipo::banklist`, you
   /// should use individual algorithms instead of this sequencing algorithm.
+  ///
+  /// Use the `Add` function to add algorithms to the sequence; the order is important, since
+  /// the `Start`, `Run`, and `Stop` methods will sequentially call the corresponding algorithms' methods,
+  /// in the same order that the algorithms were added to the sequence by `Add`.
+  ///
+  /// If an algorithm's `Run` function returns `false`, _i.e._, its "event-level" filter returns `false`, then `AlgorithmSequence`'s
+  /// `Run` function will stop immediately and return `false`.
+  ///
+  /// @par Custom Event Filters
+  /// If an algorithm's event-level filter is not adequate for your needs, and you want to tighten or override
+  /// an algorithm's event-level filter, _i.e._, you want more control over how that algorithm's `Run` function return
+  /// value is used, we recommond defining _two_ `AlgorithmSequence` instances. For example, suppose you want a tighter
+  /// event-level filter from or after `algo2` in the sequence `algo1`, `algo2`, `algo3`, `algo4`; you may implement this by
+  /// using _two_ sequences, where the first ends at `algo2`:
+  /// @code
+  /// // define sequences
+  /// iguana::AlgorithmSequence seq1
+  /// seq1.Add("algo1");
+  /// seq1.Add("algo2");
+  /// iguana::AlgorithmSequence seq2
+  /// seq2.Add("algo3");
+  /// seq2.Add("algo4");
+  /// // start them
+  /// seq1.Start(banks);
+  /// seq2.Start(banks);
+  /// @endcode
+  /// Then, in your event loop, call your tighter filter between the sequences' `Run` calls:
+  /// @code
+  /// if(!seq1.Run(banks)) continue;
+  /// if( /*your event filter */) continue;
+  /// if(!seq2.Run(banks)) continue;
+  /// @endcode
+  ///
   class AlgorithmSequence : public Algorithm
   {
 
