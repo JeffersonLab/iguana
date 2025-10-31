@@ -106,7 +106,7 @@ jobs:
       - name: echo RCDB_CONNECTION
         run: echo $RCDB_CONNECTION
       ### setup
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: iguana_src
       ### get test data
@@ -352,7 +352,7 @@ jobs:
       - iguana
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: iguana_src
       - name: download doxygen documentation
