@@ -71,7 +71,6 @@ jobs:
           - undefined-sanitizer
           - leak-sanitizer
           - coverage
-          - documentation
           - noROOT
         include:
           # main C++ test
@@ -88,7 +87,6 @@ jobs:
           - { id: leak-sanitizer,      image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=leak      -Db_lundef=false -Db_pie=true }
           # misc.
           - { id: coverage,      image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true  -Db_coverage=true  -Dz_test_multithreading=false }
-          - { id: documentation, image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true  -Dinstall_documentation=true }
           - { id: noROOT,        image: base,      CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=false }
     runs-on: ubuntu-latest
     container:
@@ -131,13 +129,6 @@ jobs:
             python-colorlog \
             python-pygments \
             gcovr
-      ###### for doxygen
-      - name: install doxygen
-        if: ${{ matrix.id == 'documentation' }}
-        run: |
-          pacman -S --noconfirm \
-            doxygen \
-            graphviz
       ###### for python bindings
       - name: install python bindings dependencies
         if: ${{ matrix.id == 'python' }}
@@ -190,7 +181,6 @@ jobs:
       - run: tree iguana
       ### run tests
       - name: meson test
-        if: ${{ matrix.id != 'documentation' }}
         working-directory: iguana_build
         run: |
           if [ "${{ env.verbose_test }}" = "true" ]; then
@@ -334,18 +324,12 @@ jobs:
           name: ${{ steps.artifact_names.outputs.validation_name }}
           retention-days: 90
           path: validation_results
-      - name: upload documentation artifacts
-        uses: actions/upload-artifact@v5
-        if: ${{ matrix.id == 'documentation' }}
-        with:
-          name: doc_doxygen
-          retention-days: 5
-          path: iguana/share/doc/iguana/html/
 
   # documentation
   #########################################################
 
-  tags_for_docs:
+  git_tags:
+    name: Git tags
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.get_tags.outputs.tags }}
@@ -353,7 +337,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: get tags
+      - name: get tags for documentation generation
         id: get_tags
         run: |
           git tag -l |\
@@ -364,19 +348,22 @@ jobs:
             grep -v v0.4.1 |\
             grep -v v0.5.0 |\
             grep -v v0.6.0 |\
+            grep -v v0.7.0 |\
+            grep -v v0.7.1 |\
             tee tag_list
           tags=$(cat tag_list | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "tags=$tags" | tee -a $GITHUB_OUTPUT
 
-  doc_matrix:
-    needs: [ tags_for_docs ]
+  generate_documentation:
+    name: Generate documentation
+    needs: [ git_tags ]
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base_root:latest
       options: --user root
     strategy:
       matrix:
-        tag: ${{ fromJson(needs.tags_for_docs.outputs.tags) }}
+        tag: ${{ fromJson(needs.git_tags.outputs.tags) }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -405,15 +392,29 @@ jobs:
         working-directory: iguana_build
       - run: meson install
         working-directory: iguana_build
+      - name: tar
+        run: |
+          mkdir doc_tag
+          cd doc_tag
+          mkdir ${{ matrix.tag }}
+          mv iguana/share/doc/iguana/html/* ${{ matrix.tag }}/
+          tar cavf ${{ matrix.tag }}{.tar.zst,}
+      ### artifacts
+      - name: upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc_doxygen_${{ matrix.tag }}
+          retention-days: 5
+          path: doc_tag
 
   # deployment
   #########################################################
 
   collect_webpages:
-    if: ${{ github.ref == 'refs/heads/main' }}
     name: Collect webpages
     needs:
       - iguana
+      - generate_documentation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -422,8 +423,9 @@ jobs:
       - name: download doxygen documentation
         uses: actions/download-artifact@v6
         with:
-          name: doc_doxygen
-          path: doxygen
+          name: doc_doxygen_*
+          path: doc_tag
+          merge-multiple: true
       - name: download coverage report
         uses: actions/download-artifact@v6
         with:
