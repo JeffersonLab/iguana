@@ -373,7 +373,7 @@ jobs:
           mv doxygen pages/
       - run: mv coverage-report pages/
       - run: tree
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           retention-days: 5
           path: pages/
