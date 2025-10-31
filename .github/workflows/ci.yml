@@ -403,7 +403,7 @@ jobs:
           mkdir doc_version
           cd doc_version
           mkdir ${{ matrix.version }}
-          mv iguana/share/doc/iguana/html/* ${{ matrix.version }}/
+          mv ../iguana/share/doc/iguana/html/* ${{ matrix.version }}/
           tar cavf ${{ matrix.version }}{.tar.zst,}
       ### artifacts
       - name: upload documentation artifacts
