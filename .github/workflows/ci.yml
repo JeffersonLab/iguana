@@ -328,17 +328,17 @@ jobs:
   # documentation
   #########################################################
 
-  git_tags:
-    name: Git tags
+  doc_versions:
+    name: Get versions for docs
     runs-on: ubuntu-latest
     outputs:
-      tags: ${{ steps.get_tags.outputs.tags }}
+      versions: ${{ steps.versions.outputs.versions }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: get tags for documentation generation
-        id: get_tags
+      - name: get versions for documentation generation
+        id: versions
         run: |
           git tag -l |\
             grep -v v0.1.0 |\
@@ -350,25 +350,26 @@ jobs:
             grep -v v0.6.0 |\
             grep -v v0.7.0 |\
             grep -v v0.7.1 |\
-            tee tag_list
-          tags=$(cat tag_list | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          echo "tags=$tags" | tee -a $GITHUB_OUTPUT
+            tee version_list
+          echo main | tee -a version_list
+          versions=$(cat version_list | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "versions=$versions" | tee -a $GITHUB_OUTPUT
 
   generate_documentation:
     name: Generate documentation
-    needs: [ git_tags ]
+    needs: [ doc_versions ]
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base_root:latest
       options: --user root
     strategy:
       matrix:
-        tag: ${{ fromJson(needs.git_tags.outputs.tags) }}
+        version: ${{ fromJson(needs.doc_versions.outputs.versions) }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.tag }}
+          ref: ${{ matrix.version }}
       ### dependencies
       - name: install packages for iguana
         run: |
@@ -394,18 +395,18 @@ jobs:
         working-directory: iguana_build
       - name: tar
         run: |
-          mkdir doc_tag
-          cd doc_tag
-          mkdir ${{ matrix.tag }}
-          mv iguana/share/doc/iguana/html/* ${{ matrix.tag }}/
-          tar cavf ${{ matrix.tag }}{.tar.zst,}
+          mkdir doc_version
+          cd doc_version
+          mkdir ${{ matrix.version }}
+          mv iguana/share/doc/iguana/html/* ${{ matrix.version }}/
+          tar cavf ${{ matrix.version }}{.tar.zst,}
       ### artifacts
       - name: upload documentation artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: doc_doxygen_${{ matrix.tag }}
+          name: doc_doxygen_${{ matrix.version }}
           retention-days: 5
-          path: doc_tag
+          path: doc_version
 
   # deployment
   #########################################################
@@ -424,7 +425,7 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           name: doc_doxygen_*
-          path: doc_tag
+          path: doc_version
           merge-multiple: true
       - name: download coverage report
         uses: actions/download-artifact@v6
