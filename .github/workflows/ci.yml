@@ -328,8 +328,8 @@ jobs:
   # documentation
   #########################################################
 
-  doc_versions:
-    name: Get versions for docs
+  index_documentation:
+    name: Index documentation
     runs-on: ubuntu-latest
     outputs:
       versions: ${{ steps.versions.outputs.versions }}
@@ -337,6 +337,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      ### get list of versions from git tags; exclude old versions
       - name: get versions for documentation generation
         id: versions
         run: |
@@ -354,17 +355,38 @@ jobs:
           echo main | tee -a version_list
           versions=$(cat version_list | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "versions=$versions" | tee -a $GITHUB_OUTPUT
+      ### front index page
+      - name: generate doxygen index page
+        run:
+          mkdir doxygen
+          cd doxygen
+          echo "<html><head><title>Iguana Documentation</title></head><body>" > index.html
+          echo "<ul>" >> index.html
+          cat versions_list | while read line; do
+            version=$(echo $line | sed 's;main;latest;')
+            echo "<li><a href=$version/index.html>$version</a></li>" >> index.html
+          done
+          echo "</ul></body></html>" >> index.html
+      - name: cat doxygen index page
+        run: cat doxygen/index.html
+      ### artifacts
+      - name: upload documentation artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: doxygen_index
+          retention-days: 5
+          path: doxygen
 
   generate_documentation:
     name: Generate documentation
-    needs: [ doc_versions ]
+    needs: [ index_documentation ]
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/base_root:latest
       options: --user root
     strategy:
       matrix:
-        version: ${{ fromJson(needs.doc_versions.outputs.versions) }}
+        version: ${{ fromJson(needs.index_documentation.outputs.versions) }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -398,20 +420,23 @@ jobs:
         working-directory: iguana_build
       - run: meson install
         working-directory: iguana_build
-      - name: tar
+      - name: rename directory
         run: |
-          mkdir doc_version
-          cd doc_version
+          mkdir doxygen
+          cd doxygen
           mkdir ${{ matrix.version }}
           mv ../iguana/share/doc/iguana/html/* ${{ matrix.version }}/
-          tar cavf ${{ matrix.version }}{.tar.zst,}
+      - name: rename latest
+        if: ${{ matrix.version == 'main' }}
+        working-directory: doxygen
+        run: mv main latest
       ### artifacts
       - name: upload documentation artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: doc_doxygen_${{ matrix.version }}
+          name: doxygen_${{ matrix.version }}
           retention-days: 5
-          path: doc_version
+          path: doxygen
 
   # deployment
   #########################################################
@@ -429,8 +454,8 @@ jobs:
       - name: download doxygen documentation
         uses: actions/download-artifact@v6
         with:
-          pattern: doc_doxygen_*
-          path: doc_version
+          pattern: doxygen_*
+          path: doxygen
           merge-multiple: true
       - name: download coverage report
         uses: actions/download-artifact@v6
