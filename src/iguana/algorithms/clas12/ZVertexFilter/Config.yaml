@@ -7,6 +7,8 @@ clas12::ZVertexFilter:
     - default:
       vz: [ -20.0, 20.0 ]
 
+    ### RUN GROUP A ###########
+
     # RG-A spring2018 inbending, 1st period
     - runs: [ 3031, 3087 ]
       vz: [ -6.061, 1.819 ]
@@ -38,3 +40,19 @@ clas12::ZVertexFilter:
     # RG-A spring2019 inbending
     - runs: [ 6616, 6783 ]
       vz: [ -6.364, 1.515 ]
+
+    ### RUN GROUP B ###########
+    # FIXME: these are not yet the official, common RG-B vertex cuts; for now,
+    # they are just the cuts that C. Dilks is using for SIDIS analysis.
+
+    # RG-B spring2019 inbending # FIXME: not official (see FIXME above)
+    - runs: [ 6156, 6603 ]
+      vz: [ -8.0, 3.0 ]
+
+    # RG-B fall2019 outbending # FIXME: not official (see FIXME above)
+    - runs: [ 11093, 11283 ]
+      vz: [ -10.0, 2.5 ]
+
+    # RG-B spring2020 inbending # FIXME: not official (see FIXME above)
+    - runs: [ 11323, 11571 ]
+      vz: [ -8.0, 3.0 ]
