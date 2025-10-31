@@ -370,6 +370,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ matrix.version }}
+          path: iguana_src
       ### dependencies
       - name: install packages for iguana
         run: |
@@ -380,9 +381,13 @@ jobs:
             graphviz \
             yaml-cpp
       ### build
+      - name: set main version to latest
+        if: ${{ matrix.version == 'main' }}
+        working-directory: iguana_src
+        run: sed -i 's;^PROJECT_NUMBER.*=.*;PROJECT_NUMBER = "LATEST";' doc/gen/Doxyfile.in
       - name: meson setup
         run: |
-          meson setup iguana_build \
+          meson setup iguana_build iguana_src \
             --prefix=$GITHUB_WORKSPACE/iguana \
             -Drcdb:home=$RCDB_HOME \
             -Dz_require_rcdb=true \
