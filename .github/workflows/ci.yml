@@ -334,7 +334,7 @@ jobs:
     outputs:
       versions: ${{ steps.versions.outputs.versions }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       ### get list of versions from git tags; exclude old versions
@@ -389,7 +389,7 @@ jobs:
         version: ${{ fromJson(needs.index_documentation.outputs.versions) }}
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ matrix.version }}
           path: iguana_src
