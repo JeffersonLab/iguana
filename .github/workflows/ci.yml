@@ -407,7 +407,7 @@ jobs:
           tar cavf ${{ matrix.version }}{.tar.zst,}
       ### artifacts
       - name: upload documentation artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: doc_doxygen_${{ matrix.version }}
           retention-days: 5
@@ -429,7 +429,7 @@ jobs:
       - name: download doxygen documentation
         uses: actions/download-artifact@v6
         with:
-          name: doc_doxygen_*
+          pattern: doc_doxygen_*
           path: doc_version
           merge-multiple: true
       - name: download coverage report
