@@ -364,6 +364,7 @@ jobs:
           version_table="| **User Guide** | **Notes** |\n"
           version_table+="| --- | --- |"
           cat version_list | while read ver; do
+            echo "link $ver"
             note=''
             name=$ver
             if [ "$ver" == "main" ]; then
@@ -373,6 +374,7 @@ jobs:
             fi
             version_table+="\n| <b><a href=$ver/index.html>$name</a></b> | $note |"
           done
+          echo $version_table
           sed -i "/@guides@/c\\${version_table}" doc/mkdocs/docs/index.md
       - name: cat index.md
         run: cat doc/mkdocs/docs/index.md
