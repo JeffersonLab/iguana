@@ -418,7 +418,7 @@ jobs:
       - name: set main version to latest
         if: ${{ matrix.version == 'main' }}
         working-directory: iguana_src
-        run: sed -i 's;^PROJECT_NUMBER.*=.*;PROJECT_NUMBER = "LATEST";' doc/doxygen/Doxyfile.in
+        run: sed -i 's;^PROJECT_NUMBER.*=.*;PROJECT_NUMBER = "LATEST";' $(find doc -name Doxyfile.in)
       - name: meson setup
         run: |
           meson setup iguana_build iguana_src \
