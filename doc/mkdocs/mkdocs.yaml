@@ -1,4 +1,5 @@
 site_name: Iguana Documentation
+repo_url: https://github.com/JeffersonLab/iguana
 nav:
   - Home: index.md
   - Setup: setup.md
@@ -10,6 +11,42 @@ use_directory_urls: false
 extra:
   homepage: index.html
 theme:
-  name: mkdocs
-  user_color_mode_toggle: auto
-  color_mode: auto
+  name: material
+  logo: logo.png
+  favicon: logo.png
+  features:
+    - content.code.copy
+    - content.code.select
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme)"
+      primary: teal
+      accent: purple
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: purple
+      toggle:
+        icon: material/weather-night
+        name: Switch to system preference
+plugins:
+  - search
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.details
