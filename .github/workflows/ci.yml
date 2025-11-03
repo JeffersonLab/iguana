@@ -357,9 +357,7 @@ jobs:
           echo "versions=$versions" | tee -a $GITHUB_OUTPUT
       ### dependencies
       - name: install packages for mkdocs
-        run: |
-          pacman -Sy --noconfirm
-          pacman -S --noconfirm mkdocs
+        run: python -m pip install -r doc/mkdocs/requirements.txt
       ### front index page
       - name: generate version table markdown
         run: |
