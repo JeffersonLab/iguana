@@ -379,7 +379,7 @@ jobs:
       - name: mkdocs
         run: |
           mkdir doc_web
-          mkdocs build --config-file doc/mkdocs/mkdocs.yaml --site-dir doc_web
+          mkdocs build --config-file doc/mkdocs/mkdocs.yaml --site-dir $GITHUB_WORKSPACE/doc_web
       - run: tree doc_web
       ### artifacts
       - name: upload documentation artifacts
