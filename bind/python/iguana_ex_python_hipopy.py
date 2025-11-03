@@ -8,10 +8,10 @@
 @end_doc_example
 @doxygen_off
 """
-
+#NOTE: You must import hipopy, which imports hipopybind, BEFORE any cppyy libraries.
+import hipopy.hipopy as hp
 import pyiguana
 import sys
-import hipopy.hipopy as hp
 import os.path as osp
 
 # include the header files that you need
