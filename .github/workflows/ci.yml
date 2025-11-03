@@ -379,16 +379,16 @@ jobs:
         run: cat doc/mkdocs/docs/index.md
       - name: mkdocs
         run: |
-          mkdir doc_web
-          mkdocs build --config-file doc/mkdocs/mkdocs.yaml --site-dir $GITHUB_WORKSPACE/doc_web
-      - run: tree doc_web
+          mkdir pages
+          mkdocs build --config-file doc/mkdocs/mkdocs.yaml --site-dir $GITHUB_WORKSPACE/pages
+      - run: tree pages
       ### artifacts
       - name: upload documentation artifacts
         uses: actions/upload-artifact@v5
         with:
           name: doc_web
           retention-days: 5
-          path: doc_web
+          path: pages
 
   generate_documentation:
     name: Generate documentation
@@ -435,13 +435,13 @@ jobs:
         working-directory: iguana_build
       - name: rename directory
         run: |
-          mkdir doc_web
-          cd doc_web
+          mkdir pages
+          cd pages
           mkdir ${{ matrix.version }}
           mv ../iguana/share/doc/iguana/html/* ${{ matrix.version }}/
       - name: rename latest
         if: ${{ matrix.version == 'main' }}
-        working-directory: doc_web
+        working-directory: pages
         run: mv main latest
       ### artifacts
       - name: upload documentation artifacts
@@ -449,7 +449,7 @@ jobs:
         with:
           name: doc_web_${{ matrix.version }}
           retention-days: 5
-          path: doc_web
+          path: pages
 
   # deployment
   #########################################################
@@ -468,21 +468,15 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           pattern: doc_web*
-          path: doc_web
+          path: pages
           merge-multiple: true
       - name: download coverage report
         uses: actions/download-artifact@v6
         with:
           name: coverage-report
           path: coverage-report
-      - run: tree doc_web
-      - name: collect
-        run: |
-          mkdir pages
-          cp iguana_src/.github/pages-index.html pages/index.html
-          mv doc_web pages/
       - run: mv coverage-report pages/
-      - run: tree
+      - run: tree pages
       - uses: actions/upload-pages-artifact@v4
         with:
           retention-days: 5
