@@ -1,0 +1,15 @@
+site_name: Iguana Documentation
+nav:
+  - Home: index.md
+  - Setup: setup.md
+  - Dependencies: dependency_resolution.md
+  - Troubleshooting: troubleshooting.md
+  - Testing: testing.md
+  - Maintenance: maintenance.md
+use_directory_urls: false
+extra:
+  homepage: index.html
+theme:
+  name: mkdocs
+  user_color_mode_toggle: auto
+  color_mode: auto

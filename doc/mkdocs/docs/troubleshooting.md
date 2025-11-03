@@ -35,7 +35,7 @@ full optimization when you are processing large data sets (`-Dbuildtype=release`
 <details>
 <summary>🔵 I got some error about "chameleon", or an error in some "chameleon" file that I can't find</summary>
 
-[Chameleon is a code generator](/src/chameleon) to automatically create
+[Chameleon is a code generator](https://github.com/JeffersonLab/iguana/blob/main/src/chameleon) to automatically create
 `iguana` bindings for programming languages other than C++. All generated code
 is produced in your build directory. If you have issues with Chameleon, either:
 - an `Action.yaml` file is not correct

@@ -19,9 +19,9 @@ chameleon-tree
 *.png
 
 # overrides
-!doc/gen/logo.png
-!doc/gen/logo_small.png
-!doc/gen/mermaid/*.png
+!doc/logo.png
+!doc/logo_small.png
+!doc/mermaid/*.png
 
 # misc. artifacts
 .DS_Store

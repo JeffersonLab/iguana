@@ -211,7 +211,7 @@ endif
 
 # generate documentation
 if get_option('install_documentation')
-  subdir('doc/gen')
+  subdir('doc/doxygen')
 endif
 
 # generate pkg-config file
