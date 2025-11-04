@@ -4,7 +4,7 @@ Notes for `iguana` maintainers
 
 ## Iguana version
 
-Make sure the version number in the top-level [`meson.build`] is correct, prior to tagging a new release.
+Make sure the version number in the top-level `meson.build` is correct, prior to tagging a new release.
 
 ## Python Binding Dependencies
 
@@ -15,8 +15,9 @@ Keep the Python binding dependency versions reasonably up to date in the corresp
 ## C++ Standard
 
 We currently support up to the C++ standard defined in the top-level `meson.build`; if you change this, you will also need to update:
-- [ ] example build configurations in `examples/build_with_*` subdirectories
-- [ ] any mention of the standard in documentation
+
+- example build configurations in `examples/build_with_*` subdirectories
+- any mention of the standard in documentation
 
 ## Code Ownership
 
@@ -26,7 +27,7 @@ We maintain a `CODEOWNERS` file to track who wrote and maintains each file. If y
 
 We provide a `.clang-format` file for auto-formatting C++ code. If your system has `clang-format`,
 then `meson` will create a `ninja` build target called `clang-format`, which you may run as
-```bash
+``` bash
 ninja -C <builddir> clang-format
 ```
 We also use `meson.format` to format the `meson` build files.

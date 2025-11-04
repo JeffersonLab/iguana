@@ -1,14 +1,8 @@
-# Building for `ifarm` or `cvmfs`
+# Deployment
 
-## Resolve dependencies
+## Installing on `ifarm` and `cvmfs`
 
-```bash
-meson/resolve-dependencies.py --help  # prints the usage guide
-```
-Use the resulting arguments when setting up or configuring your build directory.
-
-## Build and Install
-
-```
-meson/release/install.sh
+Use the `module` command to verify dependency versions. Then, run the following script to build an install; this script sets the _preferred_ build options for deployment:
+``` bash
+meson/release/install-cvmfs.sh
 ```

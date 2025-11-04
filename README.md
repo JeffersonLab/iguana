@@ -6,3 +6,9 @@
 <img src="./doc/logo.png" width=50%/>
 
 [:star: **Documentation Homepage** :star:](https://jeffersonlab.github.io/iguana)
+
+### About
+
+**IGUANA**: **I**mplementation **Gu**ardian of **An**alysis **A**lgorithms
+
+Iguana is designed to preserve and centralize common analysis algorithms, such as fiducial cuts, momentum corrections, and kinematics reconstruction, for CLAS12 HIPO data.

@@ -359,28 +359,8 @@ jobs:
       - name: install packages for mkdocs
         run: python -m pip install -r doc/mkdocs/requirements.txt
       ### front index page
-      - name: generate version table markdown
-        run: |
-          version_table="| **User Guide** | **Notes** |\n"
-          version_table+="| --- | --- |"
-          while read ver; do
-            note=''
-            name=$ver
-            if [ "$ver" == "main" ]; then
-              name='Latest'
-              ver='latest'
-              note='Applies to _only_ the current `main` branch; it may _differ_ from the latest _numbered_ version below'
-            fi
-            version_table+="\n| <b><a href=$ver/index.html>$name</a></b> | $note |"
-          done < version_list
-          echo "version_table=$version_table"
-          sed -i "/@guides@/c\\${version_table}" doc/mkdocs/docs/index.md
-      - name: cat index.md
-        run: cat doc/mkdocs/docs/index.md
       - name: mkdocs
-        run: |
-          mkdir pages
-          mkdocs build --config-file doc/mkdocs/mkdocs.yaml --site-dir $GITHUB_WORKSPACE/pages
+        run: doc/mkdocs/generate.sh build_mkdocs pages $(cat version_list)
       - run: tree pages
       ### artifacts
       - name: upload documentation artifacts

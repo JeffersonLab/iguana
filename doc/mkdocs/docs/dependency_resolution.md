@@ -4,16 +4,17 @@ The dependencies in [the setup guide](setup.md) must be locatable by `iguana`, o
 by anything that depends on `iguana`.
 
 Assuming a dependency is installed in `$prefix`, it uses one or more of the following:
+
 - `pkg-config`: a `.pc` file in `$prefix/lib/pkgconfig`
 - `.cmake` files in `$prefix/lib/cmake`
 
 Take a look at each dependency's installation prefix to see which of these options
 are available.
 
-> [!NOTE]
-> Some installations will have libraries, and therefore `cmake/` and `pkgconfig/` directories, within
-> `$prefix/lib64`, or within `$prefix/lib/x86_64-linux-gnu`. For brevity in the documentation below, we assume
-> they are in `$prefix/lib`.
+!!! note
+    Some installations will have libraries, and therefore `cmake/` and `pkgconfig/` directories, within
+    `$prefix/lib64`, or within `$prefix/lib/x86_64-linux-gnu`. For brevity in the documentation below, we assume
+    they are in `$prefix/lib`.
 
 ## Resolving Build Dependencies
 
@@ -22,7 +23,7 @@ The following sections explain how to do so with each.
 
 ### 🔷 Meson
 For `iguana`, the build system is `meson`, which accepts the build options
-```bash
+``` bash
 -Dpkg_config_path=$prefix/lib/pkgconfig
 -Dcmake_prefix_path=$prefix
 ```
@@ -31,23 +32,24 @@ For `iguana`, the build system is `meson`, which accepts the build options
 ### 🔷 CMake
 For `cmake`, the `pkg-config` path can be combined with the `cmake` path, so only the
 build option
-```bash
+``` bash
 -DCMAKE_PREFIX_PATH="$prefix"
 ```
 is needed; this assumes:
+
 - all dependencies are in `$prefix` (delimit multiple paths with semicolons)
 - `PKG_CONFIG_USE_CMAKE_PREFIX_PATH` has not been disabled.
 
 ### 🔷 General Case
 Environment variables may be used instead of build options for a general approach:
-```bash
+``` bash
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
 export CMAKE_PREFIX_PATH=$prefix
 ```
 (where multiple paths are delimited by colons).
 
 `pkg-config` files (`.pc`) allow for usage of the `pkg-config` command. Assuming the package is `hipo4` and `hipo4.pc` is found in `PKG_CONFIG_PATH`, compiler flags may be found by
-```bash
+``` bash
 pkg-config --libs hipo4
 pkg-config --cflags hipo4
 ```
@@ -55,9 +57,5 @@ Any variable defined in `hipo4.pc` is accessible with `pkg-config --variable <va
 
 ## Resolving Runtime Dependencies
 
-Depending on how the software was built, dependencies may also need to be findable at runtime. In `iguana`, we try to avoid this by
-setting [rpath variables](https://en.wikipedia.org/wiki/Rpath); this is preferred to avoid the usage of environment variables
-such as `LD_LIBRARY_PATH` or `DYLD_LIBRARY_PATH`, since they are globally mutable.
-
-However, depending on your local setup and the current state of your environment variables, you may need to set some variables
+Depending on your local setup and the current state of your environment variables, you may need to set some variables
 such that `iguana` is prioritized. See [the Environment Variables section in the setup guide for more details](setup.md#env).
