@@ -163,6 +163,13 @@ namespace iguana {
       /// @returns the new bank schema
       hipo::schema GetCreatedBankSchema(std::string const& bank_name = "") const noexcept(false);
 
+      /// @brief Change the name of the particle bank, for algorithms that can read different particle banks.
+      ///
+      /// This is only needed if you intend to use `hipo::banklist`, and prefer to use a different particle
+      /// bank than the default (`REC::Particle`); for example, set it to `MC::Particle` to read MC particles.
+      /// @param bank_name The particle bank name
+      void SetParticleBankName(std::string const& bank_name);
+
     protected: // methods
 
       /// Parse YAML configuration files. Sets `m_yaml_config`.
@@ -251,6 +258,9 @@ namespace iguana {
 
       /// A mutex for this algorithm
       mutable std::mutex m_mutex;
+
+      /// The name of the particle bank, for `hipo::banklist` users
+      std::string m_particle_bank_name{"REC::Particle"};
 
     private: // members
 
