@@ -59,4 +59,15 @@ namespace iguana::physics::tools {
   std::optional<double> ParticleRapidity(
       MOMENTUM_TYPE const& momentum_vec,
       AXIS_TYPE const& axis_vec);
+
+  /// @brief shift angle to the range @latex{(-\pi,+\pi]}
+  /// @param ang the angle, in radians
+  /// @returns the adjusted angle
+  double AdjustAnglePi(double ang);
+
+  /// @brief shift angle to the range @latex{(0,2\pi]}
+  /// @param ang the angle, in radians
+  /// @returns the adjusted angle
+  double AdjustAngleTwoPi(double ang);
+
 }
