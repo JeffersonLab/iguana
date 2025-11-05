@@ -25,7 +25,7 @@ namespace iguana::clas12 {
       /// @param [in] rec_particle_bank `REC::Particle` bank, the reconstructed particles
       /// @param [in] mc_particle_bank `MC::Particle` bank, the generated particles
       /// @param [out] result_bank `MC::RecMatch::Proximity`, which will be created
-      /// @run_function_returns_true
+      /// @returns `true` if the created bank is not empty
       bool Run(
           hipo::bank const& rec_particle_bank,
           hipo::bank const& mc_particle_bank,

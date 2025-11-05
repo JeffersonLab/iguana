@@ -43,7 +43,7 @@ namespace iguana::clas12 {
 
       // matching variables
       double min_prox = -1; // minimum proximity
-      int pindex_mc   = -1; // matching `pindex` of `mc_particle_bank`
+      int pindex_gen  = -1; // matching `pindex` of `mc_particle_bank`
 
       // reconstructed particle info
       auto pid_rec = rec_particle_bank.getInt("pid", row_rec);
@@ -56,34 +56,33 @@ namespace iguana::clas12 {
 
       // loop over ALL generated particles, and find the one with the smallest proximity to
       // the current reconstructed particle
-      for(int row_mc = 0; row_mc < mc_particle_bank.getRows(); row_mc++) {
-
+      for(int row_gen = 0; row_gen < mc_particle_bank.getRows(); row_gen++) {
         // PID must match
-        if(pid_rec == mc_particle_bank.getInt("pid", row_mc)) {
+        if(pid_rec == mc_particle_bank.getInt("pid", row_gen)) {
           // generated particle info
-          ROOT::Math::XYZVector p_mc(
-              mc_particle_bank.getFloat("px", row_mc),
-              mc_particle_bank.getFloat("py", row_mc),
-              mc_particle_bank.getFloat("pz", row_mc));
-          auto theta_mc = p_mc.theta();
-          auto phi_mc   = p_mc.phi();
+          ROOT::Math::XYZVector p_gen(
+              mc_particle_bank.getFloat("px", row_gen),
+              mc_particle_bank.getFloat("py", row_gen),
+              mc_particle_bank.getFloat("pz", row_gen));
+          auto theta_gen = p_gen.theta();
+          auto phi_gen   = p_gen.phi();
           // calculate Euclidean distance in (theta,phi) space
           auto prox = std::hypot(
-              physics::tools::AdjustAnglePi(theta_mc - theta_rec),
-              physics::tools::AdjustAnglePi(phi_mc - phi_rec));
+              physics::tools::AdjustAnglePi(theta_gen - theta_rec),
+              physics::tools::AdjustAnglePi(phi_gen - phi_rec));
           // if smallest proximity, this is the best one
           if(min_prox < 0 || prox < min_prox) {
-            min_prox  = prox;
-            pindex_mc = row_mc;
+            min_prox   = prox;
+            pindex_gen = row_gen;
           }
         }
       }
 
       // if a match was found, populate the output bank
-      if(pindex_mc >= 0)
+      if(pindex_gen >= 0)
         result_rows.push_back({
             .pindex    = row_rec,
-            .mcindex   = pindex_mc,
+            .mcindex   = pindex_gen,
             .proximity = min_prox,
         });
     }
