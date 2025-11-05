@@ -136,5 +136,17 @@
       { "name": "r3_y",     "type": "F", "info": "Region 3 y-position" },
       { "name": "r3_z",     "type": "F", "info": "Region 3 z-position" }
     ]
+  },
+  {
+    "name":      "MC::RecMatch::Proximity",
+    "algorithm": "clas12::MCProximityMatch",
+    "group":     30000,
+    "item":      8,
+    "info":      "REC::Particle -> MC::Particle simple matching by proximity; similar to `MC::RecMatch`",
+    "entries": [
+      {"name": "pindex",    "type": "S", "info": "REC::Particle index"},
+      {"name": "mcindex",   "type": "S", "info": "MC::Particle index"},
+      {"name": "proximity", "type": "D", "info": "the distance between reconstructed and generated particles, in the proximity-matching space"}
+    ]
   }
 ]

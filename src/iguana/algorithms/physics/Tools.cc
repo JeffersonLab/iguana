@@ -73,4 +73,21 @@ namespace iguana::physics::tools {
       ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>> const& momentum_vec,
       ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> const& axis_vec);
 
+  double AdjustAnglePi(double ang)
+  {
+    while(ang > M_PI)
+      ang -= 2 * M_PI;
+    while(ang <= -M_PI)
+      ang += 2 * M_PI;
+    return ang;
+  };
+
+  double AdjustAngleTwoPi(double ang)
+  {
+    while(ang > 2 * M_PI)
+      ang -= 2 * M_PI;
+    while(ang <= 0)
+      ang += 2 * M_PI;
+    return ang;
+  };
 }
