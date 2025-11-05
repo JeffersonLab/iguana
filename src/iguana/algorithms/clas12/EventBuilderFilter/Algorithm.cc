@@ -12,13 +12,13 @@ namespace iguana::clas12 {
     o_pids = GetOptionSet<int>("pids");
 
     // get expected bank indices
-    b_particle = GetBankIndex(banks, "REC::Particle");
+    b_particle = GetBankIndex(banks, m_particle_bank_name);
   }
 
 
   bool EventBuilderFilter::Run(hipo::banklist& banks) const
   {
-    return Run(GetBank(banks, b_particle, "REC::Particle"));
+    return Run(GetBank(banks, b_particle, m_particle_bank_name));
   }
 
   bool EventBuilderFilter::Run(hipo::bank& particleBank) const

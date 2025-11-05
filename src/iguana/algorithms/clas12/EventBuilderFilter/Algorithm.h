@@ -4,8 +4,10 @@
 
 namespace iguana::clas12 {
 
-  /// @algo_brief{Filter the `REC::Particle` (or similar) bank by PID from the Event Builder}
+  /// @algo_brief{Filter the particle bank (`REC::Particle`, or similar) bank by PID from the Event Builder}
   /// @algo_type_filter
+  ///
+  /// @particle_bank_agnostic
   ///
   /// @begin_doc_config{clas12/EventBuilderFilter}
   /// @config_param{pids | list[int] | list of PDG codes to filter}
@@ -22,7 +24,7 @@ namespace iguana::clas12 {
       void Stop() override;
 
       /// @run_function
-      /// @param [in,out] particleBank `REC::Particle`, which will be filtered
+      /// @param [in,out] particleBank particle bank, which will be filtered
       /// @returns `false` if all particles are filtered out
       bool Run(hipo::bank& particleBank) const;
 

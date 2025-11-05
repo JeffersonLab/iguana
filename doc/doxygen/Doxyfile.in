@@ -289,6 +289,8 @@ ALIASES += algo_brief{1}="@brief **%Algorithm:** \1^^@xrefitem algo \"\" \"List 
 ALIASES += algo_type_filter="@par Type: Filter^^This algorithm will filter input bank(s).^^"
 ALIASES += algo_type_transformer="@par Type: Transformer^^This algorithm will change values within input bank(s).^^"
 ALIASES += algo_type_creator="@par Type: Creator^^^^- This algorithm creates new bank(s); \ref created_banks \"click here for a description of all created banks\".^^- See also the return value type of this algorithm's action functions, which may be `struct`s with the same set of variables as the created bank.^^^^"
+# banks
+ALIASES += particle_bank_agnostic="@note This algorithm supports general particle banks, such as `REC::Particle` and `MC::Particle`; if you use `hipo::banklist`, please call `SetParticleBankName` to choose which bank you prefer to use."
 # configuration options
 ALIASES += begin_doc_config{1}="\par Configuration Options:^^YAML configuration, which includes the default option values:^^@include \1/Config.yaml ^^Table of options and descriptions:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"
 ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
