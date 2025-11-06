@@ -203,6 +203,7 @@ namespace iguana {
       try {
         auto& result = banks.at(idx);
         if(!expected_bank_name.empty() && result.getSchema().getName() != expected_bank_name)
+          // FIXME: consider dropping this check altogether, for performance
           m_log->Error("expected input bank '{}' at index={}; got bank named '{}'", expected_bank_name, idx, result.getSchema().getName());
         else
           return result;
