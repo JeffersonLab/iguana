@@ -61,14 +61,14 @@ PROJECT_BRIEF          = "Implementation Guardian of Analysis Algorithms"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = @top_srcdir@/doc/gen/logo_small.png
+PROJECT_LOGO           = @top_srcdir@/doc/logo_small.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = @top_builddir@/doc/gen
+OUTPUT_DIRECTORY       = @top_builddir@/doc/doxygen
 
 # If the CREATE_SUBDIRS tag is set to YES then doxygen will create up to 4096
 # sub-directories (in 2 levels) under the output directory of each output format
@@ -842,7 +842,7 @@ FILE_VERSION_FILTER    =
 # DoxygenLayout.xml, doxygen will parse it automatically even if the LAYOUT_FILE
 # tag is left empty.
 
-LAYOUT_FILE            = @top_srcdir@/doc/gen/DoxygenLayout.xml
+LAYOUT_FILE            = @top_srcdir@/doc/doxygen/DoxygenLayout.xml
 
 # The CITE_BIB_FILES tag can be used to specify one or more bib files containing
 # the reference definitions. This must be a list of .bib files. The .bib
@@ -975,8 +975,8 @@ INPUT                  = @top_srcdir@/src/ \
                          @top_builddir@/src/iguana/bankdefs \
                          @top_builddir@/src/iguana/bankdefs/BankDefs.md \
                          @top_srcdir@/bind/ \
-                         @top_srcdir@/doc/gen/ \
-                         @top_srcdir@/doc/gen/mainpage.md \
+                         @top_srcdir@/doc/doxygen/ \
+                         @top_srcdir@/doc/doxygen/mainpage.md \
                          @top_srcdir@/examples/ \
                          @top_srcdir@/src/iguana/bankdefs/iguana.json
 
@@ -1090,8 +1090,8 @@ EXAMPLE_RECURSIVE      = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             = @top_srcdir@/doc/gen/logo.png \
-                         @top_srcdir@/doc/gen/mermaid/flowchart_usage.png
+IMAGE_PATH             = @top_srcdir@/doc/logo.png \
+                         @top_srcdir@/doc/mermaid/flowchart_usage.png
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -1152,7 +1152,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = @top_srcdir@/doc/gen/mainpage.md
+USE_MDFILE_AS_MAINPAGE = @top_srcdir@/doc/doxygen/mainpage.md
 
 # The Fortran standard specifies that for fixed formatted Fortran code all
 # characters from position 72 are to be considered as comment. A common
