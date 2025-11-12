@@ -9,7 +9,7 @@ namespace iguana::physics {
 
   void InclusiveKinematics::Start(hipo::banklist& banks)
   {
-    b_particle = GetBankIndex(banks, "REC::Particle");
+    b_particle = GetBankIndex(banks, m_particle_bank_name);
     b_config   = GetBankIndex(banks, "RUN::config");
 
     // create the output bank
@@ -77,7 +77,7 @@ namespace iguana::physics {
   bool InclusiveKinematics::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_particle),
         GetBank(banks, b_config, "RUN::config"),
         GetBank(banks, b_result, GetClassName()));
   }

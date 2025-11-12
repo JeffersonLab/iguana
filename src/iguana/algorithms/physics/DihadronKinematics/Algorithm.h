@@ -9,6 +9,7 @@ namespace iguana::physics {
 
   /// @algo_brief{Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`}
   /// @algo_type_creator
+  /// @particle_bank_agnostic
   ///
   /// @begin_doc_config{physics/DihadronKinematics}
   /// @config_param{hadron_a_list | list[int] | list of "hadron A" PDGs}
@@ -44,7 +45,7 @@ namespace iguana::physics {
       void Stop() override;
 
       /// @run_function
-      /// @param [in] particle_bank `REC::Particle`
+      /// @param [in] particle_bank particle bank
       /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm
       /// @param [out] result_bank `%physics::DihadronKinematics`, which will be created
       /// @returns `false` if the input banks do not have enough information, _e.g._, if the inclusive kinematics bank is empty,
@@ -55,7 +56,7 @@ namespace iguana::physics {
           hipo::bank& result_bank) const;
 
       /// @brief form dihadrons by pairing hadrons
-      /// @param particle_bank the particle bank (`REC::Particle`)
+      /// @param particle_bank the particle bank
       /// @returns a list of pairs of hadron rows
       std::vector<std::pair<int, int>> PairHadrons(hipo::bank const& particle_bank) const;
 

@@ -9,6 +9,7 @@ namespace iguana::physics {
 
   /// @algo_brief{Calculate inclusive kinematics quantities}
   /// @algo_type_creator
+  /// @particle_bank_agnostic
   /// @begin_doc_config{physics/InclusiveKinematics}
   /// @config_param{beam_direction | list[double] | beam direction vector}
   /// @config_param{target_particle | string | target particle}
@@ -28,7 +29,7 @@ namespace iguana::physics {
       void Stop() override;
 
       /// @run_function
-      /// @param [in] particle_bank `REC::Particle`
+      /// @param [in] particle_bank particle bank
       /// @param [in] config_bank `RUN::config`
       /// @param [out] result_bank `%physics::InclusiveKinematics`, which will be created
       /// @returns `true` if the kinematics were calculated; _e.g._, if the calculations are performed using
