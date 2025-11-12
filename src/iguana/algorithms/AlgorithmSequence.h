@@ -99,7 +99,7 @@ namespace iguana {
       /// @endcode
       /// @param algo_instance_name the instance name of the algorithm
       /// @return a reference to the algorithm
-      template <class ALGORITHM>
+      template <class ALGORITHM = Algorithm>
       ALGORITHM* Get(std::string const& algo_instance_name)
       {
         if(auto it{m_algo_names.find(algo_instance_name)}; it != m_algo_names.end())
