@@ -104,6 +104,22 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  hipo::banklist::size_type Algorithm::GetBanklistIndex(hipo::banklist& banks, std::string const& bank_name, unsigned int const& variant) noexcept(false)
+  {
+    unsigned int num_found = 0;
+    for(hipo::banklist::size_type i = 0; i < banks.size(); i++) {
+      auto& bank = banks.at(i);
+      if(bank.getSchema().getName() == bank_name) {
+        if(num_found == variant)
+          return i;
+        num_found++;
+      }
+    }
+    throw std::runtime_error(fmt::format("Algorithm::GetBanklistIndex failed to find bank {:?}"));
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::ParseYAMLConfig()
   {
 
@@ -144,7 +160,7 @@ namespace iguana {
     if(m_rows_only)
       return 0;
     try {
-      auto idx = hipo::getBanklistIndex(banks, bank_name);
+      auto idx = GetBanklistIndex(banks, bank_name, m_created_bank_variant);
       m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
       return idx;
     }
@@ -289,6 +305,12 @@ namespace iguana {
 
     throw std::runtime_error(fmt::format("bank {:?} not found in 'BankDefs.h'; is this bank defined in src/iguana/bankdefs/iguana.json ?", bank_name_arg));
   }
+  ///////////////////////////////////////////////////////////////////////////////
+
+  unsigned int Algorithm::GetCreatedBankVariant() const
+  {
+    return m_created_bank_variant;
+  }
 
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -302,11 +324,19 @@ namespace iguana {
   hipo::schema Algorithm::CreateBank(
       hipo::banklist& banks,
       hipo::banklist::size_type& bank_idx,
-      std::string const& bank_name) const noexcept(false)
+      std::string const& bank_name) noexcept(false)
   {
+    // check if this bank is already present in `banks`
+    for(auto& bank : banks) {
+      if(bank.getSchema().getName() == bank_name)
+        m_created_bank_variant++;
+    }
+    if(m_created_bank_variant > 0)
+      m_log->Info("creating DUPLICATE bank {:?} in your hipo::banklist; use `variant = {}` when calling `GetBanklistIndex` (or call `GetCreatedBankVariant()`)", bank_name, m_created_bank_variant);
+    // create the schema, and add the new bank to `banks`
     auto bank_schema = GetCreatedBankSchema(bank_name);
     banks.emplace_back(bank_schema);
-    bank_idx = GetBankIndex(banks, bank_name);
+    bank_idx = banks.size();
     return bank_schema;
   }
 

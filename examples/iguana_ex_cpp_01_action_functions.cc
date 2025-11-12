@@ -42,11 +42,11 @@ int main(int argc, char** argv)
                                           "REC::Scintillator"});
 
   // get bank index, for each bank we want to use after Iguana algorithms run
-  auto b_particle     = hipo::getBanklistIndex(banks, "REC::Particle");
-  auto b_config       = hipo::getBanklistIndex(banks, "RUN::config");
-  auto b_track        = hipo::getBanklistIndex(banks, "REC::Track");
-  auto b_calorimeter  = hipo::getBanklistIndex(banks, "REC::Calorimeter");
-  auto b_scintillator = hipo::getBanklistIndex(banks, "REC::Scintillator");
+  auto b_particle     = iguana::Algorithm::GetBanklistIndex(banks, "REC::Particle");
+  auto b_config       = iguana::Algorithm::GetBanklistIndex(banks, "RUN::config");
+  auto b_track        = iguana::Algorithm::GetBanklistIndex(banks, "REC::Track");
+  auto b_calorimeter  = iguana::Algorithm::GetBanklistIndex(banks, "REC::Calorimeter");
+  auto b_scintillator = iguana::Algorithm::GetBanklistIndex(banks, "REC::Scintillator");
 
   // set the concurrency model to single-threaded, since this example is single-threaded;
   // not doing this will use the thread-safe model, `"memoize"`
