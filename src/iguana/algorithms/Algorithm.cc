@@ -335,8 +335,8 @@ namespace iguana {
       m_log->Info("creating DUPLICATE bank {:?} in your hipo::banklist; use `variant = {}` when calling `GetBanklistIndex` (or call `GetCreatedBankVariant()`)", bank_name, m_created_bank_variant);
     // create the schema, and add the new bank to `banks`
     auto bank_schema = GetCreatedBankSchema(bank_name);
+    bank_idx         = banks.size();
     banks.emplace_back(bank_schema);
-    bank_idx = banks.size();
     return bank_schema;
   }
 
