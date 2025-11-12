@@ -167,6 +167,8 @@ namespace iguana {
       ///
       /// This is only needed if you intend to use `hipo::banklist`, and prefer to use a different particle
       /// bank than the default (`REC::Particle`); for example, set it to `MC::Particle` to read MC particles.
+      ///
+      /// Call this function _before_ calling `Start`.
       /// @param bank_name The particle bank name
       void SetParticleBankName(std::string const& bank_name);
 
