@@ -18,7 +18,7 @@ namespace iguana::clas12 {
 
   bool EventBuilderFilter::Run(hipo::banklist& banks) const
   {
-    return Run(GetBank(banks, b_particle));
+    return Run(GetBank(banks, b_particle, m_particle_bank_name));
   }
 
   bool EventBuilderFilter::Run(hipo::bank& particleBank) const

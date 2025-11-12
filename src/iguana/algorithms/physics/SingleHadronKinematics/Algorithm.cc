@@ -37,7 +37,7 @@ namespace iguana::physics {
   bool SingleHadronKinematics::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_particle),
+        GetBank(banks, b_particle, m_particle_bank_name),
         GetBank(banks, b_inc_kin, "physics::InclusiveKinematics"),
         GetBank(banks, b_result, GetClassName()));
   }

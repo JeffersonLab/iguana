@@ -77,7 +77,7 @@ namespace iguana::physics {
   bool InclusiveKinematics::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_particle),
+        GetBank(banks, b_particle, m_particle_bank_name),
         GetBank(banks, b_config, "RUN::config"),
         GetBank(banks, b_result, GetClassName()));
   }
