@@ -20,10 +20,10 @@ namespace iguana::physics {
   ///
   /// Dihadron PDGs will be formed from pairs from `hadron_a_list` and `hadron_b_list`. For example,
   /// if you define:
-  /// ```yaml
+  /// @code{yaml}
   /// hadron_a_list: [ 211 ]
   /// hadron_b_list: [ -211, 2212 ]
-  /// ```
+  /// @endcode
   /// then the algorithm will calculate kinematics for @latex{\pi^+\pi^-} and @latex{\pi^+p} dihadrons; hadron A
   /// is the @latex{\pi^+} for both of these, whereas hadron B is the @latex{\pi^-} for the former and the proton
   /// for the latter.
