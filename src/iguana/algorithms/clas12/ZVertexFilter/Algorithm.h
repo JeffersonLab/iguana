@@ -5,12 +5,13 @@
 
 namespace iguana::clas12 {
 
-  /// @algo_brief{Filter the `REC::Particle` (or similar) bank by cutting on Z Vertex}
+  /// @algo_brief{Filter a particle bank by cutting on Z Vertex}
   /// @algo_type_filter
   ///
   /// @begin_doc_config{clas12/ZVertexFilter}
   /// @config_param{electron_vz | list[double] | lower and upper electron @f$z@f$-vertex cuts; run-range dependent; cuts are not applied to FT electrons (FD and CD only)}
   /// @end_doc
+  /// @particle_bank_agnostic
   class ZVertexFilter : public Algorithm
   {
 
@@ -23,7 +24,7 @@ namespace iguana::clas12 {
       void Stop() override;
 
       /// @run_function
-      /// @param [in,out] particleBank `REC::Particle`, which will be filtered
+      /// @param [in,out] particleBank particle bank, which will be filtered
       /// @param [in] configBank `RUN::config`
       /// @returns `false` if all particles are filtered out
       bool Run(hipo::bank& particleBank, hipo::bank const& configBank) const;

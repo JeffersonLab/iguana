@@ -10,7 +10,7 @@ namespace iguana::physics {
 
   void SingleHadronKinematics::Start(hipo::banklist& banks)
   {
-    b_particle = GetBankIndex(banks, "REC::Particle");
+    b_particle = GetBankIndex(banks, m_particle_bank_name);
     b_inc_kin  = GetBankIndex(banks, "physics::InclusiveKinematics");
 
     // create the output bank
@@ -37,7 +37,7 @@ namespace iguana::physics {
   bool SingleHadronKinematics::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_particle, m_particle_bank_name),
         GetBank(banks, b_inc_kin, "physics::InclusiveKinematics"),
         GetBank(banks, b_result, GetClassName()));
   }

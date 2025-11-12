@@ -16,6 +16,7 @@ namespace iguana::physics {
   /// @config_param{reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available at this time}
   /// @config_param{lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available at this time}
   /// @end_doc
+  /// @particle_bank_agnostic
   class InclusiveKinematics : public Algorithm
   {
 
@@ -28,7 +29,7 @@ namespace iguana::physics {
       void Stop() override;
 
       /// @run_function
-      /// @param [in] particle_bank `REC::Particle`
+      /// @param [in] particle_bank particle bank
       /// @param [in] config_bank `RUN::config`
       /// @param [out] result_bank `%physics::InclusiveKinematics`, which will be created
       /// @returns `true` if the kinematics were calculated; _e.g._, if the calculations are performed using

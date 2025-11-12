@@ -29,6 +29,8 @@ Once you have generated your new algorithm:
 - [ ] consider writing a **Validator** algorithm, for example, one that draws validation plots used to check if your algorithm is working;
       see existing algorithms for examples
 - [ ] if you created a new namespace, update [`namespaces.dox`](/doc/doxygen/namespaces.dox)
+- [ ] if your algorithm uses a particle bank, and can support not only `REC::Particle` but also banks such as `MC::Particle`, make sure
+      that this is possible; see `physics::InclusiveKinematics` for an example of what to do
 
 > [!TIP]
 > Enable the build option `install_documentation` (if you have `doxygen`), so

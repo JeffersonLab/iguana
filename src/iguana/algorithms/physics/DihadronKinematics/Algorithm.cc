@@ -9,7 +9,7 @@ namespace iguana::physics {
 
   void DihadronKinematics::Start(hipo::banklist& banks)
   {
-    b_particle = GetBankIndex(banks, "REC::Particle");
+    b_particle = GetBankIndex(banks, m_particle_bank_name);
     b_inc_kin  = GetBankIndex(banks, "physics::InclusiveKinematics");
 
     // create the output bank
@@ -53,7 +53,7 @@ namespace iguana::physics {
   bool DihadronKinematics::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_particle, "REC::Particle"),
+        GetBank(banks, b_particle, m_particle_bank_name),
         GetBank(banks, b_inc_kin, "physics::InclusiveKinematics"),
         GetBank(banks, b_result, GetClassName()));
   }
@@ -212,11 +212,11 @@ namespace iguana::physics {
   std::vector<std::pair<int, int>> DihadronKinematics::PairHadrons(hipo::bank const& particle_bank) const
   {
     std::vector<std::pair<int, int>> result;
-    // loop over REC::Particle rows, for hadron A
+    // loop over particle bank rows, for hadron A
     for(auto const& row_a : particle_bank.getRowList()) {
       // check PDG is in the hadron-A list
       if(auto pdg_a{particle_bank.getInt("pid", row_a)}; o_hadron_a_pdgs.find(pdg_a) != o_hadron_a_pdgs.end()) {
-        // loop over REC::Particle rows, for hadron B
+        // loop over particle bank rows, for hadron B
         for(auto const& row_b : particle_bank.getRowList()) {
           // don't pair a particle with itself
           if(row_a == row_b)

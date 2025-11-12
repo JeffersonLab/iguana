@@ -292,6 +292,13 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  void Algorithm::SetParticleBankName(std::string const& bank_name)
+  {
+    m_particle_bank_name = bank_name;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   hipo::schema Algorithm::CreateBank(
       hipo::banklist& banks,
       hipo::banklist::size_type& bank_idx,

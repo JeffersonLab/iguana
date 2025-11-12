@@ -16,13 +16,14 @@ namespace iguana::physics {
   /// @config_param{phi_r_method | string | method used to calculate @latex{\phi_R} (see section "phiR calculation methods" below)}
   /// @config_param{theta_method | string | method used to calculate @latex{\theta} (see section "theta calculation methods" below)}
   /// @end_doc
+  /// @particle_bank_agnostic
   ///
   /// Dihadron PDGs will be formed from pairs from `hadron_a_list` and `hadron_b_list`. For example,
   /// if you define:
-  /// ```yaml
+  /// @code{yaml}
   /// hadron_a_list: [ 211 ]
   /// hadron_b_list: [ -211, 2212 ]
-  /// ```
+  /// @endcode
   /// then the algorithm will calculate kinematics for @latex{\pi^+\pi^-} and @latex{\pi^+p} dihadrons; hadron A
   /// is the @latex{\pi^+} for both of these, whereas hadron B is the @latex{\pi^-} for the former and the proton
   /// for the latter.
@@ -44,7 +45,7 @@ namespace iguana::physics {
       void Stop() override;
 
       /// @run_function
-      /// @param [in] particle_bank `REC::Particle`
+      /// @param [in] particle_bank particle bank
       /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm
       /// @param [out] result_bank `%physics::DihadronKinematics`, which will be created
       /// @returns `false` if the input banks do not have enough information, _e.g._, if the inclusive kinematics bank is empty,
@@ -55,7 +56,7 @@ namespace iguana::physics {
           hipo::bank& result_bank) const;
 
       /// @brief form dihadrons by pairing hadrons
-      /// @param particle_bank the particle bank (`REC::Particle`)
+      /// @param particle_bank the particle bank
       /// @returns a list of pairs of hadron rows
       std::vector<std::pair<int, int>> PairHadrons(hipo::bank const& particle_bank) const;
 

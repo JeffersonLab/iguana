@@ -12,8 +12,9 @@ namespace iguana::physics {
   /// @begin_doc_config{physics/SingleHadronKinematics}
   /// @config_param{hadron_list | list[int] | calculate kinematics for these hadron PDGs}
   /// @end_doc
+  /// @particle_bank_agnostic
   ///
-  /// The output bank `%physics::SingleHadronKinematics` will have the same number of rows as the input particle bank `REC::Particle`
+  /// The output bank `%physics::SingleHadronKinematics` will have the same number of rows as the input particle bank
   /// - we want the output bank to have the same number of rows and ordering as the input
   ///   particle bank, so that banks which reference the input particle bank's rows (usually via `pindex`) can be used to
   ///   reference the output bank's rows too
@@ -33,7 +34,7 @@ namespace iguana::physics {
       void Stop() override;
 
       /// @run_function
-      /// @param [in] particle_bank `REC::Particle`
+      /// @param [in] particle_bank particle bank
       /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm
       /// @param [out] result_bank `%physics::SingleHadronKinematics`, which will be created
       /// @returns `false` if the input banks do not have enough information, _e.g._, if the inclusive kinematics bank is empty,
