@@ -9,7 +9,6 @@ namespace iguana::physics {
 
   /// @algo_brief{Calculate inclusive kinematics quantities}
   /// @algo_type_creator
-  /// @particle_bank_agnostic
   /// @begin_doc_config{physics/InclusiveKinematics}
   /// @config_param{beam_direction | list[double] | beam direction vector}
   /// @config_param{target_particle | string | target particle}
@@ -17,6 +16,7 @@ namespace iguana::physics {
   /// @config_param{reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available at this time}
   /// @config_param{lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available at this time}
   /// @end_doc
+  /// @particle_bank_agnostic
   class InclusiveKinematics : public Algorithm
   {
 

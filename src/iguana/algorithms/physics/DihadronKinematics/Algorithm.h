@@ -9,7 +9,6 @@ namespace iguana::physics {
 
   /// @algo_brief{Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`}
   /// @algo_type_creator
-  /// @particle_bank_agnostic
   ///
   /// @begin_doc_config{physics/DihadronKinematics}
   /// @config_param{hadron_a_list | list[int] | list of "hadron A" PDGs}
@@ -17,6 +16,7 @@ namespace iguana::physics {
   /// @config_param{phi_r_method | string | method used to calculate @latex{\phi_R} (see section "phiR calculation methods" below)}
   /// @config_param{theta_method | string | method used to calculate @latex{\theta} (see section "theta calculation methods" below)}
   /// @end_doc
+  /// @particle_bank_agnostic
   ///
   /// Dihadron PDGs will be formed from pairs from `hadron_a_list` and `hadron_b_list`. For example,
   /// if you define:
