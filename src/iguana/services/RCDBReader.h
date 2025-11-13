@@ -4,7 +4,9 @@
 #include <mutex>
 
 #ifdef USE_RCDB
-// workaround: forward declare classes from the header-only RCDB, to avoid ODR violations here
+// workaround ODR violations from header-only RCDB:
+// - forward declare RCDB classes here
+// - include directives go in the .cc file
 namespace rcdb {
   class Connection;
 }
@@ -37,7 +39,7 @@ namespace iguana {
       /// @returns the beam energy in GeV
       double GetBeamEnergy(int const runnum);
 
-      /// @brief set the beam energy to a _fixed_ value
+      /// @brief set the beam energy to a _fixed_ value; `GetBeamEnergy` will return _this_ energy
       /// @param beam_energy the beam energy in GeV
       void SetBeamEnergyOverride(double const beam_energy);
 

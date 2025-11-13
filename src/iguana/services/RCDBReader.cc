@@ -1,9 +1,9 @@
 #include "RCDBReader.h"
 #include "GlobalParam.h"
-// #include "iguana/algorithms/TypeDefs.h" // DEBUG ODR
+#include "iguana/algorithms/TypeDefs.h"
 
 #ifdef USE_RCDB
-// include the RCDB headers ONCE, to avoid ODR violations
+// include the RCDB headers here, to avoid ODR violations
 #include <RCDB/Connection.h>
 #endif
 
@@ -52,7 +52,7 @@ namespace iguana {
     if(m_beam_energy_override >= 0)
       return m_beam_energy_override;
     // if it's an MC run (pre real-run numbers), return the override value
-    if(runnum == 11/*MC_RUN_NUM*/) {
+    if(runnum == MC_RUN_NUM) {
       if(m_beam_energy_override >= 0)
         return m_beam_energy_override;
       else {

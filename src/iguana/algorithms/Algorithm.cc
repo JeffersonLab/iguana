@@ -158,10 +158,10 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  // void Algorithm::StartRCDBReader()
-  // {
-  //   m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
-  // }
+  void Algorithm::StartRCDBReader()
+  {
+    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
+  }
 
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -337,10 +337,10 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  // std::unique_ptr<RCDBReader>& Algorithm::GetRCDBReader()
-  // {
-  //   return m_rcdb;
-  // }
+  std::unique_ptr<RCDBReader>& Algorithm::GetRCDBReader()
+  {
+    return m_rcdb;
+  }
 
   ///////////////////////////////////////////////////////////////////////////////
 

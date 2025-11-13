@@ -9,7 +9,7 @@
 #include "AlgorithmBoilerplate.h"
 #include "iguana/bankdefs/BankDefs.h"
 #include "iguana/services/YAMLReader.h"
-// #include "iguana/services/RCDBReader.h"
+#include "iguana/services/RCDBReader.h"
 #include <iguana/services/GlobalParam.h>
 
 namespace iguana {
@@ -208,8 +208,8 @@ namespace iguana {
       /// @see tools::GetBankIndex for details
       unsigned int GetCreatedBankVariant() const;
 
-      // /// @returns the RCDB reader instance
-      // std::unique_ptr<RCDBReader>& GetRCDBReader();
+      /// @returns the RCDB reader instance
+      std::unique_ptr<RCDBReader>& GetRCDBReader();
 
       /// @brief Change the name of the particle bank, for algorithms that can read different particle banks.
       ///
@@ -225,8 +225,8 @@ namespace iguana {
       /// Parse YAML configuration files. Sets `m_yaml_config`.
       void ParseYAMLConfig();
 
-      // /// Instantiate the `RCDBReader` instance for this algorithm
-      // void StartRCDBReader();
+      /// Instantiate the `RCDBReader` instance for this algorithm
+      void StartRCDBReader();
 
       /// Get the reference to a bank from a `hipo::banklist`; optionally checks if the bank name matches the expectation
       /// @param banks the `hipo::banklist` from which to get the specified bank
@@ -310,8 +310,8 @@ namespace iguana {
       /// instances that are configured differently
       unsigned int m_created_bank_variant{0};
 
-      // /// RCDB reader
-      // std::unique_ptr<RCDBReader> m_rcdb;
+      /// RCDB reader
+      std::unique_ptr<RCDBReader> m_rcdb;
 
       /// The name of the particle bank, for `hipo::banklist` users
       std::string m_particle_bank_name{"REC::Particle"};
