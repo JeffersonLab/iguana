@@ -154,3 +154,14 @@ test(
   args: [ 'logger' ],
   env: project_test_env
 )
+
+# test banklist
+if fs.is_file(get_option('test_data_file'))
+  test(
+    'banklist',
+    test_exe,
+    suite: [ 'misc', 'single_threaded' ],
+    args: [ 'banklist', '-f', get_option('test_data_file') ],
+    env: project_test_env
+  )
+endif

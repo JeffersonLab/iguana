@@ -156,7 +156,6 @@ algo_sources = [
   'Algorithm.cc',
   'AlgorithmFactory.cc',
   'AlgorithmSequence.cc',
-  'Tools.cc',
   bankdef_tgt[1], # BankDefs.cc
 ]
 algo_headers = [
@@ -164,7 +163,6 @@ algo_headers = [
   'AlgorithmBoilerplate.h',
   'TypeDefs.h',
   'AlgorithmSequence.h',
-  'Tools.h',
 ]
 if ROOT_dep.found()
   algo_sources += [ 'physics/Tools.cc' ]
