@@ -157,7 +157,7 @@ it to the end of the input `hipo::banklist`.
 <li>[Click here for descriptions of all created banks](#created_banks)</li>
 <li>An initial version is created upon calling `Start(hipo::banklist&)`, so that you may begin to reference it</li>
 <ul>
-<li>It is helpful to use `iguana::Algorithm::GetBanklistIndex`, to get the created bank index within the `hipo::banklist`</li>
+<li>It is helpful to use `iguana::tools::GetBankIndex`, to get the created bank index within the `hipo::banklist`</li>
 <li>See [the examples for details](#mainpageExample)</li>
 </ul>
 </ul>

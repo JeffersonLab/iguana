@@ -60,9 +60,9 @@ sector_finder_bank_name = seq.GetCreatedBankName("clas12::SectorFinder");
 
 # get bank index, for each bank we want to use after Iguana algorithms run
 # NOTE: new banks from creator algorithms are initialized by `Start`
-b_config   = iguana.Algorithm.GetBanklistIndex(banks, 'RUN::config')
-b_particle = iguana.Algorithm.GetBanklistIndex(banks, 'REC::Particle')
-b_sector   = iguana.Algorithm.GetBanklistIndex(banks, sector_finder_bank_name) # new created bank
+b_config   = iguana.tools.GetBankIndex(banks, 'RUN::config')
+b_particle = iguana.tools.GetBankIndex(banks, 'REC::Particle')
+b_sector   = iguana.tools.GetBankIndex(banks, sector_finder_bank_name) # new created bank
 
 # run the algorithm sequence on each event
 iEvent = 0

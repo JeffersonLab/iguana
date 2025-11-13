@@ -65,9 +65,9 @@ int main(int argc, char** argv)
 
   // get bank index, for each bank we want to use after Iguana algorithms run
   // NOTE: new banks from creator algorithms are initialized by `Start`
-  auto b_config   = iguana::Algorithm::GetBanklistIndex(banks, "RUN::config");
-  auto b_particle = iguana::Algorithm::GetBanklistIndex(banks, "REC::Particle");
-  auto b_sector   = iguana::Algorithm::GetBanklistIndex(banks, sector_finder_bank_name); // new created bank
+  auto b_config   = iguana::tools::GetBankIndex(banks, "RUN::config");
+  auto b_particle = iguana::tools::GetBankIndex(banks, "REC::Particle");
+  auto b_sector   = iguana::tools::GetBankIndex(banks, sector_finder_bank_name); // new created bank
 
   // run the algorithm sequence on each event
   int iEvent = 0;
