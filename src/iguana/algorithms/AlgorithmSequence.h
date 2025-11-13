@@ -162,6 +162,18 @@ namespace iguana {
       /// @param func the function to call for each algorithm `algo`
       void ForEachAlgorithm(std::function<void(algo_t&)> func);
 
+      /// Get the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
+      /// @param banks the list of banks this algorithm will use
+      /// @param bank_name the name of the bank
+      /// @param algo_instance_name the algorithm instance name,
+      /// to disambiguate the case where two algorithms create a bank with the same name (_cf._ `variant` parameter of tools::GetBankIndex)
+      /// @returns the `hipo::banklist` index of the bank
+      /// @see tools::GetBankIndex for a function that is independent of algorithm
+      hipo::banklist::size_type GetBankIndex(
+          hipo::banklist& banks,
+          std::string const& bank_name,
+          std::string const& algo_instance_name) const noexcept(false);
+
     private:
 
       /// The sequence of algorithms
