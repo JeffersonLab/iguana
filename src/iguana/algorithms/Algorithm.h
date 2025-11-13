@@ -140,6 +140,13 @@ namespace iguana {
       /// @param name the directory name
       void SetConfigDirectory(std::string const& name);
 
+      /// Get the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
+      /// @param banks the list of banks this algorithm will use
+      /// @param bank_name the name of the bank
+      /// @returns the `hipo::banklist` index of the bank
+      /// @see tools::GetBankIndex for a function that is independent of algorithm
+      hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
+
       /// Get the list of created bank names, for creator-type algorithms
       /// @see `Algorithm::GetCreatedBankName` for algorithms which create only one bank
       /// @returns the list of new bank names
@@ -187,12 +194,6 @@ namespace iguana {
       /// @param expected_bank_name if specified, checks that the specified bank has this name
       /// @return a reference to the bank
       hipo::bank& GetBank(hipo::banklist& banks, hipo::banklist::size_type const idx, std::string const& expected_bank_name = "") const noexcept(false);
-
-      /// Get the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
-      /// @param banks the list of banks this algorithm will use
-      /// @param bank_name the name of the bank
-      /// @returns the `hipo::banklist` index of the bank
-      hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
 
       /// Create a new bank and push it to the bank list. The bank must be defined in `src/iguana/bankdefs/iguana.json`.
       /// @param [out] banks the `hipo::banklist` onto which the new bank will be pushed
