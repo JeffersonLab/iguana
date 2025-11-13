@@ -9,9 +9,6 @@ namespace iguana::physics {
 
   void InclusiveKinematics::Start(hipo::banklist& banks)
   {
-    // instantiate RCDB reader
-    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
-
     // parse config file
     ParseYAMLConfig();
     o_particle_bank  = GetOptionScalar<std::string>("particle_bank");
@@ -72,6 +69,10 @@ namespace iguana::physics {
     i_qE               = result_schema.getEntryOrder("qE");
     i_beamPz           = result_schema.getEntryOrder("beamPz");
     i_targetM          = result_schema.getEntryOrder("targetM");
+
+    // instantiate RCDB reader `m_rcdb`
+    // StartRCDBReader();
+    // m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel()); // DEBUG ODR
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -204,7 +205,7 @@ namespace iguana::physics {
     o_runnum->Save(runnum, key);
 
     // parse config params
-    auto beam_energy     = user_beam_energy < 0 ? m_rcdb->GetBeamEnergy(runnum) : user_beam_energy;
+    auto beam_energy     = 10.6;/*user_beam_energy < 0 ? m_rcdb->GetBeamEnergy(runnum) : user_beam_energy;*/
     auto beam_direction  = GetOptionVector<double>("beam_direction", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_direction"});
     auto target_particle = GetOptionScalar<std::string>("target_particle", {"initial_state", GetConfig()->InRange("runs", runnum), "target_particle"});
 

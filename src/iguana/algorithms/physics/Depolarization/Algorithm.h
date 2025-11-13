@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include "iguana/services/RCDBReader.h" // DEBUG ODR
 
 namespace iguana::physics {
 
