@@ -117,4 +117,11 @@ namespace iguana {
     throw std::runtime_error("cannot Get algorithm");
   }
 
+  hipo::banklist::size_type AlgorithmSequence::GetCreatedBankIndex(
+      hipo::banklist& banks,
+      std::string const& algo_instance_name) const noexcept(false)
+  {
+    return GetBankIndex(banks, GetCreatedBankName(algo_instance_name), algo_instance_name);
+  }
+
 }

@@ -169,7 +169,15 @@ namespace iguana {
       /// @param bank_name the name of the bank
       /// @returns the `hipo::banklist` index of the bank
       /// @see tools::GetBankIndex for a function that is independent of algorithm
+      /// @see GetCreatedBankIndex, a convenience method for _Iguana-created_ banks
       hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
+
+      /// Get the index of an _Iguana-created_ bank in a `hipo::banklist`; throws an exception if the bank is not found, or if the algorithm
+      /// creates more than one bank
+      /// @param banks the list of banks this algorithm will use
+      /// @returns the `hipo::banklist` index of the bank
+      /// @see GetBankIndex for a more general method
+      hipo::banklist::size_type GetCreatedBankIndex(hipo::banklist& banks) const noexcept(false);
 
       /// Get the list of created bank names, for creator-type algorithms
       /// @see `Algorithm::GetCreatedBankName` for algorithms which create only one bank

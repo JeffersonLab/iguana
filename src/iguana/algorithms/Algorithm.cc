@@ -178,6 +178,13 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  hipo::banklist::size_type Algorithm::GetCreatedBankIndex(hipo::banklist& banks) const noexcept(false)
+  {
+    return GetBankIndex(banks, GetCreatedBankName());
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::PrintOptionValue(std::string const& key, int const& val, Logger::Level const level, std::string_view prefix) const
   {
     m_log->Print(level, "{}: {:>20} = {} [int]", prefix, key, val);
