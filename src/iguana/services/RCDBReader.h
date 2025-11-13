@@ -30,6 +30,9 @@ namespace iguana {
       /// @param lev the log level
       RCDBReader(std::string_view name = "rcdb", Logger::Level lev = Logger::DEFAULT_LEVEL);
 
+      /// destructor
+      ~RCDBReader();
+
       /// @param runnum run number
       /// @returns the beam energy in GeV
       double GetBeamEnergy(int const runnum);
