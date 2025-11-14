@@ -1,5 +1,9 @@
 clas12::ZVertexFilter:
 
+  # the name of the particle bank, only used for users of `hipo::banklist`;
+  # e.g., set it to 'MC::Particle' if you prefer
+  particle_bank: 'REC::Particle'
+
   # scattered electron cuts
   electron:
 

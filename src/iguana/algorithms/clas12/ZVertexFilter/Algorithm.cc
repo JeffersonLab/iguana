@@ -14,14 +14,14 @@ namespace iguana::clas12 {
     o_electron_vz_cuts = ConcurrentParamFactory::Create<std::vector<double>>();
 
     // get expected bank indices
-    b_particle = GetBankIndex(banks, m_particle_bank_name);
+    b_particle = GetBankIndex(banks, o_particle_bank);
     b_config   = GetBankIndex(banks, "RUN::config");
   }
 
   bool ZVertexFilter::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_particle, m_particle_bank_name),
+        GetBank(banks, b_particle, o_particle_bank),
         GetBank(banks, b_config, "RUN::config"));
   }
 
