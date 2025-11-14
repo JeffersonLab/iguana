@@ -38,7 +38,7 @@ inline int TestBanklist(
   };
   iguana::AlgorithmSequence seq;
   seq.Add("clas12::SectorFinder", "creator_1a");
-  seq.Add("physics::InclusiveKinematics", "creator_2");
+  seq.Add("clas12::CalorimeterLinker", "creator_2");
   seq.Add("clas12::SectorFinder", "creator_1b");
 
   // print the sequence
