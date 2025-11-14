@@ -5,6 +5,7 @@
 #include <Math/Vector4D.h>
 #include <optional>
 
+/// physics tools
 namespace iguana::physics::tools {
 
   /// a value used when some calculation fails
