@@ -163,7 +163,9 @@ namespace iguana {
     if(m_rows_only)
       return 0;
     try {
-      auto idx = tools::GetBankIndex(banks, bank_name, m_created_bank_variant);
+      // use nonzero variant number iff the bank was created by iguana
+      auto variant = AlgorithmFactory::GetCreatorAlgorithms(bank_name) ? m_created_bank_variant : 0;
+      auto idx     = tools::GetBankIndex(banks, bank_name, variant);
       m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
       return idx;
     }
@@ -341,8 +343,13 @@ namespace iguana {
       if(bank.getSchema().getName() == bank_name)
         m_created_bank_variant++;
     }
-    if(m_created_bank_variant > 0)
-      m_log->Info("creating DUPLICATE bank {:?} in your hipo::banklist; use `variant = {}` if you call `tools::GetBankIndex` (tip: `GetCreatedBankVariant()` gets the variant number)", bank_name, m_created_bank_variant);
+    if(m_created_bank_variant > 0) {
+      m_log->Info(R"(creating DUPLICATE bank {:?} in your hipo::banklist
+- if you call `tools::GetBankIndex`, use `variant = {}`
+- preferably, use `GetCreatedBankIndex`, which doesn't need `variant`)",
+                  bank_name,
+                  m_created_bank_variant);
+    }
     // create the schema, and add the new bank to `banks`
     auto bank_schema = GetCreatedBankSchema(bank_name);
     bank_idx         = banks.size();
