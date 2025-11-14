@@ -163,9 +163,13 @@ namespace iguana {
     if(m_rows_only)
       return 0;
     try {
-      // use nonzero variant number iff the bank was created by iguana
-      auto variant = AlgorithmFactory::GetCreatorAlgorithms(bank_name) ? m_created_bank_variant : 0;
-      auto idx     = tools::GetBankIndex(banks, bank_name, variant);
+      // check if this bank was created by iguana
+      auto created_by_iguana = AlgorithmFactory::GetCreatorAlgorithms(bank_name);
+      // get the index
+      auto idx = tools::GetBankIndex(
+          banks,
+          bank_name,
+          created_by_iguana ? m_created_bank_variant : 0);
       m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
       return idx;
     }
