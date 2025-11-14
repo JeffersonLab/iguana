@@ -11,7 +11,6 @@ namespace iguana::clas12 {
   /// @begin_doc_config{clas12/ZVertexFilter}
   /// @config_param{electron_vz | list[double] | lower and upper electron @f$z@f$-vertex cuts; run-range dependent; cuts are not applied to FT electrons (FD and CD only)}
   /// @end_doc
-  /// @particle_bank_agnostic
   class ZVertexFilter : public Algorithm
   {
 
@@ -24,7 +23,7 @@ namespace iguana::clas12 {
       void Stop() override;
 
       /// @run_function
-      /// @param [in,out] particleBank particle bank, which will be filtered
+      /// @param [in,out] particleBank particle bank (_e.g._, `REC::Particle`), which will be filtered
       /// @param [in] configBank `RUN::config`
       /// @returns `false` if all particles are filtered out
       bool Run(hipo::bank& particleBank, hipo::bank const& configBank) const;
@@ -66,6 +65,9 @@ namespace iguana::clas12 {
 
       // Reload function
       void Reload(int const runnum, concurrent_key_t key) const;
+
+      /// Particle bank name
+      std::string o_particle_bank;
 
       /// Run number
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;

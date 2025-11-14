@@ -10,7 +10,13 @@ namespace iguana::physics {
 
   void SingleHadronKinematics::Start(hipo::banklist& banks)
   {
-    b_particle = GetBankIndex(banks, m_particle_bank_name);
+    // parse config file
+    ParseYAMLConfig();
+    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
+    o_hadron_pdgs   = GetOptionSet<int>("hadron_list");
+
+    // get bank indices
+    b_particle = GetBankIndex(banks, o_particle_bank);
     b_inc_kin  = GetBankIndex(banks, "physics::InclusiveKinematics");
 
     // create the output bank
@@ -25,10 +31,6 @@ namespace iguana::physics {
     i_phiH             = result_schema.getEntryOrder("phiH");
     i_xi               = result_schema.getEntryOrder("xi");
 
-    // parse config file
-    ParseYAMLConfig();
-    o_hadron_pdgs = GetOptionSet<int>("hadron_list");
-
     m_log->Warn("the kinematic calculations in this algorithm need to be cross checked; use this algorithm at your own risk!");
   }
 
@@ -37,7 +39,7 @@ namespace iguana::physics {
   bool SingleHadronKinematics::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_particle, m_particle_bank_name),
+        GetBank(banks, b_particle, o_particle_bank),
         GetBank(banks, b_inc_kin, "physics::InclusiveKinematics"),
         GetBank(banks, b_result, GetClassName()));
   }

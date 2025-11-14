@@ -1,3 +1,8 @@
 physics::SingleHadronKinematics:
 
+  # the name of the particle bank, only used for users of `hipo::banklist`;
+  # e.g., set it to 'MC::Particle' if you prefer
+  particle_bank: 'REC::Particle'
+
+  # list of hadron PDGs for which kinematics will be calculated
   hadron_list: [ 211, -211, 2212 ]

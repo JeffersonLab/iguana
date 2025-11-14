@@ -9,16 +9,17 @@ namespace iguana::clas12 {
 
     // define options, their default values, and cache them
     ParseYAMLConfig();
-    o_pids = GetOptionSet<int>("pids");
+    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
+    o_pids          = GetOptionSet<int>("pids");
 
     // get expected bank indices
-    b_particle = GetBankIndex(banks, m_particle_bank_name);
+    b_particle = GetBankIndex(banks, o_particle_bank);
   }
 
 
   bool EventBuilderFilter::Run(hipo::banklist& banks) const
   {
-    return Run(GetBank(banks, b_particle, m_particle_bank_name));
+    return Run(GetBank(banks, b_particle, o_particle_bank));
   }
 
   bool EventBuilderFilter::Run(hipo::bank& particleBank) const
