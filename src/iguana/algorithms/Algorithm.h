@@ -13,6 +13,30 @@
 
 namespace iguana {
 
+  //////////////////////////////////////////////////////////////////////////////
+  // ALGORITHM TOOLS
+  //////////////////////////////////////////////////////////////////////////////
+
+  namespace tools {
+    /// Get the index of a bank from a `hipo::banklist`.
+    /// @note this function is preferred over `hipo::getBanklistIndex`, since it handles the case where there are more than one bank
+    /// in the banklist with the same name
+    /// @param banks the `hipo::banklist` from which to get the specified bank
+    /// @param bank_name the name of the bank
+    /// @param variant if 0, the _first_ bank named `bank_name` in `banks` will be returned; if 1, the 2nd such bank will be returned, _etc_.;
+    /// note, you can call `Algorithm::GetCreatedBankVariant` to get the created-bank variant number for a specific algorithm
+    /// @returns the `hipo::banklist` index of the bank
+    /// @see Algorithm::GetCreatedBankVariant to get the variant number for an algorithm's created bank(s), or use Algorithm::GetBankIndex
+    hipo::banklist::size_type GetBankIndex(
+        hipo::banklist& banks,
+        std::string const& bank_name,
+        unsigned int const& variant = 0) noexcept(false);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // BASE CLASS ALGORITHM
+  //////////////////////////////////////////////////////////////////////////////
+
   /// Option value variant type
   /* NOTE: if you modify this, you also must modify:
    * - [ ] `PrintOptionValue`
@@ -140,6 +164,21 @@ namespace iguana {
       /// @param name the directory name
       void SetConfigDirectory(std::string const& name);
 
+      /// Get the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
+      /// @param banks the list of banks this algorithm will use
+      /// @param bank_name the name of the bank
+      /// @returns the `hipo::banklist` index of the bank
+      /// @see tools::GetBankIndex for a function that is independent of algorithm
+      /// @see GetCreatedBankIndex, a convenience method for _Iguana-created_ banks
+      hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
+
+      /// Get the index of an _Iguana-created_ bank in a `hipo::banklist`; throws an exception if the bank is not found, or if the algorithm
+      /// creates more than one bank
+      /// @param banks the list of banks this algorithm will use
+      /// @returns the `hipo::banklist` index of the bank
+      /// @see GetBankIndex for a more general method
+      hipo::banklist::size_type GetCreatedBankIndex(hipo::banklist& banks) const noexcept(false);
+
       /// Get the list of created bank names, for creator-type algorithms
       /// @see `Algorithm::GetCreatedBankName` for algorithms which create only one bank
       /// @returns the list of new bank names
@@ -163,6 +202,10 @@ namespace iguana {
       /// @returns the new bank schema
       hipo::schema GetCreatedBankSchema(std::string const& bank_name = "") const noexcept(false);
 
+      /// @returns the variant number of a created bank
+      /// @see tools::GetBankIndex for details
+      unsigned int GetCreatedBankVariant() const;
+
       /// @brief Change the name of the particle bank, for algorithms that can read different particle banks.
       ///
       /// This is only needed if you intend to use `hipo::banklist`, and prefer to use a different particle
@@ -184,12 +227,6 @@ namespace iguana {
       /// @return a reference to the bank
       hipo::bank& GetBank(hipo::banklist& banks, hipo::banklist::size_type const idx, std::string const& expected_bank_name = "") const noexcept(false);
 
-      /// Get the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
-      /// @param banks the list of banks this algorithm will use
-      /// @param bank_name the name of the bank
-      /// returns the `hipo::banklist` index of the bank
-      hipo::banklist::size_type GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const noexcept(false);
-
       /// Create a new bank and push it to the bank list. The bank must be defined in `src/iguana/bankdefs/iguana.json`.
       /// @param [out] banks the `hipo::banklist` onto which the new bank will be pushed
       /// @param [out] bank_idx will be set to the `hipo::banklist` index of the new bank
@@ -198,7 +235,7 @@ namespace iguana {
       hipo::schema CreateBank(
           hipo::banklist& banks,
           hipo::banklist::size_type& bank_idx,
-          std::string const& bank_name) const noexcept(false);
+          std::string const& bank_name) noexcept(false);
 
       /// Dump all banks in a `hipo::banklist`
       /// @param banks the banks to show
@@ -261,6 +298,10 @@ namespace iguana {
       /// A mutex for this algorithm
       mutable std::mutex m_mutex;
 
+      /// Unique created-bank variant number, to handle the case where a user creates duplicate banks, _e.g._, with two creator algorithm
+      /// instances that are configured differently
+      unsigned int m_created_bank_variant{0};
+
       /// The name of the particle bank, for `hipo::banklist` users
       std::string m_particle_bank_name{"REC::Particle"};
 
@@ -273,6 +314,8 @@ namespace iguana {
       std::unordered_map<std::string, option_t> m_option_cache;
   };
 
+  //////////////////////////////////////////////////////////////////////////////
+  // ALGORITHM FACTORY
   //////////////////////////////////////////////////////////////////////////////
 
   /// Algorithm pointer type

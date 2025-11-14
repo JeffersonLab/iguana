@@ -1,3 +1,4 @@
+#pragma once
 /// @file Tools.h
 
 #include <Math/Vector3D.h>

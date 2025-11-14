@@ -40,11 +40,11 @@ banks = reader.getBanks([
 ]);
 
 # get bank index, for each bank we want to use after Iguana algorithms run
-b_particle     = hipo.getBanklistIndex(banks, "REC::Particle")
-b_config       = hipo.getBanklistIndex(banks, "RUN::config")
-b_track        = hipo.getBanklistIndex(banks, "REC::Track");
-b_calorimeter  = hipo.getBanklistIndex(banks, "REC::Calorimeter");
-b_scintillator = hipo.getBanklistIndex(banks, "REC::Scintillator");
+b_particle     = iguana.tools.GetBankIndex(banks, "REC::Particle")
+b_config       = iguana.tools.GetBankIndex(banks, "RUN::config")
+b_track        = iguana.tools.GetBankIndex(banks, "REC::Track");
+b_calorimeter  = iguana.tools.GetBankIndex(banks, "REC::Calorimeter");
+b_scintillator = iguana.tools.GetBankIndex(banks, "REC::Scintillator");
 
 # create the algorithms
 algo_eventbuilder_filter = iguana.clas12.EventBuilderFilter() # filter by Event Builder PID (a filter algorithm)

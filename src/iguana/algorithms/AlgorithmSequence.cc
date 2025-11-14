@@ -106,4 +106,22 @@ namespace iguana {
       func(algo);
   }
 
+  hipo::banklist::size_type AlgorithmSequence::GetBankIndex(
+      hipo::banklist& banks,
+      std::string const& bank_name,
+      std::string const& algo_instance_name) const noexcept(false)
+  {
+    if(auto it{m_algo_names.find(algo_instance_name)}; it != m_algo_names.end())
+      return m_sequence.at(it->second)->GetBankIndex(banks, bank_name);
+    m_log->Error("cannot find algorithm '{}' in sequence", algo_instance_name);
+    throw std::runtime_error("cannot Get algorithm");
+  }
+
+  hipo::banklist::size_type AlgorithmSequence::GetCreatedBankIndex(
+      hipo::banklist& banks,
+      std::string const& algo_instance_name) const noexcept(false)
+  {
+    return GetBankIndex(banks, GetCreatedBankName(algo_instance_name), algo_instance_name);
+  }
+
 }

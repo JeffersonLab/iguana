@@ -55,14 +55,11 @@ seq.SetOption('clas12::EventBuilderFilter', 'pids', [11, 211, -211])
 # start the algorithms
 seq.Start(banks)
 
-# get the name of newly created banks (if you don't want to look them up in the documentation)
-sector_finder_bank_name = seq.GetCreatedBankName("clas12::SectorFinder");
-
 # get bank index, for each bank we want to use after Iguana algorithms run
 # NOTE: new banks from creator algorithms are initialized by `Start`
-b_config   = hipo.getBanklistIndex(banks, 'RUN::config')
-b_particle = hipo.getBanklistIndex(banks, 'REC::Particle')
-b_sector   = hipo.getBanklistIndex(banks, sector_finder_bank_name) # new created bank
+b_config   = iguana.tools.GetBankIndex(banks, 'RUN::config')
+b_particle = iguana.tools.GetBankIndex(banks, 'REC::Particle')
+b_sector   = seq.GetCreatedBankIndex(banks, "clas12::SectorFinder") # newly created bank; string parameter is algorithm name, not bank name
 
 # run the algorithm sequence on each event
 iEvent = 0

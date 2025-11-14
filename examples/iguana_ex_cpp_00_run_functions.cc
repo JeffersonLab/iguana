@@ -60,14 +60,11 @@ int main(int argc, char** argv)
   // start the algorithms
   seq.Start(banks);
 
-  // get the name of newly created banks (or you can just get them from the documentation)
-  auto sector_finder_bank_name = seq.GetCreatedBankName("clas12::SectorFinder");
-
   // get bank index, for each bank we want to use after Iguana algorithms run
   // NOTE: new banks from creator algorithms are initialized by `Start`
-  auto b_config   = hipo::getBanklistIndex(banks, "RUN::config");
-  auto b_particle = hipo::getBanklistIndex(banks, "REC::Particle");
-  auto b_sector   = hipo::getBanklistIndex(banks, sector_finder_bank_name); // new created bank
+  auto b_config   = iguana::tools::GetBankIndex(banks, "RUN::config");
+  auto b_particle = iguana::tools::GetBankIndex(banks, "REC::Particle");
+  auto b_sector   = seq.GetCreatedBankIndex(banks, "clas12::SectorFinder"); // newly created bank; string parameter is algorithm name, not bank name
 
   // run the algorithm sequence on each event
   int iEvent = 0;
