@@ -3,7 +3,6 @@
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/ConcurrentParam.h"
-#include "iguana/services/RCDBReader.h"
 
 namespace iguana::physics {
 
@@ -103,7 +102,6 @@ namespace iguana::physics {
       method_reconstruction o_method_reconstruction;
       method_lepton_finder o_method_lepton_finder;
 
-      std::unique_ptr<RCDBReader> m_rcdb;
   };
 
 }

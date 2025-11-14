@@ -221,4 +221,7 @@ namespace iguana {
       /// @doxygen_on
   };
 
+  /// MC run number
+  int const MC_RUN_NUM = 11;
+
 }

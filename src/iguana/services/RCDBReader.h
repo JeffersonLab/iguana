@@ -4,7 +4,12 @@
 #include <mutex>
 
 #ifdef USE_RCDB
-#include <RCDB/Connection.h>
+// workaround ODR violations from header-only RCDB:
+// - forward declare RCDB classes here
+// - include directives go in the .cc file
+namespace rcdb {
+  class Connection;
+}
 #endif
 
 namespace iguana {
@@ -27,9 +32,16 @@ namespace iguana {
       /// @param lev the log level
       RCDBReader(std::string_view name = "rcdb", Logger::Level lev = Logger::DEFAULT_LEVEL);
 
+      /// destructor
+      ~RCDBReader();
+
       /// @param runnum run number
       /// @returns the beam energy in GeV
       double GetBeamEnergy(int const runnum);
+
+      /// @brief set the beam energy to a _fixed_ value; `GetBeamEnergy` will return _this_ energy
+      /// @param beam_energy the beam energy in GeV
+      void SetBeamEnergyOverride(double const beam_energy);
 
     protected:
 
@@ -40,6 +52,9 @@ namespace iguana {
 
       std::string m_url;
       std::once_flag m_error_once;
+
+      /// beam energy override
+      double m_beam_energy_override{-1};
 
 #ifdef USE_RCDB
       std::unique_ptr<rcdb::Connection> m_rcdb_connection;
