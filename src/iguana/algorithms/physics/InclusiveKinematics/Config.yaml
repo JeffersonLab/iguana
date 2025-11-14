@@ -1,10 +1,17 @@
 physics::InclusiveKinematics:
 
+  # the name of the particle bank, only used for users of `hipo::banklist`;
+  # e.g., set it to 'MC::Particle' if you prefer. This bank is used to
+  # find the scattered lepton
+  particle_bank: 'REC::Particle'
+
+  # beam configuration
   initial_state:
     - default:
       beam_direction: [ 0.0, 0.0, 1.0 ]
       target_particle: proton
 
+  # kinematics reconstruction method
   method:
     beam_particle: electron
     reconstruction: scattered_lepton

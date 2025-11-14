@@ -10,6 +10,7 @@ namespace iguana::clas12 {
 
     // get configuration
     ParseYAMLConfig();
+    o_particle_bank    = GetOptionScalar<std::string>("particle_bank");
     o_runnum           = ConcurrentParamFactory::Create<int>();
     o_electron_vz_cuts = ConcurrentParamFactory::Create<std::vector<double>>();
 

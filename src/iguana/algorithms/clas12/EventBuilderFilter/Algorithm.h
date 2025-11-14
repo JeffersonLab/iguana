@@ -10,7 +10,6 @@ namespace iguana::clas12 {
   /// @begin_doc_config{clas12/EventBuilderFilter}
   /// @config_param{pids | list[int] | list of PDG codes to filter}
   /// @end_doc
-  /// @particle_bank_agnostic
   class EventBuilderFilter : public Algorithm
   {
 
@@ -23,7 +22,7 @@ namespace iguana::clas12 {
       void Stop() override;
 
       /// @run_function
-      /// @param [in,out] particleBank particle bank, which will be filtered
+      /// @param [in,out] particleBank particle bank (_e.g._, `REC::Particle`), which will be filtered
       /// @returns `false` if all particles are filtered out
       bool Run(hipo::bank& particleBank) const;
 
@@ -43,7 +42,8 @@ namespace iguana::clas12 {
       /// `hipo::banklist` index for the particle bank
       hipo::banklist::size_type b_particle;
 
-      /// Configuration options
+      // Configuration options
+      std::string o_particle_bank;
       std::set<int> o_pids;
   };
 

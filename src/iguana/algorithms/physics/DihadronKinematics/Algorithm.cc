@@ -1,6 +1,7 @@
 #include "Algorithm.h"
 #include "TypeDefs.h"
 
+#include "iguana/algorithms/physics/Tools.h"
 #include <Math/Boost.h>
 
 namespace iguana::physics {
@@ -9,7 +10,28 @@ namespace iguana::physics {
 
   void DihadronKinematics::Start(hipo::banklist& banks)
   {
-    b_particle = GetBankIndex(banks, m_particle_bank_name);
+    // parse config file
+    ParseYAMLConfig();
+    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
+    o_hadron_a_pdgs = GetOptionSet<int>("hadron_a_list");
+    o_hadron_b_pdgs = GetOptionSet<int>("hadron_b_list");
+    o_phi_r_method  = GetOptionScalar<std::string>("phi_r_method");
+    o_theta_method  = GetOptionScalar<std::string>("theta_method");
+
+    // check phiR method
+    if(o_phi_r_method == "RT_via_covariant_kT")
+      m_phi_r_method = e_RT_via_covariant_kT;
+    else
+      throw std::runtime_error(fmt::format("unknown phi_r_method: {:?}", o_phi_r_method));
+
+    // check theta method
+    if(o_theta_method == "hadron_a")
+      m_theta_method = e_hadron_a;
+    else
+      throw std::runtime_error(fmt::format("unknown theta_method: {:?}", o_theta_method));
+
+    // get bank indices
+    b_particle = GetBankIndex(banks, o_particle_bank);
     b_inc_kin  = GetBankIndex(banks, "physics::InclusiveKinematics");
 
     // create the output bank
@@ -27,25 +49,6 @@ namespace iguana::physics {
     i_phiH             = result_schema.getEntryOrder("phiH");
     i_phiR             = result_schema.getEntryOrder("phiR");
     i_theta            = result_schema.getEntryOrder("theta");
-
-    // parse config file
-    ParseYAMLConfig();
-    o_hadron_a_pdgs = GetOptionSet<int>("hadron_a_list");
-    o_hadron_b_pdgs = GetOptionSet<int>("hadron_b_list");
-    o_phi_r_method  = GetOptionScalar<std::string>("phi_r_method");
-    o_theta_method  = GetOptionScalar<std::string>("theta_method");
-
-    // check phiR method
-    if(o_phi_r_method == "RT_via_covariant_kT")
-      m_phi_r_method = e_RT_via_covariant_kT;
-    else
-      throw std::runtime_error(fmt::format("unknown phi_r_method: {:?}", o_phi_r_method));
-
-    // check theta method
-    if(o_theta_method == "hadron_a")
-      m_theta_method = e_hadron_a;
-    else
-      throw std::runtime_error(fmt::format("unknown theta_method: {:?}", o_theta_method));
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -53,7 +56,7 @@ namespace iguana::physics {
   bool DihadronKinematics::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_particle, m_particle_bank_name),
+        GetBank(banks, b_particle, o_particle_bank),
         GetBank(banks, b_inc_kin, "physics::InclusiveKinematics"),
         GetBank(banks, b_result, GetClassName()));
   }

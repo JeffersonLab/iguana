@@ -1,3 +1,8 @@
 clas12::EventBuilderFilter:
+
+  # the name of the particle bank, only used for users of `hipo::banklist`;
+  # e.g., set it to 'MC::Particle' if you prefer
+  particle_bank: 'REC::Particle'
+
   # list of PDG codes to filter for
   pids: [ 11, 211, -211 ]

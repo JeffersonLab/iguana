@@ -9,29 +9,12 @@ namespace iguana::physics {
 
   void InclusiveKinematics::Start(hipo::banklist& banks)
   {
-    b_particle = GetBankIndex(banks, m_particle_bank_name);
-    b_config   = GetBankIndex(banks, "RUN::config");
-
-    // create the output bank
-    auto result_schema = CreateBank(banks, b_result, GetClassName());
-    i_pindex           = result_schema.getEntryOrder("pindex");
-    i_Q2               = result_schema.getEntryOrder("Q2");
-    i_x                = result_schema.getEntryOrder("x");
-    i_y                = result_schema.getEntryOrder("y");
-    i_W                = result_schema.getEntryOrder("W");
-    i_nu               = result_schema.getEntryOrder("nu");
-    i_qx               = result_schema.getEntryOrder("qx");
-    i_qy               = result_schema.getEntryOrder("qy");
-    i_qz               = result_schema.getEntryOrder("qz");
-    i_qE               = result_schema.getEntryOrder("qE");
-    i_beamPz           = result_schema.getEntryOrder("beamPz");
-    i_targetM          = result_schema.getEntryOrder("targetM");
-
     // instantiate RCDB reader
     m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
 
     // parse config file
     ParseYAMLConfig();
+    o_particle_bank  = GetOptionScalar<std::string>("particle_bank");
     o_runnum         = ConcurrentParamFactory::Create<int>();
     o_target_PxPyPzM = ConcurrentParamFactory::Create<std::vector<double>>();
     o_beam_PxPyPzM   = ConcurrentParamFactory::Create<std::vector<double>>();
@@ -70,6 +53,25 @@ namespace iguana::physics {
       m_log->Error("Unknown beam particle {:?}", beam_particle);
       throw std::runtime_error("Start failed");
     }
+
+    // get bank indices
+    b_particle = GetBankIndex(banks, o_particle_bank);
+    b_config   = GetBankIndex(banks, "RUN::config");
+
+    // create the output bank
+    auto result_schema = CreateBank(banks, b_result, GetClassName());
+    i_pindex           = result_schema.getEntryOrder("pindex");
+    i_Q2               = result_schema.getEntryOrder("Q2");
+    i_x                = result_schema.getEntryOrder("x");
+    i_y                = result_schema.getEntryOrder("y");
+    i_W                = result_schema.getEntryOrder("W");
+    i_nu               = result_schema.getEntryOrder("nu");
+    i_qx               = result_schema.getEntryOrder("qx");
+    i_qy               = result_schema.getEntryOrder("qy");
+    i_qz               = result_schema.getEntryOrder("qz");
+    i_qE               = result_schema.getEntryOrder("qE");
+    i_beamPz           = result_schema.getEntryOrder("beamPz");
+    i_targetM          = result_schema.getEntryOrder("targetM");
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -77,7 +79,7 @@ namespace iguana::physics {
   bool InclusiveKinematics::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_particle, m_particle_bank_name),
+        GetBank(banks, b_particle, o_particle_bank),
         GetBank(banks, b_config, "RUN::config"),
         GetBank(banks, b_result, GetClassName()));
   }
