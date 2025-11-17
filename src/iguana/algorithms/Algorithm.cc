@@ -158,6 +158,13 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  void Algorithm::StartRCDBReader()
+  {
+    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   hipo::banklist::size_type Algorithm::GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const
   {
     if(m_rows_only)
@@ -326,6 +333,13 @@ namespace iguana {
   unsigned int Algorithm::GetCreatedBankVariant() const
   {
     return m_created_bank_variant;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  std::unique_ptr<RCDBReader>& Algorithm::GetRCDBReader()
+  {
+    return m_rcdb;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

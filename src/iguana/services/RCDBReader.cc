@@ -1,5 +1,11 @@
 #include "RCDBReader.h"
 #include "GlobalParam.h"
+#include "iguana/algorithms/TypeDefs.h"
+
+#ifdef USE_RCDB
+// include the RCDB headers here, to avoid ODR violations
+#include <RCDB/Connection.h>
+#endif
 
 namespace iguana {
 
@@ -33,9 +39,28 @@ namespace iguana {
 #endif
   }
 
+  //////////////////////////////////////////////////////////////////////////////////
+
+  RCDBReader::~RCDBReader() = default;
+
+  //////////////////////////////////////////////////////////////////////////////////
+
   double RCDBReader::GetBeamEnergy(int const runnum)
   {
     double const default_value = 10.6;
+    // if override value is set, return it
+    if(m_beam_energy_override >= 0)
+      return m_beam_energy_override;
+    // if it's an MC run (pre real-run numbers), return the override value
+    if(runnum == MC_RUN_NUM) {
+      if(m_beam_energy_override >= 0)
+        return m_beam_energy_override;
+      else {
+        std::call_once(m_error_once, [&]() { m_log->Error("Run number is {}; call `RCDBReader::SetBeamEnergyOverride` to set the beam energy (you can use `GetRCDBReader()` to get an algorithm's `RCDBReader` instance), or check the algorithm's configuration for similar option(s); for now, assuming it is {} GeV", runnum, default_value); });
+        return default_value;
+      }
+    }
+    // otherwise, query the RCDB
 #ifdef USE_RCDB
     auto cnd = m_rcdb_connection->GetCondition(runnum, "beam_energy");
     if(!cnd) {
@@ -47,6 +72,13 @@ namespace iguana {
     std::call_once(m_error_once, [&]() { m_log->Error("RCDB dependency not found; RCDBReader::GetBeamEnergy will return the default value of {} GeV.", default_value); });
     return default_value;
 #endif
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////
+
+  void RCDBReader::SetBeamEnergyOverride(double const beam_energy)
+  {
+    m_beam_energy_override = beam_energy;
   }
 
 }

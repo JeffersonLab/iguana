@@ -3,7 +3,6 @@
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/TypeDefs.h"
 #include "iguana/services/ConcurrentParam.h"
-#include "iguana/services/RCDBReader.h"
 
 namespace iguana::physics {
 
@@ -16,6 +15,7 @@ namespace iguana::physics {
   /// @config_param{reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available at this time}
   /// @config_param{lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available at this time}
   /// @end_doc
+  /// @rcdb_note
   class InclusiveKinematics : public Algorithm
   {
 
@@ -97,13 +97,12 @@ namespace iguana::physics {
       mutable std::unique_ptr<ConcurrentParam<std::vector<double>>> o_beam_PxPyPzM;
       double o_beam_mass; // unlikely to change
       int o_beam_pdg; // unlikely to change
+      double o_override_beam_energy;
 
       enum method_reconstruction { scattered_lepton };
       enum method_lepton_finder { highest_energy_FD_trigger };
       method_reconstruction o_method_reconstruction;
       method_lepton_finder o_method_lepton_finder;
-
-      std::unique_ptr<RCDBReader> m_rcdb;
   };
 
 }

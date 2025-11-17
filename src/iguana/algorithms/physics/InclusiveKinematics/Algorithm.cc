@@ -9,9 +9,6 @@ namespace iguana::physics {
 
   void InclusiveKinematics::Start(hipo::banklist& banks)
   {
-    // instantiate RCDB reader
-    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
-
     // parse config file
     ParseYAMLConfig();
     o_particle_bank  = GetOptionScalar<std::string>("particle_bank");
@@ -72,6 +69,12 @@ namespace iguana::physics {
     i_qE               = result_schema.getEntryOrder("qE");
     i_beamPz           = result_schema.getEntryOrder("beamPz");
     i_targetM          = result_schema.getEntryOrder("targetM");
+
+    // instantiate RCDB reader `m_rcdb`
+    StartRCDBReader();
+    o_override_beam_energy = GetOptionScalar<double>("override_beam_energy");
+    if(o_override_beam_energy > 0)
+      m_rcdb->SetBeamEnergyOverride(o_override_beam_energy);
   }
 
   ///////////////////////////////////////////////////////////////////////////////
