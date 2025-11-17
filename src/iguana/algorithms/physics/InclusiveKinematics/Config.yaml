@@ -16,3 +16,7 @@ physics::InclusiveKinematics:
     beam_particle: electron
     reconstruction: scattered_lepton
     lepton_finder: highest_energy_FD_trigger
+
+  # override the beam energy if > 0, otherwise the default is to use RCDB;
+  # e.g., use this to set the beam energy for MC data with run number 11
+  override_beam_energy: -1.0

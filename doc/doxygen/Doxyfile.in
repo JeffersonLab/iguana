@@ -293,6 +293,8 @@ ALIASES += algo_type_creator="@par Type: Creator^^^^- This algorithm creates new
 ALIASES += begin_doc_config{1}="\par Configuration Options:^^YAML configuration, which includes the default option values:^^@include \1/Config.yaml ^^Table of options and descriptions:^^<table><tr><th>Name</th><th>Type</th><th>Description</th></tr>"
 ALIASES += config_param{3|}="<tr><td>`\1`</td><td>`\2`</td><td>\3</td></tr>"
 ALIASES += end_doc="</table>^^"
+# databases
+ALIASES += rcdb_note="@note This algorithm uses the RCDB. The RCDB is typically used to access quantities such as beam energy. See iguana::RCDBReader for details; you can access this algorithm's RCDBReader instance by calling GetRCDBReader().^^"
 # run functions
 ALIASES += run_function="@brief **Run Function:** Process an event's `hipo::bank` objects^^^^The parameter list explains which banks are input (\"in\"), output (\"out\"), or both (\"in,out\").^^"
 ALIASES += link_to_run_ftn="@par Input and Output Banks:^^See @link Run `Run` function(s) for the banks @endlink that are processed by this algorithm.^^"

@@ -8,8 +8,8 @@
 
 #include "AlgorithmBoilerplate.h"
 #include "iguana/bankdefs/BankDefs.h"
-#include "iguana/services/YAMLReader.h"
 #include "iguana/services/RCDBReader.h"
+#include "iguana/services/YAMLReader.h"
 #include <iguana/services/GlobalParam.h>
 
 namespace iguana {

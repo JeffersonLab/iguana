@@ -72,6 +72,9 @@ namespace iguana::physics {
 
     // instantiate RCDB reader `m_rcdb`
     StartRCDBReader();
+    o_override_beam_energy = GetOptionScalar<double>("override_beam_energy");
+    if(o_override_beam_energy > 0)
+      m_rcdb->SetBeamEnergyOverride(o_override_beam_energy);
   }
 
   ///////////////////////////////////////////////////////////////////////////////

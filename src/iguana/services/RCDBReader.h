@@ -23,6 +23,11 @@ namespace iguana {
   ///
   /// RCDB will automatically use `mariadb` / `mysql` or `sqlite`, depending on the above RCDB database path,
   /// and whether you have satisfied the dependencies.
+  ///
+  /// @note If you are reading Monte Carlo data with run number iguana::MC_RUN_NUM = 11, RCDB queries may fail. See "override" methods, such as
+  /// RCDBReader::SetBeamEnergyOverride, which allow you set values for such quantities. If you are configuring an algorithm's RCDBReader instance,
+  /// you would need to call these override methods **after** calling Algorithm::Start. Note that some algorithms may have configuration
+  /// parameters which also provide such overrides.
   class RCDBReader : public Object
   {
 
