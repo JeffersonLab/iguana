@@ -56,7 +56,7 @@ namespace iguana {
       if(m_beam_energy_override >= 0)
         return m_beam_energy_override;
       else {
-        std::call_once(m_error_once, [&]() { m_log->Error("Run number is {}; call `RCDBReader::SetBeamEnergyOverride` to set the beam energy (you can use `GetRCDBReader()` to get an algorithm's `RCDBReader` instance); for now, assuming it is {} GeV", runnum, default_value); });
+        std::call_once(m_error_once, [&]() { m_log->Error("Run number is {}; call `RCDBReader::SetBeamEnergyOverride` to set the beam energy (you can use `GetRCDBReader()` to get an algorithm's `RCDBReader` instance), or check the algorithm's configuration for similar option(s); for now, assuming it is {} GeV", runnum, default_value); });
         return default_value;
       }
     }
