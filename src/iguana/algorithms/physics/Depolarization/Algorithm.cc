@@ -31,6 +31,7 @@ namespace iguana::physics {
       hipo::bank const& inc_kin_bank,
       hipo::bank& result_bank) const
   {
+    result_bank.reset(); // IMPORTANT: always first `reset` the created bank(s)
     ShowBank(inc_kin_bank, Logger::Header("INPUT INCLUSIVE KINEMATICS"));
 
     // set `result_bank` rows and rowlist to match those of `inc_kin_bank`

@@ -77,6 +77,7 @@ namespace iguana::clas12 {
       hipo::bank const* userNeutralBank,
       hipo::bank* resultBank) const
   {
+    resultBank->reset(); // IMPORTANT: always first `reset` the created bank(s)
 
     std::vector<int> sectors_track;
     std::vector<int> pindices_track;

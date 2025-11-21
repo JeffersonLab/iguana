@@ -39,6 +39,7 @@ namespace iguana::clas12 {
       hipo::bank const& bank_traj,
       hipo::bank& bank_result) const
   {
+    bank_result.reset(); // IMPORTANT: always first `reset` the created bank(s)
     ShowBank(bank_particle, Logger::Header("INPUT PARTICLE BANK"));
     ShowBank(bank_traj, Logger::Header("INPUT TRAJECTORY BANK"));
 

@@ -291,7 +291,7 @@ namespace iguana {
 
   hipo::bank Algorithm::GetCreatedBank(std::string const& bank_name) const noexcept(false)
   {
-    return hipo::bank(GetCreatedBankSchema(bank_name));
+    return hipo::bank(GetCreatedBankSchema(bank_name), 0);
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -357,7 +357,7 @@ namespace iguana {
     // create the schema, and add the new bank to `banks`
     auto bank_schema = GetCreatedBankSchema(bank_name);
     bank_idx         = banks.size();
-    banks.emplace_back(bank_schema);
+    banks.emplace_back(bank_schema, 0);
     return bank_schema;
   }
 

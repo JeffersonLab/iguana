@@ -49,6 +49,7 @@ namespace iguana::physics {
       hipo::bank const& inc_kin_bank,
       hipo::bank& result_bank) const
   {
+    result_bank.reset(); // IMPORTANT: always first `reset` the created bank(s)
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
     if(particle_bank.getRowList().empty() || inc_kin_bank.getRowList().empty()) {

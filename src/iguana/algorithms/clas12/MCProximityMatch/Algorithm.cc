@@ -32,6 +32,7 @@ namespace iguana::clas12 {
       hipo::bank const& mc_particle_bank,
       hipo::bank& result_bank) const
   {
+    result_bank.reset(); // IMPORTANT: always first `reset` the created bank(s)
     ShowBank(rec_particle_bank, Logger::Header("INPUT RECONSTRUCTED PARTICLES"));
     ShowBank(mc_particle_bank, Logger::Header("INPUT GENERATED PARTICLE"));
 
