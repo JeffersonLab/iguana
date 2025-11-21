@@ -105,7 +105,7 @@ with open(input_file_name) as input_file:
 
         The variable types and their corresponding accessor methods from `hipo::bank` are:
 
-        | Type Specification | `hipo::bank` accessor |
+        | Type Specification | hipo::bank accessor |
         | --- | --- |
         | `byte` | `getByte` |
         | `short` | `getShort` |
