@@ -1,7 +1,9 @@
 #include "Algorithm.h"
 
 // ROOT
+#include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
+#include <TMath.h>
 
 namespace iguana::physics {
 
@@ -11,10 +13,11 @@ namespace iguana::physics {
   {
     // parse config file
     ParseYAMLConfig();
-    o_particle_bank  = GetOptionScalar<std::string>("particle_bank");
-    o_runnum         = ConcurrentParamFactory::Create<int>();
-    o_target_PxPyPzM = ConcurrentParamFactory::Create<std::vector<double>>();
-    o_beam_PxPyPzM   = ConcurrentParamFactory::Create<std::vector<double>>();
+    o_particle_bank           = GetOptionScalar<std::string>("particle_bank");
+    o_runnum                  = ConcurrentParamFactory::Create<int>();
+    o_target_PxPyPzM          = ConcurrentParamFactory::Create<std::vector<double>>();
+    o_beam_PxPyPzM            = ConcurrentParamFactory::Create<std::vector<double>>();
+    o_theta_between_FD_and_FT = GetOptionScalar<double>("theta_between_FD_and_FT");
 
     // get reconstruction method configuration
     auto method_reconstruction_str = GetOptionScalar<std::string>("reconstruction", {"method", "reconstruction"});
@@ -139,13 +142,25 @@ namespace iguana::physics {
 
     switch(o_method_lepton_finder) {
     case method_lepton_finder::highest_energy_FD_trigger: {
-
+      // the `status` variable does not exist if we're looking at `MC::Particle`
+      bool has_status = const_cast<hipo::bank&>(particle_bank).getSchema().exists("status");
       // loop over ALL rows, not just filtered rows, since we don't want to accidentally pick the wrong electron
       for(int row = 0; row < particle_bank.getRows(); row++) {
         if(particle_bank.getInt("pid", row) == o_beam_pdg) { // if beam PDG
-          auto status = particle_bank.getShort("status", row);
-          if(status > -3000 && status <= -2000) { // if in FD trigger
-            m_log->Trace("row {} status {} is in FD trigger", row, status);
+          // check if in FD: use `status` if we have it, otherwise rough theta cut
+          bool in_FD_trigger = false;
+          if(has_status) {
+            auto status = particle_bank.getShort("status", row);
+            in_FD_trigger = status > -3000 && status <= -2000; // trigger && in FD
+          } else {
+            ROOT::Math::XYZVector p(
+                particle_bank.getFloat("px", row),
+                particle_bank.getFloat("py", row),
+                particle_bank.getFloat("pz", row));
+            in_FD_trigger = p.theta() * TMath::RadToDeg() > o_theta_between_FD_and_FT; // rough theta cut
+          }
+          if(in_FD_trigger) {
+            m_log->Trace("row {} is in FD trigger", row);
             double en = std::sqrt(
                 std::pow(particle_bank.getFloat("px", row), 2) +
                 std::pow(particle_bank.getFloat("py", row), 2) +
