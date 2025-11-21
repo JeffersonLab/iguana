@@ -3,6 +3,8 @@
 
 This documentation shows how to use the Iguana algorithms. For more documentation, see the [**Documentation Front Page**](https://github.com/JeffersonLab/iguana/blob/main/README.md)
 
+- **Tip:** To toggle between light and dark mode for this webpage, click the button in the top-right corner, next to the search box.
+
 | Quick Links ||
 | --- | --- |
 | @spacer [List of All Algorithms](#algo) @spacer | @spacer [List of Algorithms Organized by Run Group, <i>etc</i>.](#algo_namespaces) @spacer |
@@ -118,9 +120,11 @@ All algorithms have the following **Common Functions**, which may be used in ana
     - call @link iguana::Algorithm::Start() `Start()` @endlink if you will be using individual `hipo::bank` objects (_e.g._, if you are using `clas12root`)
     - call @link iguana::Algorithm::Start(hipo::banklist&) `Start(hipo::banklist&)` @endlink if you use `hipo::banklist`
         - **Tip:** `hipo::banklist` users may use @link iguana::AlgorithmSequence `AlgorithmSequence` @endlink to help run a _sequence_ of algorithms
+        - **Tip:** You can use @link iguana::tools::GetBankIndex @endlink to get the index of a bank within a `hipo::banklist`; this is meant for banks that you _read_ from a HIPO file. For banks that are _created_ by Iguana creator algorithms, see below for more suitable methods
 - for `Run`:
     - call specialized `Run` functions, which act on individual `hipo::bank` objects and are unique for each algorithm; users of `clas12root` versions _newer_ than `1.8.6` should use this
     - call @link iguana::Algorithm::Run(hipo::banklist&) const `Run(hipo::banklist&)` @endlink if you use `hipo::banklist`
+    - **Note:** Internally, `Run` functions typically call **Action Functions**, which are described in the next section.
 - the `Stop` function is the same for either case
 
 The `Run` function should be called on every event; the general consequence, that is, how the user should handle the algorithm's results, depends on the
@@ -151,20 +155,32 @@ The transformed `hipo::bank` will simply have the relevant bank elements changed
 For example, momentum correction algorithms typically change the particle momentum components.
 </td> </tr>
 <tr> <td>**Creator**</td> <td>
-Creator-type algorithms will create a new `hipo::bank` object, appending
-it to the end of the input `hipo::banklist`.
+Creator-type algorithms will create a new `hipo::bank` object. If you use `hipo::banklist`, it will
+be appended to the end of the list.
 <ul>
-<li>[Click here for descriptions of all created banks](#created_banks)</li>
-<li>An initial version is created upon calling `Start(hipo::banklist&)`, so that you may begin to reference it</li>
-<ul>
-<li>It is helpful to use @link iguana::tools::GetBankIndex @endlink, to get the created bank index within the `hipo::banklist`</li>
-<li>See [the examples for details](#mainpageExample)</li>
-</ul>
+  <li>[Click here for descriptions of all created banks](#created_banks)</li>
+  <li>To get the newly created bank:</li>
+  <ul>
+    <li>If you use `hipo::banklist`, get its index with one of:</li>
+    <ul>
+      <li>@link iguana::AlgorithmSequence::GetCreatedBankIndex @endlink or @link iguana::AlgorithmSequence::GetBankIndex @endlink</li>
+      <li>@link iguana::Algorithm::GetCreatedBankIndex @endlink or @link iguana::Algorithm::GetBankIndex @endlink</li>
+    </ul>
+    <li>Otherwise, get the `hipo::bank` object, so you can pass it into specialized `Run` functions:</li>
+    <ul>
+      <li>@link iguana::Algorithm::GetCreatedBank @endlink</li>
+    </ul>
+    <li>Additional helpful methods:</li>
+    <ul>
+      <li>@link iguana::Algorithm::GetCreatedBankName @endlink (and @link iguana::Algorithm::GetCreatedBankNames @endlink)</li>
+      <li>@link iguana::tools::GetBankIndex @endlink (may require a non-zero variant number, see @link iguana::Algorithm::GetCreatedBankVariant @endlink)</li>
+    </ul>
+  </ul>
+  <li>See [the examples for details](#mainpageExample)</li>
+  <li>Some creator algorithms may create more than one bank</li>
 </ul>
 </td> </tr>
 </table>
-
-Internally, `Run(hipo::banklist&)` calls Action Functions, which are described in the next section.
 
 <br>
 @anchor mainpageAction

@@ -349,17 +349,10 @@ namespace iguana {
       hipo::banklist::size_type& bank_idx,
       std::string const& bank_name) noexcept(false)
   {
-    // check if this bank is already present in `banks`
+    // check if this bank is already present in `banks`, and set `m_created_bank_variant` accordingly
     for(auto& bank : banks) {
       if(bank.getSchema().getName() == bank_name)
         m_created_bank_variant++;
-    }
-    if(m_created_bank_variant > 0) {
-      m_log->Info(R"(creating DUPLICATE bank {:?} in your hipo::banklist
-- if you call `tools::GetBankIndex`, use `variant = {}`
-- preferably, use `GetCreatedBankIndex`, which doesn't need `variant`)",
-                  bank_name,
-                  m_created_bank_variant);
     }
     // create the schema, and add the new bank to `banks`
     auto bank_schema = GetCreatedBankSchema(bank_name);
