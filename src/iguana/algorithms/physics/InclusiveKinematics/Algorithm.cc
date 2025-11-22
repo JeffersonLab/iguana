@@ -150,9 +150,10 @@ namespace iguana::physics {
           // check if in FD: use `status` if we have it, otherwise rough theta cut
           bool in_FD_trigger = false;
           if(has_status) {
-            auto status = particle_bank.getShort("status", row);
+            auto status   = particle_bank.getShort("status", row);
             in_FD_trigger = status > -3000 && status <= -2000; // trigger && in FD
-          } else {
+          }
+          else {
             ROOT::Math::XYZVector p(
                 particle_bank.getFloat("px", row),
                 particle_bank.getFloat("py", row),
