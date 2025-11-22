@@ -98,6 +98,7 @@ namespace iguana::physics {
       double o_beam_mass; // unlikely to change
       int o_beam_pdg; // unlikely to change
       double o_override_beam_energy;
+      double o_theta_between_FD_and_FT;
 
       enum method_reconstruction { scattered_lepton };
       enum method_lepton_finder { highest_energy_FD_trigger };

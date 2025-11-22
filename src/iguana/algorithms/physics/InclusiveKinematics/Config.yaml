@@ -20,3 +20,8 @@ physics::InclusiveKinematics:
   # override the beam energy if > 0, otherwise the default is to use RCDB;
   # e.g., use this to set the beam energy for MC data with run number 11
   override_beam_energy: -1.0
+
+  # this is the theta used to roughly select between FD and FT; it is only
+  # used for the case where `particle_bank` lacks the `status` variable,
+  # such as `MC::Particle`
+  theta_between_FD_and_FT: 5.0 # [deg]
