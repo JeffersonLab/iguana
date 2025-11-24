@@ -104,7 +104,7 @@ jobs:
       - name: echo RCDB_CONNECTION
         run: echo $RCDB_CONNECTION
       ### setup
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: iguana_src
       ### get test data
@@ -334,7 +334,7 @@ jobs:
     outputs:
       versions: ${{ steps.versions.outputs.versions }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       ### get list of versions from git tags; exclude old versions
@@ -382,7 +382,7 @@ jobs:
         version: ${{ fromJson(needs.index_documentation.outputs.versions) }}
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ matrix.version }}
           path: iguana_src
@@ -441,7 +441,7 @@ jobs:
       - generate_documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: iguana_src
       - name: download documentation artifacts
