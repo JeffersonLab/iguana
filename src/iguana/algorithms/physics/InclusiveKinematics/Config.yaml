@@ -13,8 +13,16 @@ physics::InclusiveKinematics:
 
   # kinematics reconstruction method
   method:
+    # beam particle
     beam_particle: electron
+    # reconstruction method:
+    # - 'scattered_lepton': use the scattered lepton to calculate kinematics
+    # - no other method is available yet
     reconstruction: scattered_lepton
+    # lepton finder method, used if reconstruction method == 'scattered_lepton':
+    # - 'highest_energy_FD_trigger': use the highest energy FD trigger electron
+    # - 'lund_beam_daughter': use MC::Lund parent info; be sure to set
+    #   `particle_bank` to 'MC::Lund' if you are using `hipo::banklist`
     lepton_finder: highest_energy_FD_trigger
 
   # override the beam energy if > 0, otherwise the default is to use RCDB;

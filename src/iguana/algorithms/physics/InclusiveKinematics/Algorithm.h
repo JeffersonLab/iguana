@@ -13,7 +13,7 @@ namespace iguana::physics {
   /// @config_param{target_particle | string | target particle}
   /// @config_param{beam_particle | string | beam particle}
   /// @config_param{reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available at this time}
-  /// @config_param{lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available at this time}
+  /// @config_param{lepton_finder | string | algorithm to find the scattered lepton}
   /// @end_doc
   /// @rcdb_note
   class InclusiveKinematics : public Algorithm
@@ -100,8 +100,13 @@ namespace iguana::physics {
       double o_override_beam_energy;
       double o_theta_between_FD_and_FT;
 
-      enum method_reconstruction { scattered_lepton };
-      enum method_lepton_finder { highest_energy_FD_trigger };
+      enum method_reconstruction {
+        scattered_lepton
+      };
+      enum method_lepton_finder {
+        highest_energy_FD_trigger,
+        lund_beam_daughter,
+      };
       method_reconstruction o_method_reconstruction;
       method_lepton_finder o_method_lepton_finder;
   };

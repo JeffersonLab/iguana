@@ -31,9 +31,10 @@ namespace iguana::physics {
 
     // get scattered lepton finder configuration
     auto method_lepton_finder_str = GetOptionScalar<std::string>("lepton_finder", {"method", "lepton_finder"});
-    if(method_lepton_finder_str == "highest_energy_FD_trigger") {
+    if(method_lepton_finder_str == "highest_energy_FD_trigger")
       o_method_lepton_finder = method_lepton_finder::highest_energy_FD_trigger;
-    }
+    else if(method_lepton_finder_str == "lund_beam_daughter")
+      o_method_lepton_finder = method_lepton_finder::lund_beam_daughter;
     else {
       m_log->Error("Unknown lepton finder method {:?}", method_lepton_finder_str);
       throw std::runtime_error("Start failed");
@@ -141,6 +142,9 @@ namespace iguana::physics {
     double lepton_energy = 0;
 
     switch(o_method_lepton_finder) {
+    // ----------------------------------------------------------------------------------
+    // highest energy FD trigger electron
+    // ----------------------------------------------------------------------------------
     case method_lepton_finder::highest_energy_FD_trigger: {
       // the `status` variable does not exist if we're looking at `MC::Particle`
       bool has_status = const_cast<hipo::bank&>(particle_bank).getSchema().exists("status");
@@ -176,8 +180,6 @@ namespace iguana::physics {
         }
       }
       if(lepton_found) {
-        if(lepton_row != 0)
-          m_log->Warn("Found scattered lepton which is NOT at pindex 0");
         // make sure `lepton_row` was not filtered
         auto rowlist = particle_bank.getRowList();
         if(std::find(rowlist.begin(), rowlist.end(), lepton_row) == rowlist.end())
@@ -185,9 +187,46 @@ namespace iguana::physics {
       }
       break;
     }
+    // ----------------------------------------------------------------------------------
+    // use MC::Lund to find the lepton that has a beam parent
+    // ----------------------------------------------------------------------------------
+    case method_lepton_finder::lund_beam_daughter: {
+      // find the beam lepton, assuming it has parent index == 0
+      int beam_index  = -1;
+      bool beam_found = false;
+      for(int row = 0; row < particle_bank.getRows(); row++) {
+        if(particle_bank.getInt("pid", row) == o_beam_pdg && particle_bank.getByte("parent", row) == 0) {
+          beam_index = particle_bank.getByte("index", row);
+          beam_found = true;
+          break;
+          //
+          // FIXME: should we check if there are more than 1?
+          //
+        }
+      }
+      // find the lepton with parent == beam lepton
+      if(beam_found) {
+        for(int row = 0; row < particle_bank.getRows(); row++) {
+          if(particle_bank.getInt("pid", row) == o_beam_pdg && particle_bank.getByte("parent", row) == beam_index) {
+            lepton_row   = row;
+            lepton_found = true;
+            break;
+            //
+            // FIXME: should we check if there are more than 1?
+            //
+          }
+        }
+      }
+      else {
+        m_log->Debug("Failed to find beam lepton");
+      }
+      break;
     }
+    }
+
+    // return
     if(lepton_found) {
-      m_log->Debug("Found scattered lepton: row={}, energy={}", lepton_row, lepton_energy);
+      m_log->Debug("Found scattered lepton: row={}", lepton_row);
       return lepton_row;
     }
     else {
