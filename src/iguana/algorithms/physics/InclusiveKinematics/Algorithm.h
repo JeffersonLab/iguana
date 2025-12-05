@@ -66,8 +66,8 @@ namespace iguana::physics {
       /// responsible for finding the scattered lepton.
       /// @param particle_bank the particle bank to search
       /// @param key the return value of `::PrepareEvent`
-      /// @returns the bank row of the scattered lepton, or `-1` if not found
-      int FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const;
+      /// @returns the bank row of the scattered lepton, if found
+      std::optional<int> const FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const;
 
       void Reload(int const runnum, double const user_beam_energy, concurrent_key_t key) const;
 
