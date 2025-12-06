@@ -21,8 +21,9 @@ physics::InclusiveKinematics:
     reconstruction: scattered_lepton
     # lepton finder method, used if reconstruction method == 'scattered_lepton':
     # - 'highest_energy_FD_trigger': use the highest energy FD trigger electron
-    # - 'lund_beam_daughter': use MC::Lund parent info; be sure to set
-    #   `particle_bank` to 'MC::Lund' if you are using `hipo::banklist`
+    # - 'lund_beam_daughter': use 'MC::Lund' parent info; be sure to set
+    #   `particle_bank` to 'MC::Lund' if you are using `hipo::banklist`, or
+    #   use the 'MC::Lund' bank directly in the `Run(hipo::bank&, ...)` function
     lepton_finder: highest_energy_FD_trigger
 
   # override the beam energy if > 0, otherwise the default is to use RCDB;

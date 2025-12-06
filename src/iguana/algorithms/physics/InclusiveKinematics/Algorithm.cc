@@ -141,12 +141,12 @@ namespace iguana::physics {
 
     switch(o_method_lepton_finder) {
     // ----------------------------------------------------------------------------------
-    // highest energy FD trigger electron
+    // highest energy FD trigger lepton
     // ----------------------------------------------------------------------------------
     case method_lepton_finder::highest_energy_FD_trigger: {
       // the `status` variable does not exist if we're looking at `MC::Particle`
       bool has_status = const_cast<hipo::bank&>(particle_bank).getSchema().exists("status");
-      // loop over ALL rows, not just filtered rows, since we don't want to accidentally pick the wrong electron
+      // loop over ALL rows, not just filtered rows, since we don't want to accidentally pick the wrong lepton
       for(int row = 0; row < particle_bank.getRows(); row++) {
         if(particle_bank.getInt("pid", row) == o_beam_pdg) { // if beam PDG
           // check if in FD: use `status` if we have it, otherwise rough theta cut
@@ -176,12 +176,6 @@ namespace iguana::physics {
           }
         }
       }
-      if(lepton_row.has_value()) {
-        // make sure `lepton_row` was not filtered out
-        auto rowlist = particle_bank.getRowList();
-        if(std::find(rowlist.begin(), rowlist.end(), lepton_row.value()) == rowlist.end())
-          lepton_row = std::nullopt;
-      }
       break;
     }
     // ----------------------------------------------------------------------------------
@@ -189,33 +183,37 @@ namespace iguana::physics {
     // ----------------------------------------------------------------------------------
     case method_lepton_finder::lund_beam_daughter: {
       // find the beam lepton, assuming it has parent index == 0
+      // loop over ALL rows, in case the user filtered out beam particles
       std::optional<int> beam_index = std::nullopt;
       for(int row = 0; row < particle_bank.getRows(); row++) {
         if(particle_bank.getInt("pid", row) == o_beam_pdg && particle_bank.getByte("parent", row) == 0) {
           beam_index = particle_bank.getByte("index", row);
           break;
-          //
           // FIXME: should we check if there are more than 1?
-          //
         }
       }
       // find the lepton with parent == beam lepton
+      // loop over ALL rows, not just filtered rows, since we don't want to accidentally pick the wrong lepton
       if(beam_index.has_value()) {
         for(int row = 0; row < particle_bank.getRows(); row++) {
           if(particle_bank.getInt("pid", row) == o_beam_pdg && particle_bank.getByte("parent", row) == beam_index.value()) {
             lepton_row = row;
             break;
-            //
             // FIXME: should we check if there are more than 1?
-            //
           }
         }
       }
-      else {
+      else
         m_log->Debug("Failed to find beam lepton");
-      }
       break;
     }
+    }
+
+    // make sure `lepton_row` was not filtered out
+    if(lepton_row.has_value()) {
+      auto rowlist = particle_bank.getRowList();
+      if(std::find(rowlist.begin(), rowlist.end(), lepton_row.value()) == rowlist.end())
+        lepton_row = std::nullopt;
     }
 
     // return
