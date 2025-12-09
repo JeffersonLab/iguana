@@ -6,6 +6,7 @@
 #include "TestLogger.h"
 #include "TestMultithreading.h"
 #include "TestValidator.h"
+#include <iguana/services/Tools.h>
 
 int main(int argc, char** argv)
 {
@@ -223,18 +224,8 @@ int main(int argc, char** argv)
   fmt::print("\n");
 
   // expand `~` in paths
-  auto ExpandTilde = [](std::string& path) {
-    if(path.empty() || path[0] != '~')
-      return;
-    char const* home_dir = std::getenv("HOME");
-    if(!home_dir)
-      throw std::runtime_error("cannot expand `~` since $HOME is not set");
-    std::string new_path = std::string(home_dir) + path.substr(1);
-    fmt::println("Expanded path {} -> {}", path, new_path);
-    path = new_path;
-  };
-  ExpandTilde(data_file);
-  ExpandTilde(output_dir);
+  data_file  = iguana::tools::ExpandTilde(data_file);
+  output_dir = iguana::tools::ExpandTilde(output_dir);
 
   // run test
   if(command == "algorithm" || command == "unit")
