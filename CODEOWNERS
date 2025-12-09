@@ -13,7 +13,7 @@ src/iguana/algorithms/clas12/CalorimeterLinker/* @c-dilks
 src/iguana/algorithms/clas12/EventBuilderFilter/* @c-dilks
 src/iguana/algorithms/clas12/FTEnergyCorrection/* @asligonulacar
 src/iguana/algorithms/clas12/FiducialFilter/* @Gregtom3
-src/iguana/algorithms/clas12/MCProximityMatch/* @c-dilks
+src/iguana/algorithms/clas12/MatchParticleProximity/* @c-dilks
 src/iguana/algorithms/clas12/MomentumCorrection/* @RichCap @c-dilks
 src/iguana/algorithms/clas12/PhotonGBTFilter/* @Gregtom3
 src/iguana/algorithms/clas12/RGAFiducialFilter/* @tbhayward

@@ -138,14 +138,14 @@
     ]
   },
   {
-    "name":      "MC::RecMatch::Proximity",
-    "algorithm": "clas12::MCProximityMatch",
+    "name":      "clas12::MatchParticleProximity",
+    "algorithm": "clas12::MatchParticleProximity",
     "group":     30000,
     "item":      8,
-    "info":      "simple matching by proximity; similar to `MC::RecMatch`",
+    "info":      "simple matching by proximity of particles in bank A to particles in bank B",
     "entries": [
-      {"name": "pindex",    "type": "S", "info": "particle bank (usu. REC::Particle) index"},
-      {"name": "mcindex",   "type": "S", "info": "search bank (usu. MC::Particle) index"},
+      {"name": "pindex_a",  "type": "S", "info": "pindex of particle bank A (e.g., REC::Particle)"},
+      {"name": "pindex_b",  "type": "S", "info": "pindex of particle bank B (e.g., MC::Particle)"},
       {"name": "proximity", "type": "D", "info": "the distance between matched pair, in the proximity-matching space"}
     ]
   }
