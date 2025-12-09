@@ -222,6 +222,20 @@ int main(int argc, char** argv)
   fmt::print("  {:>20} = {}\n", "output_dir", output_dir);
   fmt::print("\n");
 
+  // expand `~` in paths
+  auto ExpandTilde = [](std::string& path) {
+    if(path.empty() || path[0] != '~')
+      return;
+    char const* home_dir = std::getenv("HOME");
+    if(!home_dir)
+      throw std::runtime_error("cannot expand `~` since $HOME is not set");
+    std::string new_path = std::string(home_dir) + path.substr(1);
+    fmt::println("Expanded path {} -> {}", path, new_path);
+    path = new_path;
+  };
+  ExpandTilde(data_file);
+  ExpandTilde(output_dir);
+
   // run test
   if(command == "algorithm" || command == "unit")
     return TestAlgorithm(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, verbose);
