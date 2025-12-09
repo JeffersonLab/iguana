@@ -1,4 +1,5 @@
 #include "ConfigFileReader.h"
+#include "Tools.h"
 #include <cstdlib>
 #include <filesystem>
 #include <sstream>
@@ -64,10 +65,11 @@ namespace iguana {
     }
   }
 
-  std::string ConfigFileReader::FindFile(std::string const& name)
+  std::string ConfigFileReader::FindFile(std::string name)
   {
     if(name == "")
       return ""; // handle unset file name
+    name = tools::ExpandTilde(name); // expand `~` -> `$HOME`
     m_log->Trace("Searching for file '{}' in:", name);
     // first try `./` or assume `name` is a relative or absolute path + filename
     auto found_local = std::filesystem::exists(name);

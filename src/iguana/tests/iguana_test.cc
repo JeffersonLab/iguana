@@ -6,6 +6,7 @@
 #include "TestLogger.h"
 #include "TestMultithreading.h"
 #include "TestValidator.h"
+#include <iguana/services/Tools.h>
 
 int main(int argc, char** argv)
 {
@@ -221,6 +222,10 @@ int main(int argc, char** argv)
   fmt::print("  {:>20} = {}\n", "vary_run", vary_run);
   fmt::print("  {:>20} = {}\n", "output_dir", output_dir);
   fmt::print("\n");
+
+  // expand `~` in paths
+  data_file  = iguana::tools::ExpandTilde(data_file);
+  output_dir = iguana::tools::ExpandTilde(output_dir);
 
   // run test
   if(command == "algorithm" || command == "unit")
