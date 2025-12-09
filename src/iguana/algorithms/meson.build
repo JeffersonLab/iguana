@@ -143,7 +143,7 @@ algo_dict = [
     'name': 'clas12::MCProximityMatch',
     'algorithm_needs_ROOT': true,
     'has_validator': false, # FIXME # need an MC file for non-empty validator plots
-    'has_config': false,
+    'has_config': true,
     'has_action_yaml': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'MC::Particle' ],

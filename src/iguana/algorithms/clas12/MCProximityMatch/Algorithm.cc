@@ -7,8 +7,14 @@ namespace iguana::clas12 {
 
   void MCProximityMatch::Start(hipo::banklist& banks)
   {
-    b_rec_particle_bank = GetBankIndex(banks, "REC::Particle");
-    b_mc_particle_bank  = GetBankIndex(banks, "MC::Particle");
+    // parse config file
+    ParseYAMLConfig();
+    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
+    o_search_bank   = GetOptionScalar<std::string>("search_bank");
+
+    // banklist indices
+    b_particle_bank = GetBankIndex(banks, o_particle_bank);
+    b_search_bank   = GetBankIndex(banks, o_search_bank);
 
     // create the output bank
     auto result_schema = CreateBank(banks, b_result, "MC::RecMatch::Proximity");
@@ -22,49 +28,49 @@ namespace iguana::clas12 {
   bool MCProximityMatch::Run(hipo::banklist& banks) const
   {
     return Run(
-        GetBank(banks, b_rec_particle_bank, "REC::Particle"),
-        GetBank(banks, b_mc_particle_bank, "MC::Particle"),
+        GetBank(banks, b_particle_bank, o_particle_bank),
+        GetBank(banks, b_search_bank, o_search_bank),
         GetBank(banks, b_result, "MC::RecMatch::Proximity"));
   }
 
   bool MCProximityMatch::Run(
-      hipo::bank const& rec_particle_bank,
-      hipo::bank const& mc_particle_bank,
+      hipo::bank const& particle_bank,
+      hipo::bank const& search_bank,
       hipo::bank& result_bank) const
   {
     result_bank.reset(); // IMPORTANT: always first `reset` the created bank(s)
-    ShowBank(rec_particle_bank, Logger::Header("INPUT RECONSTRUCTED PARTICLES"));
-    ShowBank(mc_particle_bank, Logger::Header("INPUT GENERATED PARTICLE"));
+    ShowBank(particle_bank, Logger::Header("INPUT PARTICLE BANK"));
+    ShowBank(search_bank, Logger::Header("INPUT SEARCH BANK"));
 
     // output rows
     std::vector<MCProximityMatchVars> result_rows;
 
-    // loop over ALL reconstructed particles, to find matching generated particles
-    for(int row_rec = 0; row_rec < rec_particle_bank.getRows(); row_rec++) {
+    // loop over ALL particles, to find matching search-bank particles
+    for(int row_rec = 0; row_rec < particle_bank.getRows(); row_rec++) {
 
       // matching variables
       double min_prox = -1; // minimum proximity
-      int pindex_gen  = -1; // matching `pindex` of `mc_particle_bank`
+      int pindex_gen  = -1; // matching `pindex` of `search_bank`
 
-      // reconstructed particle info
-      auto pid_rec = rec_particle_bank.getInt("pid", row_rec);
+      // particle info
+      auto pid_rec = particle_bank.getInt("pid", row_rec);
       ROOT::Math::XYZVector p_rec(
-          rec_particle_bank.getFloat("px", row_rec),
-          rec_particle_bank.getFloat("py", row_rec),
-          rec_particle_bank.getFloat("pz", row_rec));
+          particle_bank.getFloat("px", row_rec),
+          particle_bank.getFloat("py", row_rec),
+          particle_bank.getFloat("pz", row_rec));
       auto theta_rec = p_rec.theta();
       auto phi_rec   = p_rec.phi();
 
-      // loop over ALL generated particles, and find the one with the smallest proximity to
-      // the current reconstructed particle
-      for(int row_gen = 0; row_gen < mc_particle_bank.getRows(); row_gen++) {
+      // loop over ALL search-bank particles, and find the one with the smallest proximity to
+      // the current input particle
+      for(int row_gen = 0; row_gen < search_bank.getRows(); row_gen++) {
         // PID must match
-        if(pid_rec == mc_particle_bank.getInt("pid", row_gen)) {
-          // generated particle info
+        if(pid_rec == search_bank.getInt("pid", row_gen)) {
+          // particle info
           ROOT::Math::XYZVector p_gen(
-              mc_particle_bank.getFloat("px", row_gen),
-              mc_particle_bank.getFloat("py", row_gen),
-              mc_particle_bank.getFloat("pz", row_gen));
+              search_bank.getFloat("px", row_gen),
+              search_bank.getFloat("py", row_gen),
+              search_bank.getFloat("pz", row_gen));
           auto theta_gen = p_gen.theta();
           auto phi_gen   = p_gen.phi();
           // calculate Euclidean distance in (theta,phi) space
