@@ -341,7 +341,7 @@ jobs:
       - name: get versions for documentation generation
         id: versions
         run: |
-          echo main | tee version_list
+          echo latest | tee version_list
           git tag --list --sort=-v:refname |\
             grep -v v0.1.0 |\
             grep -v v0.2.0 |\
@@ -382,9 +382,15 @@ jobs:
         version: ${{ fromJson(needs.index_documentation.outputs.versions) }}
       fail-fast: false
     steps:
-      - uses: actions/checkout@v6
+      ### checkout
+      - uses: actions/checkout@v6 # checkout tagged version
+        if: ${{ matrix.version != 'latest' }}
         with:
           ref: ${{ matrix.version }}
+          path: iguana_src
+      - uses: actions/checkout@v6 # checkout HEAD version
+        if: ${{ matrix.version == 'latest' }}
+        with:
           path: iguana_src
       ### dependencies
       - name: install packages for iguana and doxygen
@@ -396,8 +402,8 @@ jobs:
             graphviz \
             yaml-cpp
       ### build
-      - name: set main version to latest
-        if: ${{ matrix.version == 'main' }}
+      - name: set latest version number to latest
+        if: ${{ matrix.version == 'latest' }}
         working-directory: iguana_src
         run: sed -i 's;^PROJECT_NUMBER.*=.*;PROJECT_NUMBER = "LATEST";' $(find doc -name Doxyfile.in)
       - name: meson setup
@@ -419,10 +425,6 @@ jobs:
           cd pages
           mkdir ${{ matrix.version }}
           mv ../iguana/share/doc/iguana/html/* ${{ matrix.version }}/
-      - name: rename latest
-        if: ${{ matrix.version == 'main' }}
-        working-directory: pages
-        run: mv main latest
       ### artifacts
       - name: upload documentation artifacts
         uses: actions/upload-artifact@v5
