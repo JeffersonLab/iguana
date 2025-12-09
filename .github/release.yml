@@ -1,18 +1,18 @@
 changelog:
   categories:
-    - title: Breaking Changes
+    - title: ⚠️ Breaking Changes
       labels: [ breaking ]
-    - title: Algorithm Updates
+    - title: 🦎 Algorithm Updates
       labels: [ algorithm ]
-    - title: General Updates
+    - title: ⭐ General Updates
       labels: [ general ]
-    - title: Bug Fixes
+    - title: 🐛 Bug Fixes
       labels: [ fix ]
-    - title: Documentation Updates
+    - title: 📖 Documentation Updates
       labels: [ documentation ]
-    - title: Dependency Changes
+    - title: 📦 Dependency Changes
       labels: [ dependencies ]
-    - title: Technical Changes
+    - title: 🔧 Technical Changes
       labels: [ technical ]
-    - title: Other Changes
+    - title: 🔘 Other Changes
       labels: [ '*' ]
