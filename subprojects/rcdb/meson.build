@@ -20,7 +20,7 @@ endif
 # check for header dir
 rcdb_includedir = rcdb_home / 'cpp' / 'include'
 if not import('fs').is_dir(rcdb_includedir)
-  error(f'RCDB include directory "@rcdb_includedir@" does not exist, so RCDB will not be used; are you sure your build option "rcdb:home" is correct?; @require_message@')
+  error(f'RCDB include directory "@rcdb_includedir@" does not exist, so RCDB will not be used; are you sure your build option "rcdb:home" or environment variable "$RCDB_HOME" is correct?; @require_message@')
 endif
 # rcdb found
 message(f'using RCDB from @rcdb_home@')
