@@ -1,0 +1,6 @@
+clas12::MatchParticleProximity:
+
+  # match all the particles from this bank A ...
+  bank_a: 'REC::Particle'
+  # ... to the particles found from this bank B
+  bank_b: 'MC::Particle'

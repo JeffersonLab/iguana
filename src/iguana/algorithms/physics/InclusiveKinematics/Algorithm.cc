@@ -1,7 +1,9 @@
 #include "Algorithm.h"
 
 // ROOT
+#include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
+#include <TMath.h>
 
 namespace iguana::physics {
 
@@ -11,10 +13,11 @@ namespace iguana::physics {
   {
     // parse config file
     ParseYAMLConfig();
-    o_particle_bank  = GetOptionScalar<std::string>("particle_bank");
-    o_runnum         = ConcurrentParamFactory::Create<int>();
-    o_target_PxPyPzM = ConcurrentParamFactory::Create<std::vector<double>>();
-    o_beam_PxPyPzM   = ConcurrentParamFactory::Create<std::vector<double>>();
+    o_particle_bank           = GetOptionScalar<std::string>("particle_bank");
+    o_runnum                  = ConcurrentParamFactory::Create<int>();
+    o_target_PxPyPzM          = ConcurrentParamFactory::Create<std::vector<double>>();
+    o_beam_PxPyPzM            = ConcurrentParamFactory::Create<std::vector<double>>();
+    o_theta_between_FD_and_FT = GetOptionScalar<double>("theta_between_FD_and_FT");
 
     // get reconstruction method configuration
     auto method_reconstruction_str = GetOptionScalar<std::string>("reconstruction", {"method", "reconstruction"});
@@ -28,9 +31,10 @@ namespace iguana::physics {
 
     // get scattered lepton finder configuration
     auto method_lepton_finder_str = GetOptionScalar<std::string>("lepton_finder", {"method", "lepton_finder"});
-    if(method_lepton_finder_str == "highest_energy_FD_trigger") {
+    if(method_lepton_finder_str == "highest_energy_FD_trigger")
       o_method_lepton_finder = method_lepton_finder::highest_energy_FD_trigger;
-    }
+    else if(method_lepton_finder_str == "lund_beam_daughter")
+      o_method_lepton_finder = method_lepton_finder::lund_beam_daughter;
     else {
       m_log->Error("Unknown lepton finder method {:?}", method_lepton_finder_str);
       throw std::runtime_error("Start failed");
@@ -97,18 +101,18 @@ namespace iguana::physics {
 
     auto key = PrepareEvent(config_bank.getInt("run", 0));
 
-    auto lepton_pindex = FindScatteredLepton(particle_bank, key);
-    if(lepton_pindex < 0) {
+    auto const lepton_pindex = FindScatteredLepton(particle_bank, key);
+    if(!lepton_pindex.has_value()) {
       ShowBank(result_bank, Logger::Header("CREATED BANK IS EMPTY"));
       return false;
     }
 
     auto result_vars = ComputeFromLepton(
-        particle_bank.getFloat("px", lepton_pindex),
-        particle_bank.getFloat("py", lepton_pindex),
-        particle_bank.getFloat("pz", lepton_pindex),
+        particle_bank.getFloat("px", lepton_pindex.value()),
+        particle_bank.getFloat("py", lepton_pindex.value()),
+        particle_bank.getFloat("pz", lepton_pindex.value()),
         key);
-    result_vars.pindex = lepton_pindex; // FIXME: should be done in `ComputeFromLepton`, but need a proper action function first...
+    result_vars.pindex = lepton_pindex.value(); // FIXME: should be done in `ComputeFromLepton`, but need a proper action function first...
 
     result_bank.setRows(1);
     result_bank.putShort(i_pindex, 0, static_cast<int16_t>(result_vars.pindex));
@@ -130,54 +134,97 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  int InclusiveKinematics::FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const
+  std::optional<int> const InclusiveKinematics::FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const
   {
-    int const not_found  = -1;
-    bool lepton_found    = false;
-    int lepton_row       = not_found;
-    double lepton_energy = 0;
+    std::optional<int> lepton_row = std::nullopt;
+    double lepton_energy          = 0.0;
 
     switch(o_method_lepton_finder) {
+    // ----------------------------------------------------------------------------------
+    // highest energy FD trigger lepton
+    // ----------------------------------------------------------------------------------
     case method_lepton_finder::highest_energy_FD_trigger: {
-
-      // loop over ALL rows, not just filtered rows, since we don't want to accidentally pick the wrong electron
+      // the `status` variable does not exist if we're looking at `MC::Particle`
+      bool has_status = const_cast<hipo::bank&>(particle_bank).getSchema().exists("status");
+      // loop over ALL rows, not just filtered rows, since we don't want to accidentally pick the wrong lepton
       for(int row = 0; row < particle_bank.getRows(); row++) {
         if(particle_bank.getInt("pid", row) == o_beam_pdg) { // if beam PDG
-          auto status = particle_bank.getShort("status", row);
-          if(status > -3000 && status <= -2000) { // if in FD trigger
-            m_log->Trace("row {} status {} is in FD trigger", row, status);
+          // check if in FD: use `status` if we have it, otherwise rough theta cut
+          bool in_FD_trigger = false;
+          if(has_status) {
+            auto status   = particle_bank.getShort("status", row);
+            in_FD_trigger = status > -3000 && status <= -2000; // trigger && in FD
+          }
+          else {
+            ROOT::Math::XYZVector p(
+                particle_bank.getFloat("px", row),
+                particle_bank.getFloat("py", row),
+                particle_bank.getFloat("pz", row));
+            in_FD_trigger = p.theta() * TMath::RadToDeg() > o_theta_between_FD_and_FT; // rough theta cut
+          }
+          if(in_FD_trigger) {
+            m_log->Trace("row {} is in FD trigger", row);
             double en = std::sqrt(
                 std::pow(particle_bank.getFloat("px", row), 2) +
                 std::pow(particle_bank.getFloat("py", row), 2) +
                 std::pow(particle_bank.getFloat("pz", row), 2) +
                 std::pow(o_beam_mass, 2));
             if(en > lepton_energy) { // select max-E
-              lepton_found  = true;
               lepton_row    = row;
               lepton_energy = en;
             }
           }
         }
       }
-      if(lepton_found) {
-        if(lepton_row != 0)
-          m_log->Warn("Found scattered lepton which is NOT at pindex 0");
-        // make sure `lepton_row` was not filtered
-        auto rowlist = particle_bank.getRowList();
-        if(std::find(rowlist.begin(), rowlist.end(), lepton_row) == rowlist.end())
-          lepton_found = false;
+      break;
+    }
+    // ----------------------------------------------------------------------------------
+    // use MC::Lund to find the lepton that has a beam parent
+    // ----------------------------------------------------------------------------------
+    case method_lepton_finder::lund_beam_daughter: {
+      // find the beam lepton, assuming it has parent index == 0
+      // loop over ALL rows, in case the user filtered out beam particles
+      std::optional<int> beam_index = std::nullopt;
+      for(int row = 0; row < particle_bank.getRows(); row++) {
+        if(particle_bank.getInt("pid", row) == o_beam_pdg && particle_bank.getByte("parent", row) == 0) {
+          beam_index = particle_bank.getByte("index", row);
+          break;
+          // FIXME: should we check if there are more than 1?
+        }
       }
+      // find the lepton with parent == beam lepton
+      // loop over ALL rows, not just filtered rows, since we don't want to accidentally pick the wrong lepton
+      if(beam_index.has_value()) {
+        for(int row = 0; row < particle_bank.getRows(); row++) {
+          if(particle_bank.getInt("pid", row) == o_beam_pdg && particle_bank.getByte("parent", row) == beam_index.value()) {
+            lepton_row = row;
+            break;
+            // FIXME: should we check if there are more than 1?
+          }
+        }
+      }
+      else
+        m_log->Debug("Failed to find beam lepton");
+      // complain if lepton not found
+      if(!lepton_row.has_value())
+        m_log->Debug("Failed to find scattered lepton");
       break;
     }
     }
-    if(lepton_found) {
-      m_log->Debug("Found scattered lepton: row={}, energy={}", lepton_row, lepton_energy);
-      return lepton_row;
+
+    // make sure `lepton_row` was not filtered out
+    if(lepton_row.has_value()) {
+      auto rowlist = particle_bank.getRowList();
+      if(std::find(rowlist.begin(), rowlist.end(), lepton_row.value()) == rowlist.end())
+        lepton_row = std::nullopt;
     }
-    else {
+
+    // return
+    if(lepton_row.has_value())
+      m_log->Debug("Found scattered lepton: row={}", lepton_row.value());
+    else
       m_log->Debug("Scattered lepton not found");
-      return not_found;
-    }
+    return lepton_row;
   }
 
   ///////////////////////////////////////////////////////////////////////////////

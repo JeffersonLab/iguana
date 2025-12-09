@@ -13,7 +13,7 @@ namespace iguana::physics {
   /// @config_param{target_particle | string | target particle}
   /// @config_param{beam_particle | string | beam particle}
   /// @config_param{reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available at this time}
-  /// @config_param{lepton_finder | string | algorithm to find the scattered lepton; only `highest_energy_FD_trigger` is available at this time}
+  /// @config_param{lepton_finder | string | algorithm to find the scattered lepton}
   /// @end_doc
   /// @rcdb_note
   class InclusiveKinematics : public Algorithm
@@ -66,8 +66,8 @@ namespace iguana::physics {
       /// responsible for finding the scattered lepton.
       /// @param particle_bank the particle bank to search
       /// @param key the return value of `::PrepareEvent`
-      /// @returns the bank row of the scattered lepton, or `-1` if not found
-      int FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const;
+      /// @returns the bank row of the scattered lepton, if found
+      std::optional<int> const FindScatteredLepton(hipo::bank const& particle_bank, concurrent_key_t const key) const;
 
       void Reload(int const runnum, double const user_beam_energy, concurrent_key_t key) const;
 
@@ -98,9 +98,15 @@ namespace iguana::physics {
       double o_beam_mass; // unlikely to change
       int o_beam_pdg; // unlikely to change
       double o_override_beam_energy;
+      double o_theta_between_FD_and_FT;
 
-      enum method_reconstruction { scattered_lepton };
-      enum method_lepton_finder { highest_energy_FD_trigger };
+      enum method_reconstruction {
+        scattered_lepton
+      };
+      enum method_lepton_finder {
+        highest_energy_FD_trigger,
+        lund_beam_daughter,
+      };
       method_reconstruction o_method_reconstruction;
       method_lepton_finder o_method_lepton_finder;
   };

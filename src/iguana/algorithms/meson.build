@@ -140,10 +140,10 @@ algo_dict = [
   },
   { 'name': 'clas12::RGAFiducialFilter', 'has_config': false, 'has_validator': false, 'has_action_yaml': false, 'test_args': { 'should_fail': true } }, # deprecated
   {
-    'name': 'clas12::MCProximityMatch',
+    'name': 'clas12::MatchParticleProximity',
     'algorithm_needs_ROOT': true,
     'has_validator': false, # FIXME # need an MC file for non-empty validator plots
-    'has_config': false,
+    'has_config': true,
     'has_action_yaml': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'MC::Particle' ],
