@@ -218,7 +218,7 @@ namespace iguana::physics {
 
     // return
     if(lepton_row.has_value())
-      m_log->Debug("Found scattered lepton: row={}", lepton_row);
+      m_log->Debug("Found scattered lepton: row={}", lepton_row.value());
     else
       m_log->Debug("Scattered lepton not found");
     return lepton_row;
