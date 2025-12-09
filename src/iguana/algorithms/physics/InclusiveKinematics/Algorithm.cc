@@ -205,6 +205,9 @@ namespace iguana::physics {
       }
       else
         m_log->Debug("Failed to find beam lepton");
+      // complain if lepton not found
+      if(!lepton_row.has_value())
+        m_log->Debug("Failed to find scattered lepton");
       break;
     }
     }
