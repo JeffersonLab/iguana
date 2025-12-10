@@ -465,7 +465,7 @@ jobs:
           path: pages/
 
   deploy_webpages:
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
     name: Deploy webpages
     needs: collect_webpages
     permissions:
