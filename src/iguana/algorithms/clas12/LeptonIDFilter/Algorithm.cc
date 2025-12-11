@@ -10,7 +10,6 @@ namespace iguana::clas12 {
   void LeptonIDFilter::initializeTMVA()
   {
     readerTMVA = std::make_unique<TMVA::Reader>("V");
-    // Initialize the variables for the TMVA reader
     readerTMVA->AddVariable("P", &P);
     readerTMVA->AddVariable("Theta", &Theta);
     readerTMVA->AddVariable("Phi", &Phi);
@@ -22,28 +21,36 @@ namespace iguana::clas12 {
     readerTMVA->AddVariable("m2ECOUT", &m2ECOUT);
   }
 
+
   void LeptonIDFilter::Start(hipo::banklist& banks)
   {
     // Get configuration
     ParseYAMLConfig();
-    o_pid        = GetOptionScalar<int>("pid"); // Obtain pid from config file (+11/-11)
-    o_weightfile = GetOptionScalar<std::string>("weightfile"); // Obtain weightfile from config file
-    o_cut        = GetOptionScalar<double>("cut");
+    o_pid           = GetOptionScalar<int>("pid"); // Obtain pid from config file (+11/-11)
+    o_weightfile    = GetOptionScalar<std::string>("weightfile"); // Obtain weightfile from config file
+    o_cut           = GetOptionScalar<double>("cut");
+    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
 
     // load the weights file
     o_weightfile_fullpath = GetDataFile(o_weightfile);
     m_log->Debug("Loaded weight file {}", o_weightfile_fullpath);
 
     // Get Banks that we are going to use
-    b_particle    = GetBankIndex(banks, "REC::Particle");
+    b_particle    = GetBankIndex(banks, o_particle_bank);
     b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
   }
 
 
-  void LeptonIDFilter::Run(hipo::banklist& banks) const
+  bool LeptonIDFilter::Run(hipo::banklist& banks) const
   {
-    auto& particleBank    = GetBank(banks, b_particle, "REC::Particle");
-    auto& calorimeterBank = GetBank(banks, b_calorimeter, "REC::Calorimeter");
+    return Run(
+        GetBank(banks, b_particle, o_particle_bank),
+        GetBank(banks, b_calorimeter, "REC::Calorimeter"));
+  }
+
+
+  bool LeptonIDFilter::Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank) const
+  {
 
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
@@ -58,6 +65,7 @@ namespace iguana::clas12 {
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+    return !particleBank.getRowList().empty();
   }
 
 

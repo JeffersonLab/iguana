@@ -2,3 +2,6 @@ clas12::LeptonIDFilter:
   pid: -11
   weightfile: "weights/9_BDT_positrons_S19.weights.xml"
   cut: 0.0
+
+  # the name of the particle bank, only needed for users of `hipo::banklist`
+  particle_bank: 'REC::Particle'
