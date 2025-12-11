@@ -10,7 +10,7 @@ namespace iguana {
         m_log->Debug(" - load: {}", file);
         m_configs.push_back({YAML::LoadFile(file), file}); // m_config must be the same ordering as m_files, so `push_back`
       }
-      catch(const YAML::Exception& e) {
+      catch(YAML::Exception const& e) {
         m_log->Error(" - YAML Exception: {}", e.what());
       }
       catch(std::exception const& e) {
@@ -28,7 +28,7 @@ namespace iguana {
       try {
         return node.as<SCALAR>();
       }
-      catch(const YAML::Exception& e) {
+      catch(YAML::Exception const& e) {
         m_log->Error("YAML Parsing Exception: {}", e.what());
       }
       catch(std::exception const& e) {
@@ -69,7 +69,7 @@ namespace iguana {
           result.push_back(element.as<SCALAR>());
         return result;
       }
-      catch(const YAML::Exception& e) {
+      catch(YAML::Exception const& e) {
         m_log->Error("YAML Parsing Exception: {}", e.what());
       }
       catch(std::exception const& e) {
@@ -103,14 +103,13 @@ namespace iguana {
   template <typename SCALAR>
   YAMLReader::node_finder_t YAMLReader::InRange(std::string const& key, SCALAR val)
   {
-    return [this, key, val](YAML::Node node) -> YAML::Node
-    {
+    return [this, key, val](YAML::Node node) -> YAML::Node {
       if(!node.IsSequence()) {
         m_log->Error("YAML node path expected a sequence at current node");
         throw std::runtime_error("Failed `InRange`");
       }
       // search each sub-node for one with `val` with in the range at `key`
-      for(const auto& sub_node : node) {
+      for(auto const& sub_node : node) {
         auto bounds_node = sub_node[key];
         if(bounds_node.IsDefined()) {
           auto bounds = GetVector<SCALAR>(bounds_node);
@@ -119,7 +118,7 @@ namespace iguana {
         }
       }
       // fallback to the default node
-      for(const auto& sub_node : node) {
+      for(auto const& sub_node : node) {
         if(sub_node["default"].IsDefined())
           return sub_node;
       }
@@ -143,8 +142,7 @@ namespace iguana {
     }
 
     // find the next node using the first `node_id_t` in `node_path`
-    auto node_id_visitor = [&node, &m_log = this->m_log](auto&& arg) -> YAML::Node
-    {
+    auto node_id_visitor = [&node, &m_log = this->m_log](auto&& arg) -> YAML::Node {
       using arg_t = std::decay_t<decltype(arg)>;
       // find a node by key name
       if constexpr(std::is_same_v<arg_t, std::string>) {

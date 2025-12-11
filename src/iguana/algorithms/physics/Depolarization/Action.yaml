@@ -1,0 +1,29 @@
+algorithm:
+  name: 'physics::Depolarization'
+
+actions:
+  - name: Compute
+    type: creator
+    rank: scalar
+    inputs:
+      - name: Q2
+        type: double
+      - name: x
+        type: double
+      - name: y
+        type: double
+      - name: targetM
+        type: double
+    outputs:
+      - name: epsilon
+        type: double
+      - name: A
+        type: double
+      - name: B
+        type: double
+      - name: C
+        type: double
+      - name: V
+        type: double
+      - name: W
+        type: double

@@ -8,15 +8,22 @@ require_message = 'RCDB is not required for Iguana, and you may proceed with bui
 
 # check if RCDB is installed
 rcdb_home = get_option('home')
-rcdb_includedir = get_option('home') / 'cpp' / 'include'
-if get_option('home') != ''
-  fs = import('fs')
-  if not fs.is_dir(rcdb_includedir)
-    error(f'RCDB include directory "@rcdb_includedir@" does not exist, so RCDB will not be used; are you sure your build option "rcdb:home" is correct?; @require_message@')
-  endif
-else
+# try `$RCDB_HOME`, if not set from build option
+if rcdb_home == ''
+  message('build option "rcdb:home" not set; trying environment variable "$RCDB_HOME"')
+  rcdb_home = run_command('.' / 'get_rcdb_home.sh', check: true).stdout().strip()
+endif
+# error, if not found
+if rcdb_home == ''
   error(f'RCDB not found; set build option "rcdb:home" to the RCDB installation (e.g., to "$RCDB_HOME"); @require_message@')
 endif
+# check for header dir
+rcdb_includedir = rcdb_home / 'cpp' / 'include'
+if not import('fs').is_dir(rcdb_includedir)
+  error(f'RCDB include directory "@rcdb_includedir@" does not exist, so RCDB will not be used; are you sure your build option "rcdb:home" or environment variable "$RCDB_HOME" is correct?; @require_message@')
+endif
+# rcdb found
+message(f'using RCDB from @rcdb_home@')
 
 # RCDB dependencies: a database management system (DBMS), mariadb and/or sqlite
 dbms_args = []
@@ -24,7 +31,7 @@ dbms_deps = []
 dbms_dict = {
   'mariadb':  {
     'use': get_option('use_mariadb'),
-    'pkgs': [ 'mariadb', 'mysql', 'mysqlclient' ], # prioritizing mariadb, an open source fork of mysql
+    'pkgs': [ 'mariadb', 'libmariadb', 'mysql', 'mysqlclient' ], # prioritizing mariadb, an open source fork of mysql
   },
   'sqlite': {
     'use': get_option('use_sqlite'),
@@ -49,7 +56,7 @@ if dbms_deps.length() == 0
 endif
 
 rcdb_dep = declare_dependency(
-  version: get_option('home'), # RCDB lacks an easily accessible version number; instead just use the prefix
+  version: rcdb_home, # RCDB lacks an easily accessible version number; instead just use the prefix
   variables: {
     'name': meson.project_name(),
     'includedir': rcdb_includedir,

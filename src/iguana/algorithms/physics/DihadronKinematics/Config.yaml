@@ -1,7 +1,13 @@
 physics::DihadronKinematics:
 
+  # the name of the particle bank, only used for users of `hipo::banklist`;
+  # e.g., set it to 'MC::Particle' if you prefer
+  particle_bank: 'REC::Particle'
+
+  # list of hadrons used to pair dihadrons
   hadron_a_list: [ 211 ]
   hadron_b_list: [ -211, 211, 2212 ]
 
+  # calculation methods
   phi_r_method: RT_via_covariant_kT
   theta_method: hadron_a

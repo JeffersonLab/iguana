@@ -1,7 +1,6 @@
 #include "Validator.h"
 
 #include <Math/Vector3D.h>
-#include <TStyle.h>
 
 namespace iguana::physics {
 
@@ -28,7 +27,6 @@ namespace iguana::physics {
 
     // define plots
     // clang-format off
-    gStyle->SetOptStat(0);
     const int n_bins = 100;
     lepton_p_dist     = new TH1D("lepton_p_dist",     "lepton p;p [GeV]",                    n_bins, 0,    12);
     lepton_theta_dist = new TH1D("lepton_theta_dist", "lepton #theta;#theta [deg]",          n_bins, 0,    60);
@@ -52,7 +50,7 @@ namespace iguana::physics {
   }
 
 
-  void InclusiveKinematicsValidator::Run(hipo::banklist& banks) const
+  bool InclusiveKinematicsValidator::Run(hipo::banklist& banks) const
   {
     // calculate kinematics
     m_algo_seq->Run(banks);
@@ -61,7 +59,7 @@ namespace iguana::physics {
 
     if(result_bank.getRowList().size() == 0) {
       m_log->Debug("skip this event, since it has no inclusive kinematics results");
-      return;
+      return false;
     }
     if(result_bank.getRowList().size() > 1) {
       m_log->Warn("found event with more than 1 inclusive kinematics bank rows; only the first row will be used");
@@ -97,6 +95,7 @@ namespace iguana::physics {
     Q2_vs_W->Fill(W, Q2);
     y_dist->Fill(y);
     nu_dist->Fill(nu);
+    return true;
   }
 
 

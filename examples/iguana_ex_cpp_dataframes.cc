@@ -27,10 +27,9 @@ int main(int argc, char** argv)
 {
 
   // parse arguments
-  int argi                    = 1;
-  char const* in_file         = argc > argi ? argv[argi++] : "data.hipo";
-  int const num_events        = argc > argi ? std::stoi(argv[argi++]) : 100;
-  bool const interactive_mode = argc > argi ? std::string(argv[argi++]) == "true" : false;
+  char const* in_file         = argc > 1 ? argv[1] : "data.hipo";
+  int const num_events        = argc > 2 ? std::stoi(argv[2]) : 100;
+  bool const interactive_mode = argc > 3 ? std::string(argv[3]) == "true" : false;
 
   // iguana algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
@@ -58,13 +57,11 @@ int main(int argc, char** argv)
   auto frame_filtered = frame_init
                             .Define( // define a filter column, type std::deque<bool> (to avoid std::vector<bool>)
                                 "REC_Particle_EventBuilderFilter",
-                                [&](std::vector<int> const& pids)
-                                { return algo_eventbuilder_filter.Filter(pids); },
+                                [&](std::vector<int> const& pids) { return algo_eventbuilder_filter.Filter(pids); },
                                 {"REC_Particle_pid"})
                             .Define( // apply the filtering column to `REC_Particle_pid`
                                 "REC_Particle_pid_good",
-                                [](std::vector<int> const& pids, std::deque<bool>& filter)
-                                {
+                                [](std::vector<int> const& pids, std::deque<bool>& filter) {
                                   std::vector<int> result;
                                   for(std::deque<bool>::size_type i = 0; i < filter.size(); i++) {
                                     if(filter.at(i))

@@ -3,7 +3,6 @@
 #include "iguana/algorithms/physics/Tools.h"
 
 #include <Math/Vector3D.h>
-#include <TStyle.h>
 
 namespace iguana::physics {
 
@@ -30,60 +29,45 @@ namespace iguana::physics {
     }
 
     // define plots
-    gStyle->SetOptStat(0);
-    const int n_bins = 100;
-    plot_list = {
-      {
-        new TH1D("z_dist", "z", n_bins, 0, 1),
-        [](auto const& b, auto const r) { return b.getDouble("z", r); }
-      },
-      {
-        new TH1D("PhPerp_dist", "P_{h}^{{}^{#perp}}", n_bins, 0, 2),
-        [](auto const& b, auto const r) { return b.getDouble("PhPerp", r); }
-      },
-      {
-        new TH1D("MX_dist", "Missing mass: M_{X} [GeV];", n_bins, 0, 4),
-        [](auto const& b, auto const r) { auto MX2 = b.getDouble("MX2", r); return MX2 >= 0 ? std::sqrt(MX2) : tools::UNDEF; }
-      },
-      {
-        new TH1D("xF_dist", "Feynman-x: x_{F};", n_bins, -1, 1),
-        [](auto const& b, auto const r) { return b.getDouble("xF", r); }
-      },
-      {
-        new TH1D("yB_dist", "Breit frame rapidity: y_{B};", n_bins, -4, 4),
-        [](auto const& b, auto const r) { return b.getDouble("yB", r); }
-      },
-      {
-        new TH1D("phiH_dist", "#phi_{h};", n_bins, -M_PI, M_PI),
-        [](auto const& b, auto const r) { return b.getDouble("phiH", r); }
-      },
-      {
-        new TH1D("xi_dist", "#xi", n_bins, -1, 1),
-        [](auto const& b, auto const r) { return b.getDouble("xi", r); }
-      },
+    int const n_bins = 100;
+    plot_list        = {
+        {new TH1D("z_dist", "z", n_bins, 0, 1),
+                [](auto const& b, auto const r) { return b.getDouble("z", r); }},
+        {new TH1D("PhPerp_dist", "P_{h}^{{}^{#perp}}", n_bins, 0, 2),
+                [](auto const& b, auto const r) { return b.getDouble("PhPerp", r); }},
+        {new TH1D("MX_dist", "Missing mass: M_{X} [GeV];", n_bins, 0, 4),
+                [](auto const& b, auto const r) { auto MX2 = b.getDouble("MX2", r); return MX2 >= 0 ? std::sqrt(MX2) : tools::UNDEF; }},
+        {new TH1D("xF_dist", "Feynman-x: x_{F};", n_bins, -1, 1),
+                [](auto const& b, auto const r) { return b.getDouble("xF", r); }},
+        {new TH1D("yB_dist", "Breit frame rapidity: y_{B};", n_bins, -4, 4),
+                [](auto const& b, auto const r) { return b.getDouble("yB", r); }},
+        {new TH1D("phiH_dist", "#phi_{h};", n_bins, -M_PI, M_PI),
+                [](auto const& b, auto const r) { return b.getDouble("phiH", r); }},
+        {new TH1D("xi_dist", "#xi", n_bins, -1, 1),
+                [](auto const& b, auto const r) { return b.getDouble("xi", r); }},
     };
 
     // format plots
     for(auto& plot : plot_list) {
-      plot.hist->SetLineColor(kGreen+1);
-      plot.hist->SetFillColor(kGreen+1);
-        plot.hist->SetTitle(
+      plot.hist->SetLineColor(kGreen + 1);
+      plot.hist->SetFillColor(kGreen + 1);
+      plot.hist->SetTitle(
           TString(particle::title.at(particle::pi_plus)) +
           " " + plot.hist->GetTitle());
     }
   }
 
 
-  void SingleHadronKinematicsValidator::Run(hipo::banklist& banks) const
+  bool SingleHadronKinematicsValidator::Run(hipo::banklist& banks) const
   {
     // calculate kinematics
     m_algo_seq->Run(banks);
-    auto& result_bank   = GetBank(banks, b_result, "physics::SingleHadronKinematics");
+    auto& result_bank = GetBank(banks, b_result, "physics::SingleHadronKinematics");
 
     // skip events with no hadrons
     if(result_bank.getRowList().size() == 0) {
       m_log->Debug("skip this event, since it has no kinematics results");
-      return;
+      return false;
     }
 
     // lock mutex and fill the plots
@@ -92,6 +76,7 @@ namespace iguana::physics {
       for(auto& plot : plot_list)
         plot.hist->Fill(plot.get_val(result_bank, row));
     }
+    return true;
   }
 
 
@@ -100,7 +85,7 @@ namespace iguana::physics {
     if(GetOutputDirectory()) {
       int const n_cols = 4;
       int const n_rows = (plot_list.size() - 1) / n_cols + 1;
-      auto canv  = new TCanvas("canv", "canv", n_cols * 800, n_rows * 600);
+      auto canv        = new TCanvas("canv", "canv", n_cols * 800, n_rows * 600);
       canv->Divide(n_cols, n_rows);
       int pad_num = 0;
       for(auto& plot : plot_list) {

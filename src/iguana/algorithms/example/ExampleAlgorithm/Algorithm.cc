@@ -52,19 +52,28 @@ namespace iguana::example {
 
 
   // ############################################################################
-  // # define `ExampleAlgorithm::Run()`
-  // # - this overrides the virtual function `Algorithm::Run`
-  // # - note that this method must be _thread safe_, for example, you cannot modify
-  // #   class instance objects
-  // # - try to avoid expensive operations here; instead, put them in the `Start` method
-  // #   if it is reasonable to do so
+  // # define `ExampleAlgorithm::Run` functions
+  // # - this `Run` function that acts on `hipo::banklist` should just call the `Run`
+  // #   function that acts on `hipo::bank` objects; let's define it first
   // ############################################################################
-  void ExampleAlgorithm::Run(hipo::banklist& banks) const
+  bool ExampleAlgorithm::Run(hipo::banklist& banks) const
   {
     // ############################################################################
-    // # get the banks; here we just need `REC::Particle`
+    // # use `GetBank` to get the banks; here we just need `REC::Particle`
     // ############################################################################
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
+    return Run(GetBank(banks, b_particle, "REC::Particle"));
+  }
+
+  // ############################################################################
+  // # here is the `Run` function which acts on `hipo::bank` objects
+  // # - note that this method must be _thread safe_, for example, you cannot modify
+  // #   class instance objects; therefore it _must_ be `const`
+  // # - try to avoid expensive operations here; instead, put them in the `Start` method
+  // #   if it is reasonable to do so
+  // # - the function's `bool` return value can be used as an event-level filter
+  // ############################################################################
+  bool ExampleAlgorithm::Run(hipo::bank& particleBank) const
+  {
     // ############################################################################
     // # dump the bank
     // # - this will only happen if the log level for this algorithm is set low enough
@@ -92,12 +101,18 @@ namespace iguana::example {
       // ############################################################################
       m_log->Debug("input PID {} -- accept = {}", pid, accept);
       return accept ? 1 : 0;
-      });
+    });
 
     // ############################################################################
     // # dump the modified bank (only if the log level is low enough); this is also optional
     // ############################################################################
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+
+    // ############################################################################
+    // # return true or false, used as an event-level filter; in this case, we
+    // # return false if all particles have been filtered out
+    // ############################################################################
+    return !particleBank.getRowList().empty();
   }
 
 

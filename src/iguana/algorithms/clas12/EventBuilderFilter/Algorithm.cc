@@ -9,32 +9,37 @@ namespace iguana::clas12 {
 
     // define options, their default values, and cache them
     ParseYAMLConfig();
-    o_pids = GetOptionSet<int>("pids");
+    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
+    o_pids          = GetOptionSet<int>("pids");
 
     // get expected bank indices
-    b_particle = GetBankIndex(banks, "REC::Particle");
+    b_particle = GetBankIndex(banks, o_particle_bank);
   }
 
 
-  void EventBuilderFilter::Run(hipo::banklist& banks) const
+  bool EventBuilderFilter::Run(hipo::banklist& banks) const
   {
+    return Run(GetBank(banks, b_particle, o_particle_bank));
+  }
 
-    // get the banks
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-
+  bool EventBuilderFilter::Run(hipo::bank& particleBank) const
+  {
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this](auto bank, auto row) {
-        auto pid    = bank.getInt("pid", row);
-        auto accept = Filter(pid);
-        m_log->Debug("input PID {} -- accept = {}", pid, accept);
-        return accept ? 1 : 0;
-        });
+      auto pid    = bank.getInt("pid", row);
+      auto accept = Filter(pid);
+      m_log->Debug("input PID {} -- accept = {}", pid, accept);
+      return accept ? 1 : 0;
+    });
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+
+    // return false if everything is filtered out
+    return !particleBank.getRowList().empty();
   }
 
 

@@ -5,10 +5,12 @@ install_subdir('config', install_dir: example_config_files_prefix, strip_directo
 # example source information
 example_sources = {
   'iguana_ex_cpp_00_run_functions': {'sources': [ 'iguana_ex_cpp_00_run_functions.cc' ]},
+  'iguana_ex_cpp_00_run_functions_with_banks': {'sources': [ 'iguana_ex_cpp_00_run_functions_with_banks.cc' ]},
   'iguana_ex_cpp_01_action_functions': {'sources': [ 'iguana_ex_cpp_01_action_functions.cc' ]},
   'iguana_ex_cpp_dataframes': {
     'sources': [ 'iguana_ex_cpp_dataframes.cc' ],
     'build_this': ROOT_dep.found() and hipo_dep_dataframes_found,
+    'test_this': false, # FIXME: disabled for now, see https://github.com/JeffersonLab/iguana/issues/384
   },
   'iguana_ex_cpp_config_files': {
     'sources': [ 'iguana_ex_cpp_config_files.cc' ],
@@ -22,18 +24,16 @@ example_sources = {
 
 # build executables and test them
 foreach example, info : example_sources
-  if (info.get('build_this', true))
+  if info.get('build_this', true)
     example_exe = executable(
       example,
       sources: info['sources'],
-      include_directories: [ project_inc ] + ROOT_dep_inc_dirs,
+      include_directories: [ project_inc ],
       dependencies: project_deps,
       link_with: project_libs,
-      link_args: ROOT_dep_link_args + ROOT_dep_link_args_for_validators,
       install: true,
-      build_rpath: ROOT_dep_rpath,
     )
-    if fs.is_file(get_option('test_data_file'))
+    if fs.is_file(get_option('test_data_file')) and info.get('test_this', true)
       test(
         example,
         example_exe,

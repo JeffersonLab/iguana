@@ -10,21 +10,24 @@ namespace iguana::clas12 {
 
     // get configuration
     ParseYAMLConfig();
-    o_runnum = ConcurrentParamFactory::Create<int>();
-    o_electron_vz_cuts  = ConcurrentParamFactory::Create<std::vector<double>>();
+    o_particle_bank    = GetOptionScalar<std::string>("particle_bank");
+    o_runnum           = ConcurrentParamFactory::Create<int>();
+    o_electron_vz_cuts = ConcurrentParamFactory::Create<std::vector<double>>();
 
     // get expected bank indices
-    b_particle = GetBankIndex(banks, "REC::Particle");
-    b_config = GetBankIndex(banks, "RUN::config");
+    b_particle = GetBankIndex(banks, o_particle_bank);
+    b_config   = GetBankIndex(banks, "RUN::config");
   }
 
-  void ZVertexFilter::Run(hipo::banklist& banks) const
+  bool ZVertexFilter::Run(hipo::banklist& banks) const
   {
+    return Run(
+        GetBank(banks, b_particle, o_particle_bank),
+        GetBank(banks, b_config, "RUN::config"));
+  }
 
-    // get the banks
-    auto& particleBank = GetBank(banks, b_particle, "REC::Particle");
-    auto& configBank = GetBank(banks, b_config, "RUN::config");
-
+  bool ZVertexFilter::Run(hipo::bank& particleBank, hipo::bank const& configBank) const
+  {
     // dump the bank
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
@@ -33,19 +36,21 @@ namespace iguana::clas12 {
 
     // filter the input bank for requested PDG code(s)
     particleBank.getMutableRowList().filter([this, key](auto bank, auto row) {
-        auto zvertex = bank.getFloat("vz", row);
-        auto pid = bank.getInt("pid", row);
-        auto status = bank.getShort("status", row);
-        auto accept  = Filter(zvertex, pid, status, key);
-        m_log->Debug("input vz {} pid {} status {} -- accept = {}", zvertex, pid, status, accept);
-        return accept ? 1 : 0;
-        });
+      auto zvertex = bank.getFloat("vz", row);
+      auto pid     = bank.getInt("pid", row);
+      auto status  = bank.getShort("status", row);
+      auto accept  = Filter(zvertex, pid, status, key);
+      m_log->Debug("input vz {} pid {} status {} -- accept = {}", zvertex, pid, status, accept);
+      return accept ? 1 : 0;
+    });
 
     // dump the modified bank
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
+    return !particleBank.getRowList().empty();
   }
 
-  concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum) const {
+  concurrent_key_t ZVertexFilter::PrepareEvent(int const runnum) const
+  {
     m_log->Trace("calling PrepareEvent({})", runnum);
     if(o_runnum->NeedsHashing()) {
       std::hash<int> hash_ftn;
@@ -53,14 +58,16 @@ namespace iguana::clas12 {
       if(!o_runnum->HasKey(hash_key))
         Reload(runnum, hash_key);
       return hash_key;
-    } else {
+    }
+    else {
       if(o_runnum->IsEmpty() || o_runnum->Load(0) != runnum)
         Reload(runnum, 0);
       return 0;
     }
   }
 
-  void ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const {
+  void ZVertexFilter::Reload(int const runnum, concurrent_key_t key) const
+  {
     std::lock_guard<std::mutex> const lock(m_mutex); // NOTE: be sure to lock successive `ConcurrentParam::Save` calls !!!
     m_log->Trace("-> calling Reload({}, {})", runnum, key);
     o_runnum->Save(runnum, key);

@@ -6,41 +6,14 @@
 
 namespace iguana::physics {
 
-  /// Set of hadron kinematics variables
-  struct SingleHadronKinematicsVars {
-    /// @brief `REC::Particle` row (`pindex`) of the hadron
-    int pindex;
-    /// @brief PDG code of the hadron
-    int pdg;
-    /// @brief @latex{z}: Momentum fraction of the fragmenting parton carried by the hadron
-    double z;
-    /// @brief @latex{P_h^\perp}: transverse momentum of the hadron in the @latex{\perp}-frame (transverse to @latex{\vec{q}})
-    double PhPerp;
-    /// @brief @latex{M_X(ehX)^2}: Missing mass squared of the hadron
-    double MX2;
-    /// @brief @latex{x_F}: Feynman-x of the hadron
-    double xF;
-    /// @brief @latex{y_{h,B}}: Breit frame rapidity of the hadron
-    double yB;
-    /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
-    /// if the value is `tools::UNDEF`, the calculation failed
-    double phiH;
-    /// @brief @latex{\xi_h}: Longitudinal momentum fraction of the nucleon carried by the hadron
-    double xi;
-  };
-
-  /// @brief_algo Calculate semi-inclusive hadron kinematic quantities defined in `iguana::physics::SingleHadronKinematicsVars`
+  /// @algo_brief{Calculate semi-inclusive hadron kinematic quantities}
+  /// @algo_type_creator
   ///
-  /// @begin_doc_algo{physics::SingleHadronKinematics | Creator}
-  /// @input_banks{REC::Particle, %physics::InclusiveKinematics}
-  /// @output_banks{%physics::SingleHadronKinematics}
+  /// @begin_doc_config{physics/SingleHadronKinematics}
+  /// @config_param{hadron_list | list[int] | calculate kinematics for these hadron PDGs}
   /// @end_doc
   ///
-  /// @begin_doc_config
-  /// @config_param{hadron_list | list[int] | list of hadron PDGs}
-  /// @end_doc
-  ///
-  /// The output bank `%physics::SingleHadronKinematics` will have the same number of rows as the input particle bank `REC::Particle`
+  /// The output bank `%physics::SingleHadronKinematics` will have the same number of rows as the input particle bank
   /// - we want the output bank to have the same number of rows and ordering as the input
   ///   particle bank, so that banks which reference the input particle bank's rows (usually via `pindex`) can be used to
   ///   reference the output bank's rows too
@@ -56,8 +29,19 @@ namespace iguana::physics {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in] particle_bank particle bank (_e.g._, `REC::Particle`)
+      /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm
+      /// @param [out] result_bank `%physics::SingleHadronKinematics`, which will be created
+      /// @returns `false` if the input banks do not have enough information, _e.g._, if the inclusive kinematics bank is empty,
+      /// or if the created bank is empty
+      bool Run(
+          hipo::bank const& particle_bank,
+          hipo::bank const& inc_kin_bank,
+          hipo::bank& result_bank) const;
 
     private:
 
@@ -78,8 +62,8 @@ namespace iguana::physics {
       int i_xi;
 
       // config options
+      std::string o_particle_bank;
       std::set<int> o_hadron_pdgs;
-
   };
 
 }

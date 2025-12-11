@@ -1,31 +1,32 @@
 #include <getopt.h>
 
 #include "TestAlgorithm.h"
-#include "TestMultithreading.h"
+#include "TestBanklist.h"
 #include "TestConfig.h"
 #include "TestLogger.h"
+#include "TestMultithreading.h"
 #include "TestValidator.h"
+#include <iguana/services/Tools.h>
 
 int main(int argc, char** argv)
 {
   // user parameters
-  std::string command    = "";
-  std::string data_file  = "";
-  int num_events         = 10;
-  std::string algo_name  = "";
-  int test_num           = 0;
-  int num_threads        = 0;
+  std::string command           = "";
+  std::string data_file         = "";
+  int num_events                = 10;
+  std::string algo_name         = "";
+  int test_num                  = 0;
+  int num_threads               = 0;
   std::string concurrency_model = "";
-  bool vary_run          = false;
-  std::string output_dir = "";
-  bool verbose           = false;
+  bool vary_run                 = false;
+  std::string output_dir        = "";
+  bool verbose                  = false;
   std::vector<std::string> bank_names;
   std::vector<std::string> prerequisite_algos;
 
   // get the command
   auto exe           = std::string(argv[0]);
-  auto UsageCommands = [&](int exit_code)
-  {
+  auto UsageCommands = [&](int exit_code) {
     fmt::print("\nUSAGE: {} [COMMAND] [OPTIONS]...\n", exe);
     fmt::print("\n  COMMANDS:\n\n");
     fmt::print("    {:<20} {}\n", "algorithm", "call `Run` on an algorithm");
@@ -34,6 +35,7 @@ int main(int argc, char** argv)
     fmt::print("    {:<20} {}\n", "unit", "call `Test` on an algorithm, for unit tests");
     fmt::print("    {:<20} {}\n", "config", "test config file parsing");
     fmt::print("    {:<20} {}\n", "logger", "test Logger");
+    fmt::print("    {:<20} {}\n", "banklist", "test hipo::banklist");
     fmt::print("\n  OPTIONS:\n\n");
     fmt::print("    Each command has its own set of OPTIONS; either provide no OPTIONS\n");
     fmt::print("    or use the --help option for more usage information about a specific command\n");
@@ -122,7 +124,8 @@ int main(int argc, char** argv)
       {"multithreading", {"f", "n", "a-algo", "b", "p", "j", "m", "V"}},
       {"validator",      {"f", "n", "a-vdor", "b", "o"}},
       {"config",         {"t"}},
-      {"logger",         {}}
+      {"logger",         {}},
+      {"banklist",       {"f"}}
     };
     for(auto& it : available_options)
       it.second.push_back("v");
@@ -220,6 +223,10 @@ int main(int argc, char** argv)
   fmt::print("  {:>20} = {}\n", "output_dir", output_dir);
   fmt::print("\n");
 
+  // expand `~` in paths
+  data_file  = iguana::tools::ExpandTilde(data_file);
+  output_dir = iguana::tools::ExpandTilde(output_dir);
+
   // run test
   if(command == "algorithm" || command == "unit")
     return TestAlgorithm(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, verbose);
@@ -231,6 +238,8 @@ int main(int argc, char** argv)
     return TestConfig(test_num, verbose);
   else if(command == "logger")
     return TestLogger();
+  else if(command == "banklist")
+    return TestBanklist(data_file, verbose);
   else {
     fmt::print(stderr, "ERROR: unknown command '{}'\n", command);
     return 1;

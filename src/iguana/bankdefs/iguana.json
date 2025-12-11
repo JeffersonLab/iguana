@@ -1,0 +1,152 @@
+[
+  {
+    "name":      "REC::Particle::Sector",
+    "algorithm": "clas12::SectorFinder",
+    "group":     30000,
+    "item":      1,
+    "info":      "sector information for each particle",
+    "entries": [
+      { "name": "pindex", "type": "S", "info": "row number in the particle bank" },
+      { "name": "sector", "type": "I", "info": "sector for this particle" }
+    ]
+  },
+  {
+    "name":      "physics::InclusiveKinematics",
+    "algorithm": "physics::InclusiveKinematics",
+    "group":     30000,
+    "item":      2,
+    "info":      "inclusive kinematics",
+    "entries": [
+      { "name": "pindex",  "type": "S", "info": "`REC::Particle` row (`pindex`) of the scattered electron" },
+      { "name": "Q2",      "type": "D", "info": "@latex{Q^2} (GeV@latex{^2})" },
+      { "name": "x",       "type": "D", "info": "@latex{x_B}" },
+      { "name": "y",       "type": "D", "info": "@latex{y}" },
+      { "name": "W",       "type": "D", "info": "@latex{W} (GeV)" },
+      { "name": "nu",      "type": "D", "info": "@latex{\\nu}" },
+      { "name": "qx",      "type": "D", "info": "@latex{x}-component of virtual photon momentum @latex{q}" },
+      { "name": "qy",      "type": "D", "info": "@latex{y}-component of virtual photon momentum @latex{q}" },
+      { "name": "qz",      "type": "D", "info": "@latex{z}-component of virtual photon momentum @latex{q}" },
+      { "name": "qE",      "type": "D", "info": "@latex{E}-component of virtual photon momentum @latex{q}" },
+      { "name": "beamPz",  "type": "D", "info": "beam momentum @latex{z}-component (GeV)" },
+      { "name": "targetM", "type": "D", "info": "target mass (GeV)" }
+    ]
+  },
+  {
+    "name":      "physics::SingleHadronKinematics",
+    "algorithm": "physics::SingleHadronKinematics",
+    "group":     30000,
+    "item":      3,
+    "info":      "SIDIS single-hadron kinematics",
+    "entries": [
+      { "name": "pindex", "type": "S", "info": "`REC::Particle` row (`pindex`) of the hadron" },
+      { "name": "pdg",    "type": "I", "info": "PDG code of the hadron" },
+      { "name": "z",      "type": "D", "info": "@latex{z}: Momentum fraction of the fragmenting parton carried by the hadron" },
+      { "name": "PhPerp", "type": "D", "info": "@latex{P_h^\\perp}: transverse momentum of the hadron in the @latex{\\perp}-frame (transverse to @latex{\\vec{q}})" },
+      { "name": "MX2",    "type": "D", "info": "@latex{M_X^2(ehX)}: Missing mass squared of the hadron" },
+      { "name": "xF",     "type": "D", "info": "@latex{x_F}: Feynman-x of the hadron" },
+      { "name": "yB",     "type": "D", "info": "@latex{y_{h,B}}: Breit frame rapidity of the hadron" },
+      { "name": "phiH",   "type": "D", "info": "@latex{\\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\\vec{q}\\times\\vec{P}_h} plane; if the value is `tools::UNDEF`, the calculation failed" },
+      { "name": "xi",     "type": "D", "info": "@latex{\\xi_h}: Longitudinal momentum fraction of the nucleon carried by the hadron" }
+    ]
+  },
+  {
+    "name":      "physics::DihadronKinematics",
+    "algorithm": "physics::DihadronKinematics",
+    "group":     30000,
+    "item":      4,
+    "info":      "SIDIS dihadron kinematics",
+    "entries": [
+      { "name": "pindex_a", "type": "S", "info": "`REC::Particle` row (`pindex`) of hadron A" },
+      { "name": "pindex_b", "type": "S", "info": "`REC::Particle` row (`pindex`) of hadron B" },
+      { "name": "pdg_a",    "type": "I", "info": "PDG code of hadron A" },
+      { "name": "pdg_b",    "type": "I", "info": "PDG code of hadron B" },
+      { "name": "Mh",       "type": "D", "info": "@latex{M_h}: Invariant mass of the dihadron" },
+      { "name": "z",        "type": "D", "info": "@latex{z}: Momentum fraction of the fragmenting parton carried by the dihadron" },
+      { "name": "PhPerp",   "type": "D", "info": "@latex{P_h^\\perp}: transverse momentum of the dihadron in the @latex{\\perp}-frame (transverse to @latex{\\vec{q}})" },
+      { "name": "MX2",      "type": "D", "info": "@latex{M_X^2(ehhX)}: Missing mass squared of the dihadron" },
+      { "name": "xF",       "type": "D", "info": "@latex{x_F}: Feynman-x of the dihadron" },
+      { "name": "yB",       "type": "D", "info": "@latex{y_{h,B}}: Breit frame rapidity of the dihadron" },
+      { "name": "phiH",     "type": "D", "info": "@latex{\\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\\vec{q}\\times\\vec{P}_h} plane; if the value is `tools::UNDEF`, the calculation failed" },
+      { "name": "phiR",     "type": "D", "info": "@latex{\\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane; if the value is `tools::UNDEF`, the calculation failed" },
+      { "name": "theta",    "type": "D", "info": "@latex{\\theta}: The 'decay' angle of hadron A in the dihadron rest frame, with respect; to the dihadron momentum direction" }
+    ]
+  },
+  {
+    "name":      "physics::Depolarization",
+    "algorithm": "physics::Depolarization",
+    "group":     30000,
+    "item":      5,
+    "info":      "SIDIS depolarization factors",
+    "entries": [
+      { "name": "epsilon", "type": "D", "info": "@latex{\\varepsilon(Q^2, x, y)}, the ratio of transverse and longitudinal photon flux" },
+      { "name": "A",       "type": "D", "info": "depolarization factor @latex{A(\\varepsilon, y)}" },
+      { "name": "B",       "type": "D", "info": "depolarization factor @latex{B(\\varepsilon, y)}" },
+      { "name": "C",       "type": "D", "info": "depolarization factor @latex{C(\\varepsilon, y)}" },
+      { "name": "V",       "type": "D", "info": "depolarization factor @latex{V(\\varepsilon, y)}" },
+      { "name": "W",       "type": "D", "info": "depolarization factor @latex{W(\\varepsilon, y)}" }
+    ]
+  },
+  {
+    "name":      "REC::Particle::Calorimeter",
+    "algorithm": "clas12::CalorimeterLinker",
+    "group":     30000,
+    "item":      6,
+    "info":      "calorimeter information linked to particles",
+    "entries": [
+      { "name": "pindex",       "type": "S", "info": "row number in the particle bank" },
+      { "name": "pcal_found",   "type": "B", "info": "1 if PCAL info found for this particle, 0 otherwise" },
+      { "name": "pcal_sector",  "type": "I", "info": "PCAL sector" },
+      { "name": "pcal_lu",      "type": "F", "info": "PCAL distance on U-side" },
+      { "name": "pcal_lv",      "type": "F", "info": "PCAL distance on V-side" },
+      { "name": "pcal_lw",      "type": "F", "info": "PCAL distance on W-side" },
+      { "name": "pcal_energy",  "type": "F", "info": "Energy associated with the PCAL hit (GeV)" },
+      { "name": "ecin_found",   "type": "B", "info": "1 if ECIN info found for this particle, 0 otherwise" },
+      { "name": "ecin_sector",  "type": "I", "info": "ECIN sector" },
+      { "name": "ecin_lu",      "type": "F", "info": "ECIN distance on U-side" },
+      { "name": "ecin_lv",      "type": "F", "info": "ECIN distance on V-side" },
+      { "name": "ecin_lw",      "type": "F", "info": "ECIN distance on W-side" },
+      { "name": "ecin_energy",  "type": "F", "info": "Energy associated with the ECIN hit (GeV)" },
+      { "name": "ecout_found",  "type": "B", "info": "1 if ECOUT info found for this particle, 0 otherwise" },
+      { "name": "ecout_sector", "type": "I", "info": "ECOUT sector" },
+      { "name": "ecout_lu",     "type": "F", "info": "ECOUT distance on U-side" },
+      { "name": "ecout_lv",     "type": "F", "info": "ECOUT distance on V-side" },
+      { "name": "ecout_lw",     "type": "F", "info": "ECOUT distance on W-side" },
+      { "name": "ecout_energy", "type": "F", "info": "Energy associated with the ECOUT hit (GeV)" }
+    ]
+  },
+  {
+    "name":      "REC::Particle::Traj",
+    "algorithm": "clas12::TrajLinker",
+    "group":     30000,
+    "item":      7,
+    "info":      "trajectory information linked to particles",
+    "entries": [
+      { "name": "pindex",   "type": "S", "info": "row number in the particle bank" },
+      { "name": "sector",   "type": "I", "info": "sector" },
+      { "name": "r1_found", "type": "B", "info": "1 if Region 1 info found for this particle, 0 otherwise" },
+      { "name": "r1_x",     "type": "F", "info": "Region 1 x-position" },
+      { "name": "r1_y",     "type": "F", "info": "Region 1 y-position" },
+      { "name": "r1_z",     "type": "F", "info": "Region 1 z-position" },
+      { "name": "r2_found", "type": "B", "info": "1 if Region 2 info found for this particle, 0 otherwise" },
+      { "name": "r2_x",     "type": "F", "info": "Region 2 x-position" },
+      { "name": "r2_y",     "type": "F", "info": "Region 2 y-position" },
+      { "name": "r2_z",     "type": "F", "info": "Region 2 z-position" },
+      { "name": "r3_found", "type": "B", "info": "1 if Region 3 info found for this particle, 0 otherwise" },
+      { "name": "r3_x",     "type": "F", "info": "Region 3 x-position" },
+      { "name": "r3_y",     "type": "F", "info": "Region 3 y-position" },
+      { "name": "r3_z",     "type": "F", "info": "Region 3 z-position" }
+    ]
+  },
+  {
+    "name":      "clas12::MatchParticleProximity",
+    "algorithm": "clas12::MatchParticleProximity",
+    "group":     30000,
+    "item":      8,
+    "info":      "simple matching by proximity of particles in bank A to particles in bank B",
+    "entries": [
+      {"name": "pindex_a",  "type": "S", "info": "pindex of particle bank A (e.g., REC::Particle)"},
+      {"name": "pindex_b",  "type": "S", "info": "pindex of particle bank B (e.g., MC::Particle)"},
+      {"name": "proximity", "type": "D", "info": "the distance between matched pair, in the proximity-matching space"}
+    ]
+  }
+]

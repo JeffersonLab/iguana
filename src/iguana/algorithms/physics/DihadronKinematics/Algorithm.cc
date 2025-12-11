@@ -1,6 +1,7 @@
 #include "Algorithm.h"
 #include "TypeDefs.h"
 
+#include "iguana/algorithms/physics/Tools.h"
 #include <Math/Boost.h>
 
 namespace iguana::physics {
@@ -9,48 +10,9 @@ namespace iguana::physics {
 
   void DihadronKinematics::Start(hipo::banklist& banks)
   {
-    b_particle = GetBankIndex(banks, "REC::Particle");
-    b_inc_kin  = GetBankIndex(banks, "physics::InclusiveKinematics");
-
-    // create the output bank
-    // FIXME: generalize the groupid and itemid
-    auto result_schema = CreateBank(
-        banks,
-        b_result,
-        GetClassName(),
-        {
-          "pindex_a/S",
-          "pindex_b/S",
-          "pdg_a/I",
-          "pdg_b/I",
-          "Mh/D",
-          "z/D",
-          "PhPerp/D",
-          "MX2/D",
-          "xF/D",
-          "yB/D",
-          "phiH/D",
-          "phiR/D",
-          "theta/D"
-        },
-        0xF000,
-        5);
-    i_pindex_a = result_schema.getEntryOrder("pindex_a");
-    i_pindex_b = result_schema.getEntryOrder("pindex_b");
-    i_pdg_a    = result_schema.getEntryOrder("pdg_a");
-    i_pdg_b    = result_schema.getEntryOrder("pdg_b");
-    i_Mh       = result_schema.getEntryOrder("Mh");
-    i_z        = result_schema.getEntryOrder("z");
-    i_PhPerp   = result_schema.getEntryOrder("PhPerp");
-    i_MX2      = result_schema.getEntryOrder("MX2");
-    i_xF       = result_schema.getEntryOrder("xF");
-    i_yB       = result_schema.getEntryOrder("yB");
-    i_phiH     = result_schema.getEntryOrder("phiH");
-    i_phiR     = result_schema.getEntryOrder("phiR");
-    i_theta    = result_schema.getEntryOrder("theta");
-
     // parse config file
     ParseYAMLConfig();
+    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
     o_hadron_a_pdgs = GetOptionSet<int>("hadron_a_list");
     o_hadron_b_pdgs = GetOptionSet<int>("hadron_b_list");
     o_phi_r_method  = GetOptionScalar<std::string>("phi_r_method");
@@ -68,20 +30,48 @@ namespace iguana::physics {
     else
       throw std::runtime_error(fmt::format("unknown theta_method: {:?}", o_theta_method));
 
+    // get bank indices
+    b_particle = GetBankIndex(banks, o_particle_bank);
+    b_inc_kin  = GetBankIndex(banks, "physics::InclusiveKinematics");
+
+    // create the output bank
+    auto result_schema = CreateBank(banks, b_result, GetClassName());
+    i_pindex_a         = result_schema.getEntryOrder("pindex_a");
+    i_pindex_b         = result_schema.getEntryOrder("pindex_b");
+    i_pdg_a            = result_schema.getEntryOrder("pdg_a");
+    i_pdg_b            = result_schema.getEntryOrder("pdg_b");
+    i_Mh               = result_schema.getEntryOrder("Mh");
+    i_z                = result_schema.getEntryOrder("z");
+    i_PhPerp           = result_schema.getEntryOrder("PhPerp");
+    i_MX2              = result_schema.getEntryOrder("MX2");
+    i_xF               = result_schema.getEntryOrder("xF");
+    i_yB               = result_schema.getEntryOrder("yB");
+    i_phiH             = result_schema.getEntryOrder("phiH");
+    i_phiR             = result_schema.getEntryOrder("phiR");
+    i_theta            = result_schema.getEntryOrder("theta");
   }
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void DihadronKinematics::Run(hipo::banklist& banks) const
+  bool DihadronKinematics::Run(hipo::banklist& banks) const
   {
-    auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
-    auto& inc_kin_bank  = GetBank(banks, b_inc_kin, "physics::InclusiveKinematics");
-    auto& result_bank   = GetBank(banks, b_result, GetClassName());
+    return Run(
+        GetBank(banks, b_particle, o_particle_bank),
+        GetBank(banks, b_inc_kin, "physics::InclusiveKinematics"),
+        GetBank(banks, b_result, GetClassName()));
+  }
+
+  bool DihadronKinematics::Run(
+      hipo::bank const& particle_bank,
+      hipo::bank const& inc_kin_bank,
+      hipo::bank& result_bank) const
+  {
+    result_bank.reset(); // IMPORTANT: always first `reset` the created bank(s)
     ShowBank(particle_bank, Logger::Header("INPUT PARTICLES"));
 
     if(particle_bank.getRowList().empty() || inc_kin_bank.getRowList().empty()) {
       m_log->Debug("skip this event, since not all required banks have entries");
-      return;
+      return false;
     }
 
     // get beam and target momenta
@@ -120,7 +110,7 @@ namespace iguana::physics {
     // loop over dihadrons
     result_bank.setRows(dih_rows.size());
     int dih_row = 0;
-    for(const auto& [row_a, row_b] : dih_rows) {
+    for(auto const& [row_a, row_b] : dih_rows) {
 
       // get hadron momenta
       Hadron had_a{.row = row_a};
@@ -161,73 +151,76 @@ namespace iguana::physics {
 
       // calculate phiH
       double phiH = tools::PlaneAngle(
-          p_q.Vect(),
-          p_beam.Vect(),
-          p_q.Vect(),
-          p_Ph.Vect()).value_or(tools::UNDEF);
+                        p_q.Vect(),
+                        p_beam.Vect(),
+                        p_q.Vect(),
+                        p_Ph.Vect())
+                        .value_or(tools::UNDEF);
 
       // calculate PhiR
       double phiR = tools::UNDEF;
       switch(m_phi_r_method) {
-      case e_RT_via_covariant_kT:
-        {
-          for(auto& had : {&had_a, &had_b}) {
-            had->z      = p_target.Dot(had->p) / p_target.Dot(p_q);
-            had->p_perp = tools::RejectVector(had->p.Vect(), p_q.Vect());
-          }
-          if(had_a.p_perp.has_value() && had_b.p_perp.has_value()) {
-            auto RT = (had_b.z * had_a.p_perp.value() - had_a.z * had_b.p_perp.value()) / (had_a.z + had_b.z);
-            phiR = tools::PlaneAngle(
-                p_q.Vect(),
-                p_beam.Vect(),
-                p_q.Vect(),
-                RT).value_or(tools::UNDEF);
-          }
-          break;
+      case e_RT_via_covariant_kT: {
+        for(auto& had : {&had_a, &had_b}) {
+          had->z      = p_target.Dot(had->p) / p_target.Dot(p_q);
+          had->p_perp = tools::RejectVector(had->p.Vect(), p_q.Vect());
         }
+        if(had_a.p_perp.has_value() && had_b.p_perp.has_value()) {
+          auto RT = (had_b.z * had_a.p_perp.value() - had_a.z * had_b.p_perp.value()) / (had_a.z + had_b.z);
+          phiR    = tools::PlaneAngle(
+                     p_q.Vect(),
+                     p_beam.Vect(),
+                     p_q.Vect(),
+                     RT)
+                     .value_or(tools::UNDEF);
+        }
+        break;
+      }
       }
 
       // calculate theta
       double theta = tools::UNDEF;
       switch(m_theta_method) {
-      case e_hadron_a:
-        {
-          theta = tools::VectorAngle(
-              boost__dih(had_a.p).Vect(),
-              p_Ph.Vect()).value_or(tools::UNDEF);
-          break;
-        }
+      case e_hadron_a: {
+        theta = tools::VectorAngle(
+                    boost__dih(had_a.p).Vect(),
+                    p_Ph.Vect())
+                    .value_or(tools::UNDEF);
+        break;
+      }
       }
 
       result_bank.putShort(i_pindex_a, dih_row, static_cast<int16_t>(had_a.row));
       result_bank.putShort(i_pindex_b, dih_row, static_cast<int16_t>(had_b.row));
-      result_bank.putInt(i_pdg_a,      dih_row, had_a.pdg);
-      result_bank.putInt(i_pdg_b,      dih_row, had_b.pdg);
-      result_bank.putDouble(i_Mh,      dih_row, Mh);
-      result_bank.putDouble(i_z,       dih_row, z);
-      result_bank.putDouble(i_PhPerp,  dih_row, PhPerp);
-      result_bank.putDouble(i_MX2,     dih_row, MX2);
-      result_bank.putDouble(i_xF,      dih_row, xF);
-      result_bank.putDouble(i_yB,      dih_row, yB);
-      result_bank.putDouble(i_phiH,    dih_row, phiH);
-      result_bank.putDouble(i_phiR,    dih_row, phiR);
-      result_bank.putDouble(i_theta,   dih_row, theta);
+      result_bank.putInt(i_pdg_a, dih_row, had_a.pdg);
+      result_bank.putInt(i_pdg_b, dih_row, had_b.pdg);
+      result_bank.putDouble(i_Mh, dih_row, Mh);
+      result_bank.putDouble(i_z, dih_row, z);
+      result_bank.putDouble(i_PhPerp, dih_row, PhPerp);
+      result_bank.putDouble(i_MX2, dih_row, MX2);
+      result_bank.putDouble(i_xF, dih_row, xF);
+      result_bank.putDouble(i_yB, dih_row, yB);
+      result_bank.putDouble(i_phiH, dih_row, phiH);
+      result_bank.putDouble(i_phiR, dih_row, phiR);
+      result_bank.putDouble(i_theta, dih_row, theta);
 
       dih_row++;
     }
 
     ShowBank(result_bank, Logger::Header("CREATED BANK"));
+    return result_bank.getRows() > 0;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  std::vector<std::pair<int,int>> DihadronKinematics::PairHadrons(hipo::bank const& particle_bank) const {
-    std::vector<std::pair<int,int>> result;
-    // loop over REC::Particle rows, for hadron A
+  std::vector<std::pair<int, int>> DihadronKinematics::PairHadrons(hipo::bank const& particle_bank) const
+  {
+    std::vector<std::pair<int, int>> result;
+    // loop over particle bank rows, for hadron A
     for(auto const& row_a : particle_bank.getRowList()) {
       // check PDG is in the hadron-A list
       if(auto pdg_a{particle_bank.getInt("pid", row_a)}; o_hadron_a_pdgs.find(pdg_a) != o_hadron_a_pdgs.end()) {
-        // loop over REC::Particle rows, for hadron B
+        // loop over particle bank rows, for hadron B
         for(auto const& row_b : particle_bank.getRowList()) {
           // don't pair a particle with itself
           if(row_a == row_b)

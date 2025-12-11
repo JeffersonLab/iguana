@@ -20,6 +20,8 @@ chameleon-tree
 
 # overrides
 !doc/logo.png
+!doc/logo_small.png
+!doc/mermaid/*.png
 
 # misc. artifacts
 .DS_Store

@@ -1,11 +1,9 @@
 clas12::SectorFinder:
-  # use the default banks
-  # for both charged/uncharged particles
+
+  ### use the default banks for both charged/neutral particles
   bank_charged: default
-  bank_uncharged: default
-  
-  # or force finder to use a certain bank with eg:
-  #can have default for charged but not uncharged particles
-  #or vice versa
-  #bank_charged: default
-  #bank_uncharged: REC::Calorimeter
+  bank_neutral: default
+
+  ### alternatively, use custom banks; for example:
+  # bank_charged: default            # default bank for charged particles
+  # bank_neutral: REC::Calorimeter   # custom bank for neutral particles

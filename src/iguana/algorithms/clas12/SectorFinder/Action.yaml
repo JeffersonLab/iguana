@@ -1,0 +1,39 @@
+algorithm:
+  name: 'clas12::SectorFinder'
+
+actions:
+  - name: GetSector
+    type: creator
+    rank: scalar
+    inputs:
+      - { name: sectors,         type: std::vector<int>, dimension: 1 }
+      - { name: pindices,        type: std::vector<int>, dimension: 1 }
+      - { name: pindex_particle, type: int }
+    outputs:
+      - type: int
+  - name: GetStandardSector
+    type: creator
+    rank: scalar
+    inputs:
+      - { name: sectors_track,   type: std::vector<int>, dimension: 1 }
+      - { name: pindices_track,  type: std::vector<int>, dimension: 1 }
+      - { name: sectors_cal,     type: std::vector<int>, dimension: 1 }
+      - { name: pindices_cal,    type: std::vector<int>, dimension: 1 }
+      - { name: sectors_scint,   type: std::vector<int>, dimension: 1 }
+      - { name: pindices_scint,  type: std::vector<int>, dimension: 1 }
+      - { name: pindex_particle, type: int }
+    outputs:
+      - type: int
+  - name: GetStandardSector
+    type: creator
+    rank: vector
+    inputs:
+      - { name: sectors_track,     type: std::vector<int>, dimension: 1 }
+      - { name: pindices_track,    type: std::vector<int>, dimension: 1 }
+      - { name: sectors_cal,       type: std::vector<int>, dimension: 1 }
+      - { name: pindices_cal,      type: std::vector<int>, dimension: 1 }
+      - { name: sectors_scint,     type: std::vector<int>, dimension: 1 }
+      - { name: pindices_scint,    type: std::vector<int>, dimension: 1 }
+      - { name: pindices_particle, type: std::vector<int>, dimension: 1 }
+    outputs:
+      - { type: std::vector<int>, dimension: 1 }

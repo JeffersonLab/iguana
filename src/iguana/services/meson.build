@@ -1,5 +1,25 @@
-services_sources = [ 'Logger.cc', 'Object.cc', 'ConfigFileReader.cc', 'YAMLReader.cc', 'ConcurrentParam.cc', 'GlobalParam.cc', 'RCDBReader.cc', 'DataFileReader.cc' ]
-services_headers = [ 'Logger.h', 'Object.h', 'ConfigFileReader.h', 'YAMLReader.h', 'ConcurrentParam.h', 'GlobalParam.h', 'RCDBReader.h', 'DataFileReader.h' ]
+services_sources = [
+  'Logger.cc',
+  'Object.cc',
+  'ConfigFileReader.cc',
+  'YAMLReader.cc',
+  'ConcurrentParam.cc',
+  'GlobalParam.cc',
+  'RCDBReader.cc',
+  'Tools.cc',
+  'DataFileReader.cc',
+]
+services_headers = [
+  'Logger.h',
+  'Object.h',
+  'ConfigFileReader.h',
+  'YAMLReader.h',
+  'ConcurrentParam.h',
+  'GlobalParam.h',
+  'RCDBReader.h',
+  'Tools.h',
+  'DataFileReader.h',
+]
 
 if rcdb_dep.found()
   add_project_arguments('-DUSE_RCDB', language: ['cpp'])

@@ -41,7 +41,7 @@ namespace iguana {
       /// - the common installation prefix
       /// @param name the configuration file name (with or without a directory)
       /// @return the found configuration file (with the directory)
-      std::string FindFile(std::string const& name);
+      std::string FindFile(std::string name);
 
       /// Convert a full algorithm name to its corresponding default config file subdirectory
       /// @param algo_name the algorithm name

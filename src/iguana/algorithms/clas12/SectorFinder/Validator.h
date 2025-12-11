@@ -5,8 +5,8 @@
 
 #include <TCanvas.h>
 #include <TFile.h>
-#include <TH2.h>
 #include <TH1.h>
+#include <TH2.h>
 
 namespace iguana::clas12 {
 
@@ -19,7 +19,7 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
     private:
@@ -30,7 +30,8 @@ namespace iguana::clas12 {
 
       std::vector<int> const u_pdg_list = {
           particle::PDG::electron,
-          particle::PDG::photon,};
+          particle::PDG::photon,
+      };
 
       TString m_output_file_basename;
       TFile* m_output_file;

@@ -1,11 +1,36 @@
 physics::InclusiveKinematics:
 
+  # the name of the particle bank, only used for users of `hipo::banklist`;
+  # e.g., set it to 'MC::Particle' if you prefer. This bank is used to
+  # find the scattered lepton
+  particle_bank: 'REC::Particle'
+
+  # beam configuration
   initial_state:
     - default:
       beam_direction: [ 0.0, 0.0, 1.0 ]
       target_particle: proton
 
+  # kinematics reconstruction method
   method:
+    # beam particle
     beam_particle: electron
+    # reconstruction method:
+    # - 'scattered_lepton': use the scattered lepton to calculate kinematics
+    # - no other method is available yet
     reconstruction: scattered_lepton
+    # lepton finder method, used if reconstruction method == 'scattered_lepton':
+    # - 'highest_energy_FD_trigger': use the highest energy FD trigger electron
+    # - 'lund_beam_daughter': use 'MC::Lund' parent info; be sure to set
+    #   `particle_bank` to 'MC::Lund' if you are using `hipo::banklist`, or
+    #   use the 'MC::Lund' bank directly in the `Run(hipo::bank&, ...)` function
     lepton_finder: highest_energy_FD_trigger
+
+  # override the beam energy if > 0, otherwise the default is to use RCDB;
+  # e.g., use this to set the beam energy for MC data with run number 11
+  override_beam_energy: -1.0
+
+  # this is the theta used to roughly select between FD and FT; it is only
+  # used for the case where `particle_bank` lacks the `status` variable,
+  # such as `MC::Particle`
+  theta_between_FD_and_FT: 5.0 # [deg]

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# create a new branch and commit changes from clang-format
-set -e
-set -u
-if [ $# -ne 1 ]; then
-  echo "USAGE: $0 [BUILD_DIR]" >&2
-  exit 2
+set -euo pipefail
+
+builddir=$(dirname $0)/../build
+
+if [ -d $builddir ]; then
+  ninja -C $builddir clang-format
+else
+  echo "$builddir does not exist, not auto-formatting"
+  exit 0 # so pre-commit doesn't fail
 fi
-builddir=$1
-ref=auto-format-$(date +%s)
-git checkout -b $ref
-ninja -C $builddir clang-format
-meson format --inplace --recursive
+
+# meson format --inplace --recursive

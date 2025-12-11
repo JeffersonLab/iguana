@@ -1,0 +1,45 @@
+algorithm:
+  name: 'clas12::rga::FTEnergyCorrection'
+
+actions:
+
+  - name: Transform
+    type: transformer
+    rank: scalar
+    inputs:
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
+      - name: E
+        type: double
+        cast: float
+    outputs:
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
+      - name: E
+        type: double
+        cast: float
+
+  - name: CorrectEnergy
+    type: transformer
+    rank: scalar
+    inputs:
+      - name: E
+        type: double
+        cast: float
+    outputs:
+      - type: double
+        cast: float

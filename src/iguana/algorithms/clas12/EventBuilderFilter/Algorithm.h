@@ -4,14 +4,10 @@
 
 namespace iguana::clas12 {
 
-  /// @brief_algo Filter the `REC::Particle` (or similar) bank by PID from the Event Builder
+  /// @algo_brief{Filter the particle bank (`REC::Particle`, or similar) bank by PID from the Event Builder}
+  /// @algo_type_filter
   ///
-  /// @begin_doc_algo{clas12::EventBuilderFilter | Filter}
-  /// @input_banks{REC::Particle}
-  /// @output_banks{REC::Particle}
-  /// @end_doc
-  ///
-  /// @begin_doc_config
+  /// @begin_doc_config{clas12/EventBuilderFilter}
   /// @config_param{pids | list[int] | list of PDG codes to filter}
   /// @end_doc
   class EventBuilderFilter : public Algorithm
@@ -22,8 +18,13 @@ namespace iguana::clas12 {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      /// @run_function
+      /// @param [in,out] particleBank particle bank (_e.g._, `REC::Particle`), which will be filtered
+      /// @returns `false` if all particles are filtered out
+      bool Run(hipo::bank& particleBank) const;
 
       /// @action_function{scalar filter} checks if the PDG `pid` is a part of the list of user-specified PDGs
       /// @param pid the particle PDG to check
@@ -31,6 +32,7 @@ namespace iguana::clas12 {
       bool Filter(int const pid) const;
 
       /// @action_function{vector filter} checks if the PDG `pid` is a part of the list of user-specified PDGs
+      /// @overloads_scalar
       /// @param pids the list of particle PDGs to check
       /// @returns list of booleans which are `true` for `pids` the user wants
       std::deque<bool> Filter(std::vector<int> const pids) const;
@@ -40,7 +42,8 @@ namespace iguana::clas12 {
       /// `hipo::banklist` index for the particle bank
       hipo::banklist::size_type b_particle;
 
-      /// Configuration options
+      // Configuration options
+      std::string o_particle_bank;
       std::set<int> o_pids;
   };
 

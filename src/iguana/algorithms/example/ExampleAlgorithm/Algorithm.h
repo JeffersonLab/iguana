@@ -26,16 +26,12 @@ namespace iguana::example {
   // #   - see Doxygen documentation for more details, or see other algorithms
   // ############################################################################
   ///
-  /// @brief_algo This is a template algorithm, used as an example showing how to write an algorithm.
+  /// @algo_brief{This is a template algorithm, used as an example showing how to write an algorithm.}
+  /// @algo_type_filter
   ///
   /// Provide a more detailed description of your algorithm here.
   ///
-  /// @begin_doc_algo{example::ExampleAlgorithm | Filter}
-  /// @input_banks{REC::Particle}
-  /// @output_banks{REC::Particle}
-  /// @end_doc
-  ///
-  /// @begin_doc_config
+  /// @begin_doc_config{example/ExampleAlgorithm}
   /// @config_param{exampleInt | int | an example `integer` configuration parameter}
   /// @config_param{exampleDouble | double | an example `double` configuration parameter}
   /// @end_doc
@@ -63,8 +59,27 @@ namespace iguana::example {
       // # - each algorithm must have these methods (even if they do nothing)
       // ############################################################################
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
+
+      // ############################################################################
+      // # define an additional `Run` function which takes `hipo::bank` parameters
+      // # - the parameters should be lvalue references, i.e., `hipo::bank&`, to avoid copying the banks
+      // # - if a bank is ONLY read, and not modified, you should use `const`, i.e., `hipo::bank const&`
+      // # - in this example, `particleBank` will be modified, so we use `hipo::bank&`
+      // # - be sure the function itself is also marked `const`
+      // # - you'll also need to write Doxygen docstrings for this function
+      // #   - use `@run_function`, so the documentation understands this is a `Run` function
+      // #   - use `@param [in]` for a bank that is only read (type should be `hipo::bank const&`)
+      // #   - use `@param [out]` for a bank that is newly created (type should be `hipo::bank&`)
+      // #   - use `@param [in,out]` for a bank that is read and mutated (type should be `hipo::bank&`)
+      // #   - use `@run_function_returns_true` if the function does not use the `bool` return value, otherwise
+      // #     use `@returns` and explain why the return value could be `false`
+      // ############################################################################
+      /// @run_function
+      /// @param [in,out] particleBank `REC::Particle` bank
+      /// @returns `false` if all particles are filtered out
+      bool Run(hipo::bank& particleBank) const;
 
       // ############################################################################
       // # additional public functions go here

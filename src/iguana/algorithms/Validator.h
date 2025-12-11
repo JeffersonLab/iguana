@@ -8,6 +8,10 @@
 #include "iguana/algorithms/Algorithm.h"
 #include "iguana/algorithms/AlgorithmSequence.h"
 
+#ifdef IGUANA_ROOT_FOUND
+#include <TStyle.h>
+#endif
+
 namespace iguana {
 
   /// @brief Base class for all algorithm validators to inherit from
@@ -23,12 +27,18 @@ namespace iguana {
       Validator(std::string_view name = "validator")
           : Algorithm(name)
           , m_output_dir("")
-      {}
+      {
+#ifdef IGUANA_ROOT_FOUND
+        // set styles for all validators' ROOT plots
+        gStyle->SetOptStat(0);
+        gStyle->SetPalette(55);
+#endif
+      }
       virtual ~Validator() {}
 
-      void Start(hipo::banklist& banks) override{};
-      void Run(hipo::banklist& banks) const override{};
-      void Stop() override{};
+      void Start(hipo::banklist& banks) override {}
+      bool Run(hipo::banklist& banks) const override { return true; }
+      void Stop() override {}
 
       /// Set this validator's output directory
       /// @param output_dir the output directory

@@ -1,43 +1,4 @@
 algorithm:
   name: 'clas12::FTEnergyCorrection'
-
-actions:
-
-  - name: Transform
-    type: transformer
-    inputs:
-      - name: px
-        type: double
-        cast: float
-      - name: py
-        type: double
-        cast: float
-      - name: pz
-        type: double
-        cast: float
-      - name: E
-        type: double
-        cast: float
-    outputs:
-      - name: px
-        type: double
-        cast: float
-      - name: py
-        type: double
-        cast: float
-      - name: pz
-        type: double
-        cast: float
-      - name: E
-        type: double
-        cast: float
-
-  - name: CorrectEnergy
-    type: transformer
-    inputs:
-      - name: E
-        type: double
-        cast: float
-    outputs:
-      - type: double
-        cast: float
+include:
+  - '../rga/FTEnergyCorrection/Action.yaml' # include these action functions

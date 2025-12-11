@@ -18,7 +18,7 @@ namespace iguana::physics {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
     private:
@@ -26,8 +26,8 @@ namespace iguana::physics {
       hipo::banklist::size_type b_result;
 
       struct Plot1D {
-        TH1D* hist;
-        std::function<double(hipo::bank const&, int const)> get_val;
+          TH1D* hist;
+          std::function<double(hipo::bank const&, int const)> get_val;
       };
       std::vector<Plot1D> plot_list;
 

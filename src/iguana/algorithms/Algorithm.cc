@@ -1,8 +1,25 @@
 #include "Algorithm.h"
 
-#include <numeric>
-
 namespace iguana {
+
+  hipo::banklist::size_type tools::GetBankIndex(
+      hipo::banklist& banks,
+      std::string const& bank_name,
+      unsigned int const& variant) noexcept(false)
+  {
+    unsigned int num_found = 0;
+    for(hipo::banklist::size_type i = 0; i < banks.size(); i++) {
+      auto& bank = banks.at(i);
+      if(bank.getSchema().getName() == bank_name) {
+        if(num_found == variant)
+          return i;
+        num_found++;
+      }
+    }
+    throw std::runtime_error("GetBankIndex failed to find bank \"" + bank_name + "\"");
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   void Algorithm::Start()
   {
@@ -152,21 +169,42 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  void Algorithm::StartRCDBReader()
+  {
+    m_rcdb = std::make_unique<RCDBReader>("RCDB|" + GetName(), m_log->GetLevel());
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   hipo::banklist::size_type Algorithm::GetBankIndex(hipo::banklist& banks, std::string const& bank_name) const
   {
     if(m_rows_only)
       return 0;
     try {
-      auto idx = hipo::getBanklistIndex(banks, bank_name);
+      // check if this bank was created by iguana
+      auto created_by_iguana = AlgorithmFactory::GetCreatorAlgorithms(bank_name);
+      // get the index
+      auto idx = tools::GetBankIndex(
+          banks,
+          bank_name,
+          created_by_iguana ? m_created_bank_variant : 0);
       m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
       return idx;
-    } catch(std::runtime_error const& ex) {
+    }
+    catch(std::runtime_error const& ex) {
       m_log->Error("required input bank '{}' not found; cannot `Start` algorithm '{}'", bank_name, m_class_name);
-      auto creators = AlgorithmFactory::QueryNewBank(bank_name);
+      auto creators = AlgorithmFactory::GetCreatorAlgorithms(bank_name);
       if(creators)
         m_log->Error(" -> this bank is created by algorithm(s) [{}]; please `Start` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
       throw std::runtime_error("cannot cache bank index");
     }
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  hipo::banklist::size_type Algorithm::GetCreatedBankIndex(hipo::banklist& banks) const noexcept(false)
+  {
+    return GetBankIndex(banks, GetCreatedBankName());
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -221,7 +259,7 @@ namespace iguana {
       }
       catch(std::out_of_range const& o) {
         m_log->Error("required input bank '{}' not found; cannot `Run` algorithm '{}'", expected_bank_name, m_class_name);
-        auto creators = AlgorithmFactory::QueryNewBank(expected_bank_name);
+        auto creators = AlgorithmFactory::GetCreatorAlgorithms(expected_bank_name);
         if(creators)
           m_log->Error(" -> this bank is created by algorithm(s) [{}]; please `Run` ONE of them BEFORE this algorithm", fmt::join(creators.value(), ", "));
       }
@@ -231,37 +269,112 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  std::vector<std::string> Algorithm::GetCreatedBankNames() const noexcept(false)
+  {
+    auto created_banks = AlgorithmFactory::GetCreatedBanks(m_class_name);
+    if(created_banks)
+      return created_banks.value();
+    throw std::runtime_error("failed to get created bank names");
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  std::string Algorithm::GetCreatedBankName() const noexcept(false)
+  {
+    auto created_banks = GetCreatedBankNames();
+    switch(created_banks.size()) {
+    case 0:
+      m_log->Error("algorithm {:?} creates no new banks", m_class_name);
+      break;
+    case 1:
+      return created_banks.at(0);
+      break;
+    default:
+      m_log->Error("algorithm {:?} creates more than one bank; they are: [{}]", m_class_name, fmt::join(created_banks, ", "));
+      m_log->Error("- if you called `GetCreatedBank` or `GetCreatedBankSchema`, please specify which bank you want");
+      m_log->Error("- if you called `GetCreatedBankName`, call `GetCreatedBankNames` instead");
+      break;
+    }
+    throw std::runtime_error("failed to get created bank names");
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  hipo::bank Algorithm::GetCreatedBank(std::string const& bank_name) const noexcept(false)
+  {
+    return hipo::bank(GetCreatedBankSchema(bank_name), 0);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  hipo::schema Algorithm::GetCreatedBankSchema(std::string const& bank_name) const noexcept(false)
+  {
+    std::string bank_name_arg = bank_name; // copy, to permit modification
+
+    // if the user did not provide a bank name, get it from the list of banks created by the algorithm;
+    // this will fail if the algorithm creates more than one bank, in which case, the user must
+    // specify the bank name explicitly
+    if(bank_name.empty())
+      bank_name_arg = GetCreatedBankName();
+
+    // loop over bank definitions, `BANK_DEFS`, which is generated at build-time using `src/iguana/bankdefs/iguana.json`
+    for(auto const& bank_def : BANK_DEFS) {
+      if(bank_def.name == bank_name_arg) {
+        // make sure the new bank is in REGISTER_IGUANA_ALGORITHM
+        if(!AlgorithmFactory::GetCreatorAlgorithms(bank_name_arg)) {
+          m_log->Error("algorithm {:?} creates bank {:?}, which is not registered; new banks must be included in `REGISTER_IGUANA_ALGORITHM` arguments", m_class_name, bank_name_arg);
+          throw std::runtime_error("CreateBank failed");
+        }
+        // create the schema format string
+        std::vector<std::string> schema_def;
+        for(auto const& entry : bank_def.entries)
+          schema_def.push_back(entry.name + "/" + entry.type);
+        auto format_string = fmt::format("{}", fmt::join(schema_def, ","));
+        // create the new bank schema
+        hipo::schema bank_schema(bank_name_arg.c_str(), bank_def.group, bank_def.item);
+        bank_schema.parse(format_string);
+        return bank_schema;
+      }
+    }
+
+    throw std::runtime_error(fmt::format("bank {:?} not found in 'BankDefs.h'; is this bank defined in src/iguana/bankdefs/iguana.json ?", bank_name_arg));
+  }
+  ///////////////////////////////////////////////////////////////////////////////
+
+  unsigned int Algorithm::GetCreatedBankVariant() const
+  {
+    return m_created_bank_variant;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  std::unique_ptr<RCDBReader>& Algorithm::GetRCDBReader()
+  {
+    return m_rcdb;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   hipo::schema Algorithm::CreateBank(
       hipo::banklist& banks,
       hipo::banklist::size_type& bank_idx,
-      std::string const& bank_name,
-      std::vector<std::string> schema_def,
-      int group_id,
-      int item_id) const
+      std::string const& bank_name) noexcept(false)
   {
-    if(!AlgorithmFactory::QueryNewBank(bank_name)) {
-      m_log->Error("{:?} creates bank {:?}, which is not registered; new banks must be included in `REGISTER_IGUANA_ALGORITHM` arguments", m_class_name, bank_name);
-      throw std::runtime_error("CreateBank failed");
+    // check if this bank is already present in `banks`, and set `m_created_bank_variant` accordingly
+    for(auto& bank : banks) {
+      if(bank.getSchema().getName() == bank_name)
+        m_created_bank_variant++;
     }
-    if(schema_def.empty()) {
-      m_log->Error("empty schema_def in CreateBank");
-      throw std::runtime_error("CreateBank failed");
-    }
-    hipo::schema bank_schema(bank_name.c_str(), group_id, item_id);
-    bank_schema.parse(std::accumulate(
-        std::next(schema_def.begin()),
-        schema_def.end(),
-        schema_def[0],
-        [](std::string a, std::string b)
-        { return a + "," + b; }));
-    banks.push_back({bank_schema});
-    bank_idx = GetBankIndex(banks, bank_name);
+    // create the schema, and add the new bank to `banks`
+    auto bank_schema = GetCreatedBankSchema(bank_name);
+    bank_idx         = banks.size();
+    banks.emplace_back(bank_schema, 0);
     return bank_schema;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Algorithm::ShowBanks(hipo::banklist& banks, std::string_view message, Logger::Level const level) const
+  void Algorithm::ShowBanks(hipo::banklist const& banks, std::string_view message, Logger::Level const level) const
   {
     if(m_log->GetLevel() <= level) {
       if(!message.empty())
@@ -273,7 +386,7 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  void Algorithm::ShowBank(hipo::bank& bank, std::string_view message, Logger::Level const level) const
+  void Algorithm::ShowBank(hipo::bank const& bank, std::string_view message, Logger::Level const level) const
   {
     if(m_log->GetLevel() <= level) {
       if(!message.empty())
@@ -311,6 +424,22 @@ namespace iguana {
   template std::optional<std::vector<int>> Algorithm::GetCachedOption(std::string const& key) const;
   template std::optional<std::vector<double>> Algorithm::GetCachedOption(std::string const& key) const;
   template std::optional<std::vector<std::string>> Algorithm::GetCachedOption(std::string const& key) const;
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void Algorithm::ThrowSinceRenamed(std::string const& new_name, std::string const& version) const noexcept(false)
+  {
+    std::string new_path      = new_name;
+    std::string::size_type it = 0;
+    while((it = new_path.find("::", it)) != std::string::npos)
+      new_path.replace(it, 2, "/");
+    m_log->Error("As of Iguana version {}, the algorithm {:?} has been renamed:", version, m_class_name);
+    m_log->Error("- the new name is: {:?}", new_name);
+    m_log->Error("- the new C++ header is: \"iguana/algorithms/{}/Algorithm.h\"", new_path);
+    m_log->Error("- please update your code (and custom configuration YAML, if you have one)");
+    m_log->Error("- sorry for the inconvenience!");
+    throw std::runtime_error("algorithm has been renamed");
+  }
 
   ///////////////////////////////////////////////////////////////////////////////
 

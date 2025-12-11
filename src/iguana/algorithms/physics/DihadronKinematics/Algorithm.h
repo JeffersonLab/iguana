@@ -1,53 +1,15 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
-#include "iguana/algorithms/physics/Tools.h"
 #include <Math/Vector3D.h>
 #include <Math/Vector4D.h>
 
 namespace iguana::physics {
 
-  /// Set of dihadron kinematics variables
-  struct DihadronKinematicsVars {
-    /// @brief `REC::Particle` row (`pindex`) of hadron A
-    int pindex_a;
-    /// @brief `REC::Particle` row (`pindex`) of hadron B
-    int pindex_b;
-    /// @brief PDG code of hadron A
-    int pdg_a;
-    /// @brief PDG code of hadron B
-    int pdg_b;
-    /// @brief @latex{M_h}: Invariant mass of the dihadron
-    double Mh;
-    /// @brief @latex{z}: Momentum fraction of the fragmenting parton carried by the dihadron
-    double z;
-    /// @brief @latex{P_h^\perp}: transverse momentum of the dihadron in the @latex{\perp}-frame (transverse to @latex{\vec{q}})
-    double PhPerp;
-    /// @brief @latex{M_X(ehhX)^2}: Missing mass squared of the dihadron
-    double MX2;
-    /// @brief @latex{x_F}: Feynman-x of the dihadron
-    double xF;
-    /// @brief @latex{y_{h,B}}: Breit frame rapidity of the dihadron
-    double yB;
-    /// @brief @latex{\phi_h}: @latex{q}-azimuthal angle between the lepton-scattering plane and the @latex{\vec{q}\times\vec{P}_h} plane;
-    /// if the value is `tools::UNDEF`, the calculation failed
-    double phiH;
-    /// @brief @latex{\phi_R}: @latex{q}-azimuthal angle between the lepton-scattering plane and dihadron plane;
-    /// if the value is `tools::UNDEF`, the calculation failed
-    double phiR;
-    /// @brief @latex{\theta}: The "decay" angle of hadron A in the dihadron rest frame, with respect;
-    /// to the dihadron momentum direction
-    double theta;
-  };
-
-  /// @brief_algo Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`
+  /// @algo_brief{Calculate semi-inclusive dihadron kinematic quantities defined in `iguana::physics::DihadronKinematicsVars`}
+  /// @algo_type_creator
   ///
-  /// @begin_doc_algo{physics::DihadronKinematics | Creator}
-  /// @input_banks{REC::Particle, %physics::InclusiveKinematics}
-  /// @output_banks{%physics::DihadronKinematics}
-  /// @end_doc
-  ///
-  /// @begin_doc_config
+  /// @begin_doc_config{physics/DihadronKinematics}
   /// @config_param{hadron_a_list | list[int] | list of "hadron A" PDGs}
   /// @config_param{hadron_b_list | list[int] | list of "hadron B" PDGs}
   /// @config_param{phi_r_method | string | method used to calculate @latex{\phi_R} (see section "phiR calculation methods" below)}
@@ -56,10 +18,10 @@ namespace iguana::physics {
   ///
   /// Dihadron PDGs will be formed from pairs from `hadron_a_list` and `hadron_b_list`. For example,
   /// if you define:
-  /// ```yaml
+  /// @code{yaml}
   /// hadron_a_list: [ 211 ]
   /// hadron_b_list: [ -211, 2212 ]
-  /// ```
+  /// @endcode
   /// then the algorithm will calculate kinematics for @latex{\pi^+\pi^-} and @latex{\pi^+p} dihadrons; hadron A
   /// is the @latex{\pi^+} for both of these, whereas hadron B is the @latex{\pi^-} for the former and the proton
   /// for the latter.
@@ -77,13 +39,24 @@ namespace iguana::physics {
     public:
 
       void Start(hipo::banklist& banks) override;
-      void Run(hipo::banklist& banks) const override;
+      bool Run(hipo::banklist& banks) const override;
       void Stop() override;
 
+      /// @run_function
+      /// @param [in] particle_bank particle bank (_e.g._, `REC::Particle`)
+      /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm
+      /// @param [out] result_bank `%physics::DihadronKinematics`, which will be created
+      /// @returns `false` if the input banks do not have enough information, _e.g._, if the inclusive kinematics bank is empty,
+      /// or if the created bank is empty
+      bool Run(
+          hipo::bank const& particle_bank,
+          hipo::bank const& inc_kin_bank,
+          hipo::bank& result_bank) const;
+
       /// @brief form dihadrons by pairing hadrons
-      /// @param particle_bank the particle bank (`REC::Particle`)
+      /// @param particle_bank the particle bank
       /// @returns a list of pairs of hadron rows
-      std::vector<std::pair<int,int>> PairHadrons(hipo::bank const& particle_bank) const;
+      std::vector<std::pair<int, int>> PairHadrons(hipo::bank const& particle_bank) const;
 
     private:
 
@@ -108,22 +81,22 @@ namespace iguana::physics {
       int i_theta;
 
       // config options
+      std::string o_particle_bank;
       std::set<int> o_hadron_a_pdgs;
       std::set<int> o_hadron_b_pdgs;
       std::string o_phi_r_method;
       std::string o_theta_method;
-      enum {e_RT_via_covariant_kT} m_phi_r_method;
-      enum {e_hadron_a} m_theta_method;
+      enum { e_RT_via_covariant_kT } m_phi_r_method;
+      enum { e_hadron_a } m_theta_method;
 
       // storage for a single hadron
       struct Hadron {
-        int row;
-        int pdg;
-        ROOT::Math::PxPyPzMVector p;
-        double z;
-        std::optional<ROOT::Math::XYZVector> p_perp;
+          int row;
+          int pdg;
+          ROOT::Math::PxPyPzMVector p;
+          double z;
+          std::optional<ROOT::Math::XYZVector> p_perp;
       };
-
   };
 
 }

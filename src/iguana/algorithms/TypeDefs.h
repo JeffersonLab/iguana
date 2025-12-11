@@ -1,7 +1,8 @@
 /// @file
-/// @brief Type definitions for common objects used in algorithms
+/// @brief common objects used in algorithms
 #pragma once
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -12,25 +13,27 @@ namespace iguana {
 
   /// 3-momentum type
   struct Momentum3 {
-    /// @f$x@f$-component
-    vector_element_t px;
-    /// @f$y@f$-component
-    vector_element_t py;
-    /// @f$z@f$-component
-    vector_element_t pz;
+      /// @f$x@f$-component
+      vector_element_t px;
+      /// @f$y@f$-component
+      vector_element_t py;
+      /// @f$z@f$-component
+      vector_element_t pz;
   };
 
   /// 4-momentum type
   struct Momentum4 {
-    /// @f$x@f$-component
-    vector_element_t px;
-    /// @f$y@f$-component
-    vector_element_t py;
-    /// @f$z@f$-component
-    vector_element_t pz;
-    /// @f$E@f$-component
-    vector_element_t E;
+      /// @f$x@f$-component
+      vector_element_t px;
+      /// @f$y@f$-component
+      vector_element_t py;
+      /// @f$z@f$-component
+      vector_element_t pz;
+      /// @f$E@f$-component
+      vector_element_t E;
   };
+
+  //////////////////////////////////////////////////////////////////////////////////
 
   /// Light-weight namespace for particle constants
   namespace particle {
@@ -92,7 +95,133 @@ namespace iguana {
       { kaon_minus, 0.493677 }
     };
 
+    /// @brief get a particle property given a PDG code
+    ///
+    /// Example:
+    /// ```cpp
+    /// auto mass = particle::get(particle::mass, particle::PDG::photon); // mass => 0.0
+    /// ```
+    /// @param property the particle property, such as `particle::name`, `particle::title`, or `particle::mass`
+    /// @param pdg_code the `particle::PDG` value
+    /// @returns the value of the property, if defined for this `pdg_code`
+    template <typename VALUE_TYPE>
+    std::optional<VALUE_TYPE> const get(std::unordered_map<PDG,VALUE_TYPE> const& property, PDG const& pdg_code)
+    {
+      if(auto const& it = property.find(pdg_code); it != property.end())
+        return it->second;
+      return std::nullopt;
+    }
+
+    /// @brief get a particle property given a PDG code
+    ///
+    /// Example:
+    /// ```cpp
+    /// auto mass = particle::get(particle::mass, 22); // mass => 0.0
+    /// ```
+    /// @param property the particle property, such as `particle::name`, `particle::title`, or `particle::mass`
+    /// @param pdg_code the `particle::PDG` value
+    /// @returns the value of the property, if defined for this `pdg_code`
+    template <typename VALUE_TYPE>
+    std::optional<VALUE_TYPE> const get(std::unordered_map<PDG,VALUE_TYPE> const& property, int const& pdg_code)
+    {
+      return get(property, static_cast<particle::PDG>(pdg_code));
+    }
+
     // clang-format on
   }
+
+  //////////////////////////////////////////////////////////////////////////////////
+
+  /// @param sec the sector number to check
+  /// @returns `true` if the sector number is a valid sector number
+  inline bool IsValidSector(int const& sec)
+  {
+    return sec >= 1 && sec <= 6;
+  }
+
+  /// detector IDs; this is a _copy_ of `coatjava`'s `DetectorType` `enum`
+  enum DetectorType {
+    UNDEFINED = 0,
+    BMT       = 1,
+    BST       = 2,
+    CND       = 3,
+    CTOF      = 4,
+    CVT       = 5,
+    DC        = 6,
+    ECAL      = 7,
+    FMT       = 8,
+    FT        = 9,
+    FTCAL     = 10,
+    FTHODO    = 11,
+    FTOF      = 12,
+    FTTRK     = 13,
+    HTCC      = 15,
+    LTCC      = 16,
+    RF        = 17,
+    RICH      = 18,
+    RTPC      = 19,
+    HEL       = 20,
+    BAND      = 21,
+    RASTER    = 22,
+    URWELL    = 23,
+    AHDC      = 24,
+    ATOF      = 25,
+    RECOIL    = 26,
+    TARGET    = 100,
+    MAGNETS   = 101,
+  };
+
+  /// detector layer IDs; this is a _copy_ of `coatjava`'s `DetectorLayer` class
+  class DetectorLayer
+  {
+    public:
+      /// @doxygen_off
+      static int const CND_INNER  = 1;
+      static int const CND_MIDDLE = 2;
+      static int const CND_OUTER  = 3;
+
+      static int const PCAL_U = 1;
+      static int const PCAL_V = 2;
+      static int const PCAL_W = 3;
+      static int const PCAL_Z = 9; // layer number used to define the longitudinal coordinate of the cluster
+
+      static int const EC_INNER_U = 4;
+      static int const EC_INNER_V = 5;
+      static int const EC_INNER_W = 6;
+      static int const EC_INNER_Z = 9; // layer number used to define the longitudinal coordinate of the cluster
+
+      static int const EC_OUTER_U = 7;
+      static int const EC_OUTER_V = 8;
+      static int const EC_OUTER_W = 9;
+      static int const EC_OUTER_Z = 9; // layer number used to define the longitudinal coordinate of the cluster
+
+      static int const PCAL     = PCAL_U;
+      static int const EC_INNER = EC_INNER_U;
+      static int const EC_OUTER = EC_OUTER_U;
+
+      static int const FTOF1A = 1;
+      static int const FTOF1B = 2;
+      static int const FTOF2  = 3;
+
+      static int const TARGET_CENTER     = 1;
+      static int const TARGET_DOWNSTREAM = 2;
+      static int const TARGET_UPSTREAM   = 3;
+
+      static int const FTTRK_MODULE1 = 1;
+      static int const FTTRK_MODULE2 = 2;
+      static int const FTTRK_LAYER1  = 1;
+      static int const FTTRK_LAYER2  = 2;
+      static int const FTTRK_LAYER3  = 3;
+      static int const FTTRK_LAYER4  = 4;
+
+      static int const RICH_MAPMT      = 1;
+      static int const RICH_AEROGEL_B1 = 2;
+      static int const RICH_AEROGEL_B2 = 3;
+      static int const RICH_AEROGEL_L1 = 4;
+      /// @doxygen_on
+  };
+
+  /// MC run number
+  int const MC_RUN_NUM = 11;
 
 }
