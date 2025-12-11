@@ -17,4 +17,4 @@ bankdef_tgt = custom_target(
 )
 
 # install the JSON data model file; iguana won't need it, but it can be useful for user reference
-install_data(bankdef_json, install_dir: project_etcdir / 'bankdefs' / 'hipo4')
+install_data(bankdef_json, install_dir: project_etc_dir / 'bankdefs' / 'hipo4')
