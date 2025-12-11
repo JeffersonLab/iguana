@@ -159,7 +159,6 @@ algo_dict = [
     'test_args': {
       'banks': [ 'REC::Particle', 'MC::Particle' ],
     },
->>>>>>> origin/main
   },
 ]
 
