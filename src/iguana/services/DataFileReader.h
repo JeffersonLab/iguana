@@ -14,6 +14,5 @@ namespace iguana {
       /// @param name of this reader (for `Logger`)
       DataFileReader(std::string_view datadir_subdir = "", std::string_view name = "data_file");
       ~DataFileReader() {}
-
   };
 }

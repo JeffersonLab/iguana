@@ -8,10 +8,10 @@
 
 #include "AlgorithmBoilerplate.h"
 #include "iguana/bankdefs/BankDefs.h"
+#include "iguana/services/DataFileReader.h"
+#include "iguana/services/GlobalParam.h"
 #include "iguana/services/RCDBReader.h"
 #include "iguana/services/YAMLReader.h"
-#include "iguana/services/GlobalParam.h"
-#include "iguana/services/DataFileReader.h"
 
 namespace iguana {
 
@@ -320,7 +320,6 @@ namespace iguana {
 
       /// Data file reader
       std::unique_ptr<DataFileReader> m_datafile_reader;
-
   };
 
   //////////////////////////////////////////////////////////////////////////////

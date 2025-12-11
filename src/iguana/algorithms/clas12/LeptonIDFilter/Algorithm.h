@@ -3,29 +3,29 @@
 #include "iguana/algorithms/Algorithm.h"
 #include <TMVA/Reader.h>
 
-///Struct to store variables 
-    struct LeptonIDVars {
-        /// @brief momentum
-        double P;
-        /// @brief Theta angle
-        double Theta;
-        /// @brief Phi angle
-        double Phi;
-        /// @brief Sampling fraction on the PCAL
-        double SFpcal;
-        /// @brief Sampling fraction on the ECIN
-        double SFecin;
-        /// @brief Sampling fraction on the ECOUT
-        double SFecout;
-        /// @brief Second-momenta of PCAL
-        double m2pcal;
-        /// @brief Second-momenta of ECIN
-        double m2ecin;
-        /// @brief Second-momenta of ECOUT
-        double m2ecout;
-        /// @brief Score
-        double score;
-    };
+/// Struct to store variables
+struct LeptonIDVars {
+    /// @brief momentum
+    double P;
+    /// @brief Theta angle
+    double Theta;
+    /// @brief Phi angle
+    double Phi;
+    /// @brief Sampling fraction on the PCAL
+    double SFpcal;
+    /// @brief Sampling fraction on the ECIN
+    double SFecin;
+    /// @brief Sampling fraction on the ECOUT
+    double SFecout;
+    /// @brief Second-momenta of PCAL
+    double m2pcal;
+    /// @brief Second-momenta of ECIN
+    double m2ecin;
+    /// @brief Second-momenta of ECOUT
+    double m2ecout;
+    /// @brief Score
+    double score;
+};
 
 namespace iguana::clas12 {
   ///
@@ -62,7 +62,7 @@ namespace iguana::clas12 {
       /// @returns pindex of the lepton, -1 if there is no lepton
       int FindLepton(hipo::bank const& particle_bank) const;
 
-    
+
       /// **GetLeptonIDVariables function**: Using the pindex retrieves the necessary variables from banks
       /// @param plepton pindex of the lepton
       /// @param particle_bank the particle bank
@@ -76,45 +76,43 @@ namespace iguana::clas12 {
       /// @returns double, the score
       double CalculateScore(LeptonIDVars lepton_vars) const;
 
-      /// **Filter function**: Returns true if the particle passed the cut 
+      /// **Filter function**: Returns true if the particle passed the cut
       /// @param score the score obtained from the CalculateScore function
       /// @returns bool, true if score>=cut, false otherwise
       bool Filter(double score) const;
 
 
-      
 
-    
+
+
     private:
-      std::unique_ptr<TMVA::Reader> readerTMVA; 
-      
+      std::unique_ptr<TMVA::Reader> readerTMVA;
 
-      ///Set of variables for the reader
-      ///Momentum
+
+      /// Set of variables for the reader
+      /// Momentum
       mutable Float_t P;
-      ///Theta angle
+      /// Theta angle
       mutable Float_t Theta;
-      ///Phi angle
+      /// Phi angle
       mutable Float_t Phi;
-      ///Sampling fraction on the PCAL
+      /// Sampling fraction on the PCAL
       mutable Float_t PCAL;
-      ///Sampling fraction on the ECIN
+      /// Sampling fraction on the ECIN
       mutable Float_t ECIN;
-      ///Sampling fraction on the ECOUT
+      /// Sampling fraction on the ECOUT
       mutable Float_t ECOUT;
-      ///Second-momenta of PCAL
+      /// Second-momenta of PCAL
       mutable Float_t m2PCAL;
-      ///Second-momenta of ECIN
+      /// Second-momenta of ECIN
       mutable Float_t m2ECIN;
-      ///Second-momenta of ECOUT
+      /// Second-momenta of ECOUT
       mutable Float_t m2ECOUT;
-    
 
-      /// `hipo::banklist` 
+
+      /// `hipo::banklist`
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_calorimeter;
-
-      
 
 
       /// pid of the lepton

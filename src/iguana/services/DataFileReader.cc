@@ -1,7 +1,8 @@
 #include "DataFileReader.h"
 
 namespace iguana {
-  DataFileReader::DataFileReader(std::string_view datadir_subdir, std::string_view name) : ConfigFileReader(name, false)
+  DataFileReader::DataFileReader(std::string_view datadir_subdir, std::string_view name)
+      : ConfigFileReader(name, false)
   {
     // first, add the "fallback" directory; this is the lowest priority directory, relying
     // on the environment variable '$IGUANA', in case the higher-priority, build-time path fails
