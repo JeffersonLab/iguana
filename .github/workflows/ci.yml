@@ -447,13 +447,13 @@ jobs:
         with:
           path: iguana_src
       - name: download documentation artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: doc_web*
           path: pages
           merge-multiple: true
       - name: download coverage report
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: coverage-report
           path: coverage-report
