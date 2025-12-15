@@ -304,21 +304,21 @@ jobs:
           install_consumer_cmake/bin/iguana_ex_cpp_00_run_functions test_data.hipo 10
       ### upload artifacts
       - name: upload build log artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: meson_logs_${{ matrix.id }}
           retention-days: 5
           path: iguana_build/meson-logs
       - name: upload coverage artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ matrix.id == 'coverage' }}
         with:
           name: coverage-report
           retention-days: 5
           path: coverage-report
       - name: upload validator artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ matrix.id == 'cpp' }}
         with:
           name: ${{ steps.artifact_names.outputs.validation_name }}
@@ -364,7 +364,7 @@ jobs:
       - run: tree pages
       ### artifacts
       - name: upload documentation artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: doc_web
           retention-days: 5
@@ -427,7 +427,7 @@ jobs:
           mv ../iguana/share/doc/iguana/html/* ${{ matrix.version }}/
       ### artifacts
       - name: upload documentation artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: doc_web_${{ matrix.version }}
           retention-days: 5
