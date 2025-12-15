@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     # NOTE: using Ubuntu runner, rather than a `container-forge` image, since it's much faster for cache hits
     steps:
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: cache
         with:
           key: test_data # fixed key will always hit; clear cache to trigger cache miss
@@ -109,7 +109,7 @@ jobs:
           path: iguana_src
       ### get test data
       - name: get test data
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           key: test_data
           path: test_data.hipo
