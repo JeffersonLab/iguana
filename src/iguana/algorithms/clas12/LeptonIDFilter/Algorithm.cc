@@ -9,7 +9,11 @@ namespace iguana::clas12 {
 
   void LeptonIDFilter::initializeTMVA()
   {
+    // initialize the reader
+    if(readerTMVA)
+      return;
     readerTMVA = std::make_unique<TMVA::Reader>("V");
+    // initialize the variables
     readerTMVA->AddVariable("P", &P);
     readerTMVA->AddVariable("Theta", &Theta);
     readerTMVA->AddVariable("Phi", &Phi);
@@ -19,6 +23,8 @@ namespace iguana::clas12 {
     readerTMVA->AddVariable("m2PCAL", &m2PCAL);
     readerTMVA->AddVariable("m2ECIN", &m2ECIN);
     readerTMVA->AddVariable("m2ECOUT", &m2ECOUT);
+    // book the BDT method with the weights file
+    readerTMVA->BookMVA("BDT", o_weightfile_fullpath);
   }
 
 
@@ -38,6 +44,9 @@ namespace iguana::clas12 {
     // Get Banks that we are going to use
     b_particle    = GetBankIndex(banks, o_particle_bank);
     b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
+
+    // Initialize the TMVA reader
+    initializeTMVA();
   }
 
 
@@ -51,10 +60,13 @@ namespace iguana::clas12 {
 
   bool LeptonIDFilter::Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank) const
   {
+    // mutex-lock the whole `Run` function, since it needs to mutate and use several `mutable Float_t` members
+    std::scoped_lock<std::mutex> lock(m_mutex);
 
+    // particle bank before filtering
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
-    //
+    // filter the particle bank
     particleBank.getMutableRowList().filter([this, &particleBank, &calorimeterBank](auto bank, auto row) {
       auto lepton_pindex = FindLepton(particleBank);
       auto lepton_vars   = GetLeptonIDVariables(lepton_pindex, particleBank, calorimeterBank);
@@ -63,7 +75,7 @@ namespace iguana::clas12 {
       return Filter(lepton_vars.score);
     });
 
-    // dump the modified bank
+    // particle bank after filtering
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
     return !particleBank.getRowList().empty();
   }
@@ -85,6 +97,7 @@ namespace iguana::clas12 {
       m_log->Debug("Lepton not found");
     return lepton_pindex;
   }
+
 
   LeptonIDVars LeptonIDFilter::GetLeptonIDVariables(int const plepton, hipo::bank const& particle_bank, hipo::bank const& calorimeter_bank) const
   {
@@ -137,10 +150,11 @@ namespace iguana::clas12 {
     return lepton;
   }
 
+
   double LeptonIDFilter::CalculateScore(LeptonIDVars lepton_vars) const
   {
 
-    /// Assing variables from lepton_vars for TMVA method
+    // Assigning variables from lepton_vars for TMVA method
     P       = lepton_vars.P;
     Theta   = lepton_vars.Theta;
     Phi     = lepton_vars.Phi;
@@ -156,6 +170,7 @@ namespace iguana::clas12 {
 
     return score;
   }
+
 
   bool LeptonIDFilter::Filter(double score) const
   {

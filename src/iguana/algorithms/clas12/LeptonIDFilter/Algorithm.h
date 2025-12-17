@@ -54,10 +54,8 @@ namespace iguana::clas12 {
       /// @param [in,out] particleBank particle bank (_viz._, `REC::Particle`), which will be filtered
       /// @param [in] calorimeterBank `REC::Calorimeter` bank
       /// @returns `false` if all particles are filtered out
+      /// @note Multithreading users should be aware that this entire function is mutex-locked.
       bool Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank) const;
-
-      /// @brief Initialize the variables for the TMVA reader
-      void initializeTMVA();
 
       /// @brief returns the pindex of the lepton
       /// @param particle_bank the particle bank
@@ -82,6 +80,11 @@ namespace iguana::clas12 {
       bool Filter(double score) const;
 
     private:
+
+      /// @brief Initialize the variables for the TMVA reader
+      void initializeTMVA();
+
+      /// TMVA reader
       std::unique_ptr<TMVA::Reader> readerTMVA;
 
       /// Set of variables for the reader
