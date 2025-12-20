@@ -1,6 +1,37 @@
 clas12::LeptonIDFilter:
   pid: -11
-  weightfile: "weights/9_BDT_positrons_S19.weights.xml"
+
+  # weight file, one for each lepton and dataset
+  weightfile:
+    #
+    #
+    # FIXME: double check these run number ranges
+    # FIXME: use the correct weights files for each
+    #
+    #
+    - runs: [3211, 3293] # RG-A Spring 2018 Outbending Part 1
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [3306, 3817] # RG-A Spring 2018 Inbending Part 1
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [3863, 3987] # RG-A Spring 2018 Outbending Part 2
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [4003, 4325] # RG-A Spring 2018 Inbending Part 2
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [5032, 5419] # RG-A Fall 2018 Inbending
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [5422, 5666] # RG-A Fall 2018 Outbending
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [6616, 6783] # RG-A Spring 2019 Inbending
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+
+  # value of the score to apply the cut
   cut: 0.0
 
   # the name of the particle bank, only needed for users of `hipo::banklist`

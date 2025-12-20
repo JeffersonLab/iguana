@@ -86,6 +86,19 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  YAML::Node Algorithm::GetOptionNode(YAMLReader::node_path_t node_path) const
+  {
+    CompleteOptionNodePath("", node_path);
+    auto node = m_yaml_config->GetNode(node_path);
+    if(!node.has_value()) {
+      m_log->Error("Algorithm::GetOptionNode failed to find node");
+      throw std::runtime_error("config file parsing issue");
+    }
+    return node.value();
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::SetName(std::string_view name)
   {
     Object::SetName(name);

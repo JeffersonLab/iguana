@@ -7,13 +7,24 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(LeptonIDFilter, "clas12::LeptonIDFilter");
 
-  void LeptonIDFilter::initializeTMVA()
+  void LeptonIDFilter::Start(hipo::banklist& banks)
   {
-    // initialize the reader
-    if(readerTMVA)
-      return;
+    // Get configuration
+    ParseYAMLConfig();
+    o_pid           = GetOptionScalar<int>("pid"); // Obtain pid from config file (+11/-11)
+    o_cut           = GetOptionScalar<double>("cut");
+    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
+    o_runnum        = ConcurrentParamFactory::Create<int>();
+    o_weightfile    = ConcurrentParamFactory::Create<std::string>();
+
+    // Get Banks that we are going to use
+    b_particle    = GetBankIndex(banks, o_particle_bank);
+    b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
+
+    // Initialize the TMVA reader
     readerTMVA = std::make_unique<TMVA::Reader>("V");
-    // initialize the variables
+
+    // initialize TMVA variables
     readerTMVA->AddVariable("P", &P);
     readerTMVA->AddVariable("Theta", &Theta);
     readerTMVA->AddVariable("Phi", &Phi);
@@ -23,30 +34,25 @@ namespace iguana::clas12 {
     readerTMVA->AddVariable("m2PCAL", &m2PCAL);
     readerTMVA->AddVariable("m2ECIN", &m2ECIN);
     readerTMVA->AddVariable("m2ECOUT", &m2ECOUT);
-    // book the BDT method with the weights file
-    readerTMVA->BookMVA("BDT", o_weightfile_fullpath);
-  }
 
+    // find all the unique weights files in the configuration YAML
+    std::set<std::string> weightfile_list;
+    for(auto const& node : GetOptionNode({"weightfile"})) {
+      for(std::string const particle : {"electron", "positron"}) {
+        if(node[particle]) {
+          weightfile_list.insert(node[particle].as<std::string>());
+        }
+      }
+    }
 
-  void LeptonIDFilter::Start(hipo::banklist& banks)
-  {
-    // Get configuration
-    ParseYAMLConfig();
-    o_pid           = GetOptionScalar<int>("pid"); // Obtain pid from config file (+11/-11)
-    o_weightfile    = GetOptionScalar<std::string>("weightfile"); // Obtain weightfile from config file
-    o_cut           = GetOptionScalar<double>("cut");
-    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
-
-    // load the weights file
-    o_weightfile_fullpath = GetDataFile(o_weightfile);
-    m_log->Debug("Loaded weight file {}", o_weightfile_fullpath);
-
-    // Get Banks that we are going to use
-    b_particle    = GetBankIndex(banks, o_particle_bank);
-    b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
-
-    // Initialize the TMVA reader
-    initializeTMVA();
+    // book the weights files
+    // use the name of weightfile as the method tag, for simplicity
+    m_log->Debug("Booking weight files:");
+    for(auto const& weightfile_name : weightfile_list) {
+      auto weightfile_path = GetDataFile(weightfile_name);
+      m_log->Debug(" - {}", weightfile_path);
+      readerTMVA->BookMVA(weightfile_name, weightfile_path);
+    }
   }
 
 

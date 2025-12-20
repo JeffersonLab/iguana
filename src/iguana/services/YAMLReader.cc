@@ -21,6 +21,18 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  std::optional<YAML::Node> YAMLReader::GetNode(node_path_t node_path)
+  {
+    for(auto const& [config, filename] : m_configs) {
+      auto node = FindNode(config, node_path);
+      if(node.IsDefined() && !node.IsNull())
+        return node;
+    }
+    return std::nullopt;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   template <typename SCALAR>
   std::optional<SCALAR> YAMLReader::GetScalar(YAML::Node node)
   {
@@ -46,12 +58,8 @@ namespace iguana {
   template <typename SCALAR>
   std::optional<SCALAR> YAMLReader::GetScalar(node_path_t node_path)
   {
-    for(auto const& [config, filename] : m_configs) {
-      auto node = FindNode(config, node_path);
-      if(node.IsDefined() && !node.IsNull())
-        return GetScalar<SCALAR>(node);
-    }
-    return std::nullopt;
+    auto node = GetNode(node_path);
+    return node ? GetScalar<SCALAR>(node.value()) : std::nullopt;
   }
   template std::optional<int> YAMLReader::GetScalar(node_path_t node_path);
   template std::optional<double> YAMLReader::GetScalar(node_path_t node_path);
@@ -87,12 +95,8 @@ namespace iguana {
   template <typename SCALAR>
   std::optional<std::vector<SCALAR>> YAMLReader::GetVector(node_path_t node_path)
   {
-    for(auto const& [config, filename] : m_configs) {
-      auto node = FindNode(config, node_path);
-      if(node.IsDefined() && !node.IsNull())
-        return GetVector<SCALAR>(node);
-    }
-    return std::nullopt;
+    auto node = GetNode(node_path);
+    return node ? GetVector<SCALAR>(node.value()) : std::nullopt;
   }
   template std::optional<std::vector<int>> YAMLReader::GetVector(node_path_t node_path);
   template std::optional<std::vector<double>> YAMLReader::GetVector(node_path_t node_path);

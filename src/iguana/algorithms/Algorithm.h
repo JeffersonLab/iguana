@@ -145,6 +145,11 @@ namespace iguana {
       template <typename OPTION_TYPE>
       std::set<OPTION_TYPE> GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
 
+      /// Get the `YAML::Node` for an option
+      /// @param node_path the `YAML::Node` identifier path to search
+      /// @returns the `YAML::Node`
+      YAML::Node GetOptionNode(YAMLReader::node_path_t node_path) const;
+
       /// Set the name of this algorithm
       /// @param name the new name
       void SetName(std::string_view name);

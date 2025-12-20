@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iguana/algorithms/Algorithm.h"
+#include "iguana/services/ConcurrentParam.h"
 #include <TMVA/Reader.h>
 
 /// Struct to store variables
@@ -37,7 +38,7 @@ namespace iguana::clas12 {
   /// @begin_doc_config{clas12/LeptonIDFilter}
   /// @config_param{o_pid | int | PID of the particle; -11 for positrons and 11 for electrons}
   /// @config_param{o_weightfile | string | Location of the weight file of the classifier}
-  /// @config_param{o_cut | double | Value of the score to apply the cut. The algorith will keep all particles that have a score grater than ths value}
+  /// @config_param{o_cut | double | Value of the score to apply the cut. The algorithm will keep all particles that have a score grater than ths value}
   /// @end_doc
   class LeptonIDFilter : public Algorithm
   {
@@ -81,9 +82,6 @@ namespace iguana::clas12 {
 
     private:
 
-      /// @brief Initialize the variables for the TMVA reader
-      void initializeTMVA();
-
       /// TMVA reader
       std::unique_ptr<TMVA::Reader> readerTMVA;
 
@@ -113,8 +111,8 @@ namespace iguana::clas12 {
 
       // config options
       int o_pid;
-      std::string o_weightfile;
-      std::string o_weightfile_fullpath;
+      mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
+      mutable std::unique_ptr<ConcurrentParam<std::string>> o_weightfile;
       double o_cut;
       std::string o_particle_bank;
   };
