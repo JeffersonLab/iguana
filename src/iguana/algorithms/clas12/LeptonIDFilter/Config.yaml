@@ -1,5 +1,5 @@
 clas12::LeptonIDFilter:
-  pid: -11
+  pid: -11 ########################### FIXME
 
   # weight file, one for each lepton and dataset
   weightfile:
@@ -33,6 +33,10 @@ clas12::LeptonIDFilter:
 
   # value of the score to apply the cut
   cut: 0.0
+
+  # option string to pass to `TMVA::Reader` constructor,
+  # e.g., "V" to set the "Verbose flag"
+  tmva_reader_options: ''
 
   # the name of the particle bank, only needed for users of `hipo::banklist`
   particle_bank: 'REC::Particle'

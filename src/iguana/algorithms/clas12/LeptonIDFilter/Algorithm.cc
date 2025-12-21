@@ -11,29 +11,19 @@ namespace iguana::clas12 {
   {
     // Get configuration
     ParseYAMLConfig();
-    o_pid           = GetOptionScalar<int>("pid"); // Obtain pid from config file (+11/-11)
-    o_cut           = GetOptionScalar<double>("cut");
-    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
-    o_runnum        = ConcurrentParamFactory::Create<int>();
-    o_weightfile    = ConcurrentParamFactory::Create<std::string>();
+    o_pid                 = GetOptionScalar<int>("pid"); // Obtain pid from config file (+11/-11)
+    o_cut                 = GetOptionScalar<double>("cut");
+    o_tmva_reader_options = GetOptionScalar<std::string>("tmva_reader_options");
+    o_particle_bank       = GetOptionScalar<std::string>("particle_bank");
+    o_runnum              = ConcurrentParamFactory::Create<int>();
+    o_weightfile          = ConcurrentParamFactory::Create<std::string>();
 
     // Get Banks that we are going to use
     b_particle    = GetBankIndex(banks, o_particle_bank);
     b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
 
     // Initialize the TMVA reader
-    readerTMVA = std::make_unique<TMVA::Reader>("V");
-
-    // initialize TMVA variables
-    readerTMVA->AddVariable("P", &P);
-    readerTMVA->AddVariable("Theta", &Theta);
-    readerTMVA->AddVariable("Phi", &Phi);
-    readerTMVA->AddVariable("SFPCAL", &PCAL);
-    readerTMVA->AddVariable("SFECIN", &ECIN);
-    readerTMVA->AddVariable("SFECOUT", &ECOUT);
-    readerTMVA->AddVariable("m2PCAL", &m2PCAL);
-    readerTMVA->AddVariable("m2ECIN", &m2ECIN);
-    readerTMVA->AddVariable("m2ECOUT", &m2ECOUT);
+    readerTMVA = std::make_unique<TMVA::Reader>(LeptonIDVars::names, o_tmva_reader_options);
 
     // find all the unique weights files in the configuration YAML
     std::set<std::string> weightfile_list;
@@ -66,9 +56,6 @@ namespace iguana::clas12 {
 
   bool LeptonIDFilter::Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank) const
   {
-    // mutex-lock the whole `Run` function, since it needs to mutate and use several `mutable Float_t` members
-    std::scoped_lock<std::mutex> lock(m_mutex);
-
     // particle bank before filtering
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
@@ -159,22 +146,8 @@ namespace iguana::clas12 {
 
   double LeptonIDFilter::CalculateScore(LeptonIDVars lepton_vars) const
   {
-
     // Assigning variables from lepton_vars for TMVA method
-    P       = lepton_vars.P;
-    Theta   = lepton_vars.Theta;
-    Phi     = lepton_vars.Phi;
-    PCAL    = lepton_vars.SFpcal;
-    ECIN    = lepton_vars.SFecin;
-    ECOUT   = lepton_vars.SFecout;
-    m2PCAL  = lepton_vars.m2pcal;
-    m2ECIN  = lepton_vars.m2ecin;
-    m2ECOUT = lepton_vars.m2ecout;
-
-    m_log->Debug("Add variables to readerTMVA");
-    auto score = readerTMVA->EvaluateMVA("BDT");
-
-    return score;
+    return readerTMVA->EvaluateMVA(lepton_vars.GetValues(), "BDT");
   }
 
 

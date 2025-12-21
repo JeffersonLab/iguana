@@ -7,25 +7,54 @@
 /// Struct to store variables
 struct LeptonIDVars {
     /// @brief momentum
-    double P;
+    Double_t P;
     /// @brief Theta angle
-    double Theta;
+    Double_t Theta;
     /// @brief Phi angle
-    double Phi;
+    Double_t Phi;
     /// @brief Sampling fraction on the PCAL
-    double SFpcal;
+    Double_t SFpcal;
     /// @brief Sampling fraction on the ECIN
-    double SFecin;
+    Double_t SFecin;
     /// @brief Sampling fraction on the ECOUT
-    double SFecout;
+    Double_t SFecout;
     /// @brief Second-momenta of PCAL
-    double m2pcal;
+    Double_t m2pcal;
     /// @brief Second-momenta of ECIN
-    double m2ecin;
+    Double_t m2ecin;
     /// @brief Second-momenta of ECOUT
-    double m2ecout;
+    Double_t m2ecout;
     /// @brief Score
-    double score;
+    Double_t score;
+
+    /// @return list of variable values, to pass to `TMVA::Reader::EvaluateMVA`
+    std::vector<Double_t> GetValues()
+    {
+      return { // NOTE: order must be consistent with `names`
+        P,
+        Theta,
+        Phi,
+        SFpcal,
+        SFecin,
+        SFecout,
+        m2pcal,
+        m2ecin,
+        m2ecout,
+      };
+    }
+
+    /// list of variable names, to pass to `TMVA::Reader` constructor
+    inline static std::vector<std::string> names = { // NOTE: order must be consistent with `GetValues`
+      "P",
+      "Theta",
+      "Phi",
+      "PCAL",
+      "ECIN",
+      "ECOUT",
+      "m2PCAL",
+      "m2ECIN",
+      "m2ECOUT",
+    };
 };
 
 namespace iguana::clas12 {
@@ -55,7 +84,6 @@ namespace iguana::clas12 {
       /// @param [in,out] particleBank particle bank (_viz._, `REC::Particle`), which will be filtered
       /// @param [in] calorimeterBank `REC::Calorimeter` bank
       /// @returns `false` if all particles are filtered out
-      /// @note Multithreading users should be aware that this entire function is mutex-locked.
       bool Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank) const;
 
       /// @brief returns the pindex of the lepton
@@ -85,26 +113,6 @@ namespace iguana::clas12 {
       /// TMVA reader
       std::unique_ptr<TMVA::Reader> readerTMVA;
 
-      /// Set of variables for the reader
-      /// Momentum
-      mutable Float_t P;
-      /// Theta angle
-      mutable Float_t Theta;
-      /// Phi angle
-      mutable Float_t Phi;
-      /// Sampling fraction on the PCAL
-      mutable Float_t PCAL;
-      /// Sampling fraction on the ECIN
-      mutable Float_t ECIN;
-      /// Sampling fraction on the ECOUT
-      mutable Float_t ECOUT;
-      /// Second-momenta of PCAL
-      mutable Float_t m2PCAL;
-      /// Second-momenta of ECIN
-      mutable Float_t m2ECIN;
-      /// Second-momenta of ECOUT
-      mutable Float_t m2ECOUT;
-
       /// `hipo::banklist`
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_calorimeter;
@@ -114,6 +122,7 @@ namespace iguana::clas12 {
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
       mutable std::unique_ptr<ConcurrentParam<std::string>> o_weightfile;
       double o_cut;
+      std::string o_tmva_reader_options;
       std::string o_particle_bank;
   };
 
