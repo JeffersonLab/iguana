@@ -26,6 +26,8 @@ struct LeptonIDVars {
     Double_t m2ecout;
     /// @brief Score
     Double_t score;
+    /// @brief PDG code
+    Int_t pid;
 
     /// @return list of variable values, to pass to `TMVA::Reader::EvaluateMVA`
     std::vector<Double_t> GetValues()
@@ -48,9 +50,9 @@ struct LeptonIDVars {
       "P",
       "Theta",
       "Phi",
-      "PCAL",
-      "ECIN",
-      "ECOUT",
+      "SFPCAL",
+      "SFECIN",
+      "SFECOUT",
       "m2PCAL",
       "m2ECIN",
       "m2ECOUT",
@@ -83,8 +85,15 @@ namespace iguana::clas12 {
       /// @run_function
       /// @param [in,out] particleBank particle bank (_viz._, `REC::Particle`), which will be filtered
       /// @param [in] calorimeterBank `REC::Calorimeter` bank
+      /// @param [in] configBank `RUN::config` bank
       /// @returns `false` if all particles are filtered out
-      bool Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank) const;
+      bool Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank, hipo::bank const& configBank) const;
+
+      /// @action_function{reload} prepare the event
+      /// @when_to_call{for each event}
+      /// @param runnum the run number
+      /// @returns the key to be used in `::Filter`
+      concurrent_key_t PrepareEvent(int const runnum) const;
 
       /// @brief Using the pindex, retrieves the necessary variables from banks
       /// @param plepton pindex of the lepton
@@ -95,8 +104,9 @@ namespace iguana::clas12 {
 
       /// @brief Using the LeptonIDVars, variables calculate the score
       /// @param lepton_vars LeptonIDVars variables
+      /// @param key the return value of `::PrepareEvent`
       /// @returns double, the score
-      double CalculateScore(LeptonIDVars lepton_vars) const;
+      double CalculateScore(LeptonIDVars lepton_vars, concurrent_key_t const key) const;
 
       /// @brief Returns true if the particle passed the cut
       /// @param score the score obtained from the CalculateScore function
@@ -105,17 +115,22 @@ namespace iguana::clas12 {
 
     private:
 
+      // Reload function
+      void Reload(int const runnum, concurrent_key_t key) const;
+
       /// TMVA reader
       std::unique_ptr<TMVA::Reader> readerTMVA;
 
       /// `hipo::banklist`
       hipo::banklist::size_type b_particle;
       hipo::banklist::size_type b_calorimeter;
+      hipo::banklist::size_type b_config;
 
       // config options
       std::set<int> o_pids;
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
-      mutable std::unique_ptr<ConcurrentParam<std::string>> o_weightfile;
+      mutable std::unique_ptr<ConcurrentParam<std::string>> o_weightfile_electron;
+      mutable std::unique_ptr<ConcurrentParam<std::string>> o_weightfile_positron;
       double o_cut;
       std::string o_tmva_reader_options;
       std::string o_particle_bank;

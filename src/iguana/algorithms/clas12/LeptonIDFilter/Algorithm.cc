@@ -16,11 +16,13 @@ namespace iguana::clas12 {
     o_tmva_reader_options = GetOptionScalar<std::string>("tmva_reader_options");
     o_particle_bank       = GetOptionScalar<std::string>("particle_bank");
     o_runnum              = ConcurrentParamFactory::Create<int>();
-    o_weightfile          = ConcurrentParamFactory::Create<std::string>();
+    o_weightfile_electron = ConcurrentParamFactory::Create<std::string>();
+    o_weightfile_positron = ConcurrentParamFactory::Create<std::string>();
 
     // Get Banks that we are going to use
     b_particle    = GetBankIndex(banks, o_particle_bank);
     b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
+    b_config      = GetBankIndex(banks, "RUN::config");
 
     // Initialize the TMVA reader
     readerTMVA = std::make_unique<TMVA::Reader>(LeptonIDVars::names, o_tmva_reader_options);
@@ -50,17 +52,21 @@ namespace iguana::clas12 {
   {
     return Run(
         GetBank(banks, b_particle, o_particle_bank),
-        GetBank(banks, b_calorimeter, "REC::Calorimeter"));
+        GetBank(banks, b_calorimeter, "REC::Calorimeter"),
+        GetBank(banks, b_config, "RUN::config"));
   }
 
 
-  bool LeptonIDFilter::Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank) const
+  bool LeptonIDFilter::Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank, hipo::bank const& configBank) const
   {
     // particle bank before filtering
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
+    // prepare the event, reloading configuration parameters if the run number changed or is not yet known
+    auto key = PrepareEvent(configBank.getInt("run", 0));
+
     // filter the particle bank
-    particleBank.getMutableRowList().filter([this, &calorimeterBank](auto bank, auto row) {
+    particleBank.getMutableRowList().filter([this, &calorimeterBank, key](auto bank, auto row) {
       auto pid = bank.getInt("pid", row);
       // check if this is a lepton in `o_pids`
       if(o_pids.find(pid) != o_pids.end()) {
@@ -69,7 +75,8 @@ namespace iguana::clas12 {
         if(std::abs(status) >= 2000 && std::abs(status) < 4000) {
           m_log->Trace("Found lepton: pindex={}", row);
           auto lepton_vars  = GetLeptonIDVariables(row, bank, calorimeterBank);
-          lepton_vars.score = CalculateScore(lepton_vars);
+          lepton_vars.pid   = pid;
+          lepton_vars.score = CalculateScore(lepton_vars, key);
           return Filter(lepton_vars.score) ? 1 : 0;
         }
         else {
@@ -83,6 +90,34 @@ namespace iguana::clas12 {
     // particle bank after filtering
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
     return !particleBank.getRowList().empty();
+  }
+
+
+  concurrent_key_t LeptonIDFilter::PrepareEvent(int const runnum) const
+  {
+    m_log->Trace("calling PrepareEvent({})", runnum);
+    if(o_runnum->NeedsHashing()) {
+      std::hash<int> hash_ftn;
+      auto hash_key = hash_ftn(runnum);
+      if(!o_runnum->HasKey(hash_key))
+        Reload(runnum, hash_key);
+      return hash_key;
+    }
+    else {
+      if(o_runnum->IsEmpty() || o_runnum->Load(0) != runnum)
+        Reload(runnum, 0);
+      return 0;
+    }
+  }
+
+
+  void LeptonIDFilter::Reload(int const runnum, concurrent_key_t key) const
+  {
+    std::lock_guard<std::mutex> const lock(m_mutex); // NOTE: be sure to lock successive `ConcurrentParam::Save` calls !!!
+    m_log->Trace("-> calling Reload({}, {})", runnum, key);
+    o_runnum->Save(runnum, key);
+    o_weightfile_electron->Save(GetOptionScalar<std::string>("weightfile:electron", {"weightfile", GetConfig()->InRange("runs", runnum), "electron"}), key);
+    o_weightfile_positron->Save(GetOptionScalar<std::string>("weightfile:positron", {"weightfile", GetConfig()->InRange("runs", runnum), "positron"}), key);
   }
 
 
@@ -138,10 +173,21 @@ namespace iguana::clas12 {
   }
 
 
-  double LeptonIDFilter::CalculateScore(LeptonIDVars lepton_vars) const
+  double LeptonIDFilter::CalculateScore(LeptonIDVars lepton_vars, concurrent_key_t const key) const
   {
     // Assigning variables from lepton_vars for TMVA method
-    return readerTMVA->EvaluateMVA(lepton_vars.GetValues(), "BDT");
+    std::string weightsfile;
+    switch(lepton_vars.pid) {
+      case 11:
+        weightsfile = o_weightfile_electron->Load(key);
+        break;
+      case -11:
+        weightsfile = o_weightfile_positron->Load(key);
+        break;
+      default:
+        throw std::runtime_error(fmt::format("unknown lepton PDG code {}", lepton_vars.pid));
+    }
+    return readerTMVA->EvaluateMVA(lepton_vars.GetValues(), weightsfile);
   }
 
 

@@ -138,7 +138,7 @@ algo_dict = [
     'add_algorithm_data': [
       'weights/9_BDT_positrons_S19.weights.xml',
     ],
-    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter'] },
+    'test_args': { 'banks': ['REC::Particle', 'REC::Calorimeter', 'RUN::config'] },
   },
   {
     'name': 'clas12::rga::FiducialFilterPass2',
