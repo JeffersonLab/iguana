@@ -192,13 +192,13 @@ project_test_env.set(
 
 # set preprocessor macros
 add_project_arguments(
-  '-DIGUANA_PREFIX="' + get_option('prefix') + '"',
-  '-DIGUANA_ETCDIR="' + project_etc_dir + '"',
-  '-DIGUANA_DATADIR="' + project_data_dir + '"',
+  '-D IGUANA_PREFIX="' + get_option('prefix') + '"',
+  '-D IGUANA_ETCDIR="' + project_etc_dir + '"',
+  '-D IGUANA_DATADIR="' + project_data_dir + '"',
   language: ['cpp'],
 )
 if ROOT_dep.found()
-  add_project_arguments('-DIGUANA_ROOT_FOUND', language: [ 'cpp' ]) # currently only used for Validator plot styles
+  add_project_arguments('-D IGUANA_ROOT_FOUND', language: [ 'cpp' ]) # currently only used for Validator plot styles
 endif
 
 # start chameleon
