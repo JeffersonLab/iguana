@@ -9,8 +9,12 @@ clas12::LeptonIDFilter:
     #
     # FIXME: double check these run number ranges
     # FIXME: use the correct weights files for each
+    # FIXME: warn the user if run number falls in 'default' data set
     #
     #
+    - default: # run number is not in any other data set below
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
     - runs: [3211, 3293] # RG-A Spring 2018 Outbending Part 1
       electron: 'weights/9_BDT_positrons_S19.weights.xml'
       positron: 'weights/9_BDT_positrons_S19.weights.xml'
