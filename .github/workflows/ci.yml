@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     # NOTE: using Ubuntu runner, rather than a `container-forge` image, since it's much faster for cache hits
     steps:
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: cache
         with:
           key: test_data # fixed key will always hit; clear cache to trigger cache miss
@@ -109,7 +109,7 @@ jobs:
           path: iguana_src
       ### get test data
       - name: get test data
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           key: test_data
           path: test_data.hipo
@@ -304,21 +304,21 @@ jobs:
           install_consumer_cmake/bin/iguana_ex_cpp_00_run_functions test_data.hipo 10
       ### upload artifacts
       - name: upload build log artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: meson_logs_${{ matrix.id }}
           retention-days: 5
           path: iguana_build/meson-logs
       - name: upload coverage artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ matrix.id == 'coverage' }}
         with:
           name: coverage-report
           retention-days: 5
           path: coverage-report
       - name: upload validator artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ matrix.id == 'cpp' }}
         with:
           name: ${{ steps.artifact_names.outputs.validation_name }}
@@ -364,7 +364,7 @@ jobs:
       - run: tree pages
       ### artifacts
       - name: upload documentation artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: doc_web
           retention-days: 5
@@ -427,7 +427,7 @@ jobs:
           mv ../iguana/share/doc/iguana/html/* ${{ matrix.version }}/
       ### artifacts
       - name: upload documentation artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: doc_web_${{ matrix.version }}
           retention-days: 5
@@ -447,13 +447,13 @@ jobs:
         with:
           path: iguana_src
       - name: download documentation artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: doc_web*
           path: pages
           merge-multiple: true
       - name: download coverage report
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: coverage-report
           path: coverage-report
