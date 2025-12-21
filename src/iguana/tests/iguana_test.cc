@@ -20,7 +20,7 @@ int main(int argc, char** argv)
   std::string concurrency_model = "";
   bool vary_run                 = false;
   std::string output_dir        = "";
-  bool verbose                  = false;
+  int verbosity                 = 0;
   std::vector<std::string> bank_names;
   std::vector<std::string> prerequisite_algos;
 
@@ -116,7 +116,8 @@ int main(int argc, char** argv)
          }},
         {"v", [&]()
          {
-           fmt::print("    {:<20} {}\n", "-v", "increase verbosity");
+           fmt::print("    {:<20} {}\n", "-v", "increase verbosity by one level;");
+           fmt::print("    {:<20} repeated uses increase verbosity more\n", "");
          }}};
     std::map<std::string, std::vector<std::string>> available_options = {
       {"algorithm",      {"f", "n", "a-algo", "b", "p"}},
@@ -190,7 +191,7 @@ int main(int argc, char** argv)
       output_dir = std::string(optarg);
       break;
     case 'v':
-      verbose = true;
+      verbosity++;
       break;
     default:
       return UsageOptions(2);
@@ -227,19 +228,37 @@ int main(int argc, char** argv)
   data_file  = iguana::tools::ExpandTilde(data_file);
   output_dir = iguana::tools::ExpandTilde(output_dir);
 
+  // set log level
+  std::string log_level;
+  switch(verbosity) {
+    case 0:
+      log_level = "info";
+      break;
+    case 1:
+      log_level = "debug";
+      break;
+    case 2:
+      log_level = "trace";
+      break;
+    default:
+      fmt::println(stderr, "WARNING: no higher verbosity levels are available for `iguana_test`");
+      log_level = "trace";
+      break;
+  }
+
   // run test
   if(command == "algorithm" || command == "unit")
-    return TestAlgorithm(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, verbose);
+    return TestAlgorithm(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, log_level);
   if(command == "multithreading")
-    return TestMultithreading(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, num_threads, concurrency_model, vary_run, verbose);
+    return TestMultithreading(command, algo_name, prerequisite_algos, bank_names, data_file, num_events, num_threads, concurrency_model, vary_run, log_level);
   else if(command == "validator")
-    return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, verbose);
+    return TestValidator(algo_name, bank_names, data_file, num_events, output_dir, log_level);
   else if(command == "config")
-    return TestConfig(test_num, verbose);
+    return TestConfig(test_num, log_level);
   else if(command == "logger")
     return TestLogger();
   else if(command == "banklist")
-    return TestBanklist(data_file, verbose);
+    return TestBanklist(data_file);
   else {
     fmt::print(stderr, "ERROR: unknown command '{}'\n", command);
     return 1;

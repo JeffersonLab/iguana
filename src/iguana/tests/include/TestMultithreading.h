@@ -13,10 +13,11 @@ inline int TestMultithreading(
     int const num_threads,
     std::string const concurrency_model,
     bool const vary_run,
-    bool const verbose)
+    std::string const log_level)
 {
 
-  iguana::Logger log("test", verbose ? iguana::Logger::Level::trace : iguana::Logger::Level::info);
+  iguana::Logger log("test");
+  log.SetLevel(log_level);
 
   // check arguments
   if(algo_name.empty() || bank_names.empty()) {
@@ -72,7 +73,7 @@ inline int TestMultithreading(
               prerequisite_algos,
               bank_names,
               vary_run,
-              verbose,
+              log_level,
               num_events_per_thread,
               num_events_per_frame,
               run_config_bank_idx](int order) {
@@ -93,7 +94,7 @@ inline int TestMultithreading(
     seq.Add(algo_name);
     seq.SetName("TEST thread " + std::to_string(order));
     seq.PrintSequence();
-    seq.SetOption(algo_name, "log", verbose ? "trace" : "info");
+    seq.SetOption(algo_name, "log", log_level);
 
     // start the algorithm
     seq.Start(banks);

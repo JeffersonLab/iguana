@@ -19,12 +19,12 @@
     Enable debugging symbols by setting the Iguana build option `buildtype` to `'debug'`, then rebuild.
     Assuming you're in your build directory, run:
     ``` bash
-    meson configure -Dbuildtype=debug
+    meson configure -D buildtype=debug
     ```
     Then rebuild (`meson compile` and/or `meson install`).
 
     Remember to revert this change and rebuild/re-install, so that Iguana runs with
-    full optimization when you are processing large data sets (`-Dbuildtype=release`).
+    full optimization when you are processing large data sets (`-D buildtype=release`).
 
 ??? info "🔵 I got some error about "chameleon", or an error in some "chameleon" file that I can't find"
     [Chameleon is a code generator](https://github.com/JeffersonLab/iguana/blob/main/src/chameleon) to automatically create
