@@ -105,6 +105,6 @@ else:
         cli_opts.append(f'--cmake-prefix-path={",".join(cmake_prefix_path)}')
     if(len(extra_args) > 0):
         for extra_arg in extra_args:
-            cli_opts.append(f'-D{extra_arg[0]}={extra_arg[1]}')
+            cli_opts.append(f'-D {extra_arg[0]}={extra_arg[1]}')
     print(f'{" ".join(cli_opts)}')
     print_verbose('\n')

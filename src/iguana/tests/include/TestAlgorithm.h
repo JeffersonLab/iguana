@@ -10,7 +10,7 @@ inline int TestAlgorithm(
     std::vector<std::string> bank_names,
     std::string data_file,
     int num_events,
-    bool verbose)
+    std::string log_level)
 {
 
   // check arguments
@@ -40,7 +40,7 @@ inline int TestAlgorithm(
   seq.Add(algo_name);
   seq.SetName("TEST");
   seq.PrintSequence();
-  seq.SetOption(algo_name, "log", verbose ? "trace" : "info");
+  seq.SetOption(algo_name, "log", log_level);
 
   // start the algorithm
   seq.Start(banks_after);
@@ -62,7 +62,7 @@ inline int TestAlgorithm(
       return 1;
     }
     // print the banks, before and after
-    // if(verbose) {
+    // if(log_level == "debug" || log_level == "trace") {
     //   for(decltype(bank_names)::size_type it_bank = 0; it_bank < bank_names.size(); it_bank++) {
     //     fmt::print("{:=^70}\n", fmt::format(" BEFORE: {} ", bank_names.at(it_bank)));
     //     banks_before.at(it_bank).show();
