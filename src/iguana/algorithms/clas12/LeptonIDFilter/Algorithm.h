@@ -65,9 +65,9 @@ namespace iguana::clas12 {
   /// Using those variables, it call the TMVA method using the weight file, and it computes a score. By a pplying a cut to the score we can separate leptons from pions.
   ///
   /// @begin_doc_config{clas12/LeptonIDFilter}
-  /// @config_param{o_pid | int | PID of the particle; -11 for positrons and 11 for electrons}
-  /// @config_param{o_weightfile | string | Location of the weight file of the classifier}
-  /// @config_param{o_cut | double | Value of the score to apply the cut. The algorithm will keep all particles that have a score grater than ths value}
+  /// @config_param{pids | int | PIDs of the particle; -11 for positrons and 11 for electrons}
+  /// @config_param{weightfile | string | Location of the weight file of the classifier}
+  /// @config_param{cut | double | Value of the score to apply the cut. The algorithm will keep all particles that have a score grater than ths value}
   /// @end_doc
   class LeptonIDFilter : public Algorithm
   {
@@ -85,11 +85,6 @@ namespace iguana::clas12 {
       /// @param [in] calorimeterBank `REC::Calorimeter` bank
       /// @returns `false` if all particles are filtered out
       bool Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank) const;
-
-      /// @brief returns the pindex of the lepton
-      /// @param particle_bank the particle bank
-      /// @returns pindex of the lepton, -1 if there is no lepton
-      int FindLepton(hipo::bank const& particle_bank) const;
 
       /// @brief Using the pindex, retrieves the necessary variables from banks
       /// @param plepton pindex of the lepton
@@ -118,7 +113,7 @@ namespace iguana::clas12 {
       hipo::banklist::size_type b_calorimeter;
 
       // config options
-      int o_pid;
+      std::set<int> o_pids;
       mutable std::unique_ptr<ConcurrentParam<int>> o_runnum;
       mutable std::unique_ptr<ConcurrentParam<std::string>> o_weightfile;
       double o_cut;

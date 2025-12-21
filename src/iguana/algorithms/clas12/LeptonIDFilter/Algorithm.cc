@@ -11,7 +11,7 @@ namespace iguana::clas12 {
   {
     // Get configuration
     ParseYAMLConfig();
-    o_pid                 = GetOptionScalar<int>("pid"); // Obtain pid from config file (+11/-11)
+    o_pids                = GetOptionSet<int>("pids");
     o_cut                 = GetOptionScalar<double>("cut");
     o_tmva_reader_options = GetOptionScalar<std::string>("tmva_reader_options");
     o_particle_bank       = GetOptionScalar<std::string>("particle_bank");
@@ -60,35 +60,29 @@ namespace iguana::clas12 {
     ShowBank(particleBank, Logger::Header("INPUT PARTICLES"));
 
     // filter the particle bank
-    particleBank.getMutableRowList().filter([this, &particleBank, &calorimeterBank](auto bank, auto row) {
-      auto lepton_pindex = FindLepton(particleBank);
-      auto lepton_vars   = GetLeptonIDVariables(lepton_pindex, particleBank, calorimeterBank);
-      lepton_vars.score  = CalculateScore(lepton_vars);
-
-      return Filter(lepton_vars.score);
+    particleBank.getMutableRowList().filter([this, &calorimeterBank](auto bank, auto row) {
+      auto pid = bank.getInt("pid", row);
+      // check if this is a lepton in `o_pids`
+      if(o_pids.find(pid) != o_pids.end()) {
+        auto status = bank.getShort("status", row);
+        // status cut
+        if(std::abs(status) >= 2000 && std::abs(status) < 4000) {
+          m_log->Trace("Found lepton: pindex={}", row);
+          auto lepton_vars  = GetLeptonIDVariables(row, bank, calorimeterBank);
+          lepton_vars.score = CalculateScore(lepton_vars);
+          return Filter(lepton_vars.score) ? 1 : 0;
+        }
+        else {
+          m_log->Trace("Lepton at pindex={} did not pass status cut", row);
+          return 0;
+        }
+      }
+      return 1; // not a lepton in `o_pids`, let it pass the filter
     });
 
     // particle bank after filtering
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
     return !particleBank.getRowList().empty();
-  }
-
-
-  int LeptonIDFilter::FindLepton(hipo::bank const& particle_bank) const
-  {
-    int lepton_pindex = -1;
-    for(int row = 0; row < particle_bank.getRows(); row++) {
-      auto status = particle_bank.getShort("status", row);
-      if(particle_bank.getInt("pid", row) == o_pid && abs(status) >= 2000 && abs(status) < 4000) {
-        lepton_pindex = row;
-        break;
-      }
-    }
-    if(lepton_pindex >= 0)
-      m_log->Debug("Found lepton: pindex={}", lepton_pindex);
-    else
-      m_log->Debug("Lepton not found");
-    return lepton_pindex;
   }
 
 

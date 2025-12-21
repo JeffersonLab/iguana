@@ -1,5 +1,7 @@
 clas12::LeptonIDFilter:
-  pid: -11 ########################### FIXME
+
+  # choose which lepton PDG codes to filter
+  pids: [-11, 11]
 
   # weight file, one for each lepton and dataset
   weightfile:
