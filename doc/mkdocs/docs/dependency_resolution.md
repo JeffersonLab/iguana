@@ -24,8 +24,8 @@ The following sections explain how to do so with each.
 ### 🔷 Meson
 For `iguana`, the build system is `meson`, which accepts the build options
 ``` bash
--Dpkg_config_path=$prefix/lib/pkgconfig
--Dcmake_prefix_path=$prefix
+-D pkg_config_path=$prefix/lib/pkgconfig
+-D cmake_prefix_path=$prefix
 ```
 (where multiple paths are delimited by commas).
 
@@ -33,7 +33,7 @@ For `iguana`, the build system is `meson`, which accepts the build options
 For `cmake`, the `pkg-config` path can be combined with the `cmake` path, so only the
 build option
 ``` bash
--DCMAKE_PREFIX_PATH="$prefix"
+-D CMAKE_PREFIX_PATH="$prefix"
 ```
 is needed; this assumes:
 

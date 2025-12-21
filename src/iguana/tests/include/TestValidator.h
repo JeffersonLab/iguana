@@ -10,7 +10,7 @@ inline int TestValidator(
     std::string data_file,
     int num_events,
     std::string output_dir,
-    bool verbose)
+    std::string log_level)
 {
 
   // check arguments
@@ -34,7 +34,7 @@ inline int TestValidator(
   // define the validator
   auto vdor = iguana::AlgorithmFactory::Create(vdor_name);
   dynamic_cast<iguana::Validator*>(vdor.get())->SetOutputDirectory(output_dir);
-  vdor->SetOption("log", verbose ? "trace" : "info");
+  vdor->SetOption("log", log_level);
 
   // event loop
   vdor->Start(banks);

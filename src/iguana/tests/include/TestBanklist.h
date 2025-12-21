@@ -4,9 +4,7 @@
 #include <hipo4/reader.h>
 #include <iguana/algorithms/AlgorithmSequence.h>
 
-inline int TestBanklist(
-    std::string data_file,
-    bool verbose)
+inline int TestBanklist(std::string data_file)
 {
 
   if(data_file == "") {

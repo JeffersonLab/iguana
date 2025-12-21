@@ -42,7 +42,7 @@ foreach algo : algo_dict
         '-'.join(['algorithm', test_name_algo]),
         test_exe,
         suite: [ 'algorithm', 'single_threaded' ],
-        args: [ 'algorithm', '-n', get_option('test_num_events') ] + test_args,
+        args: [ 'algorithm', '-n', get_option('test_num_events').to_string() ] + test_args,
         env: project_test_env,
         timeout: 0,
         should_fail: should_fail,
@@ -71,7 +71,7 @@ foreach algo : algo_dict
             '-'.join(['multithreading', concurrency_model, test_name_algo]),
             test_exe,
             suite: [ 'algorithm', 'multithreading', concurrency_model ],
-            args: multithreading_args + [ '-n', get_option('test_num_events') ] + test_args,
+            args: multithreading_args + [ '-n', get_option('test_num_events').to_string() ] + test_args,
             is_parallel: false,
             env: project_test_env,
             timeout: 0,
@@ -97,7 +97,7 @@ foreach algo : algo_dict
       if (vdor_needs_ROOT and ROOT_dep.found()) or not vdor_needs_ROOT
         test_args = [
           'validator',
-          '-n', get_option('test_validator_all_stats') ? '0' : get_option('test_num_events'),
+          '-n', get_option('test_validator_all_stats') ? '0' : get_option('test_num_events').to_string(),
           '-a', algo_name + 'Validator',
         ]
         if fs.is_file(get_option('test_data_file'))

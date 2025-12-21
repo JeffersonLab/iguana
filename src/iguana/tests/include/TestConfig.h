@@ -3,7 +3,7 @@
 #include <cassert>
 #include <iguana/algorithms/Algorithm.h>
 
-inline int TestConfig(int test_num, bool verbose)
+inline int TestConfig(int test_num, std::string log_level)
 {
   if(test_num == 0) {
     fmt::print(stderr, "ERROR: need a test number\n");
@@ -22,7 +22,7 @@ inline int TestConfig(int test_num, bool verbose)
 
   // then test configuring an algorithm
   auto algo = iguana::AlgorithmFactory::Create("example::ExampleAlgorithm");
-  algo->SetOption("log", verbose ? "debug" : "info");
+  algo->SetOption("log", log_level);
   algo->SetConfigDirectory("src/iguana/tests"); // must be relative to build directory
   algo->SetConfigFile(fmt::format("test_{}.yaml", test_num));
   algo->Start();
