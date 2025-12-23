@@ -43,7 +43,7 @@ jobs:
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          GIT_LFS_SKIP_SMUDGE=1 git clone https://code.jlab.org/hallb/clas12/validation-data
+          GIT_LFS_SKIP_SMUDGE=1 git clone https://code.jlab.org/hallb/clas12/validation-data.git
           cd validation-data
           git lfs install --skip-smudge
           git config lfs.fetchinclude "recon/dst/validation_files.tar.zst"
