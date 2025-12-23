@@ -50,8 +50,7 @@ jobs:
           git lfs pull
           cd recon/dst
           tar xvf validation_files.tar.zst
-          mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
-          mv -v test_data.hipo $GITHUB_WORKSPACE/
+          mv -v $(find validation_files -type f -name "*.hipo" | head -n1) $GITHUB_WORKSPACE/test_data.hipo
 
   # build and test Iguana
   #########################################################
