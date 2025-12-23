@@ -37,20 +37,21 @@ jobs:
       - uses: actions/cache@v5
         id: cache
         with:
-          key: test_data # fixed key will always hit; clear cache to trigger cache miss
+          key: test_data_lfs # fixed key will always hit; clear cache to trigger cache miss
           path: test_data.hipo
           lookup-only: true
-      - name: install xrootd-client
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          sudo apt -y update
-          sudo apt -y install xrootd-client
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          xrdcp xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/dst/validation_files.tar.zst ./
+          GIT_LFS_SKIP_SMUDGE=1 git clone https://code.jlab.org/hallb/clas12/validation-data
+          cd validation-data
+          git lfs install --skip-smudge
+          git config lfs.fetchinclude "recon/dst/validation_files.tar.zst"
+          git lfs pull
+          cd recon/dst
           tar xvf validation_files.tar.zst
           mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
+          mv -v test_data.hipo $GITHUB_WORKSPACE/
 
   # build and test Iguana
   #########################################################
@@ -111,7 +112,7 @@ jobs:
       - name: get test data
         uses: actions/cache/restore@v5
         with:
-          key: test_data
+          key: test_data_lfs
           path: test_data.hipo
       ### dependencies
       ###### for iguana
