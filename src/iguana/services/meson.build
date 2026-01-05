@@ -22,7 +22,7 @@ services_headers = [
 ]
 
 if rcdb_dep.found()
-  add_project_arguments('-DUSE_RCDB', language: ['cpp'])
+  add_project_arguments('-D USE_RCDB', language: ['cpp'])
 endif
 
 services_lib = shared_library(

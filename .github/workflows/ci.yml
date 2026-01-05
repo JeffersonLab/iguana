@@ -37,20 +37,20 @@ jobs:
       - uses: actions/cache@v5
         id: cache
         with:
-          key: test_data # fixed key will always hit; clear cache to trigger cache miss
+          key: test_data_lfs # fixed key will always hit; clear cache to trigger cache miss
           path: test_data.hipo
           lookup-only: true
-      - name: install xrootd-client
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          sudo apt -y update
-          sudo apt -y install xrootd-client
       - name: download
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          xrdcp xroot://sci-xrootd.jlab.org//osgpool/hallb/clas12/validation/recon/dst/validation_files.tar.zst ./
+          GIT_LFS_SKIP_SMUDGE=1 git clone https://code.jlab.org/hallb/clas12/validation-data.git
+          cd validation-data
+          git lfs install --skip-smudge
+          git config lfs.fetchinclude "recon/dst/validation_files.tar.zst"
+          git lfs pull
+          cd recon/dst
           tar xvf validation_files.tar.zst
-          mv -v $(find validation_files -type f -name "*.hipo" | head -n1) test_data.hipo
+          mv -v $(find validation_files -type f -name "*.hipo" | head -n1) $GITHUB_WORKSPACE/test_data.hipo
 
   # build and test Iguana
   #########################################################
@@ -74,20 +74,20 @@ jobs:
           - noROOT
         include:
           # main C++ test
-          - { id: cpp, image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true -Dtest_validator_all_stats=true }
+          - { id: cpp, image: base_root, CC: gcc, CXX: g++, opts: -D buildtype=release -D z_require_root=true -D test_validator_all_stats=true }
           # bindings
-          - { id: python,  image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true -Dbind_python=true  }
-          - { id: fortran, image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true -Dbind_fortran=true }
+          - { id: python,  image: base_root, CC: gcc, CXX: g++, opts: -D buildtype=release -D z_require_root=true -D bind_python=true  }
+          - { id: fortran, image: base_root, CC: gcc, CXX: g++, opts: -D buildtype=release -D z_require_root=true -D bind_fortran=true }
           # sanitizers
           # FIXME: `b_sanitize=memory` is not used because `libc++` needs to be re-compiled with `-fsanitize=memory`; otherwise
           #         we are bothered by false positives (e.g. from `std::map` insertion)
-          - { id: address-sanitizer,   image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=address   -Db_lundef=false -Db_pie=true }
-          - { id: thread-sanitizer,    image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=thread    -Db_lundef=false -Db_pie=true }
-          - { id: undefined-sanitizer, image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=undefined -Db_lundef=false -Db_pie=true }
-          - { id: leak-sanitizer,      image: base_root, CC: clang, CXX: clang++, opts: -Dbuildtype=debug -Dz_require_root=true -Db_sanitize=leak      -Db_lundef=false -Db_pie=true }
+          - { id: address-sanitizer,   image: base_root, CC: clang, CXX: clang++, opts: -D buildtype=debug -D z_require_root=true -D b_sanitize=address   -D b_lundef=false -D b_pie=true }
+          - { id: thread-sanitizer,    image: base_root, CC: clang, CXX: clang++, opts: -D buildtype=debug -D z_require_root=true -D b_sanitize=thread    -D b_lundef=false -D b_pie=true }
+          - { id: undefined-sanitizer, image: base_root, CC: clang, CXX: clang++, opts: -D buildtype=debug -D z_require_root=true -D b_sanitize=undefined -D b_lundef=false -D b_pie=true }
+          - { id: leak-sanitizer,      image: base_root, CC: clang, CXX: clang++, opts: -D buildtype=debug -D z_require_root=true -D b_sanitize=leak      -D b_lundef=false -D b_pie=true }
           # misc.
-          - { id: coverage,      image: base_root, CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=true  -Db_coverage=true  -Dz_test_multithreading=false }
-          - { id: noROOT,        image: base,      CC: gcc, CXX: g++, opts: -Dbuildtype=release -Dz_require_root=false }
+          - { id: coverage,      image: base_root, CC: gcc, CXX: g++, opts: -D buildtype=release -D z_require_root=true  -D b_coverage=true  -D z_test_multithreading=false }
+          - { id: noROOT,        image: base,      CC: gcc, CXX: g++, opts: -D buildtype=release -D z_require_root=false }
     runs-on: ubuntu-latest
     container:
       image: codecr.jlab.org/hallb/clas12/container-forge/${{ matrix.image }}:latest
@@ -111,7 +111,7 @@ jobs:
       - name: get test data
         uses: actions/cache/restore@v5
         with:
-          key: test_data
+          key: test_data_lfs
           path: test_data.hipo
       ### dependencies
       ###### for iguana
@@ -150,14 +150,14 @@ jobs:
         run: |
           meson setup iguana_build iguana_src \
             --prefix=$GITHUB_WORKSPACE/iguana \
-            -Drcdb:home=$RCDB_HOME \
-            -Dz_require_rcdb=true \
-            -Dwerror=true \
-            -Dinstall_examples=true \
-            -Dtest_data_file=$GITHUB_WORKSPACE/test_data.hipo \
-            -Dtest_num_events=${{ env.num_events }} \
-            -Dtest_output_dir=${{ steps.artifact_names.outputs.validation_dir }} \
-            -Dtest_num_threads=${{ env.num_threads }} \
+            -D rcdb:home=$RCDB_HOME \
+            -D z_require_rcdb=true \
+            -D werror=true \
+            -D install_examples=true \
+            -D test_data_file=$GITHUB_WORKSPACE/test_data.hipo \
+            -D test_num_events=${{ env.num_events }} \
+            -D test_output_dir=${{ steps.artifact_names.outputs.validation_dir }} \
+            -D test_num_threads=${{ env.num_threads }} \
             ${{ matrix.opts }}
       - name: dump all build options
         run: meson configure iguana_build --no-pager
@@ -207,7 +207,7 @@ jobs:
         working-directory: iguana_src
         run: |
           meson reprotest -- \
-            -Drcdb:home=$RCDB_HOME
+            -D rcdb:home=$RCDB_HOME
       ### coverage
       - name: coverage
         if: ${{ matrix.id == 'coverage' }}
@@ -297,7 +297,7 @@ jobs:
       - name: consumer test cmake
         if: ${{ matrix.id == 'cpp' }}
         run: |
-          cmake -B build_consumer_cmake -S iguana_src/examples/build_with_cmake -DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/hipo -G Ninja --install-prefix=$GITHUB_WORKSPACE/install_consumer_cmake
+          cmake -B build_consumer_cmake -S iguana_src/examples/build_with_cmake -D CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/hipo -G Ninja --install-prefix=$GITHUB_WORKSPACE/install_consumer_cmake
           cmake --build build_consumer_cmake
           cmake --install build_consumer_cmake
           echo "========================================= TEST RUN ========================================="
@@ -410,11 +410,11 @@ jobs:
         run: |
           meson setup iguana_build iguana_src \
             --prefix=$GITHUB_WORKSPACE/iguana \
-            -Drcdb:home=$RCDB_HOME \
-            -Dz_require_rcdb=true \
-            -Dz_require_root=true \
-            -Dinstall_examples=false \
-            -Dinstall_documentation=true
+            -D rcdb:home=$RCDB_HOME \
+            -D z_require_rcdb=true \
+            -D z_require_root=true \
+            -D install_examples=false \
+            -D install_documentation=true
       - run: meson compile
         working-directory: iguana_build
       - run: meson install

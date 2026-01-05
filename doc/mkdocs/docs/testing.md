@@ -63,7 +63,13 @@ If you have not supplied the required arguments, in particular the input data
 file, the test will fail. For the `validator` and `algorithm` test suites,
 `iguana_test validator` and `iguana_test algorithm` are the respective
 underlying test executable commands; you may pass arguments to them using the
-`--test-args` option; for example:
+`--test-args` option; for example, use `-v` to increase the Iguana algorithms'
+verbosity level by one:
+``` bash
+meson test validator-clas12-MyAlgorithm --verbose --test-args '\-v'    # verbose
+meson test validator-clas12-MyAlgorithm --verbose --test-args '\-vv'   # more verbose
+```
+As another example, control the input file, number of events, and output directory:
 ``` bash
 meson test validator-clas12-MyAlgorithm --verbose --test-args '\-f ../my_hipo_file.hipo \-n 300 \-o ../validator_output'
 ```
