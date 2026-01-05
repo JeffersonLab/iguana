@@ -33,7 +33,7 @@ The following boxes list the dependencies and how to obtain them. Click on each 
 
     - Likely available in your package manager, likely as `fmt` or `libfmt`
       - If you need Python bindings on macOS, please install `fmt` with `brew install fmt`
-      - If you compile it yourself on Linux, include the `cmake` option `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` to build the static library
+      - If you compile it yourself on Linux, include the `cmake` option `-D CMAKE_POSITION_INDEPENDENT_CODE=ON` to build the static library
 
 ??? info "🟩 yaml-cpp: YAML parser and emitter"
     <https://github.com/jbeder/yaml-cpp>
@@ -60,7 +60,7 @@ The following boxes list the dependencies and how to obtain them. Click on each 
     - It is **NOT recommended** to use your package manager to install ROOT; the most reliable installation
       method is [building it from source](https://root.cern/install/build_from_source/)
       - You may need to set the C++ standard to match that used in `iguana`, which is currently 17; to do so,
-        use the build option `-DCMAKE_CXX_STANDARD=17`
+        use the build option `-D CMAKE_CXX_STANDARD=17`
     - After installation, depending on ROOT's installation prefix you may also need to set your environment so
       ROOT may be found; this is typically done by `source /path/to/root/bin/thisroot.sh`
 
@@ -120,8 +120,8 @@ meson configure --prefix=/path/to/iguana-installation  # must be an ABSOLUTE pat
 
 Aside from `--prefix`, most other build options are set with `-D`:
 ``` bash
-meson configure -D<option>=<value>  # syntax
-meson configure -Dbind_python=true  # example, which sets option 'bind_python' to 'true'
+meson configure -D <option>=<value>  # syntax
+meson configure -D bind_python=true  # example, which sets option 'bind_python' to 'true'
 ```
 The following table includes commonly-used build options; they are not required since they have default values,
 but you may prefer to change them:
@@ -143,7 +143,7 @@ Scroll down to the **"Project options"** sections, which are near the bottom, fo
     The first **"Project options"** section is for Iguana, while the subsequent **"Project options"** sections are for its subprojects.
     To set a subproject option, you must prefix the subproject name; for example, for subproject `rcdb`, to set option `home` to `/opt/rcdb`:
     ``` bash
-    meson configure -Drcdb:home=/opt/rcdb
+    meson configure -D rcdb:home=/opt/rcdb
     ```
 
 !!! tip

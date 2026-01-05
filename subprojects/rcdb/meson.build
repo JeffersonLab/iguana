@@ -44,7 +44,7 @@ foreach dbms, info : dbms_dict
       dep = dependency(pkg, required: false)
       if dep.found()
         dbms_deps += dep
-        dbms_args += { 'mariadb': '-DRCDB_MYSQL', 'sqlite': '-DRCDB_SQLITE' }[dbms]
+        dbms_args += { 'mariadb': '-D RCDB_MYSQL', 'sqlite': '-D RCDB_SQLITE' }[dbms]
         message(f'using @pkg@ for RCDB DBMS')
         break
       endif
