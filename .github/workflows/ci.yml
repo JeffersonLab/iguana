@@ -354,6 +354,8 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: install_cpp
+          path: iguana
+      - run: tree
       - name: install packages for iguana
         run: |
           pacman -Sy --noconfirm
