@@ -231,19 +231,19 @@ int main(int argc, char** argv)
   // set log level
   std::string log_level;
   switch(verbosity) {
-    case 0:
-      log_level = "info";
-      break;
-    case 1:
-      log_level = "debug";
-      break;
-    case 2:
-      log_level = "trace";
-      break;
-    default:
-      fmt::println(stderr, "WARNING: no higher verbosity levels are available for `iguana_test`");
-      log_level = "trace";
-      break;
+  case 0:
+    log_level = "info";
+    break;
+  case 1:
+    log_level = "debug";
+    break;
+  case 2:
+    log_level = "trace";
+    break;
+  default:
+    fmt::println(stderr, "WARNING: no higher verbosity levels are available for `iguana_test`");
+    log_level = "trace";
+    break;
   }
 
   // run test

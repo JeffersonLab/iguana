@@ -303,6 +303,13 @@ jobs:
           echo "========================================= TEST RUN ========================================="
           install_consumer_cmake/bin/iguana_ex_cpp_00_run_functions test_data.hipo 10
       ### upload artifacts
+      - name: upload installation artifact
+        uses: actions/upload-artifact@v6
+        if: ${{ matrix.id == 'cpp' }}
+        with:
+          name: install_${{ matrix.id }}
+          retention-days: 5
+          path: iguana
       - name: upload build log artifacts
         uses: actions/upload-artifact@v6
         if: always()
@@ -324,6 +331,69 @@ jobs:
           name: ${{ steps.artifact_names.outputs.validation_name }}
           retention-days: 90
           path: validation_results
+
+  # test clas12root
+  #########################################################
+
+  test_clas12root:
+    name: Test clas12root
+    needs:
+      - iguana
+      - download_test_data
+    runs-on: ubuntu-latest
+    container:
+      image: codecr.jlab.org/hallb/clas12/container-forge/base_root:latest
+      options: --user root
+    steps:
+      ### setup iguana
+      - name: checkout iguana
+        uses: actions/checkout@v6
+        with:
+          path: iguana_src
+      - name: download iguana installation
+        uses: actions/download-artifact@v7
+        with:
+          name: install_cpp
+          path: iguana
+      - name: install packages for iguana
+        run: |
+          pacman -Sy --noconfirm
+          pacman -S --noconfirm \
+            fmt \
+            yaml-cpp
+      ### build clas12root
+      - name: checkout clas12root
+        uses: actions/checkout@v6
+        with:
+          repository: JeffersonLab/clas12root
+          ref: master # NOTE: may prefer fixed version someday
+          path: clas12root
+      - name: build clas12root
+        run: |
+          source iguana_src/.github/clas12root.env
+          cmake -B clas12root/build -S clas12root \
+            --install-prefix $CLAS12ROOT \
+            -D CMAKE_GENERATOR=Ninja
+          cmake --build clas12root/build
+          cmake --install clas12root/build
+      ### get test data
+      - name: get test data
+        uses: actions/cache/restore@v5
+        with:
+          key: test_data_lfs
+          path: test_data.hipo
+      ### test
+      - name: test clas12root + iguana
+        run: |
+          source iguana_src/.github/clas12root.env
+          xvfb-run clas12root clas12root/RunRoot/Ex11_Iguana.C+ --in=test_data.hipo -e 'canv->Print("clas12root.png")' -e '.q'
+      ### artifacts
+      - name: upload clas12root artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: _validation_results_clas12root
+          retention-days: 90
+          path: clas12root.png
 
   # documentation
   #########################################################
