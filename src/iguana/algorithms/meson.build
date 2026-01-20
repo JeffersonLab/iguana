@@ -44,7 +44,6 @@ algo_dict = [
       'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
     },
   },
-  { 'name': 'clas12::FiducialFilter', 'has_config': false, 'has_validator': false, 'test_args': { 'should_fail': true } }, # deprecated
   {
     'name': 'clas12::SectorFinder',
     'test_args': {
@@ -75,7 +74,6 @@ algo_dict = [
     'has_validator': false,
     'test_args': {'banks': [ 'RECFT::Particle' ]},
   },
-  { 'name': 'clas12::FTEnergyCorrection', 'has_config': false, 'has_validator': false, 'test_args': { 'should_fail': true } }, # deprecated
   {
     'name': 'clas12::rga::MomentumCorrection',
     'has_config': false,
@@ -90,7 +88,6 @@ algo_dict = [
       'prerequisites': [ 'clas12::SectorFinder' ],
     },
   },
-  { 'name': 'clas12::MomentumCorrection', 'has_config': false, 'has_validator': false, 'test_args': { 'should_fail': true } }, # deprecated
   {
     'name': 'physics::InclusiveKinematics',
     'algorithm_needs_ROOT': true,
@@ -138,7 +135,6 @@ algo_dict = [
       'banks': [ 'REC::Particle', 'RUN::config' ],
     },
   },
-  { 'name': 'clas12::RGAFiducialFilter', 'has_config': false, 'has_validator': false, 'has_action_yaml': false, 'test_args': { 'should_fail': true } }, # deprecated
   {
     'name': 'clas12::MatchParticleProximity',
     'algorithm_needs_ROOT': true,
