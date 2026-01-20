@@ -1,0 +1,4 @@
+algorithm:
+  name: 'example::ExampleSubclassAlgorithm'
+include:
+  - '../../clas12/rga/FiducialFilterPass1/Action.yaml' # include these action functions
