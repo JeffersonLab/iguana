@@ -1,4 +1,0 @@
-algorithm:
-  name: 'clas12::FiducialFilter'
-include:
-  - '../rga/FiducialFilterPass1/Action.yaml' # include these action functions

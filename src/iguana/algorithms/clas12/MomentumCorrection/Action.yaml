@@ -1,4 +1,0 @@
-algorithm:
-  name: 'clas12::MomentumCorrection'
-include:
-  - '../rga/MomentumCorrection/Action.yaml' # include these action functions
