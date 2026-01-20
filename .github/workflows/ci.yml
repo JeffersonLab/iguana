@@ -365,8 +365,8 @@ jobs:
       - name: checkout clas12root
         uses: actions/checkout@v6
         with:
-          repository: JeffersonLab/clas12root
-          ref: master # NOTE: may prefer fixed version someday
+          repository: c-dilks/clas12root
+          ref: iguana-tutorial # NOTE: may prefer fixed version someday
           path: clas12root
       - name: build clas12root
         run: |
