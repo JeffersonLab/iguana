@@ -41,4 +41,8 @@ Once you have generated your new algorithm:
 > online.
 
 > [!TIP]
+> If you are writing an algorithm that is very similar to another algorithm, consider inheriting from it;
+> see [`ExampleSubclassAlgorithm`](../ExampleSubclassAlgorithm) for an example.
+
+> [!TIP]
 > Enable debugging symbols when building by setting the Iguana build option `buildtype` to `debug`.

@@ -29,6 +29,14 @@ algo_dict = [
     'test_args': {'banks': [ 'REC::Particle' ]},
   },
   {
+    'name': 'example::ExampleSubclassAlgorithm',
+    'has_validator': false,
+    'test_args': {
+      'banks': [ 'REC::Particle', 'RUN::config', 'REC::Traj', 'REC::Calorimeter' ],
+      'prerequisites': [ 'clas12::CalorimeterLinker', 'clas12::TrajLinker' ],
+    },
+  },
+  {
     'name': 'clas12::EventBuilderFilter',
     'has_validator': false,
     'test_args': {'banks': [ 'REC::Particle' ]},
