@@ -1,4 +1,0 @@
-algorithm:
-  name: 'clas12::FTEnergyCorrection'
-include:
-  - '../rga/FTEnergyCorrection/Action.yaml' # include these action functions
