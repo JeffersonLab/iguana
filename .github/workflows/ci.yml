@@ -386,7 +386,7 @@ jobs:
       - name: test clas12root + iguana
         run: |
           source iguana_src/.github/clas12root.env
-          xvfb-run clas12root clas12root/RunRoot/Ex11_Iguana.C+ --in=test_data.hipo -e 'canv->Print("clas12root.png")' -e '.q'
+          xvfb-run clas12root -b -q clas12root/RunRoot/Ex11_Iguana.C+ --in=test_data.hipo -e 'canv->Print("clas12root.png")' -e '.q'
       ### artifacts
       - name: upload clas12root artifacts
         uses: actions/upload-artifact@v6
