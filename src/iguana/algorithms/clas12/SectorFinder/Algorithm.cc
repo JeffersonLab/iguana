@@ -9,13 +9,13 @@ namespace iguana::clas12 {
 
     // define options, their default values, and cache them
     ParseYAMLConfig();
-    o_bankname_charged = GetOptionScalar<std::string>("bank_charged");
+    o_bankname_charged = GetOptionScalar<std::string>({"bank_charged"});
     try {
-      o_bankname_neutral = GetOptionScalar<std::string>("bank_neutral");
+      o_bankname_neutral = GetOptionScalar<std::string>({"bank_neutral"});
     }
     catch(std::runtime_error const& ex) {
       m_log->Warn("searching instead for configuration parameter named 'bank_uncharged'...");
-      o_bankname_neutral = GetOptionScalar<std::string>("bank_uncharged");
+      o_bankname_neutral = GetOptionScalar<std::string>({"bank_uncharged"});
       m_log->Warn("...found 'bank_uncharged' and using it; note that 'bank_uncharged' has been renamed to 'bank_neutral', please update your configuration");
     }
 

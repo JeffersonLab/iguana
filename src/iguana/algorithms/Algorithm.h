@@ -8,6 +8,7 @@
 
 #include "AlgorithmBoilerplate.h"
 #include "iguana/bankdefs/BankDefs.h"
+#include "iguana/services/Deprecated.h"
 #include "iguana/services/RCDBReader.h"
 #include "iguana/services/YAMLReader.h"
 #include <iguana/services/GlobalParam.h>
@@ -119,27 +120,27 @@ namespace iguana {
           else
             m_log->Error("Option '{}' must be a string or a Logger::Level", key);
         }
+        // make sure the key hasn't been renamed or deprecated
+        iguana::deprecated::CheckSetOptionKey(m_class_name, key);
+        // add it to the cache
         m_option_cache[key] = val;
         return val;
       }
 
       /// Get the value of a scalar option
-      /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
-      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the scalar option
       template <typename OPTION_TYPE>
-      OPTION_TYPE GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
+      OPTION_TYPE GetOptionScalar(YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the value of a vector option
-      /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
-      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the vector option
       template <typename OPTION_TYPE>
       std::vector<OPTION_TYPE> GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the value of a vector option, and convert it to `std::set`
-      /// @param key the unique key name of this option
-      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the vector option converted to `std::set`
       template <typename OPTION_TYPE>
       std::set<OPTION_TYPE> GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
@@ -261,11 +262,6 @@ namespace iguana {
       void ThrowSinceRenamed(std::string const& new_name, std::string const& version) const noexcept(false);
 
     private: // methods
-
-      /// Prepend `node_path` with the full algorithm name. If `node_path` is empty, set it to `{key}`.
-      /// @param key the key name for this option
-      /// @param node_path the `YAMLReader::node_path_t` to prepend
-      void CompleteOptionNodePath(std::string const& key, YAMLReader::node_path_t& node_path) const;
 
       // PrintOptionValue: overloaded for different value types
       void PrintOptionValue(std::string const& key, int const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;

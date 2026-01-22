@@ -9,7 +9,7 @@ namespace iguana::clas12 {
 
     // define options, their default values, and cache them
     ParseYAMLConfig();
-    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
+    o_particle_bank = GetOptionScalar<std::string>({"particle_bank"});
     o_pids          = GetOptionSet<int>("pids");
 
     // get expected bank indices

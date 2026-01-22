@@ -7,6 +7,7 @@ services_sources = [
   'GlobalParam.cc',
   'RCDBReader.cc',
   'Tools.cc',
+  'Deprecated.cc',
 ]
 services_headers = [
   'Logger.h',
@@ -17,6 +18,7 @@ services_headers = [
   'GlobalParam.h',
   'RCDBReader.h',
   'Tools.h',
+  'Deprecated.h',
 ]
 
 if rcdb_dep.found()

@@ -29,7 +29,7 @@ namespace iguana::clas12::rga {
 
   void FiducialFilterPass2::LoadConfig()
   {
-    m_cal_strictness = GetOptionScalar<int>("calorimeter.strictness", {"calorimeter", "strictness"});
+    m_cal_strictness = GetOptionScalar<int>({"calorimeter", "strictness"});
     if(m_cal_strictness < 1 || m_cal_strictness > 3) {
       throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3");
     }
@@ -81,7 +81,7 @@ namespace iguana::clas12::rga {
       if(m_cvt.edge_layers.empty()) {
         throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
       }
-      m_cvt.edge_min = GetOptionScalar<double>("cvt.edge_min", {"cvt", "edge_min"});
+      m_cvt.edge_min = GetOptionScalar<double>({"cvt", "edge_min"});
 
       m_cvt.phi_forbidden_deg.clear();
       try {
@@ -103,7 +103,7 @@ namespace iguana::clas12::rga {
 
     {
       m_dc.theta_small_deg =
-          GetOptionScalar<double>("dc.theta_small_deg", {"dc", "theta_small_deg"});
+          GetOptionScalar<double>({"dc", "theta_small_deg"});
 
       auto need3 = [&](char const* key) -> std::array<double, 3> {
         auto v = GetOptionVector<double>(std::string("dc.") + key, {"dc", key});

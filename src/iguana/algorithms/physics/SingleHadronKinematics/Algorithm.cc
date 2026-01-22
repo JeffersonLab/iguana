@@ -12,7 +12,7 @@ namespace iguana::physics {
   {
     // parse config file
     ParseYAMLConfig();
-    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
+    o_particle_bank = GetOptionScalar<std::string>({"particle_bank"});
     o_hadron_pdgs   = GetOptionSet<int>("hadron_list");
 
     // get bank indices

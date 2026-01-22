@@ -33,8 +33,8 @@ namespace iguana::example {
     // #   user has specified to use a different configuration file or directory
     // ############################################################################
     ParseYAMLConfig();
-    o_exampleInt    = GetOptionScalar<int>("exampleInt");
-    o_exampleDouble = GetOptionScalar<double>("exampleDouble");
+    o_exampleInt    = GetOptionScalar<int>({"exampleInt"});
+    o_exampleDouble = GetOptionScalar<double>({"exampleDouble"});
     // ############################################################################
     // # get expected bank indices
     // # - here we make sure that parameter `banks` includes the banks that are

@@ -31,30 +31,31 @@ namespace iguana {
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
-  OPTION_TYPE Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const
+  OPTION_TYPE Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const
   {
-    CompleteOptionNodePath(key, node_path);
+    node_path.push_front(m_class_name);
+    auto key = YAMLReader::NodePath2String(node_path);
     auto opt = GetCachedOption<OPTION_TYPE>(key);
     if(!opt.has_value()) {
       opt = m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
     }
     if(!opt.has_value()) {
-      m_log->Error("Failed to `GetOptionScalar` for key {:?}", key);
+      m_log->Error("Failed to `GetOptionScalar` for parameter {:?}", key);
       throw std::runtime_error("config file parsing issue");
     }
     PrintOptionValue(key, opt.value());
     return opt.value();
   }
-  template int Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template double Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::string Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template int Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const;
+  template double Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const;
+  template std::string Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
   std::vector<OPTION_TYPE> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const
   {
-    CompleteOptionNodePath(key, node_path);
+    node_path.push_front(m_class_name);
     auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
     if(!opt.has_value()) {
       opt = m_yaml_config->GetVector<OPTION_TYPE>(node_path);
@@ -430,12 +431,4 @@ namespace iguana {
     throw std::runtime_error("algorithm has been renamed");
   }
 
-  ///////////////////////////////////////////////////////////////////////////////
-
-  void Algorithm::CompleteOptionNodePath(std::string const& key, YAMLReader::node_path_t& node_path) const
-  {
-    if(node_path.empty())
-      node_path.push_front(key);
-    node_path.push_front(m_class_name);
-  }
 }

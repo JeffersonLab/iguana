@@ -39,8 +39,8 @@ namespace iguana::clas12 {
     b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
     b_config      = GetBankIndex(banks, "RUN::config");
 
-    o_pass      = GetOptionScalar<int>("pass");
-    o_threshold = GetOptionScalar<double>("threshold");
+    o_pass      = GetOptionScalar<int>({"pass"});
+    o_threshold = GetOptionScalar<double>({"threshold"});
   }
 
   bool PhotonGBTFilter::Run(hipo::banklist& banks) const
