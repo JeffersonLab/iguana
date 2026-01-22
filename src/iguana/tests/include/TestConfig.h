@@ -35,11 +35,11 @@ inline int TestConfig(int test_num, std::string log_level)
     assert((algo->GetOptionScalar<double>({"scalar_double"}) == 2.5));
     assert((algo->GetOptionScalar<std::string>({"scalar_string"}) == "lizard"));
     // test `GetOptionVector`
-    assert((algo->GetOptionVector<int>("vector_int") == std::vector<int>{1, 2, 3}));
-    assert((algo->GetOptionVector<double>("vector_double") == std::vector<double>{1.5, 2.5}));
-    assert((algo->GetOptionVector<std::string>("vector_string") == std::vector<std::string>{"spider", "bat", "chameleon", "spider"}));
+    assert((algo->GetOptionVector<int>({"vector_int"}) == std::vector<int>{1, 2, 3}));
+    assert((algo->GetOptionVector<double>({"vector_double"}) == std::vector<double>{1.5, 2.5}));
+    assert((algo->GetOptionVector<std::string>({"vector_string"}) == std::vector<std::string>{"spider", "bat", "chameleon", "spider"}));
     // test `GetOptionSet`
-    auto s = algo->GetOptionSet<std::string>("vector_string");
+    auto s = algo->GetOptionSet<std::string>({"vector_string"});
     assert((s.size() == 3));
     assert((s.find("spider") != s.end()));
     assert((s.find("bee") == s.end()));
@@ -53,7 +53,7 @@ inline int TestConfig(int test_num, std::string log_level)
       fmt::print("SUCCESS: accessing 'scalar_empty' threw an expected exception\n");
     }
     try {
-      algo->GetOptionVector<int>("vector_empty");
+      algo->GetOptionVector<int>({"vector_empty"});
       fmt::print(stderr, "ERROR: accessing 'vector_empty' did not throw exception\n");
       return 1;
     }
@@ -61,7 +61,7 @@ inline int TestConfig(int test_num, std::string log_level)
       fmt::print("SUCCESS: accessing 'vector_empty' threw an expected exception\n");
     }
     try {
-      algo->GetOptionSet<int>("vector_empty");
+      algo->GetOptionSet<int>({"vector_empty"});
       fmt::print(stderr, "ERROR: accessing 'vector_empty' as a `set` did not throw exception\n");
       return 1;
     }
@@ -78,7 +78,7 @@ inline int TestConfig(int test_num, std::string log_level)
       fmt::print("SUCCESS: accessing 'non_existent_scalar' threw an expected exception\n");
     }
     try {
-      algo->GetOptionVector<int>("non_existent_vector");
+      algo->GetOptionVector<int>({"non_existent_vector"});
       fmt::print(stderr, "ERROR: accessing 'non_existent_vector' did not throw exception\n");
       return 1;
     }
@@ -86,7 +86,7 @@ inline int TestConfig(int test_num, std::string log_level)
       fmt::print("SUCCESS: accessing 'non_existent_vector' threw an expected exception\n");
     }
     try {
-      algo->GetOptionSet<int>("non_existent_vector");
+      algo->GetOptionSet<int>({"non_existent_vector"});
       fmt::print(stderr, "ERROR: accessing 'non_existent_vector' as a `set` did not throw exception\n");
       return 1;
     }
@@ -100,10 +100,9 @@ inline int TestConfig(int test_num, std::string log_level)
     assert((algo->GetOptionScalar<double>({"tree1", "scalar1"}) == 1.5));
     assert((algo->GetOptionScalar<double>({"tree1", "scalar2"}) == 2.5));
     assert((algo->GetOptionScalar<double>({"tree2", "tree1", "scalar1"}) == 3.5));
-    assert((algo->GetOptionVector<std::string>("t2t2t3v1", {"tree2", "tree2", "tree3", "vector1"}) == std::vector<std::string>{"gecko", "snake"}));
-    assert((algo->GetOptionVector<int>("t2v2", {"tree2", "vector2"}) == std::vector<int>{3, -4, 5}));
-    assert((algo->GetOptionVector<std::string>("vector1", {"vector1"}) == std::vector<std::string>{"bee"}));
-    assert((algo->GetOptionVector<std::string>("vector1") == std::vector<std::string>{"bee"}));
+    assert((algo->GetOptionVector<std::string>({"tree2", "tree2", "tree3", "vector1"}) == std::vector<std::string>{"gecko", "snake"}));
+    assert((algo->GetOptionVector<int>({"tree2", "vector2"}) == std::vector<int>{3, -4, 5}));
+    assert((algo->GetOptionVector<std::string>({"vector1"}) == std::vector<std::string>{"bee"}));
     break;
   }
 

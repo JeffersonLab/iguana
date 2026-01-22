@@ -35,7 +35,7 @@ namespace iguana::clas12::rga {
     }
 
     {
-      auto radius = GetOptionVector<double>("forward_tagger.radius", {"forward_tagger", "radius"});
+      auto radius = GetOptionVector<double>({"forward_tagger", "radius"});
       if(radius.size() != 2) {
         throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin, rmax]");
       }
@@ -49,8 +49,7 @@ namespace iguana::clas12::rga {
       u_ft_params.holes.clear();
       std::vector<double> holes_flat;
       try {
-        holes_flat = GetOptionVector<double>("forward_tagger.holes_flat",
-                                             {"forward_tagger", "holes_flat"});
+        holes_flat = GetOptionVector<double>({"forward_tagger", "holes_flat"});
       }
       catch(std::exception const& e) {
         std::string const msg = e.what();
@@ -77,7 +76,7 @@ namespace iguana::clas12::rga {
     }
 
     {
-      m_cvt.edge_layers = GetOptionVector<int>("cvt.edge_layers", {"cvt", "edge_layers"});
+      m_cvt.edge_layers = GetOptionVector<int>({"cvt", "edge_layers"});
       if(m_cvt.edge_layers.empty()) {
         throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
       }
@@ -85,8 +84,7 @@ namespace iguana::clas12::rga {
 
       m_cvt.phi_forbidden_deg.clear();
       try {
-        m_cvt.phi_forbidden_deg = GetOptionVector<double>("cvt.phi_forbidden_deg",
-                                                          {"cvt", "phi_forbidden_deg"});
+        m_cvt.phi_forbidden_deg = GetOptionVector<double>({"cvt", "phi_forbidden_deg"});
       }
       catch(std::exception const& e) {
         std::string const msg = e.what();
@@ -106,7 +104,7 @@ namespace iguana::clas12::rga {
           GetOptionScalar<double>({"dc", "theta_small_deg"});
 
       auto need3 = [&](char const* key) -> std::array<double, 3> {
-        auto v = GetOptionVector<double>(std::string("dc.") + key, {"dc", key});
+        auto v = GetOptionVector<double>({"dc", key});
         if(v.size() != 3) {
           throw std::runtime_error(std::string("[RGAFID] 'dc.") + key + "' must be [e1,e2,e3]");
         }

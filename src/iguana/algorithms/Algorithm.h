@@ -137,13 +137,13 @@ namespace iguana {
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the vector option
       template <typename OPTION_TYPE>
-      std::vector<OPTION_TYPE> GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
+      std::vector<OPTION_TYPE> GetOptionVector(YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the value of a vector option, and convert it to `std::set`
       /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the vector option converted to `std::set`
       template <typename OPTION_TYPE>
-      std::set<OPTION_TYPE> GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
+      std::set<OPTION_TYPE> GetOptionSet(YAMLReader::node_path_t node_path = {}) const;
 
       /// Set the name of this algorithm
       /// @param name the new name

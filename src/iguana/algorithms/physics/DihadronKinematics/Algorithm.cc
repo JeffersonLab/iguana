@@ -13,8 +13,8 @@ namespace iguana::physics {
     // parse config file
     ParseYAMLConfig();
     o_particle_bank = GetOptionScalar<std::string>({"particle_bank"});
-    o_hadron_a_pdgs = GetOptionSet<int>("hadron_a_list");
-    o_hadron_b_pdgs = GetOptionSet<int>("hadron_b_list");
+    o_hadron_a_pdgs = GetOptionSet<int>({"hadron_a_list"});
+    o_hadron_b_pdgs = GetOptionSet<int>({"hadron_b_list"});
     o_phi_r_method  = GetOptionScalar<std::string>({"phi_r_method"});
     o_theta_method  = GetOptionScalar<std::string>({"theta_method"});
 

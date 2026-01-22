@@ -256,7 +256,7 @@ namespace iguana::physics {
 
     // parse config params
     auto beam_energy     = user_beam_energy < 0 ? m_rcdb->GetBeamEnergy(runnum) : user_beam_energy;
-    auto beam_direction  = GetOptionVector<double>("beam_direction", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_direction"});
+    auto beam_direction  = GetOptionVector<double>({"initial_state", GetConfig()->InRange("runs", runnum), "beam_direction"});
     auto target_particle = GetOptionScalar<std::string>({"initial_state", GetConfig()->InRange("runs", runnum), "target_particle"});
 
     // get the target mass and momentum

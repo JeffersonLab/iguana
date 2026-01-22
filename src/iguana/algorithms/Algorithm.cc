@@ -53,37 +53,38 @@ namespace iguana {
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
-  std::vector<OPTION_TYPE> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const
+  std::vector<OPTION_TYPE> Algorithm::GetOptionVector(YAMLReader::node_path_t node_path) const
   {
     node_path.push_front(m_class_name);
+    auto key = YAMLReader::NodePath2String(node_path);
     auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
     if(!opt.has_value()) {
       opt = m_yaml_config->GetVector<OPTION_TYPE>(node_path);
     }
     if(!opt.has_value()) {
-      m_log->Error("Failed to `GetOptionVector` for key {:?}", key);
+      m_log->Error("Failed to `GetOptionVector` for parameter {:?}", key);
       throw std::runtime_error("config file parsing issue");
     }
     PrintOptionValue(key, opt.value());
     return opt.value();
   }
-  template std::vector<int> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::vector<double> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::vector<std::string> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template std::vector<int> Algorithm::GetOptionVector(YAMLReader::node_path_t node_path) const;
+  template std::vector<double> Algorithm::GetOptionVector(YAMLReader::node_path_t node_path) const;
+  template std::vector<std::string> Algorithm::GetOptionVector(YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
-  std::set<OPTION_TYPE> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const
+  std::set<OPTION_TYPE> Algorithm::GetOptionSet(YAMLReader::node_path_t node_path) const
   {
-    auto val_vec = GetOptionVector<OPTION_TYPE>(key, node_path);
+    auto val_vec = GetOptionVector<OPTION_TYPE>(node_path);
     std::set<OPTION_TYPE> val_set;
     std::copy(val_vec.begin(), val_vec.end(), std::inserter(val_set, val_set.end()));
     return val_set;
   }
-  template std::set<int> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::set<double> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::set<std::string> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template std::set<int> Algorithm::GetOptionSet(YAMLReader::node_path_t node_path) const;
+  template std::set<double> Algorithm::GetOptionSet(YAMLReader::node_path_t node_path) const;
+  template std::set<std::string> Algorithm::GetOptionSet(YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
 
