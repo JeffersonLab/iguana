@@ -10,6 +10,7 @@ namespace iguana::clas12::rga {
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_sector   = GetBankIndex(banks, "REC::Particle::Sector");
     b_config   = GetBankIndex(banks, "RUN::config");
+    ParseYAMLConfig(); /////////// FIXME: can we make this happen automatically??
   }
 
 

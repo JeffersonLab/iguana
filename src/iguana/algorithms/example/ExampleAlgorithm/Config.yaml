@@ -3,6 +3,9 @@
 #   files from other algorithms
 # - See also the test configuration files in ../../tests/config and how they
 #   may be accessed in ../../tests/include/TestConfig.h
+# - All algorithms must have a Config.yaml file; if the algorithm has no
+#   configuration parameters, it may just be a single line with the algorithm
+#   name, ending with a colon
 example::ExampleAlgorithm:
   exampleInt: 8
   exampleDouble: 7.5

@@ -5,7 +5,6 @@
 #   {
 #     'name':                str         # algorithm name (REQUIRED)
 #     'directory':           str         # algorithm source code directory (default is based on 'name', replacing '::' with '/')
-#     'has_config':          bool        # assumes Config.yaml exists (default=true)
 #     'has_validator':       bool        # assumes Validator{cc,h} exist (default=true)
 #     'has_action_yaml':     bool        # assumes Action.yaml exists (default=true)
 #     'algorithm_needs_ROOT': bool       # whether this algorithm (or its prerequisites) needs ROOT or not (default=false)
@@ -60,7 +59,6 @@ algo_dict = [
   },
   {
     'name': 'clas12::CalorimeterLinker',
-    'has_config': false,
     'has_validator': false,
     'has_action_yaml': false,
     'test_args': {
@@ -69,7 +67,6 @@ algo_dict = [
   },
   {
     'name': 'clas12::TrajLinker',
-    'has_config': false,
     'has_validator': false,
     'has_action_yaml': false,
     'test_args': {
@@ -78,13 +75,11 @@ algo_dict = [
   },
   {
     'name': 'clas12::rga::FTEnergyCorrection',
-    'has_config': false,
     'has_validator': false,
     'test_args': {'banks': [ 'RECFT::Particle' ]},
   },
   {
     'name': 'clas12::rga::MomentumCorrection',
-    'has_config': false,
     'test_args': {
       'banks': [
         'RUN::config',
@@ -122,7 +117,6 @@ algo_dict = [
   {
     'name': 'physics::Depolarization',
     'algorithm_needs_ROOT': true, # since `physics::InclusiveKinematics` needs ROOT
-    'has_config': false,
     'test_args': {
       'banks': [ ],
       'prerequisites': [ 'physics::InclusiveKinematics' ],
@@ -147,7 +141,6 @@ algo_dict = [
     'name': 'clas12::MatchParticleProximity',
     'algorithm_needs_ROOT': true,
     'has_validator': false, # FIXME # need an MC file for non-empty validator plots
-    'has_config': true,
     'has_action_yaml': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'MC::Particle' ],
@@ -181,7 +174,6 @@ foreach algo : algo_dict
 
   algo_name = algo.get('name')
   algo_dir = algo.get('directory', '/'.join(algo_name.split('::')))
-  algo_has_config = algo.get('has_config', true)
   algo_has_validator = algo.get('has_validator', true)
   algo_has_action_yaml = algo.get('has_action_yaml', true)
   algo_needs_ROOT = algo.get('algorithm_needs_ROOT', false)
@@ -201,9 +193,7 @@ foreach algo : algo_dict
     endforeach
 
     # config files
-    if algo_has_config
-      algo_configs += algo_dir / 'Config.yaml'
-    endif
+    algo_configs += algo_dir / 'Config.yaml'
 
     # run chameleon
     if use_chameleon and algo_has_action_yaml
