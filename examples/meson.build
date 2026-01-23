@@ -2,8 +2,9 @@
 example_config_files_prefix = project_etcdir / 'examples'
 install_subdir('config' / 'examples', install_dir: example_config_files_prefix, strip_directory: true)
 
-# example source information
+# compiled examples
 example_sources = {
+  # C++
   'iguana_ex_cpp_00_run_functions': {'sources': [ 'iguana_ex_cpp_00_run_functions.cc' ]},
   'iguana_ex_cpp_00_run_functions_with_banks': {'sources': [ 'iguana_ex_cpp_00_run_functions_with_banks.cc' ]},
   'iguana_ex_cpp_01_action_functions': {'sources': [ 'iguana_ex_cpp_01_action_functions.cc' ]},
@@ -16,6 +17,7 @@ example_sources = {
     'sources': [ 'iguana_ex_cpp_config_files.cc' ],
     'test_args': [ get_option('prefix') / example_config_files_prefix ],
   },
+  # Fortran
   'iguana_ex_fortran_01_action_functions': {
     'sources': [ 'iguana_ex_fortran_01_action_functions.f' ],
     'build_this': get_option('bind_fortran') and ROOT_dep.found(), # depends on physics::InclusiveKinematics, which depends on ROOT
@@ -48,3 +50,31 @@ foreach example, info : example_sources
     endif
   endif
 endforeach
+
+# Python examples
+if (get_option('bind_python'))
+  python_examples = [
+    'iguana_ex_python_00_run_functions.py',
+    'iguana_ex_python_01_action_functions.py',
+    'iguana_ex_python_hipopy.py',
+  ]
+  foreach example : python_examples
+    install_data(
+      example,
+      install_dir: get_option('bindir'),
+      install_mode: 'rwxr-xr-x'
+    )
+    # FIXME: currently these are just tested in CI; there is some environment issue here...
+    # if fs.is_file(get_option('test_data_file'))
+    #   test(
+    #     example,
+    #     prog_python,
+    #     suite: [ 'example', 'single_threaded' ],
+    #     args: [ example, get_option('test_data_file'), '100' ], # don't run too many events, or meson test log will be huge
+    #     workdir: meson.current_source_dir(),
+    #     env: project_test_env,
+    #     timeout: 240,
+    #   )
+    # endif
+  endforeach
+endif

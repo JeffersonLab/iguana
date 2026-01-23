@@ -78,6 +78,11 @@ prog_ruby = find_program(
   version: '>=3.0.0',
   required: use_chameleon,
 )
+prog_python = find_program(
+  'python3',
+  version: '>=3.0.0',
+  required: get_option('bind_python'),
+)
 rcdb_dep = dependency(
   'rcdb',
   fallback: ['rcdb', 'rcdb_dep'],
@@ -177,6 +182,10 @@ project_test_env.set(
 project_test_env.set(
   'LSAN_OPTIONS',
   'suppressions=' + meson.project_source_root() / 'meson' / 'lsan.supp',
+)
+project_test_env.prepend(
+  'PYTHONPATH',
+  meson.project_source_root() / 'bind' / 'python'
 )
 
 # set preprocessor macros
