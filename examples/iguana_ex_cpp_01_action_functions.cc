@@ -58,12 +58,14 @@ int main(int argc, char** argv)
   iguana::clas12::rga::MomentumCorrection algo_momentum_correction; // momentum corrections (a transformer algorithm)
 
   // set log levels
-  algo_eventbuilder_filter.SetOption("log", "info");
-  algo_sector_finder.SetOption("log", "info");
-  algo_momentum_correction.SetOption("log", "info");
+  algo_eventbuilder_filter.SetLogLevel("info");
+  algo_sector_finder.SetLogLevel("info");
+  algo_momentum_correction.SetLogLevel("info");
 
   // set algorithm options
   // NOTE: this can also be done in a config file
+  // WARNING: in practice, verify the configuration parameter was set the way you want; configuration parameter values
+  //          are printed out for algorithms at the "debug" log level
   algo_eventbuilder_filter.SetOption<std::vector<int>>("pids", {11, 211, -211});
 
   // start the algorithms

@@ -249,12 +249,6 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank const& bank, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
-      /// Get an option from the option cache
-      /// @param key the key name associated with this option
-      /// @returns the option value, if found (using `std::optional`)
-      template <typename OPTION_TYPE>
-      std::optional<OPTION_TYPE> GetCachedOption(std::string const& key) const;
-
       /// Throw a runtime exception since this algorithm has been renamed.
       /// Guidance will be printed for the user.
       /// @param new_name the new name of the algorithm
@@ -262,6 +256,12 @@ namespace iguana {
       void ThrowSinceRenamed(std::string const& new_name, std::string const& version) const noexcept(false);
 
     private: // methods
+
+      /// Get an option from the option cache
+      /// @param key the key name associated with this option
+      /// @returns the option value, if found (using `std::optional`)
+      template <typename OPTION_TYPE>
+      std::optional<OPTION_TYPE> GetCachedOption(std::string const& key) const;
 
       // PrintOptionValue: overloaded for different value types
       void PrintOptionValue(std::string const& key, int const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;

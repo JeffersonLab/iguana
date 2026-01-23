@@ -27,9 +27,6 @@ namespace iguana {
       /// Representation of a path of `YAML::Node`s in a `YAML::Node` tree, _e.g._, in a YAML file.
       using node_path_t = std::deque<node_id_t>;
 
-      /// Delimiter for parameter key names
-      static std::string KEY_DELIM;
-
       /// @param name of this reader (for `Logger`)
       YAMLReader(std::string_view name = "config")
           : ConfigFileReader(name)

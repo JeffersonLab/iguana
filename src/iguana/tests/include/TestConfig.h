@@ -22,7 +22,7 @@ inline int TestConfig(int test_num, std::string log_level)
 
   // then test configuring an algorithm
   auto algo = iguana::AlgorithmFactory::Create("example::ExampleAlgorithm");
-  algo->SetOption("log", log_level);
+  algo->SetLogLevel(log_level);
   algo->SetConfigDirectory("src/iguana/tests"); // must be relative to build directory
   algo->SetConfigFile(fmt::format("test_{}.yaml", test_num));
   algo->Start();

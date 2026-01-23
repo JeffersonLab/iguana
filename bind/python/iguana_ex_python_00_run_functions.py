@@ -44,12 +44,14 @@ seq.Add('clas12::rga::MomentumCorrection') # momentum corrections (a transformer
 
 # set log levels
 # NOTE: this can also be done in a config file
-seq.SetOption('clas12::EventBuilderFilter', 'log', 'info')
-seq.SetOption('clas12::SectorFinder', 'log', 'info')
-seq.SetOption('clas12::rga::MomentumCorrection', 'log', 'info')
+seq.SetLogLevel('clas12::EventBuilderFilter' 'info')
+seq.SetLogLevel('clas12::SectorFinder' 'info')
+seq.SetLogLevel('clas12::rga::MomentumCorrection' 'info')
 
 # set algorithm options
 # NOTE: this can also be done in a config file, but setting options here OVERRIDES config file settings
+# WARNING: in practice, verify the configuration parameter was set the way you want; configuration parameter values
+#          are printed out for algorithms at the "debug" log level
 seq.SetOption('clas12::EventBuilderFilter', 'pids', [11, 211, -211])
 
 # start the algorithms

@@ -94,7 +94,7 @@ inline int TestMultithreading(
     seq.Add(algo_name);
     seq.SetName("TEST thread " + std::to_string(order));
     seq.PrintSequence();
-    seq.SetOption(algo_name, "log", log_level);
+    seq.SetLogLevel(algo_name, log_level);
 
     // start the algorithm
     seq.Start(banks);

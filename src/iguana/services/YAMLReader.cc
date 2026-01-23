@@ -2,8 +2,6 @@
 
 namespace iguana {
 
-  std::string YAMLReader::KEY_DELIM = "/";
-
   ///////////////////////////////////////////////////////////////////////////////
 
   void YAMLReader::LoadFiles()
@@ -34,8 +32,22 @@ namespace iguana {
         tokens.push_back(arg);
     };
     std::visit(node_id_visitor, node_path.front());
-    return fmt::format("{}", fmt::join(tokens, KEY_DELIM));
+    return fmt::format("{}", fmt::join(tokens, "/"));
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  // YAMLReader::node_path_t YAMLReader::String2NodePath(std::string const& str)
+  // {
+  //   if(str.empty())
+  //     return {};
+  //   node_path_t node_path;
+  //   std::istringstream stm(str);
+  //   std::string tok;
+  //   while(getline(stm, tok, '/')) // tokenize
+  //     node_path.push_back(tok);
+  //   return node_path;
+  // }
 
   ///////////////////////////////////////////////////////////////////////////////
 
