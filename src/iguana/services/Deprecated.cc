@@ -1,12 +1,32 @@
 #include "Deprecated.h"
 
+#include <algorithm>
 #include <map>
 #include <stdexcept>
+#include <vector>
 
 namespace iguana::deprecated {
 
   void CheckSetOptionKey(std::string const& algo_class_name, std::string const& key) noexcept(false)
   {
+    // handle options which shouldn't be used with `SetOption`
+    // clang-format off
+    std::map<std::string,std::vector<std::string>> avoids = {
+      {
+        "clas12::ZVertexFilter",
+        {
+          "electron_vz",
+        }
+      },
+    };
+    //clang-format on
+    if(auto algo_it{avoids.find(algo_class_name)}; algo_it != avoids.end()) {
+      if(std::find(algo_it->second.begin(), algo_it->second.end(), key) != algo_it->second.end()) {
+        throw std::runtime_error("Called 'SetOption' with deprecated key '" + key + "'; use a configuration YAML file instead");
+      }
+    }
+
+    // handle renamed options
     // clang-format off
     std::map<std::string,std::map<std::string,std::string>> renames = {
       {
@@ -22,12 +42,6 @@ namespace iguana::deprecated {
           { "dc.thresholds_out",           "dc/thresholds_out" },
           { "dc.thresholds_in_smallTheta", "dc/thresholds_in_smallTheta" },
           { "dc.thresholds_in_largeTheta", "dc/thresholds_in_largeTheta" },
-        }
-      },
-      {
-        "clas12::ZVertexFilter",
-        {
-          {"electron_vz", "electron/vz"},
         }
       },
       {
