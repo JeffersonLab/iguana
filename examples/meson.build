@@ -64,7 +64,9 @@ if (get_option('bind_python'))
       install_dir: get_option('bindir'),
       install_mode: 'rwxr-xr-x'
     )
-    # FIXME: currently these are just tested in CI; there is some environment issue here...
+    # FIXME: test disabled, because of https://github.com/JeffersonLab/iguana/issues/427
+    # and many of us have Clas12root libraries in LD_LIBRARY_PATH; anyway, these scripts
+    # are tested on CI at least
     # if fs.is_file(get_option('test_data_file'))
     #   test(
     #     example,

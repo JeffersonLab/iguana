@@ -185,7 +185,7 @@ project_test_env.set(
 )
 project_test_env.prepend(
   'PYTHONPATH',
-  meson.project_source_root() / 'bind' / 'python'
+  get_option('prefix') / 'python'
 )
 
 # set preprocessor macros
