@@ -33,9 +33,9 @@ namespace iguana {
   template <typename OPTION_TYPE>
   OPTION_TYPE Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const
   {
-    node_path.push_front(m_class_name);
     auto key = YAMLReader::NodePath2String(node_path);
     auto opt = GetCachedOption<OPTION_TYPE>(key);
+    node_path.push_front(m_class_name);
     if(!opt.has_value()) {
       opt = m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
     }
@@ -55,9 +55,9 @@ namespace iguana {
   template <typename OPTION_TYPE>
   std::vector<OPTION_TYPE> Algorithm::GetOptionVector(YAMLReader::node_path_t node_path) const
   {
-    node_path.push_front(m_class_name);
     auto key = YAMLReader::NodePath2String(node_path);
     auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
+    node_path.push_front(m_class_name);
     if(!opt.has_value()) {
       opt = m_yaml_config->GetVector<OPTION_TYPE>(node_path);
     }

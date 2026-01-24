@@ -33,13 +33,6 @@ namespace iguana::clas12 {
           particle::PDG::proton,
           particle::PDG::neutron};
 
-      std::vector<int> const u_pdgtocut_list = {
-          particle::PDG::electron};
-
-      std::vector<double> const u_cuts_list = {
-          -5,
-          5};
-
       TString m_output_file_basename;
       TFile* m_output_file;
       mutable std::unordered_map<int, std::vector<TH1D*>> u_zvertexplots;
