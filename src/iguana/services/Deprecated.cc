@@ -18,6 +18,13 @@ namespace iguana::deprecated {
           "electron_vz",
         }
       },
+      {
+        "physics::InclusiveKinematics",
+        {
+          "beam_direction",
+          "target_particle",
+        }
+      },
     };
     //clang-format on
     if(auto algo_it{avoids.find(algo_class_name)}; algo_it != avoids.end()) {
@@ -50,8 +57,6 @@ namespace iguana::deprecated {
           { "reconstruction",  "method/reconstruction" },
           { "lepton_finder",   "method/lepton_finder" },
           { "beam_particle",   "method/beam_particle" },
-          { "beam_direction",  "initial_state/beam_direction" },
-          { "target_particle", "initial_state/target_particle" },
         }
       },
     };
