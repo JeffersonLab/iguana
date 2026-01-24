@@ -246,6 +246,7 @@ Iguana provides a few ways to configure algorithms; in general, you may either:
 - use @link iguana::Algorithm::SetOption @endlink to configure an algorithm more directly, however:
     - this may require recompilation, depending on how you use Iguana algorithms
     - some options cannot be set this way, in particular, options that depend on data, such as a run number-dependent vertex cut
+    - using the YAML file is preferred in general
 
 The default configuration YAML files are installed in the `etc/` subdirectory of the Iguana installation. If you have set the Iguana environment variables using, _e.g._ `source this_iguana.sh`, or if you are using the version of Iguana installed on `ifarm`, you will have the environment variable `$IGUANA_CONFIG_PATH` set to include this `etc/` directory.
 
