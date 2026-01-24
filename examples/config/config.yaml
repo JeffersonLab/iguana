@@ -1,0 +1,9 @@
+clas12::EventBuilderFilter:
+  log: info # set the log level
+  pids: [ 11, 211, -211, 22 ] # customize the list of PDGs to filter for
+
+clas12::SectorFinder:
+  log: info
+
+clas12::rga::MomentumCorrection:
+  log: info

@@ -57,16 +57,16 @@ int main(int argc, char** argv)
   iguana::clas12::SectorFinder algo_sector_finder; // get the sector for each particle (a creator algorithm)
   iguana::clas12::rga::MomentumCorrection algo_momentum_correction; // momentum corrections (a transformer algorithm)
 
-  // set log levels
-  algo_eventbuilder_filter.SetLogLevel("info");
-  algo_sector_finder.SetLogLevel("info");
-  algo_momentum_correction.SetLogLevel("info");
-
-  // set algorithm options
-  // NOTE: this can also be done in a config file
-  // WARNING: in practice, verify the configuration parameter was set the way you want; configuration parameter values
-  //          are printed out for algorithms at the "debug" log level
-  algo_eventbuilder_filter.SetOption<std::vector<int>>("pids", {11, 211, -211});
+  // configure algorithms with a custom YAML file
+  // - in practice you can put your config file(s) where you want
+  // - for this example, we use a YAML file installed alongside iguana (copied from `./config/config.yaml`)
+  auto config_file = iguana::ConfigFileReader::GetConfigInstallationPrefix() + "/examples/config.yaml";
+  // print the file name (so you can open it to see)
+  fmt::println("CONFIG FILE: {}", config_file);
+  // use this configuration for each algorithm
+  algo_eventbuilder_filter.SetConfigFile(config_file);
+  algo_sector_finder.SetConfigFile(config_file);
+  algo_momentum_correction.SetConfigFile(config_file);
 
   // start the algorithms
   algo_eventbuilder_filter.Start();

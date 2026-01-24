@@ -51,13 +51,16 @@ algo_eventbuilder_filter = iguana.clas12.EventBuilderFilter() # filter by Event 
 algo_sector_finder       = iguana.clas12.SectorFinder() # get the sector for each particle (a creator algorithm)
 algo_momentum_correction = iguana.clas12.rga.MomentumCorrection() # momentum corrections (a transformer algorithm)
 
-# set log levels
-algo_eventbuilder_filter.SetLogLevel('info')
-algo_sector_finder.SetLogLevel('info')
-algo_momentum_correction.SetLogLevel('info')
-
-# set algorithm options
-algo_eventbuilder_filter.SetOption('pids',  [11, 211, -211])
+# configure algorithms with a custom YAML file
+# - in practice you can put your config file(s) where you want
+# - for this example, we use a YAML file installed alongside iguana (copied from `./config/config.yaml`)
+config_file = iguana.ConfigFileReader.GetConfigInstallationPrefix() + '/examples/config.yaml'
+# print the file name (so you can open it to see)
+print(f'CONFIG FILE: {config_file}')
+# use this configuration for each algorithm
+algo_eventbuilder_filter.SetConfigFile(config_file)
+algo_sector_finder.SetConfigFile(config_file)
+algo_momentum_correction.SetConfigFile(config_file)
 
 # start the algorithms
 algo_eventbuilder_filter.Start()

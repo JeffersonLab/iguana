@@ -47,17 +47,16 @@ int main(int argc, char** argv)
   seq.Add("clas12::rga::MomentumCorrection"); // momentum corrections (a transformer algorithm)
   // seq.PrintSequence();
 
-  // set log levels
-  // NOTE: this can also be done in a config file
-  seq.SetLogLevel("clas12::EventBuilderFilter", "info");
-  seq.SetLogLevel("clas12::SectorFinder", "info");
-  seq.SetLogLevel("clas12::rga::MomentumCorrection", "info");
-
-  // set algorithm options
-  // NOTE: this can also be done in a config file, but setting options here OVERRIDES config file settings
-  // WARNING: in practice, verify the configuration parameter was set the way you want; configuration parameter values
-  //          are printed out for algorithms at the "debug" log level
-  seq.SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", {11, 211, -211});
+  // configure algorithms with a custom YAML file
+  // - in practice you can put your config file(s) where you want
+  // - for this example, we use a YAML file installed alongside iguana (copied from `./config/config.yaml`)
+  auto config_file = iguana::ConfigFileReader::GetConfigInstallationPrefix() + "/examples/config.yaml";
+  // print the file name (so you can open it to see)
+  fmt::println("CONFIG FILE: {}", config_file);
+  // use this configuration for all algorithms in the sequence
+  seq.SetConfigFileForEachAlgorithm(config_file);
+  // alternatively: use this configuration for the algorithm that needs it
+  // seq.Get("clas12::EventBuilderFilter")->SetConfigFile(config_file);
 
   // start the algorithms
   seq.Start(banks);

@@ -33,7 +33,8 @@ int main(int argc, char** argv)
 
   // iguana algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
-  algo_eventbuilder_filter.SetOption<std::vector<int>>("pids", {11, 211, -211});
+  auto config_file = iguana::ConfigFileReader::GetConfigInstallationPrefix() + "/examples/config.yaml";
+  algo_eventbuilder_filter.SetConfigFile(config_file);
   algo_eventbuilder_filter.Start();
 
   // enable interactive mode
