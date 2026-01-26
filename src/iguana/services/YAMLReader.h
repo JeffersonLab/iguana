@@ -37,6 +37,10 @@ namespace iguana {
       void LoadFiles();
 
       /// @brief Convert a `YAML::Node` path to a string
+      ///
+      /// - elements are delimited by forward slashes (`/`)
+      /// - string elements are included
+      /// - `node_finder_t` elements are _not_ included
       /// @param node_path the `YAML::Node` path
       /// @return the converted string
       static std::string NodePath2String(node_path_t const& node_path);

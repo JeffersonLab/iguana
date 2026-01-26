@@ -102,8 +102,22 @@ namespace iguana {
       /// @brief Finalize this algorithm after all events are processed.
       virtual void Stop() = 0;
 
-      /// Set an option specified by the user. If the option name is `"log"`, the log level of the `Logger`
-      /// owned by this algorithm will be changed to the specified value.
+      /// @brief Set an option specified by the user.
+      ///
+      /// The `key` is the "path" within the YAML configuration file; for example, consider the following YAML file:
+      ///
+      /// ```yaml
+      /// clas12::Example:
+      ///   strictness: 1
+      ///   forward_tagger:
+      ///     radius: [8.5, 15.5]
+      /// ```
+      ///
+      /// - To set `strictness`, use `"strictness"`
+      /// - To set `radius`, which is nested under `forward_tagger`, use `"forward_tagger/radius"`
+      /// - see `YAMLReader::NodePath2String` for details on how a YAML node path is converted to such a string
+      ///
+      /// If the option name is `"log"`, the log level of the `Logger` owned by this algorithm will be changed to the specified value.
       /// @param key the name of the option
       /// @param val the value to set
       /// @returns the value that has been set (if needed, _e.g._, when `val` is an rvalue)

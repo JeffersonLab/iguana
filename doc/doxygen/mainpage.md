@@ -244,10 +244,11 @@ Many algorithms are configurable. An algorithm's configuration parameters and th
 
 Iguana provides a few ways to configure algorithms; in general, you may either:
 - use YAML for configuration that gets applied at runtime, _i.e._, no need to recompile
+    - this is the preferred method for configuration
 - use @link iguana::Algorithm::SetOption @endlink to configure an algorithm more directly, however:
     - this may require recompilation, depending on how you use Iguana algorithms
     - some options cannot be set this way, in particular, options that depend on data, such as a run number-dependent vertex cut
-    - using the YAML file is preferred in general
+    - using the YAML file is preferred in general (whereas @link iguana::Algorithm::SetOption @endlink is useful for algorithm Validators)
 
 The default configuration YAML files are installed in the `etc/` subdirectory of the Iguana installation. If you have set the Iguana environment variables using, _e.g._ `source this_iguana.sh`, or if you are using the version of Iguana installed on `ifarm`, you will have the environment variable `$IGUANA_CONFIG_PATH` set to include this `etc/` directory.
 
@@ -280,13 +281,15 @@ physics::AlgorithmB
     reptileA: gecko
     reptileB: tuatara
 ```
-Custom YAML file, with some changes such as widening `AlgorithmA`'s `cuts`:
+Custom YAML file, with some changes such as widening `AlgorithmA`'s `cuts`, and controlling the log levels:
 ```yaml
 ### custom YAML file
 physics::AlgorithmA
+  log: info # set the log level for this algorithm
   cuts: [-2, 2]
 
 physics::AlgorithmB
+  log: debug # set the log level for this algorithm
   valueA: 5
   valueB: 0.14
   reptiles:
