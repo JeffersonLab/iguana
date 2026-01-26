@@ -8,7 +8,11 @@ updates:
     directory: "/bind/python" # requirements.txt for pyiguana
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
   - package-ecosystem: "pip"
     directory: "/doc/mkdocs" # requirements.txt for mkdocs
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
