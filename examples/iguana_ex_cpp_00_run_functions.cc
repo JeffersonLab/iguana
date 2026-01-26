@@ -48,15 +48,13 @@ int main(int argc, char** argv)
   // seq.PrintSequence();
 
   // configure algorithms with a custom YAML file
-  // - in practice you can put your config file(s) where you want
-  // - for this example, we use a YAML file installed alongside iguana (copied from `./config/config.yaml`)
-  auto config_file = iguana::ConfigFileReader::GetConfigInstallationPrefix() + "/examples/config.yaml";
-  // print the file name (so you can open it to see)
-  fmt::println("CONFIG FILE: {}", config_file);
-  // use this configuration for all algorithms in the sequence
-  seq.SetConfigFileForEachAlgorithm(config_file);
+  // - in practice, specify the path(s) to your preferred configuration file(s); see documentation
+  //   on 'How to Configure Algorithms' for details, and alternative methods for algorithm configuration
+  // - in this example, the file is from the source-code path `./config/examples/`, which was copied to
+  //   the installation subdirectory `etc/iguana/`, within the default configuration-file search path
+  seq.SetConfigFileForEachAlgorithm("examples/config_for_examples.yaml");
   // alternatively: use this configuration for the algorithm that needs it
-  // seq.Get("clas12::EventBuilderFilter")->SetConfigFile(config_file);
+  // seq.Get("clas12::EventBuilderFilter")->SetConfigFile("examples/config_for_examples.yaml");
 
   // start the algorithms
   seq.Start(banks);

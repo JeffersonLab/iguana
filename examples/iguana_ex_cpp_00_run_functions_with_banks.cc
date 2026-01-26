@@ -50,14 +50,13 @@ int main(int argc, char** argv)
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter; // filter by Event Builder PID (a filter algorithm)
   iguana::clas12::SectorFinder algo_sector_finder; // get the sector for each particle (a creator algorithm)
   iguana::clas12::rga::MomentumCorrection algo_momentum_correction; // momentum corrections (a transformer algorithm)
-                                                                    //
+
   // configure algorithms with a custom YAML file
-  // - in practice you can put your config file(s) where you want
-  // - for this example, we use a YAML file installed alongside iguana (copied from `./config/config.yaml`)
-  auto config_file = iguana::ConfigFileReader::GetConfigInstallationPrefix() + "/examples/config.yaml";
-  // print the file name (so you can open it to see)
-  fmt::println("CONFIG FILE: {}", config_file);
-  // use this configuration for each algorithm
+  // - in practice, specify the path(s) to your preferred configuration file(s); see documentation
+  //   on 'How to Configure Algorithms' for details, and alternative methods for algorithm configuration
+  // - in this example, the file is from the source-code path `./config/examples/`, which was copied to
+  //   the installation subdirectory `etc/iguana/`, within the default configuration-file search path
+  std::string config_file = "examples/config_for_examples.yaml";
   algo_eventbuilder_filter.SetConfigFile(config_file);
   algo_sector_finder.SetConfigFile(config_file);
   algo_momentum_correction.SetConfigFile(config_file);

@@ -33,8 +33,7 @@ int main(int argc, char** argv)
 
   // iguana algorithms
   iguana::clas12::EventBuilderFilter algo_eventbuilder_filter;
-  auto config_file = iguana::ConfigFileReader::GetConfigInstallationPrefix() + "/examples/config.yaml";
-  algo_eventbuilder_filter.SetConfigFile(config_file);
+  algo_eventbuilder_filter.SetConfigFile("examples/config_for_examples.yaml");
   algo_eventbuilder_filter.Start();
 
   // enable interactive mode

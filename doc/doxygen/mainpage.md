@@ -5,11 +5,12 @@ This documentation shows how to use the Iguana algorithms. For more documentatio
 
 - **Tip:** To toggle between light and dark mode for this webpage, click the button in the top-right corner, next to the search box.
 
-| Quick Links ||
-| --- | --- |
-| @spacer [List of All Algorithms](#algo) @spacer | @spacer [List of Algorithms Organized by Run Group, <i>etc</i>.](#algo_namespaces) @spacer |
-| @spacer [List of Action Functions](#action) @spacer | @spacer [Configuring Algorithms](#mainpageConfiguring) @spacer |
-| @spacer [Banks Created by Iguana](#created_banks) @spacer | @spacer [Examples of Code](#mainpageExample) @spacer |
+| Quick Links                                               |                                                                                            |
+| ---                                                       | ---                                                                                        |
+| @spacer [List of All Algorithms](#algo) @spacer           | @spacer [List of Algorithms Organized by Run Group, <i>etc</i>.](#algo_namespaces) @spacer |
+| @spacer [List of Action Functions](#action) @spacer       | @spacer [How to Configure Algorithms](#mainpageConfiguring) @spacer                        |
+| @spacer [Banks Created by Iguana](#created_banks) @spacer | @spacer [How to Run Algorithms](#mainpageRunning) @spacer                                  |
+|                                                           | @spacer [Examples of Code](#mainpageExample) @spacer                                       |
 
 <br><hr>
 

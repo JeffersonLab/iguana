@@ -52,12 +52,11 @@ algo_sector_finder       = iguana.clas12.SectorFinder() # get the sector for eac
 algo_momentum_correction = iguana.clas12.rga.MomentumCorrection() # momentum corrections (a transformer algorithm)
 
 # configure algorithms with a custom YAML file
-# - in practice you can put your config file(s) where you want
-# - for this example, we use a YAML file installed alongside iguana (copied from `./config/config.yaml`)
-config_file = iguana.ConfigFileReader.GetConfigInstallationPrefix() + '/examples/config.yaml'
-# print the file name (so you can open it to see)
-print(f'CONFIG FILE: {config_file}')
-# use this configuration for each algorithm
+# - in practice, specify the path(s) to your preferred configuration file(s); see documentation
+#   on 'How to Configure Algorithms' for details, and alternative methods for algorithm configuration
+# - in this example, the file is from the source-code path `./config/examples/`, which was copied to
+#   the installation subdirectory `etc/iguana/`, within the default configuration-file search path
+config_file = "examples/config_for_examples.yaml"
 algo_eventbuilder_filter.SetConfigFile(config_file)
 algo_sector_finder.SetConfigFile(config_file)
 algo_momentum_correction.SetConfigFile(config_file)

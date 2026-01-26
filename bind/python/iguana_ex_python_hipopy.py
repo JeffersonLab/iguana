@@ -45,7 +45,7 @@ algo_sector_finder       = iguana.clas12.SectorFinder() # get the sector for eac
 algo_momentum_correction = iguana.clas12.rga.MomentumCorrection() # momentum corrections (a transformer algorithm)
 
 # configure algorithms with a custom YAML file
-config_file = iguana.ConfigFileReader.GetConfigInstallationPrefix() + '/examples/config.yaml'
+config_file = "examples/config_for_examples.yaml"
 algo_eventbuilder_filter.SetConfigFile(config_file)
 algo_sector_finder.SetConfigFile(config_file)
 algo_momentum_correction.SetConfigFile(config_file)
