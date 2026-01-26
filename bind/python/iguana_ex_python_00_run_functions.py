@@ -42,15 +42,14 @@ seq.Add('clas12::SectorFinder') # get the sector for each particle (a creator al
 seq.Add('clas12::rga::MomentumCorrection') # momentum corrections (a transformer algorithm)
 # seq.PrintSequence()
 
-# set log levels
-# NOTE: this can also be done in a config file
-seq.SetOption('clas12::EventBuilderFilter', 'log', 'info')
-seq.SetOption('clas12::SectorFinder', 'log', 'info')
-seq.SetOption('clas12::rga::MomentumCorrection', 'log', 'info')
-
-# set algorithm options
-# NOTE: this can also be done in a config file, but setting options here OVERRIDES config file settings
-seq.SetOption('clas12::EventBuilderFilter', 'pids', [11, 211, -211])
+# configure algorithms with a custom YAML file
+# - in practice, specify the path(s) to your preferred configuration file(s); see documentation
+#   on 'How to Configure Algorithms' for details, and alternative methods for algorithm configuration
+# - in this example, the file is from the source-code path `./config/examples/`, which was copied to
+#   the installation subdirectory `etc/iguana/`, within the default configuration-file search path
+seq.SetConfigFileForEachAlgorithm("examples/config_for_examples.yaml")
+# alternatively: use this configuration for the algorithm that needs it
+# seq.Get("clas12::EventBuilderFilter").SetConfigFile("examples/config_for_examples.yaml")
 
 # start the algorithms
 seq.Start(banks)

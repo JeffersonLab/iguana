@@ -10,7 +10,7 @@ namespace iguana::clas12 {
 
     // get configuration
     ParseYAMLConfig();
-    o_particle_bank    = GetOptionScalar<std::string>("particle_bank");
+    o_particle_bank    = GetOptionScalar<std::string>({"particle_bank"});
     o_runnum           = ConcurrentParamFactory::Create<int>();
     o_electron_vz_cuts = ConcurrentParamFactory::Create<std::vector<double>>();
 
@@ -71,7 +71,7 @@ namespace iguana::clas12 {
     std::lock_guard<std::mutex> const lock(m_mutex); // NOTE: be sure to lock successive `ConcurrentParam::Save` calls !!!
     m_log->Trace("-> calling Reload({}, {})", runnum, key);
     o_runnum->Save(runnum, key);
-    o_electron_vz_cuts->Save(GetOptionVector<double>("electron_vz", {"electron", GetConfig()->InRange("runs", runnum), "vz"}), key);
+    o_electron_vz_cuts->Save(GetOptionVector<double>({"electron", GetConfig()->InRange("runs", runnum), "vz"}), key);
   }
 
   bool ZVertexFilter::Filter(double const zvertex, int const pid, int const status, concurrent_key_t key) const

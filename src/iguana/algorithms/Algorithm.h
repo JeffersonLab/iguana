@@ -8,6 +8,7 @@
 
 #include "AlgorithmBoilerplate.h"
 #include "iguana/bankdefs/BankDefs.h"
+#include "iguana/services/Deprecated.h"
 #include "iguana/services/RCDBReader.h"
 #include "iguana/services/YAMLReader.h"
 #include <iguana/services/GlobalParam.h>
@@ -101,8 +102,22 @@ namespace iguana {
       /// @brief Finalize this algorithm after all events are processed.
       virtual void Stop() = 0;
 
-      /// Set an option specified by the user. If the option name is `"log"`, the log level of the `Logger`
-      /// owned by this algorithm will be changed to the specified value.
+      /// @brief Set an option specified by the user.
+      ///
+      /// The `key` is the "path" within the YAML configuration file; for example, consider the following YAML file:
+      ///
+      /// ```yaml
+      /// clas12::Example:
+      ///   strictness: 1
+      ///   forward_tagger:
+      ///     radius: [8.5, 15.5]
+      /// ```
+      ///
+      /// - To set `strictness`, use `"strictness"`
+      /// - To set `radius`, which is nested under `forward_tagger`, use `"forward_tagger/radius"`
+      /// - see `YAMLReader::NodePath2String` for details on how a YAML node path is converted to such a string
+      ///
+      /// If the option name is `"log"`, the log level of the `Logger` owned by this algorithm will be changed to the specified value.
       /// @param key the name of the option
       /// @param val the value to set
       /// @returns the value that has been set (if needed, _e.g._, when `val` is an rvalue)
@@ -119,30 +134,30 @@ namespace iguana {
           else
             m_log->Error("Option '{}' must be a string or a Logger::Level", key);
         }
+        // make sure the key hasn't been renamed or deprecated
+        iguana::deprecated::CheckSetOptionKey(m_class_name, key);
+        // add it to the cache
         m_option_cache[key] = val;
         return val;
       }
 
       /// Get the value of a scalar option
-      /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
-      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the scalar option
       template <typename OPTION_TYPE>
-      OPTION_TYPE GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
+      OPTION_TYPE GetOptionScalar(YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the value of a vector option
-      /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
-      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the vector option
       template <typename OPTION_TYPE>
-      std::vector<OPTION_TYPE> GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
+      std::vector<OPTION_TYPE> GetOptionVector(YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the value of a vector option, and convert it to `std::set`
-      /// @param key the unique key name of this option
-      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the vector option converted to `std::set`
       template <typename OPTION_TYPE>
-      std::set<OPTION_TYPE> GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
+      std::set<OPTION_TYPE> GetOptionSet(YAMLReader::node_path_t node_path = {}) const;
 
       /// Set the name of this algorithm
       /// @param name the new name
@@ -248,12 +263,6 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank const& bank, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
-      /// Get an option from the option cache
-      /// @param key the key name associated with this option
-      /// @returns the option value, if found (using `std::optional`)
-      template <typename OPTION_TYPE>
-      std::optional<OPTION_TYPE> GetCachedOption(std::string const& key) const;
-
       /// Throw a runtime exception since this algorithm has been renamed.
       /// Guidance will be printed for the user.
       /// @param new_name the new name of the algorithm
@@ -262,10 +271,11 @@ namespace iguana {
 
     private: // methods
 
-      /// Prepend `node_path` with the full algorithm name. If `node_path` is empty, set it to `{key}`.
-      /// @param key the key name for this option
-      /// @param node_path the `YAMLReader::node_path_t` to prepend
-      void CompleteOptionNodePath(std::string const& key, YAMLReader::node_path_t& node_path) const;
+      /// Get an option from the option cache
+      /// @param key the key name associated with this option
+      /// @returns the option value, if found (using `std::optional`)
+      template <typename OPTION_TYPE>
+      std::optional<OPTION_TYPE> GetCachedOption(std::string const& key) const;
 
       // PrintOptionValue: overloaded for different value types
       void PrintOptionValue(std::string const& key, int const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;

@@ -14,7 +14,7 @@ namespace iguana::clas12 {
     m_algo_seq->Add("clas12::SectorFinder");
     m_algo_seq->SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", u_pdg_list);
     m_algo_seq->SetOption<std::string>("clas12::SectorFinder", "bank_charged", "REC::Track");
-    m_algo_seq->SetOption<std::string>("clas12::SectorFinder", "bank_uncharged", "default");
+    m_algo_seq->SetOption<std::string>("clas12::SectorFinder", "bank_neutral", "default");
     m_algo_seq->Start(banks);
 
 

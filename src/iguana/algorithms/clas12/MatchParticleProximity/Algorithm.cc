@@ -9,8 +9,8 @@ namespace iguana::clas12 {
   {
     // parse config file
     ParseYAMLConfig();
-    o_bank_a = GetOptionScalar<std::string>("bank_a");
-    o_bank_b = GetOptionScalar<std::string>("bank_b");
+    o_bank_a = GetOptionScalar<std::string>({"bank_a"});
+    o_bank_b = GetOptionScalar<std::string>({"bank_b"});
 
     // banklist indices
     b_bank_a = GetBankIndex(banks, o_bank_a);

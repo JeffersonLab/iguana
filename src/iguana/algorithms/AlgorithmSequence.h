@@ -119,6 +119,15 @@ namespace iguana {
         Get<Algorithm>(algo_instance_name)->SetOption(key, val);
       }
 
+      /// @brief Set an algorithm log level
+      /// @see `Logger::Level` for available levels
+      /// @param algo_instance_name the algorithm instance name
+      /// @param lev the log level name
+      void SetLogLevel(std::string const& algo_instance_name, std::string const& lev)
+      {
+        Get<Algorithm>(algo_instance_name)->SetLogLevel(lev);
+      }
+
       /// Set the name of this sequence
       /// @param name the new name
       void SetName(std::string_view name);

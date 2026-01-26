@@ -8,10 +8,10 @@ namespace iguana::clas12::rga {
   void FiducialFilterPass1::Start(hipo::banklist& banks)
   {
     ParseYAMLConfig();
-    o_pcal_electron_cut_level = ParseCutLevel(GetOptionScalar<std::string>("pcal_electron_cut_level"));
-    o_pcal_photon_cut_level   = ParseCutLevel(GetOptionScalar<std::string>("pcal_photon_cut_level"));
-    o_enable_pcal_cuts        = GetOptionScalar<int>("enable_pcal_cuts") == 1;
-    o_enable_dc_cuts          = GetOptionScalar<int>("enable_dc_cuts") == 1;
+    o_pcal_electron_cut_level = ParseCutLevel(GetOptionScalar<std::string>({"pcal_electron_cut_level"}));
+    o_pcal_photon_cut_level   = ParseCutLevel(GetOptionScalar<std::string>({"pcal_photon_cut_level"}));
+    o_enable_pcal_cuts        = GetOptionScalar<int>({"enable_pcal_cuts"}) == 1;
+    o_enable_dc_cuts          = GetOptionScalar<int>({"enable_dc_cuts"}) == 1;
 
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");

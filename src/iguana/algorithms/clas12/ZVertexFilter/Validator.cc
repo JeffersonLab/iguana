@@ -12,8 +12,6 @@ namespace iguana::clas12 {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::ZVertexFilter");
-    m_algo_seq->SetOption<std::vector<int>>("clas12::ZVertexFilter", "pids", u_pdgtocut_list);
-    m_algo_seq->SetOption<std::vector<double>>("clas12::ZVertexFilter", "cuts", u_cuts_list);
     m_algo_seq->Start(banks);
 
     // get bank indices

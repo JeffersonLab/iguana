@@ -36,32 +36,40 @@ namespace iguana {
       /// Parse the YAML files added by `ConfigFileReader::AddFile`
       void LoadFiles();
 
-      /// Read a scalar value from a `YAML::Node`
+      /// @brief Convert a `YAML::Node` path to a string
+      ///
+      /// - elements are delimited by forward slashes (`/`)
+      /// - string elements are included
+      /// - `node_finder_t` elements are _not_ included
+      /// @param node_path the `YAML::Node` path
+      /// @return the converted string
+      static std::string NodePath2String(node_path_t const& node_path);
+
+      /// @brief Read a scalar value from a `YAML::Node`
       /// @param node the `YAML::Node` to read
       /// @return the scalar, if found
       template <typename SCALAR>
       std::optional<SCALAR> GetScalar(YAML::Node node);
 
-      /// Read a scalar value from a `YAML::Node` path; searches all currently loaded config files.
+      /// @brief Read a scalar value from a `YAML::Node` path; searches all currently loaded config files.
       /// @param node_path the `YAML::Node` path
       /// @return the scalar, if found
       template <typename SCALAR>
       std::optional<SCALAR> GetScalar(node_path_t node_path);
 
-      /// Read a vector value from a `YAML::Node`
+      /// @brief Read a vector value from a `YAML::Node`
       /// @param node the `YAML::Node` to read
       /// @return the vector, if found
       template <typename SCALAR>
       std::optional<std::vector<SCALAR>> GetVector(YAML::Node node);
 
-      /// Read a vector value from a `YAML::Node` path; searches all currently loaded config files.
+      /// @brief Read a vector value from a `YAML::Node` path; searches all currently loaded config files.
       /// @param node_path the `YAML::Node` path
       /// @return the vector, if found
       template <typename SCALAR>
       std::optional<std::vector<SCALAR>> GetVector(node_path_t node_path);
 
-      /// Create a function to search a `YAML::Node` for a sub-`YAML::Node` such that
-      /// the scalar `val` is within a range specified by `key`
+      /// @brief Create a function to search a `YAML::Node` for a sub-`YAML::Node` such that the scalar `val` is within a range specified by `key`
       /// @param key the key of the sub-`YAML::Node` to use as the range (its value must be a 2-vector)
       /// @param val the scalar value to check
       /// @returns the search function
@@ -70,7 +78,7 @@ namespace iguana {
 
     private:
 
-      /// Search a tree of `YAML::Node`s for a node specified by a `node_path_t`
+      /// @brief Search a tree of `YAML::Node`s for a node specified by a `node_path_t`
       /// @param node the root `YAML::Node`
       /// @param node_path the path of `YAML::Node` identifiers
       /// @returns either the found `YAML::Node`, or an empty (null) `YAML::Node` if one is not found
