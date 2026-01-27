@@ -26,11 +26,11 @@ namespace iguana {
     if(node_path.empty())
       return "";
     std::vector<std::string> tokens;
-    auto node_id_visitor = [&tokens](auto&& arg) {
-      if constexpr(std::is_same_v<std::decay_t<decltype(arg)>, std::string>)
-        tokens.push_back(arg);
-    };
-    std::visit(node_id_visitor, node_path.front());
+    for(auto const& node : node_path) {
+      if(auto const* str = std::get_if<std::string>(&node)) {
+        tokens.push_back(*str);
+      }
+    }
     return fmt::format("{}", fmt::join(tokens, "/"));
   }
 

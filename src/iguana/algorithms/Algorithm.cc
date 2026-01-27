@@ -23,11 +23,13 @@ namespace iguana {
 
   void Algorithm::Start(hipo::banklist& banks)
   {
-    m_log->Debug("=========== {}::ConfigHook ===========", m_class_name);
     ParseYAMLConfig();
+    m_log->Debug(fmt::format("/{}\\", Logger::Header("ConfigHook")));
     ConfigHook();
-    m_log->Debug("=========== {}::StartHook ===========", m_class_name);
+    m_log->Debug(fmt::format("\\{:=^50}/", ""));
+    m_log->Debug(fmt::format("/{}\\", Logger::Header("StartHook")));
     StartHook(banks);
+    m_log->Debug(fmt::format("\\{:=^50}/", ""));
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -51,8 +53,9 @@ namespace iguana {
 
   void Algorithm::Stop()
   {
-    m_log->Debug("=========== {}::StopHook ===========", m_class_name);
+    m_log->Trace(fmt::format("/{}\\", Logger::Header("StopHook")));
     StopHook();
+    m_log->Trace(fmt::format("\\{:=^50}/", ""));
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -75,8 +78,7 @@ namespace iguana {
       opt = m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
     }
     if(!opt.has_value()) {
-      m_log->Error("Failed to `GetOptionScalar` for parameter {:?}", key);
-      throw std::runtime_error("config file parsing issue");
+      throw std::runtime_error(fmt::format("Failed to get scalar option for parameter {:?} for algorithm {:?}", key, m_class_name));
     }
     PrintOptionValue(key, opt.value());
     return opt.value();
@@ -97,8 +99,7 @@ namespace iguana {
       opt = m_yaml_config->GetVector<OPTION_TYPE>(node_path);
     }
     if(!opt.has_value()) {
-      m_log->Error("Failed to `GetOptionVector` for parameter {:?}", key);
-      throw std::runtime_error("config file parsing issue");
+      throw std::runtime_error(fmt::format("Failed to get vector option for parameter {:?} for algorithm {:?}", key, m_class_name));
     }
     PrintOptionValue(key, opt.value());
     return opt.value();
@@ -172,7 +173,12 @@ namespace iguana {
       m_yaml_config = std::make_unique<YAMLReader>("config|" + m_name);
       m_yaml_config->SetLogLevel(m_log->GetLevel()); // synchronize log levels
       m_yaml_config->AddDirectory(o_user_config_dir);
-      m_yaml_config->AddFile(m_default_config_file);
+      try {
+        m_yaml_config->AddFile(m_default_config_file, false);
+      }
+      catch(std::runtime_error const& ex) {
+        m_log->Debug("this algorithm has no default configuration YAML file");
+      }
       m_yaml_config->AddFile(o_user_config_file);
     }
     else
@@ -181,15 +187,14 @@ namespace iguana {
     // parse the files
     m_yaml_config->LoadFiles();
 
-    // if "log" was not set by `SetOption` (i.e., not in `m_option_cache`)
-    // - NB: not using `GetCachedOption<T>` here, since `T` can be a few different types for key=='log'
-    if(m_option_cache.find("log") == m_option_cache.end()) {
-      // check if 'log' is set in the YAML node for this algorithm
-      auto log_level_from_yaml = m_yaml_config->GetScalar<std::string>({m_class_name, "log"});
-      if(log_level_from_yaml) {
-        m_log->SetLevel(log_level_from_yaml.value());
-        m_yaml_config->SetLogLevel(log_level_from_yaml.value());
-      }
+    // set log level
+    try {
+      auto log_level = GetOptionScalar<std::string>({"log"});
+      m_log->SetLevel(log_level);
+      m_yaml_config->SetLogLevel(log_level);
+    }
+    catch(std::runtime_error const& ex) {
+      PrintOptionValue("log", m_log->GetLevelName() + " (default)");
     }
   }
 
@@ -214,7 +219,7 @@ namespace iguana {
           banks,
           bank_name,
           created_by_iguana ? m_created_bank_variant : 0);
-      m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
+      m_log->Trace("cached index of bank '{}' is {}", bank_name, idx);
       return idx;
     }
     catch(std::runtime_error const& ex) {

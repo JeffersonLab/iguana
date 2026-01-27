@@ -27,7 +27,8 @@ namespace iguana {
 
       /// Add a configuration file to be parsed
       /// @param name the name of the file
-      void AddFile(std::string const& name);
+      /// @param verbose_errors if true, print errors and warnings
+      void AddFile(std::string const& name, bool verbose_errors = true);
 
       /// Print the list of directories (search path)
       /// @param level the log level
@@ -39,8 +40,9 @@ namespace iguana {
       /// - directories included by `ConfigFileReader::AddDirectory`, starting from the most recently added directory
       /// - the common installation prefix
       /// @param name the configuration file name (with or without a directory)
+      /// @param verbose_errors if true, print errors and warnings
       /// @return the found configuration file (with the directory)
-      std::string FindFile(std::string name);
+      std::string FindFile(std::string name, bool verbose_errors = true);
 
       /// Convert a full algorithm name to its corresponding default config file name
       /// @param algo_name the algorithm name

@@ -46,6 +46,11 @@ namespace iguana {
     return m_level;
   }
 
+  std::string Logger::GetLevelName()
+  {
+    return m_level_names.at(m_level);
+  }
+
   void Logger::EnableStyle()
   {
     m_enable_style = true;
