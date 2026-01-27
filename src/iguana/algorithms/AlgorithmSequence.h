@@ -45,13 +45,14 @@ namespace iguana {
   class AlgorithmSequence : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(AlgorithmSequence, seq)
+    DEFINE_IGUANA_ALGORITHM(AlgorithmSequence, seq)
+
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
+      void StopHook() override;
 
     public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
 
       /// Create and add an algorithm to the sequence, by name.
       ///

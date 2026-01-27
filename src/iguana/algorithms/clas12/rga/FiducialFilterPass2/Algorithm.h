@@ -39,7 +39,12 @@ namespace iguana::clas12::rga {
   /// @end_doc
   class FiducialFilterPass2 : public Algorithm
   {
-      DEFINE_IGUANA_ALGORITHM(FiducialFilterPass2, clas12::rga::FiducialFilterPass2)
+    DEFINE_IGUANA_ALGORITHM(FiducialFilterPass2, clas12::rga::FiducialFilterPass2)
+
+    private: // hooks
+      void ConfigHook() override;
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
     private:
       struct FTParams {
@@ -64,10 +69,6 @@ namespace iguana::clas12::rga {
       };
 
     public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override {}
 
       /// @run_function
       /// @param [in,out] particle `REC::Particle` bank, which will be filtered
@@ -156,9 +157,6 @@ namespace iguana::clas12::rga {
                           hipo::bank const& configBank, hipo::bank const* trajBank) const;
       bool Filter(int track_index, hipo::bank const& particleBank, hipo::bank const& configBank,
                   hipo::bank const* calBank, hipo::bank const* trajBank, hipo::bank const* ftBank) const;
-
-      // ---- Config loading
-      void LoadConfig();
 
       // CVT/DC params;
       int m_cal_strictness = 1;

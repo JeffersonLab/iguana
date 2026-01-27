@@ -36,10 +36,6 @@ namespace iguana {
       }
       virtual ~Validator() {}
 
-      void Start(hipo::banklist& banks) override {}
-      bool Run(hipo::banklist& banks) const override { return true; }
-      void Stop() override {}
-
       /// Set this validator's output directory
       /// @param output_dir the output directory
       void SetOutputDirectory(std::string_view output_dir);
@@ -57,6 +53,11 @@ namespace iguana {
       mutable std::mutex m_mutex;
 
     private:
+
+      virtual void ConfigHook() {}
+      virtual void StartHook(hipo::banklist& banks) {}
+      virtual bool RunHook(hipo::banklist& banks) const { return true; }
+      virtual void StopHook() {}
 
       /// output directory
       std::string m_output_dir;

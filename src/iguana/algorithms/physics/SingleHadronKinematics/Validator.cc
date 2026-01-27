@@ -8,7 +8,7 @@ namespace iguana::physics {
 
   REGISTER_IGUANA_VALIDATOR(SingleHadronKinematicsValidator);
 
-  void SingleHadronKinematicsValidator::Start(hipo::banklist& banks)
+  void SingleHadronKinematicsValidator::StartHook(hipo::banklist& banks)
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
@@ -58,7 +58,7 @@ namespace iguana::physics {
   }
 
 
-  bool SingleHadronKinematicsValidator::Run(hipo::banklist& banks) const
+  bool SingleHadronKinematicsValidator::RunHook(hipo::banklist& banks) const
   {
     // calculate kinematics
     m_algo_seq->Run(banks);
@@ -80,7 +80,7 @@ namespace iguana::physics {
   }
 
 
-  void SingleHadronKinematicsValidator::Stop()
+  void SingleHadronKinematicsValidator::StopHook()
   {
     if(GetOutputDirectory()) {
       int const n_cols = 4;

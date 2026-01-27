@@ -20,13 +20,14 @@ namespace iguana::clas12 {
   class PhotonGBTFilter : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(PhotonGBTFilter, clas12::PhotonGBTFilter)
+    DEFINE_IGUANA_ALGORITHM(PhotonGBTFilter, clas12::PhotonGBTFilter)
+
+    private: // hooks
+      void ConfigHook() override;
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
     public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
 
       /// @run_function
       /// @param [in,out] particleBank `REC::Particle`, which will be filtered

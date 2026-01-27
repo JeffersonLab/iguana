@@ -14,13 +14,12 @@ namespace iguana::clas12 {
   class PhotonGBTFilterValidator : public Validator
   {
 
-      DEFINE_IGUANA_VALIDATOR(PhotonGBTFilterValidator, clas12::PhotonGBTFilterValidator)
+    DEFINE_IGUANA_VALIDATOR(PhotonGBTFilterValidator, clas12::PhotonGBTFilterValidator)
 
-    public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
+      void StopHook() override;
 
     private:
 

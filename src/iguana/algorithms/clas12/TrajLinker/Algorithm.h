@@ -14,13 +14,13 @@ namespace iguana::clas12 {
   class TrajLinker : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(TrajLinker, clas12::TrajLinker)
+    DEFINE_IGUANA_ALGORITHM(TrajLinker, clas12::TrajLinker)
+
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
     public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
 
       /// @run_function
       /// @param [in] bank_particle `REC::Particle`

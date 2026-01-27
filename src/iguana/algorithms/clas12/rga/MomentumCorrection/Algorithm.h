@@ -11,13 +11,13 @@ namespace iguana::clas12::rga {
   class MomentumCorrection : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(MomentumCorrection, clas12::rga::MomentumCorrection)
+    DEFINE_IGUANA_ALGORITHM(MomentumCorrection, clas12::rga::MomentumCorrection)
+
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
     public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
 
       /// @run_function
       /// @param [in,out] particleBank `REC::Particle`; the momenta will be corrected

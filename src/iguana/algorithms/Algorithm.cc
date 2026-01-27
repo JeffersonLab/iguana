@@ -21,12 +21,47 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  void Algorithm::Start(hipo::banklist& banks)
+  {
+    m_log->Debug("=========== {}::ConfigHook ===========", m_class_name);
+    ParseYAMLConfig();
+    ConfigHook();
+    m_log->Debug("=========== {}::StartHook ===========", m_class_name);
+    StartHook(banks);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::Start()
   {
     m_rows_only             = true;
     hipo::banklist no_banks = {};
     Start(no_banks);
   }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  bool Algorithm::Run(hipo::banklist& banks) const
+  {
+    m_log->Trace("=========== {}::RunHook ===========", m_class_name);
+    return RunHook(banks);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void Algorithm::Stop()
+  {
+    m_log->Debug("=========== {}::StopHook ===========", m_class_name);
+    StopHook();
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  // default no-op hooks
+  void Algorithm::ConfigHook() {}
+  void Algorithm::StartHook(hipo::banklist& banks) {}
+  bool Algorithm::RunHook(hipo::banklist& banks) const { return true; }
+  void Algorithm::StopHook() {}
 
   ///////////////////////////////////////////////////////////////////////////////
 

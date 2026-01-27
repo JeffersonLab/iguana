@@ -5,7 +5,7 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(CalorimeterLinker, "REC::Particle::Calorimeter");
 
-  void CalorimeterLinker::Start(hipo::banklist& banks)
+  void CalorimeterLinker::StartHook(hipo::banklist& banks)
   {
     b_particle         = GetBankIndex(banks, "REC::Particle");
     b_calorimeter      = GetBankIndex(banks, "REC::Calorimeter");
@@ -31,7 +31,7 @@ namespace iguana::clas12 {
     i_ecout_energy     = result_schema.getEntryOrder("ecout_energy");
   }
 
-  bool CalorimeterLinker::Run(hipo::banklist& banks) const
+  bool CalorimeterLinker::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, "REC::Particle"),
@@ -133,10 +133,6 @@ namespace iguana::clas12 {
     }
     ShowBank(bank_result, Logger::Header("CREATED BANK"));
     return true;
-  }
-
-  void CalorimeterLinker::Stop()
-  {
   }
 
 }

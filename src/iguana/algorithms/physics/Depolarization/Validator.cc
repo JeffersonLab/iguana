@@ -4,7 +4,7 @@ namespace iguana::physics {
 
   REGISTER_IGUANA_VALIDATOR(DepolarizationValidator);
 
-  void DepolarizationValidator::Start(hipo::banklist& banks)
+  void DepolarizationValidator::StartHook(hipo::banklist& banks)
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
@@ -83,7 +83,7 @@ namespace iguana::physics {
   }
 
 
-  bool DepolarizationValidator::Run(hipo::banklist& banks) const
+  bool DepolarizationValidator::RunHook(hipo::banklist& banks) const
   {
     // calculate kinematics
     m_algo_seq->Run(banks);
@@ -110,7 +110,7 @@ namespace iguana::physics {
   }
 
 
-  void DepolarizationValidator::Stop()
+  void DepolarizationValidator::StopHook()
   {
     if(GetOutputDirectory()) {
 

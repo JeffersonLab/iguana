@@ -24,13 +24,14 @@ namespace iguana::physics {
   class SingleHadronKinematics : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(SingleHadronKinematics, physics::SingleHadronKinematics)
+    DEFINE_IGUANA_ALGORITHM(SingleHadronKinematics, physics::SingleHadronKinematics)
+
+    private: // hooks
+      void ConfigHook() override;
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
     public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
 
       /// @run_function
       /// @param [in] particle_bank particle bank (_e.g._, `REC::Particle`)

@@ -22,19 +22,30 @@ namespace iguana::example {
   // REGISTER_IGUANA_ALGORITHM(ExampleAlgorithm , "example::newBank1", "example::newBank2"); // if this algorithm creates 2 new banks
 
   // ############################################################################
-  // # define `ExampleAlgorithm::Start()`
-  // # - this overrides the virtual function `Algorithm::Start`
+  // # define `ExampleAlgorithm::ConfigHook()`
+  // # - this is called by the main `Algorithm::Start` function, and is typically
+  // #   used to load configuration parameters
   // ############################################################################
-  void ExampleAlgorithm::Start(hipo::banklist& banks)
+  void ExampleAlgorithm::ConfigHook()
   {
     // ############################################################################
     // # get configuration options
     // # - by default, this will read `ExampleAlgorithm.yaml`, unless the algorithm
     // #   user has specified to use a different configuration file or directory
     // ############################################################################
-    ParseYAMLConfig();
     o_exampleInt    = GetOptionScalar<int>({"exampleInt"});
     o_exampleDouble = GetOptionScalar<double>({"exampleDouble"});
+  }
+
+  // ############################################################################
+  // # define `ExampleAlgorithm::StartHook()`
+  // # - this is called by the main `Algorithm::Start` function, after
+  // #   `ConfigHook()` got called, so the configuration parameters are loaded
+  // # - in `StartHook`, we may do additional things, such as set bank indices
+  // #   or create new banks
+  // ############################################################################
+  void ExampleAlgorithm::StartHook(hipo::banklist& banks)
+  {
     // ############################################################################
     // # get expected bank indices
     // # - here we make sure that parameter `banks` includes the banks that are
@@ -52,11 +63,12 @@ namespace iguana::example {
 
 
   // ############################################################################
-  // # define `ExampleAlgorithm::Run` functions
-  // # - this `Run` function that acts on `hipo::banklist` should just call the `Run`
-  // #   function that acts on `hipo::bank` objects; let's define it first
+  // # define `ExampleAlgorithm::RunHook` function
+  // # - this is called by the main `Algorithm::Run` function
+  // # - this function that acts on `hipo::banklist` should just call a
+  // #   "specialized" `Run` function that acts on `hipo::bank` objects
   // ############################################################################
-  bool ExampleAlgorithm::Run(hipo::banklist& banks) const
+  bool ExampleAlgorithm::RunHook(hipo::banklist& banks) const
   {
     // ############################################################################
     // # use `GetBank` to get the banks; here we just need `REC::Particle`
@@ -122,16 +134,6 @@ namespace iguana::example {
   bool ExampleAlgorithm::Filter(int const pid) const
   {
     return pid > 0;
-  }
-
-
-  // ############################################################################
-  // # define `ExampleAlgorithm::Stop()`
-  // # - this overrides the virtual function `Algorithm::Stop`
-  // # - in this example, there is nothing to do
-  // ############################################################################
-  void ExampleAlgorithm::Stop()
-  {
   }
 
 }

@@ -14,13 +14,13 @@ namespace iguana::clas12::rga {
   class FTEnergyCorrection : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::rga::FTEnergyCorrection)
+    DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::rga::FTEnergyCorrection)
+
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
     public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
 
       /// @run_function
       /// @param [in,out] ftParticleBank `RECFT::Particle`, which will have the correction applied

@@ -79,17 +79,18 @@ namespace iguana {
       {}
       virtual ~Algorithm() {}
 
-      /// @brief Initialize this algorithm before any events are processed, with the intent to process _banks_
+      /// @brief Initialize this algorithm before any events are processed, with the intent to process `hipo::banklist` objects
       ///
       /// use this method if you intend to use `Algorithm::Run`.
       /// @param banks the list of banks this algorithm will use, so that `Algorithm::Run` can cache the indices
       ///        of the banks that it needs
-      virtual void Start(hipo::banklist& banks) = 0;
+      /// @see StartHook for an algorithm's specific implementation
+      virtual void Start(hipo::banklist& banks) final;
 
-      /// @brief Initialize this algorithm before any events are processed, with the intent to process _bank rows_ rather than full banks;
+      /// @brief Initialize this algorithm before any events are processed, with the intent to process either `hipo::bank` objects or _bank rows_, rather than full `hipo::banklist` objects
       ///
       /// use this method if you intend to use "action functions" instead of `Algorithm::Run`.
-      void Start();
+      virtual void Start() final;
 
       /// @brief **Run Function:** Process an event's `hipo::banklist`
       /// @param banks the list of banks to process
@@ -97,10 +98,12 @@ namespace iguana {
       /// as an _event-level_ filter; not all algorithms use or need this feature; see the algorithm's more specialized `Run` functions,
       /// which have `hipo::bank` parameters
       /// @see Specialized `%Run` function(s) above/below; they take individual `hipo::bank` objects as parameters, and their documentation explains which banks are used by this algorithm and how.
-      virtual bool Run(hipo::banklist& banks) const = 0;
+      /// @see RunHook for an algorithm's specific implementation
+      virtual bool Run(hipo::banklist& banks) const final;
 
       /// @brief Finalize this algorithm after all events are processed.
-      virtual void Stop() = 0;
+      /// @see StopHook for an algorithm's specific implementation
+      virtual void Stop() final;
 
       /// @brief Set an option specified by the user.
       ///
@@ -228,9 +231,6 @@ namespace iguana {
 
     protected: // methods
 
-      /// Parse YAML configuration files. Sets `m_yaml_config`.
-      void ParseYAMLConfig();
-
       /// Instantiate the `RCDBReader` instance for this algorithm
       void StartRCDBReader();
 
@@ -270,6 +270,27 @@ namespace iguana {
       void ThrowSinceRenamed(std::string const& new_name, std::string const& version) const noexcept(false);
 
     private: // methods
+
+      /// Hook called by user from `Algorithm::Start`, typically to load an algorithm's configuration parameters.
+      /// Override this method in algorithm implementations.
+      /// It is called before `Algorithm::StartHook`.
+      virtual void ConfigHook();
+
+      /// Hook called by user from `Algorithm::Start`.
+      /// Override this method in algorithm implementations.
+      /// It is called after `Algorithm::ConfigHook`.
+      virtual void StartHook(hipo::banklist& banks);
+
+      /// Hook called by user from `Algorithm::Run`.
+      /// Override this method in algorithm implementations.
+      virtual bool RunHook(hipo::banklist& banks) const;
+
+      /// Hook called by user from `Algorithm::Stop`
+      /// Override this method in algorithm implementations.
+      virtual void StopHook();
+
+      /// Parse YAML configuration files. Sets `m_yaml_config`.
+      void ParseYAMLConfig();
 
       /// Get an option from the option cache
       /// @param key the key name associated with this option

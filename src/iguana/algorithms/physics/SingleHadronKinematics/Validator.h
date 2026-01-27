@@ -13,13 +13,12 @@ namespace iguana::physics {
   class SingleHadronKinematicsValidator : public Validator
   {
 
-      DEFINE_IGUANA_VALIDATOR(SingleHadronKinematicsValidator, physics::SingleHadronKinematicsValidator)
+    DEFINE_IGUANA_VALIDATOR(SingleHadronKinematicsValidator, physics::SingleHadronKinematicsValidator)
 
-    public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
+      void StopHook() override;
 
     private:
 

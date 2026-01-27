@@ -5,21 +5,22 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(ZVertexFilter);
 
-  void ZVertexFilter::Start(hipo::banklist& banks)
+  void ZVertexFilter::ConfigHook()
   {
-
     // get configuration
-    ParseYAMLConfig();
     o_particle_bank    = GetOptionScalar<std::string>({"particle_bank"});
     o_runnum           = ConcurrentParamFactory::Create<int>();
     o_electron_vz_cuts = ConcurrentParamFactory::Create<std::vector<double>>();
+  }
 
+  void ZVertexFilter::StartHook(hipo::banklist& banks)
+  {
     // get expected bank indices
     b_particle = GetBankIndex(banks, o_particle_bank);
     b_config   = GetBankIndex(banks, "RUN::config");
   }
 
-  bool ZVertexFilter::Run(hipo::banklist& banks) const
+  bool ZVertexFilter::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, o_particle_bank),
@@ -96,10 +97,6 @@ namespace iguana::clas12 {
   void ZVertexFilter::SetElectronZcuts(double zcut_lower, double zcut_upper, concurrent_key_t const key)
   {
     o_electron_vz_cuts->Save({zcut_lower, zcut_upper}, key);
-  }
-
-  void ZVertexFilter::Stop()
-  {
   }
 
 }

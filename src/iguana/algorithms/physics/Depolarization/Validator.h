@@ -12,13 +12,12 @@ namespace iguana::physics {
   class DepolarizationValidator : public Validator
   {
 
-      DEFINE_IGUANA_VALIDATOR(DepolarizationValidator, physics::DepolarizationValidator)
+    DEFINE_IGUANA_VALIDATOR(DepolarizationValidator, physics::DepolarizationValidator)
 
-    public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
+      void StopHook() override;
 
     private:
 

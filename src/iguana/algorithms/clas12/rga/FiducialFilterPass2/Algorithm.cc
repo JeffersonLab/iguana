@@ -27,7 +27,7 @@ namespace iguana::clas12::rga {
     return false;
   }
 
-  void FiducialFilterPass2::LoadConfig()
+  void FiducialFilterPass2::ConfigHook()
   {
     m_cal_strictness = GetOptionScalar<int>({"calorimeter", "strictness"});
     if(m_cal_strictness < 1 || m_cal_strictness > 3) {
@@ -127,7 +127,7 @@ namespace iguana::clas12::rga {
     }
   }
 
-  void FiducialFilterPass2::Start(hipo::banklist& banks)
+  void FiducialFilterPass2::StartHook(hipo::banklist& banks)
   {
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
@@ -143,12 +143,9 @@ namespace iguana::clas12::rga {
       b_traj      = GetBankIndex(banks, "REC::Traj");
       m_have_traj = true;
     }
-
-    ParseYAMLConfig();
-    LoadConfig();
   }
 
-  bool FiducialFilterPass2::Run(hipo::banklist& banks) const
+  bool FiducialFilterPass2::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, "REC::Particle"),

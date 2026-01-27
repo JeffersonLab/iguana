@@ -29,16 +29,17 @@ namespace iguana::clas12 {
   class SectorFinder : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(SectorFinder, clas12::SectorFinder)
+    DEFINE_IGUANA_ALGORITHM(SectorFinder, clas12::SectorFinder)
+
+    private: // hooks
+      void ConfigHook() override;
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
     public:
 
       /// if this algorithm cannot determine the sector, this value will be used
       static int const UNKNOWN_SECTOR = -1;
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
 
       /// @run_function
       /// uses track, calorimeter, and scintillator banks for both charged and neutral particles

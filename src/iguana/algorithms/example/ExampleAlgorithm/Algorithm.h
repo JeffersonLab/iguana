@@ -38,32 +38,38 @@ namespace iguana::example {
   class ExampleAlgorithm : public Algorithm
   {
 
-      // ############################################################################
-      // # this is a preprocessor macro call which generates boilerplate for the algorithm definition
-      // # - the arguments are:
-      // #   - the class name, `ExampleAlgorithm`
-      // #   - a unique, "full" name of the algorithm, used by `AlgorithmFactory`; typically is the
-      // #     namespace with the class name, excluding the `iguana::` part, but you are free to choose any name
-      // # - NOTE: quotes are not used, and there is no need for a semicolon at the end of this call
-      // # - see `../AlgorithmBoilerplate.h` for details
-      // #   - the macros are relatively modular, so if you want to use your own constructor or destructor, you may
-      // #     do so, and use other preprocessor macros called within `DEFINE_IGUANA_ALGORITHM` to complete
-      // #     the boilerplate public and private functions and members
-      // ############################################################################
-      DEFINE_IGUANA_ALGORITHM(ExampleAlgorithm, example::ExampleAlgorithm)
+    // ############################################################################
+    // # this is a preprocessor macro call which generates boilerplate for the algorithm definition
+    // # - the arguments are:
+    // #   - the class name, `ExampleAlgorithm`
+    // #   - a unique, "full" name of the algorithm, used by `AlgorithmFactory`; typically is the
+    // #     namespace with the class name, excluding the `iguana::` part, but you are free to choose any name
+    // # - NOTE: quotes are not used, and there is no need for a semicolon at the end of this call
+    // # - see `../AlgorithmBoilerplate.h` for details
+    // #   - the macros are relatively modular, so if you want to use your own constructor or destructor, you may
+    // #     do so, and use other preprocessor macros called within `DEFINE_IGUANA_ALGORITHM` to complete
+    // #     the boilerplate public and private functions and members
+    // ############################################################################
+    DEFINE_IGUANA_ALGORITHM(ExampleAlgorithm, example::ExampleAlgorithm)
+
+    // ############################################################################
+    // # declare the "hook" functions that you will implement
+    // # - the `.cc` file explains what each of these are used for
+    // # - only declare the ones that you actually will override, otherwise you will
+    // #   get 'undefined reference to vtable' errors during linking
+    // # - see the base-class `Algorithm` for additional hook functions (they end
+    // #   with the word `Hook`), for example, `StopHook`, which is called after
+    // #   all event processing (by `Algorithm::Stop`)
+    // ############################################################################
+    private: // hooks
+      void ConfigHook() override;
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
     public:
 
       // ############################################################################
-      // # define `Start`, `Run`, and `Stop` for this algorithm
-      // # - each algorithm must have these methods (even if they do nothing)
-      // ############################################################################
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
-
-      // ############################################################################
-      // # define an additional `Run` function which takes `hipo::bank` parameters
+      // # define a `Run` function which takes `hipo::bank` parameters
       // # - the parameters should be lvalue references, i.e., `hipo::bank&`, to avoid copying the banks
       // # - if a bank is ONLY read, and not modified, you should use `const`, i.e., `hipo::bank const&`
       // # - in this example, `particleBank` will be modified, so we use `hipo::bank&`
@@ -121,7 +127,7 @@ namespace iguana::example {
       // #   - one of the allowed types in `option_t`, which is a `std::variant`
       // #   - `std::set`, used by `Algorithm::GetOptionSet`, which converts
       // #     a user's `std::vector` option to a `std::set`
-      // #   - your own type, but you will have to set it in the `Start()` method
+      // #   - your own type, but you will have to set it in the `StartHook()` method
       // # - here we show example `int` and `double` options
       // # - convention: they should start with `o_`
       // ############################################################################

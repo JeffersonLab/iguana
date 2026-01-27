@@ -5,7 +5,7 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(TrajLinker, "REC::Particle::Traj");
 
-  void TrajLinker::Start(hipo::banklist& banks)
+  void TrajLinker::StartHook(hipo::banklist& banks)
   {
     b_particle         = GetBankIndex(banks, "REC::Particle");
     b_traj             = GetBankIndex(banks, "REC::Traj");
@@ -26,7 +26,7 @@ namespace iguana::clas12 {
     i_r3_z             = result_schema.getEntryOrder("r3_z");
   }
 
-  bool TrajLinker::Run(hipo::banklist& banks) const
+  bool TrajLinker::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, "REC::Particle"),
@@ -116,10 +116,6 @@ namespace iguana::clas12 {
     }
     ShowBank(bank_result, Logger::Header("CREATED BANK"));
     return true;
-  }
-
-  void TrajLinker::Stop()
-  {
   }
 
   int TrajLinker::GetSector(float const& x, float const& y, float const& z) const

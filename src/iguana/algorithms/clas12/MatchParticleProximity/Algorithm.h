@@ -23,13 +23,14 @@ namespace iguana::clas12 {
   class MatchParticleProximity : public Algorithm
   {
 
-      DEFINE_IGUANA_ALGORITHM(MatchParticleProximity, clas12::MatchParticleProximity)
+    DEFINE_IGUANA_ALGORITHM(MatchParticleProximity, clas12::MatchParticleProximity)
+
+    private: // hooks
+      void ConfigHook() override;
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
     public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
 
       /// @run_function
       /// @param [in] bank_a the particle bank to match from, _e.g._, `REC::Particle`
