@@ -79,30 +79,35 @@ namespace iguana {
       {}
       virtual ~Algorithm() {}
 
-      /// @brief Initialize this algorithm before any events are processed, with the intent to process `hipo::banklist` objects
+      /// @brief **Start Function:** Initialize this algorithm before any events are processed, with the intent to process `hipo::banklist` objects
       ///
-      /// use this method if you intend to use `Algorithm::Run`.
+      /// Use this method if you intend to use:
+      ///
+      /// - `Algorithm::Run` with `hipo::banklist` objects
+      ///
       /// @param banks the list of banks this algorithm will use, so that `Algorithm::Run` can cache the indices
       ///        of the banks that it needs
-      /// @see StartHook and ConfigHook for an algorithm's specific implementation
       virtual void Start(hipo::banklist& banks) final;
 
-      /// @brief Initialize this algorithm before any events are processed, with the intent to process either `hipo::bank` objects or _bank rows_, rather than full `hipo::banklist` objects
+      /// @brief **Start Function:** Initialize this algorithm before any events are processed, with the intent to process either `hipo::bank` objects or _bank rows_, rather than full `hipo::banklist` objects
       ///
-      /// use this method if you intend to use "action functions" instead of `Algorithm::Run`.
+      /// Use this method if you intend to use:
+      ///
+      /// - Specialized `%Run` functions with `hipo::bank` objects
+      /// - action functions, instead of `Algorithm::Run`.
       virtual void Start() final;
 
       /// @brief **Run Function:** Process an event's `hipo::banklist`
       /// @param banks the list of banks to process
       /// @returns a boolean value, which is typically used to decide whether or not to continue analyzing an event, _i.e._, it can be used
-      /// as an _event-level_ filter; not all algorithms use or need this feature; see the algorithm's more specialized `Run` functions,
+      /// as an _event-level_ filter; not all algorithms use or need this feature; see the algorithm's more specialized `%Run` functions,
       /// which have `hipo::bank` parameters
       /// @see Specialized `%Run` function(s) above/below; they take individual `hipo::bank` objects as parameters, and their documentation explains which banks are used by this algorithm and how.
-      /// @see RunHook for an algorithm's specific implementation
       virtual bool Run(hipo::banklist& banks) const final;
 
-      /// @brief Finalize this algorithm after all events are processed.
-      /// @see StopHook for an algorithm's specific implementation
+      /// @brief **Stop Function:** Finalize this algorithm after all events are processed.
+      ///
+      /// Call this when you are done with an algorithm.
       virtual void Stop() final;
 
       /// @brief Set an option specified by the user.
