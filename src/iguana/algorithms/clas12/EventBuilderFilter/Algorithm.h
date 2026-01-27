@@ -13,7 +13,7 @@ namespace iguana::clas12 {
   class EventBuilderFilter : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(EventBuilderFilter, clas12::EventBuilderFilter)
+      DEFINE_IGUANA_ALGORITHM(EventBuilderFilter, clas12::EventBuilderFilter)
 
     private: // hooks
       void ConfigHook() override;

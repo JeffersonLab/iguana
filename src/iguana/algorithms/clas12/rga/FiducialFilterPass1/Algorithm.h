@@ -24,7 +24,7 @@ namespace iguana::clas12::rga {
   class FiducialFilterPass1 : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(FiducialFilterPass1, clas12::rga::FiducialFilterPass1)
+      DEFINE_IGUANA_ALGORITHM(FiducialFilterPass1, clas12::rga::FiducialFilterPass1)
 
     private: // hooks
       void ConfigHook() override;

@@ -19,7 +19,7 @@ namespace iguana::physics {
   class InclusiveKinematics : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(InclusiveKinematics, physics::InclusiveKinematics)
+      DEFINE_IGUANA_ALGORITHM(InclusiveKinematics, physics::InclusiveKinematics)
 
     private: // hooks
       void ConfigHook() override;

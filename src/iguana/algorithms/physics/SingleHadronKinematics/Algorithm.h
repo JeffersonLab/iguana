@@ -24,7 +24,7 @@ namespace iguana::physics {
   class SingleHadronKinematics : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(SingleHadronKinematics, physics::SingleHadronKinematics)
+      DEFINE_IGUANA_ALGORITHM(SingleHadronKinematics, physics::SingleHadronKinematics)
 
     private: // hooks
       void ConfigHook() override;

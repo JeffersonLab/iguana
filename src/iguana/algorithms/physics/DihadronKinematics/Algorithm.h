@@ -34,7 +34,7 @@ namespace iguana::physics {
   class DihadronKinematics : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(DihadronKinematics, physics::DihadronKinematics)
+      DEFINE_IGUANA_ALGORITHM(DihadronKinematics, physics::DihadronKinematics)
 
     private: // hooks
       void ConfigHook() override;

@@ -13,7 +13,7 @@ namespace iguana::physics {
   class DihadronKinematicsValidator : public Validator
   {
 
-    DEFINE_IGUANA_VALIDATOR(DihadronKinematicsValidator, physics::DihadronKinematicsValidator)
+      DEFINE_IGUANA_VALIDATOR(DihadronKinematicsValidator, physics::DihadronKinematicsValidator)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

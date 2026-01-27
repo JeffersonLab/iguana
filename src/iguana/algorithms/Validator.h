@@ -54,6 +54,7 @@ namespace iguana {
 
     private:
 
+      // hooks are no-ops, since subclasses will implement
       virtual void ConfigHook() {}
       virtual void StartHook(hipo::banklist& banks) {}
       virtual bool RunHook(hipo::banklist& banks) const { return true; }

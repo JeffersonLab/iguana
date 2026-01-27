@@ -38,29 +38,29 @@ namespace iguana::example {
   class ExampleAlgorithm : public Algorithm
   {
 
-    // ############################################################################
-    // # this is a preprocessor macro call which generates boilerplate for the algorithm definition
-    // # - the arguments are:
-    // #   - the class name, `ExampleAlgorithm`
-    // #   - a unique, "full" name of the algorithm, used by `AlgorithmFactory`; typically is the
-    // #     namespace with the class name, excluding the `iguana::` part, but you are free to choose any name
-    // # - NOTE: quotes are not used, and there is no need for a semicolon at the end of this call
-    // # - see `../AlgorithmBoilerplate.h` for details
-    // #   - the macros are relatively modular, so if you want to use your own constructor or destructor, you may
-    // #     do so, and use other preprocessor macros called within `DEFINE_IGUANA_ALGORITHM` to complete
-    // #     the boilerplate public and private functions and members
-    // ############################################################################
-    DEFINE_IGUANA_ALGORITHM(ExampleAlgorithm, example::ExampleAlgorithm)
+      // ############################################################################
+      // # this is a preprocessor macro call which generates boilerplate for the algorithm definition
+      // # - the arguments are:
+      // #   - the class name, `ExampleAlgorithm`
+      // #   - a unique, "full" name of the algorithm, used by `AlgorithmFactory`; typically is the
+      // #     namespace with the class name, excluding the `iguana::` part, but you are free to choose any name
+      // # - NOTE: quotes are not used, and there is no need for a semicolon at the end of this call
+      // # - see `../AlgorithmBoilerplate.h` for details
+      // #   - the macros are relatively modular, so if you want to use your own constructor or destructor, you may
+      // #     do so, and use other preprocessor macros called within `DEFINE_IGUANA_ALGORITHM` to complete
+      // #     the boilerplate public and private functions and members
+      // ############################################################################
+      DEFINE_IGUANA_ALGORITHM(ExampleAlgorithm, example::ExampleAlgorithm)
 
-    // ############################################################################
-    // # declare the "hook" functions that you will implement
-    // # - the `.cc` file explains what each of these are used for
-    // # - only declare the ones that you actually will override, otherwise you will
-    // #   get 'undefined reference to vtable' errors during linking
-    // # - see the base-class `Algorithm` for additional hook functions (they end
-    // #   with the word `Hook`), for example, `StopHook`, which is called after
-    // #   all event processing (by `Algorithm::Stop`)
-    // ############################################################################
+      // ############################################################################
+      // # declare the "hook" functions that you will implement
+      // # - the `.cc` file explains what each of these are used for
+      // # - only declare the ones that you actually will override, otherwise you will
+      // #   get 'undefined reference to vtable' errors during linking
+      // # - see the base-class `Algorithm` for additional hook functions (they end
+      // #   with the word `Hook`), for example, `StopHook`, which is called after
+      // #   all event processing (by `Algorithm::Stop`)
+      // ############################################################################
     private: // hooks
       void ConfigHook() override;
       void StartHook(hipo::banklist& banks) override;

@@ -29,7 +29,7 @@ namespace iguana::clas12 {
   class SectorFinder : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(SectorFinder, clas12::SectorFinder)
+      DEFINE_IGUANA_ALGORITHM(SectorFinder, clas12::SectorFinder)
 
     private: // hooks
       void ConfigHook() override;

@@ -13,7 +13,7 @@ namespace iguana::physics {
   class InclusiveKinematicsValidator : public Validator
   {
 
-    DEFINE_IGUANA_VALIDATOR(InclusiveKinematicsValidator, physics::InclusiveKinematicsValidator)
+      DEFINE_IGUANA_VALIDATOR(InclusiveKinematicsValidator, physics::InclusiveKinematicsValidator)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

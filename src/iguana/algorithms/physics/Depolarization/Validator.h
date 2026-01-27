@@ -12,7 +12,7 @@ namespace iguana::physics {
   class DepolarizationValidator : public Validator
   {
 
-    DEFINE_IGUANA_VALIDATOR(DepolarizationValidator, physics::DepolarizationValidator)
+      DEFINE_IGUANA_VALIDATOR(DepolarizationValidator, physics::DepolarizationValidator)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

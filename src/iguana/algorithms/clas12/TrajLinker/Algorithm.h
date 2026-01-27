@@ -14,7 +14,7 @@ namespace iguana::clas12 {
   class TrajLinker : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(TrajLinker, clas12::TrajLinker)
+      DEFINE_IGUANA_ALGORITHM(TrajLinker, clas12::TrajLinker)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

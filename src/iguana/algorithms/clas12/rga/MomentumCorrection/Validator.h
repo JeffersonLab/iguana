@@ -13,7 +13,7 @@ namespace iguana::clas12::rga {
   class MomentumCorrectionValidator : public Validator
   {
 
-    DEFINE_IGUANA_VALIDATOR(MomentumCorrectionValidator, clas12::rga::MomentumCorrectionValidator)
+      DEFINE_IGUANA_VALIDATOR(MomentumCorrectionValidator, clas12::rga::MomentumCorrectionValidator)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

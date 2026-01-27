@@ -14,7 +14,7 @@ namespace iguana::clas12 {
   class ZVertexFilter : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(ZVertexFilter, clas12::ZVertexFilter)
+      DEFINE_IGUANA_ALGORITHM(ZVertexFilter, clas12::ZVertexFilter)
 
     private: // hooks
       void ConfigHook() override;

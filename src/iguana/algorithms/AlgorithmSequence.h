@@ -45,7 +45,7 @@ namespace iguana {
   class AlgorithmSequence : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(AlgorithmSequence, seq)
+      DEFINE_IGUANA_ALGORITHM(AlgorithmSequence, seq)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

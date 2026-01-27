@@ -17,7 +17,7 @@ namespace iguana::clas12::rga {
   class FiducialFilterPass1Validator : public Validator
   {
 
-    DEFINE_IGUANA_VALIDATOR(FiducialFilterPass1Validator, clas12::rga::FiducialFilterPass1Validator)
+      DEFINE_IGUANA_VALIDATOR(FiducialFilterPass1Validator, clas12::rga::FiducialFilterPass1Validator)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

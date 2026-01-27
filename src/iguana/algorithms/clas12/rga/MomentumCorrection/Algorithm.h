@@ -11,7 +11,7 @@ namespace iguana::clas12::rga {
   class MomentumCorrection : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(MomentumCorrection, clas12::rga::MomentumCorrection)
+      DEFINE_IGUANA_ALGORITHM(MomentumCorrection, clas12::rga::MomentumCorrection)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

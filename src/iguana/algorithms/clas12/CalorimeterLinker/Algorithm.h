@@ -14,7 +14,7 @@ namespace iguana::clas12 {
   class CalorimeterLinker : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(CalorimeterLinker, clas12::CalorimeterLinker)
+      DEFINE_IGUANA_ALGORITHM(CalorimeterLinker, clas12::CalorimeterLinker)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

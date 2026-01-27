@@ -60,14 +60,6 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  // default no-op hooks
-  void Algorithm::ConfigHook() {}
-  void Algorithm::StartHook(hipo::banklist& banks) {}
-  bool Algorithm::RunHook(hipo::banklist& banks) const { return true; }
-  void Algorithm::StopHook() {}
-
-  ///////////////////////////////////////////////////////////////////////////////
-
   template <typename OPTION_TYPE>
   OPTION_TYPE Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const
   {

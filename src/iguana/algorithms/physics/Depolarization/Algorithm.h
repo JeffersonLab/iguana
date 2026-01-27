@@ -13,7 +13,7 @@ namespace iguana::physics {
   class Depolarization : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(Depolarization, physics::Depolarization)
+      DEFINE_IGUANA_ALGORITHM(Depolarization, physics::Depolarization)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

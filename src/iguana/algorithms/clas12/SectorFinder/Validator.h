@@ -14,7 +14,7 @@ namespace iguana::clas12 {
   class SectorFinderValidator : public Validator
   {
 
-    DEFINE_IGUANA_VALIDATOR(SectorFinderValidator, clas12::SectorFinderValidator)
+      DEFINE_IGUANA_VALIDATOR(SectorFinderValidator, clas12::SectorFinderValidator)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

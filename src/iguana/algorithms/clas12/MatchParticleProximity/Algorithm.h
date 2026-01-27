@@ -23,7 +23,7 @@ namespace iguana::clas12 {
   class MatchParticleProximity : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(MatchParticleProximity, clas12::MatchParticleProximity)
+      DEFINE_IGUANA_ALGORITHM(MatchParticleProximity, clas12::MatchParticleProximity)
 
     private: // hooks
       void ConfigHook() override;

@@ -84,7 +84,7 @@ namespace iguana {
       /// use this method if you intend to use `Algorithm::Run`.
       /// @param banks the list of banks this algorithm will use, so that `Algorithm::Run` can cache the indices
       ///        of the banks that it needs
-      /// @see StartHook for an algorithm's specific implementation
+      /// @see StartHook and ConfigHook for an algorithm's specific implementation
       virtual void Start(hipo::banklist& banks) final;
 
       /// @brief Initialize this algorithm before any events are processed, with the intent to process either `hipo::bank` objects or _bank rows_, rather than full `hipo::banklist` objects
@@ -274,20 +274,20 @@ namespace iguana {
       /// Hook called by user from `Algorithm::Start`, typically to load an algorithm's configuration parameters.
       /// Override this method in algorithm implementations.
       /// It is called before `Algorithm::StartHook`.
-      virtual void ConfigHook();
+      virtual void ConfigHook() {}
 
       /// Hook called by user from `Algorithm::Start`.
       /// Override this method in algorithm implementations.
       /// It is called after `Algorithm::ConfigHook`.
-      virtual void StartHook(hipo::banklist& banks);
+      virtual void StartHook(hipo::banklist& banks) {}
 
       /// Hook called by user from `Algorithm::Run`.
       /// Override this method in algorithm implementations.
-      virtual bool RunHook(hipo::banklist& banks) const;
+      virtual bool RunHook(hipo::banklist& banks) const { return true; }
 
       /// Hook called by user from `Algorithm::Stop`
       /// Override this method in algorithm implementations.
-      virtual void StopHook();
+      virtual void StopHook() {}
 
       /// Parse YAML configuration files. Sets `m_yaml_config`.
       void ParseYAMLConfig();

@@ -55,7 +55,6 @@ namespace iguana::physics {
       m_log->Error("Unknown beam particle {:?}", beam_particle);
       throw std::runtime_error("Start failed");
     }
-
   }
 
   ///////////////////////////////////////////////////////////////////////////////

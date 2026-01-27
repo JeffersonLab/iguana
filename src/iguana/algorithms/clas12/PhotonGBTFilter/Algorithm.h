@@ -20,7 +20,7 @@ namespace iguana::clas12 {
   class PhotonGBTFilter : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(PhotonGBTFilter, clas12::PhotonGBTFilter)
+      DEFINE_IGUANA_ALGORITHM(PhotonGBTFilter, clas12::PhotonGBTFilter)
 
     private: // hooks
       void ConfigHook() override;

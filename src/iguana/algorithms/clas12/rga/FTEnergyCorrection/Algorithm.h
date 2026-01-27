@@ -14,7 +14,7 @@ namespace iguana::clas12::rga {
   class FTEnergyCorrection : public Algorithm
   {
 
-    DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::rga::FTEnergyCorrection)
+      DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::rga::FTEnergyCorrection)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;

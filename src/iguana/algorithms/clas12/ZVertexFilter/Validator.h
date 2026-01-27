@@ -12,7 +12,7 @@ namespace iguana::clas12 {
   class ZVertexFilterValidator : public Validator
   {
 
-    DEFINE_IGUANA_VALIDATOR(ZVertexFilterValidator, clas12::ZVertexFilterValidator)
+      DEFINE_IGUANA_VALIDATOR(ZVertexFilterValidator, clas12::ZVertexFilterValidator)
 
     private: // hooks
       void StartHook(hipo::banklist& banks) override;
