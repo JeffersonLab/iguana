@@ -48,7 +48,7 @@ Algorithm execution times in seconds
 row ['Algorithm', *suites.map{|suite|full_suite_name suite}]
 row (suites.size+1).times.map{ |i| '---' }
 
-results.each do |algo_name, algo_results|
+results.sort.each do |algo_name, algo_results|
   times = suites.map{ |suite| algo_results[suite] }
   row ["`#{algo_name}`", *times]
 end
