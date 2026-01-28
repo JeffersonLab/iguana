@@ -1,6 +1,6 @@
 cppyy==3.1.2
 cppyy-backend==1.15.2
-cppyy-cling==6.30.0
+cppyy-cling==6.32.8
 CPyCppyy==1.12.16
 pkgconfig==1.5.5
 hipopy==2.0.1
