@@ -6,7 +6,7 @@ namespace iguana::physics {
 
   REGISTER_IGUANA_VALIDATOR(InclusiveKinematicsValidator);
 
-  void InclusiveKinematicsValidator::Start(hipo::banklist& banks)
+  void InclusiveKinematicsValidator::StartHook(hipo::banklist& banks)
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
@@ -50,7 +50,7 @@ namespace iguana::physics {
   }
 
 
-  bool InclusiveKinematicsValidator::Run(hipo::banklist& banks) const
+  bool InclusiveKinematicsValidator::RunHook(hipo::banklist& banks) const
   {
     // calculate kinematics
     m_algo_seq->Run(banks);
@@ -99,7 +99,7 @@ namespace iguana::physics {
   }
 
 
-  void InclusiveKinematicsValidator::Stop()
+  void InclusiveKinematicsValidator::StopHook()
   {
     if(GetOutputDirectory()) {
       int n_rows = 2;

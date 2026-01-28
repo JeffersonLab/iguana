@@ -16,11 +16,11 @@ namespace iguana::clas12 {
 
       DEFINE_IGUANA_ALGORITHM(CalorimeterLinker, clas12::CalorimeterLinker)
 
-    public:
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    public:
 
       /// @run_function
       /// @param [in] bank_particle `REC::Particle`

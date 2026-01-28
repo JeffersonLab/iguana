@@ -4,13 +4,13 @@ namespace iguana {
 
   REGISTER_IGUANA_ALGORITHM(AlgorithmSequence);
 
-  void AlgorithmSequence::Start(hipo::banklist& banks)
+  void AlgorithmSequence::StartHook(hipo::banklist& banks)
   {
     for(auto const& algo : m_sequence)
       algo->Start(banks);
   }
 
-  bool AlgorithmSequence::Run(hipo::banklist& banks) const
+  bool AlgorithmSequence::RunHook(hipo::banklist& banks) const
   {
     for(auto const& algo : m_sequence) {
       if(!algo->Run(banks))
@@ -19,7 +19,7 @@ namespace iguana {
     return true;
   }
 
-  void AlgorithmSequence::Stop()
+  void AlgorithmSequence::StopHook()
   {
     for(auto const& algo : m_sequence)
       algo->Stop();

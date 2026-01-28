@@ -7,7 +7,7 @@ namespace iguana::physics {
 
   REGISTER_IGUANA_VALIDATOR(DihadronKinematicsValidator);
 
-  void DihadronKinematicsValidator::Start(hipo::banklist& banks)
+  void DihadronKinematicsValidator::StartHook(hipo::banklist& banks)
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
@@ -64,7 +64,7 @@ namespace iguana::physics {
   }
 
 
-  bool DihadronKinematicsValidator::Run(hipo::banklist& banks) const
+  bool DihadronKinematicsValidator::RunHook(hipo::banklist& banks) const
   {
     // calculate kinematics
     m_algo_seq->Run(banks);
@@ -86,7 +86,7 @@ namespace iguana::physics {
   }
 
 
-  void DihadronKinematicsValidator::Stop()
+  void DihadronKinematicsValidator::StopHook()
   {
     if(GetOutputDirectory()) {
       int const n_cols = 4;

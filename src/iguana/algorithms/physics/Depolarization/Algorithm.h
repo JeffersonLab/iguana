@@ -15,11 +15,11 @@ namespace iguana::physics {
 
       DEFINE_IGUANA_ALGORITHM(Depolarization, physics::Depolarization)
 
-    public:
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    public:
 
       /// @run_function
       /// @param [in] inc_kin_bank `%physics::InclusiveKinematics`, produced by the `physics::InclusiveKinematics` algorithm

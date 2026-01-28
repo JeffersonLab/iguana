@@ -15,11 +15,10 @@ namespace iguana::clas12::rga {
 
       DEFINE_IGUANA_VALIDATOR(MomentumCorrectionValidator, clas12::rga::MomentumCorrectionValidator)
 
-    public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
+      void StopHook() override;
 
     private:
 

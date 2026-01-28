@@ -5,13 +5,18 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(MatchParticleProximity, "clas12::MatchParticleProximity");
 
-  void MatchParticleProximity::Start(hipo::banklist& banks)
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void MatchParticleProximity::ConfigHook()
   {
-    // parse config file
-    ParseYAMLConfig();
     o_bank_a = GetOptionScalar<std::string>({"bank_a"});
     o_bank_b = GetOptionScalar<std::string>({"bank_b"});
+  }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void MatchParticleProximity::StartHook(hipo::banklist& banks)
+  {
     // banklist indices
     b_bank_a = GetBankIndex(banks, o_bank_a);
     b_bank_b = GetBankIndex(banks, o_bank_b);
@@ -25,7 +30,7 @@ namespace iguana::clas12 {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  bool MatchParticleProximity::Run(hipo::banklist& banks) const
+  bool MatchParticleProximity::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_bank_a, o_bank_a),
@@ -109,9 +114,5 @@ namespace iguana::clas12 {
   }
 
   ///////////////////////////////////////////////////////////////////////////////
-
-  void MatchParticleProximity::Stop()
-  {
-  }
 
 }

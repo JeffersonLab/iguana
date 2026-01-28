@@ -12,10 +12,9 @@ namespace iguana::example {
       // include the base-class algorithm as an argument
       DEFINE_IGUANA_SUBALGORITHM(ExampleSubclassAlgorithm, example::ExampleSubclassAlgorithm, clas12::rga::FiducialFilterPass1)
 
-    public:
-
-      // make sure base-class specialized `Run` functions (overloads) are not shadowed by any `Run` function overrides here
-      using clas12::rga::FiducialFilterPass1::Run;
+    private: // hooks
+             // if you don't declare a hook, the base-class algorithm's implementation will be used;
+             // in this example, we use all the base-class hooks
   };
 
 }

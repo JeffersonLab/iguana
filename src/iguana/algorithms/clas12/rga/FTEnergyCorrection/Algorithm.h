@@ -16,11 +16,11 @@ namespace iguana::clas12::rga {
 
       DEFINE_IGUANA_ALGORITHM(FTEnergyCorrection, clas12::rga::FTEnergyCorrection)
 
-    public:
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    public:
 
       /// @run_function
       /// @param [in,out] ftParticleBank `RECFT::Particle`, which will have the correction applied

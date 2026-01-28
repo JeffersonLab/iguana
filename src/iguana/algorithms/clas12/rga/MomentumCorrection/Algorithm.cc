@@ -5,7 +5,7 @@ namespace iguana::clas12::rga {
 
   REGISTER_IGUANA_ALGORITHM(MomentumCorrection);
 
-  void MomentumCorrection::Start(hipo::banklist& banks)
+  void MomentumCorrection::StartHook(hipo::banklist& banks)
   {
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_sector   = GetBankIndex(banks, "REC::Particle::Sector");
@@ -13,7 +13,7 @@ namespace iguana::clas12::rga {
   }
 
 
-  bool MomentumCorrection::Run(hipo::banklist& banks) const
+  bool MomentumCorrection::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, "REC::Particle"),
@@ -407,11 +407,6 @@ namespace iguana::clas12::rga {
       dE_loss = exp(-1.871 - 3.063 * pro) + 0.007517;
     }
     return (pro + dE_loss) / pro;
-  }
-
-
-  void MomentumCorrection::Stop()
-  {
   }
 
 }

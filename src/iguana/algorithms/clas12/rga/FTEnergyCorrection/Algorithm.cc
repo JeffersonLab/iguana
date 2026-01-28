@@ -3,13 +3,13 @@
 namespace iguana::clas12::rga {
   REGISTER_IGUANA_ALGORITHM(FTEnergyCorrection);
 
-  void FTEnergyCorrection::Start(hipo::banklist& banks)
+  void FTEnergyCorrection::StartHook(hipo::banklist& banks)
   {
     b_ft_particle = GetBankIndex(banks, "RECFT::Particle");
     electron_mass = particle::mass.at(particle::electron);
   }
 
-  bool FTEnergyCorrection::Run(hipo::banklist& banks) const
+  bool FTEnergyCorrection::RunHook(hipo::banklist& banks) const
   {
     return Run(GetBank(banks, b_ft_particle, "RECFT::Particle"));
   }
@@ -47,10 +47,6 @@ namespace iguana::clas12::rga {
   vector_element_t FTEnergyCorrection::CorrectEnergy(vector_element_t const E) const
   {
     return E + 0.0208922 + 0.050158 * E - 0.0181107 * pow(E, 2) + 0.00305671 * pow(E, 3) - 0.000178235 * pow(E, 4);
-  }
-
-  void FTEnergyCorrection::Stop()
-  {
   }
 
 }

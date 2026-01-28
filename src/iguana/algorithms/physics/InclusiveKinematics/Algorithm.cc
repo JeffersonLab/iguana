@@ -9,10 +9,11 @@ namespace iguana::physics {
 
   REGISTER_IGUANA_ALGORITHM(InclusiveKinematics, "physics::InclusiveKinematics");
 
-  void InclusiveKinematics::Start(hipo::banklist& banks)
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void InclusiveKinematics::ConfigHook()
   {
     // parse config file
-    ParseYAMLConfig();
     o_particle_bank           = GetOptionScalar<std::string>({"particle_bank"});
     o_runnum                  = ConcurrentParamFactory::Create<int>();
     o_target_PxPyPzM          = ConcurrentParamFactory::Create<std::vector<double>>();
@@ -54,7 +55,12 @@ namespace iguana::physics {
       m_log->Error("Unknown beam particle {:?}", beam_particle);
       throw std::runtime_error("Start failed");
     }
+  }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void InclusiveKinematics::StartHook(hipo::banklist& banks)
+  {
     // get bank indices
     b_particle = GetBankIndex(banks, o_particle_bank);
     b_config   = GetBankIndex(banks, "RUN::config");
@@ -76,14 +82,14 @@ namespace iguana::physics {
 
     // instantiate RCDB reader `m_rcdb`
     StartRCDBReader();
-    o_override_beam_energy = GetOptionScalar<double>({"override_beam_energy"});
+    o_override_beam_energy = GetOptionScalar<double>({"override_beam_energy"}); // FIXME: should go in `ConfigHook`?
     if(o_override_beam_energy > 0)
       m_rcdb->SetBeamEnergyOverride(o_override_beam_energy);
   }
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  bool InclusiveKinematics::Run(hipo::banklist& banks) const
+  bool InclusiveKinematics::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, o_particle_bank),
@@ -342,9 +348,5 @@ namespace iguana::physics {
   }
 
   ///////////////////////////////////////////////////////////////////////////////
-
-  void InclusiveKinematics::Stop()
-  {
-  }
 
 }

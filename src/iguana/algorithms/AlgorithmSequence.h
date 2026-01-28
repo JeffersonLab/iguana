@@ -47,11 +47,12 @@ namespace iguana {
 
       DEFINE_IGUANA_ALGORITHM(AlgorithmSequence, seq)
 
-    public:
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
+      void StopHook() override;
 
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    public:
 
       /// Create and add an algorithm to the sequence, by name.
       ///

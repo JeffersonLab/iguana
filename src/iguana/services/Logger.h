@@ -62,6 +62,10 @@ namespace iguana {
       /// @returns the log level
       Level GetLevel();
 
+      /// Get the current log level name
+      /// @returns the log level
+      std::string GetLevelName();
+
       /// Enable styled log printouts, with color and emphasis
       void EnableStyle();
 
