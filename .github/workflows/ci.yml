@@ -180,13 +180,9 @@ jobs:
           done
       - run: tree iguana
       ### run tests
-      ### FIXME: the Python test needs env vars such as PKG_CONFIG_PATH
       - name: meson test
         working-directory: iguana_build
         run: |
-          if [ "${{ matrix.id }}" = "python" ]; then
-            source $GITHUB_WORKSPACE/iguana/bin/this_iguana.sh
-          fi
           if [ "${{ env.verbose_test }}" = "true" ]; then
             stdbuf -o0 meson test --print-errorlogs --verbose --no-stdsplit
           else
