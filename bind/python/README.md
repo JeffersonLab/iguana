@@ -36,7 +36,7 @@ For Python to be able to find and use these bindings, you need to set some envir
 
 ## Running the Examples
 
-Example Python scripts are found in this directory as `iguana_ex_*.py`; they will be installed in the `bin/` subdirectory.
+Example Python scripts are found in the [`examples/` directory as `iguana_ex_python*.py`](/examples); they will be installed in the `bin/` subdirectory.
 
 Most of them are analogous to the C++ examples, but some may be specific to the Python bindings.
 

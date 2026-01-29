@@ -197,10 +197,10 @@ jobs:
       - name: benchmark algorithms
         if: ${{ matrix.id == 'cpp' }}
         run: |
-          for suite in single_threaded memoize; do
+          for suite in st mt; do
             meson test --benchmark --suite $suite -C iguana_build | tee benchmark_$suite.txt
           done
-          iguana_src/.github/make-benchmark-table.rb benchmark_{single_threaded,memoize}.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
+          iguana_src/.github/make-benchmark-table.rb benchmark_{st,mt}.txt | xargs -0 -I{} echo {} >> $GITHUB_STEP_SUMMARY
       ### reproducible build test
       - name: reproducible build test
         if: ${{ matrix.id == 'cpp' }}
