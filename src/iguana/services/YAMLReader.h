@@ -36,6 +36,11 @@ namespace iguana {
       /// Parse the YAML files added by `ConfigFileReader::AddFile`
       void LoadFiles();
 
+      /// Get a `YAML::Node`, given a `YAML::Node` path
+      /// @param node_path the `YAML::Node` path
+      /// @return the `YAML::Node`, if found
+      std::optional<YAML::Node> GetNode(node_path_t node_path);
+
       /// @brief Convert a `YAML::Node` path to a string
       ///
       /// - elements are delimited by forward slashes (`/`)

@@ -42,6 +42,7 @@ namespace iguana {
     /// PDG codes
     enum PDG {
       electron     = 11,
+      positron     = -11,
       photon       = 22,
       proton       = 2212,
       antiproton   = -2212,
@@ -56,6 +57,7 @@ namespace iguana {
     /// Particle names
     const std::unordered_map<PDG, std::string> name{
       { electron, "electron" },
+      { positron, "positron" },
       { photon, "photon" },
       { proton, "proton" },
       { antiproton, "antiproton" },
@@ -70,6 +72,7 @@ namespace iguana {
     /// Particle titles
     const std::unordered_map<PDG, std::string> title{
       { electron, "e^{-}" },
+      { positron, "e^{+}" },
       { photon, "#gamma" },
       { proton, "p" },
       { antiproton, "#bar{p}" },
@@ -84,6 +87,7 @@ namespace iguana {
     /// Particle mass in GeV
     const std::unordered_map<PDG, double> mass{
       { electron, 0.000511 },
+      { positron, 0.000511 },
       { photon, 0.0 },
       { proton, 0.938272 },
       { antiproton, 0.938272 },

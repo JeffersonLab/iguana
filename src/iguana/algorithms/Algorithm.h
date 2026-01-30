@@ -8,10 +8,11 @@
 
 #include "AlgorithmBoilerplate.h"
 #include "iguana/bankdefs/BankDefs.h"
+#include "iguana/services/DataFileReader.h"
 #include "iguana/services/Deprecated.h"
+#include "iguana/services/GlobalParam.h"
 #include "iguana/services/RCDBReader.h"
 #include "iguana/services/YAMLReader.h"
-#include <iguana/services/GlobalParam.h>
 
 namespace iguana {
 
@@ -167,6 +168,11 @@ namespace iguana {
       template <typename OPTION_TYPE>
       std::set<OPTION_TYPE> GetOptionSet(YAMLReader::node_path_t node_path = {}) const;
 
+      /// Get the `YAML::Node` for an option
+      /// @param node_path the `YAML::Node` identifier path to search
+      /// @returns the `YAML::Node`
+      YAML::Node GetOptionNode(YAMLReader::node_path_t node_path) const;
+
       /// Set the name of this algorithm
       /// @param name the new name
       void SetName(std::string_view name);
@@ -188,6 +194,11 @@ namespace iguana {
       /// @see `Algorithm::SetConfigFile`
       /// @param name the directory name
       void SetConfigDirectory(std::string const& name);
+
+      /// Get the full path to a data file, such as a machine-learning model
+      /// @param name the name of the file; if found in the user's current working directory (`./`), that will be the file that is used;
+      /// otherwise the _installed_ file (in `$IGUANA/share/`) will be used by default
+      std::string GetDataFile(std::string const& name);
 
       /// Get the index of a bank in a `hipo::banklist`; throws an exception if the bank is not found
       /// @param banks the list of banks this algorithm will use
@@ -347,6 +358,9 @@ namespace iguana {
 
       /// Data structure to hold configuration options set by `Algorithm::SetOption`
       std::unordered_map<std::string, option_t> m_option_cache;
+
+      /// Data file reader
+      std::unique_ptr<DataFileReader> m_datafile_reader;
   };
 
   //////////////////////////////////////////////////////////////////////////////

@@ -116,6 +116,19 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  YAML::Node Algorithm::GetOptionNode(YAMLReader::node_path_t node_path) const
+  {
+    node_path.push_front(m_class_name);
+    auto node = m_yaml_config->GetNode(node_path);
+    if(!node.has_value()) {
+      m_log->Error("Algorithm::GetOptionNode failed to find node");
+      throw std::runtime_error("config file parsing issue");
+    }
+    return node.value();
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::SetName(std::string_view name)
   {
     Object::SetName(name);
@@ -149,6 +162,17 @@ namespace iguana {
   void Algorithm::SetConfigDirectory(std::string const& name)
   {
     o_user_config_dir = SetOption("config_dir", name);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  std::string Algorithm::GetDataFile(std::string const& name)
+  {
+    if(!m_datafile_reader) {
+      m_datafile_reader = std::make_unique<DataFileReader>(ConfigFileReader::ConvertAlgoNameToConfigDir(m_class_name), "data|" + m_name);
+      m_datafile_reader->SetLogLevel(m_log->GetLevel());
+    }
+    return m_datafile_reader->FindFile(name);
   }
 
   ///////////////////////////////////////////////////////////////////////////////

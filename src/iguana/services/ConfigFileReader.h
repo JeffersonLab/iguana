@@ -12,7 +12,8 @@ namespace iguana {
     public:
 
       /// @param name the name of this configuration file handler
-      ConfigFileReader(std::string_view name = "config");
+      /// @param set_default_dirs if true, add the default configuration directories
+      ConfigFileReader(std::string_view name = "config", bool set_default_dirs = true);
 
       /// Get the config files' _fixed_ installation prefix
       /// @warning if the Iguana installation is _relocated_, this directory will **not** be correct,
@@ -43,6 +44,11 @@ namespace iguana {
       /// @param verbose_errors if true, print errors and warnings
       /// @return the found configuration file (with the directory)
       std::string FindFile(std::string name, bool verbose_errors = true);
+
+      /// Convert a full algorithm name to its corresponding default config file subdirectory
+      /// @param algo_name the algorithm name
+      /// @return the config file subdirectory
+      static std::string ConvertAlgoNameToConfigDir(std::string_view algo_name);
 
       /// Convert a full algorithm name to its corresponding default config file name
       /// @param algo_name the algorithm name
