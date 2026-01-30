@@ -9,9 +9,7 @@ namespace iguana::physics {
   /// @algo_brief{Calculate semi-inclusive hadron kinematic quantities}
   /// @algo_type_creator
   ///
-  /// @begin_doc_config{physics/SingleHadronKinematics}
-  /// @config_param{hadron_list | list[int] | calculate kinematics for these hadron PDGs}
-  /// @end_doc
+  /// @doc_config{physics/SingleHadronKinematics}
   ///
   /// The output bank `%physics::SingleHadronKinematics` will have the same number of rows as the input particle bank
   /// - we want the output bank to have the same number of rows and ordering as the input
