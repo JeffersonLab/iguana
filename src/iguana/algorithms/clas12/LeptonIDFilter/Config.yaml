@@ -37,7 +37,7 @@ clas12::LeptonIDFilter:
       electron: 'weights/9_BDT_positrons_S19.weights.xml'
       positron: 'weights/9_BDT_positrons_S19.weights.xml'
 
-  # value of the score to apply the cut
+  # value of the score to apply the cut; the algorithm will keep all particles that have a score grater than ths value
   cut: 0.0
 
   # option string to pass to `TMVA::Reader` constructor,

@@ -69,9 +69,6 @@ namespace iguana::clas12 {
   /// Using those variables, it call the TMVA method using the weight file, and it computes a score. By a pplying a cut to the score we can separate leptons from pions.
   ///
   /// @begin_doc_config{clas12/LeptonIDFilter}
-  /// @config_param{pids | int | PIDs of the particle; -11 for positrons and 11 for electrons}
-  /// @config_param{weightfile | string | Location of the weight file of the classifier}
-  /// @config_param{cut | double | Value of the score to apply the cut. The algorithm will keep all particles that have a score grater than ths value}
   /// @end_doc
   class LeptonIDFilter : public Algorithm
   {
@@ -98,13 +95,6 @@ namespace iguana::clas12 {
       /// @returns the key to be used in `::Filter`
       concurrent_key_t PrepareEvent(int const runnum) const;
 
-      /// @brief Using the pindex, retrieves the necessary variables from banks
-      /// @param plepton pindex of the lepton
-      /// @param particle_bank the particle bank
-      /// @param calorimeter_bank the calorimeter bank
-      /// @returns LeptonIDVars, the variables required for identification
-      LeptonIDVars GetLeptonIDVariables(int const plepton, hipo::bank const& particle_bank, hipo::bank const& calorimeter_bank) const;
-
       /// @brief Using the LeptonIDVars, variables calculate the score
       /// @param lepton_vars LeptonIDVars variables
       /// @param key the return value of `::PrepareEvent`
@@ -120,6 +110,14 @@ namespace iguana::clas12 {
 
       // Reload function
       void Reload(int const runnum, concurrent_key_t key) const;
+
+      /// @brief Using the pindex, retrieves the necessary variables from banks
+      /// @param plepton pindex of the lepton
+      /// @param pdg the PDG code of the lepton
+      /// @param particle_bank the particle bank
+      /// @param calorimeter_bank the calorimeter bank
+      /// @returns LeptonIDVars, the variables required for identification
+      LeptonIDVars GetLeptonIDVariables(int const plepton, int const pdg, hipo::bank const& particle_bank, hipo::bank const& calorimeter_bank) const;
 
       /// TMVA reader
       std::unique_ptr<TMVA::Reader> readerTMVA;

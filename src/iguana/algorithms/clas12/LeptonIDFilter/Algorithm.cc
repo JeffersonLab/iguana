@@ -1,4 +1,5 @@
 #include "Algorithm.h"
+#include "iguana/algorithms/TypeDefs.h"
 
 #include <Math/Vector4D.h>
 #include <cmath>
@@ -82,8 +83,7 @@ namespace iguana::clas12 {
         // status cut
         if(std::abs(status) >= 2000 && std::abs(status) < 4000) {
           m_log->Trace("Found lepton: pindex={}", row);
-          auto lepton_vars  = GetLeptonIDVariables(row, bank, calorimeterBank);
-          lepton_vars.pid   = pid;
+          auto lepton_vars  = GetLeptonIDVariables(row, pid, bank, calorimeterBank);
           lepton_vars.score = CalculateScore(lepton_vars, key);
           return Filter(lepton_vars.score) ? 1 : 0;
         }
@@ -132,23 +132,24 @@ namespace iguana::clas12 {
 
   //////////////////////////////////////////////////////////////////////////////////
 
-  LeptonIDVars LeptonIDFilter::GetLeptonIDVariables(int const plepton, hipo::bank const& particle_bank, hipo::bank const& calorimeter_bank) const
+  LeptonIDVars LeptonIDFilter::GetLeptonIDVariables(int const plepton, int const pdg, hipo::bank const& particle_bank, hipo::bank const& calorimeter_bank) const
   {
 
     double px = particle_bank.getFloat("px", plepton);
     double py = particle_bank.getFloat("py", plepton);
     double pz = particle_bank.getFloat("pz", plepton);
-    double E  = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(0.000511, 2));
+    auto mass = particle::get(particle::mass, pdg).value();
+    double E  = std::sqrt(std::pow(px, 2) + std::pow(py, 2) + std::pow(pz, 2) + std::pow(mass, 2));
     ROOT::Math::PxPyPzMVector vec_lepton(px, py, pz, E);
 
     LeptonIDVars lepton;
 
+    lepton.pid   = pdg;
     lepton.P     = vec_lepton.P();
     lepton.Theta = vec_lepton.Theta();
     lepton.Phi   = vec_lepton.Phi();
 
     m_log->Debug("Variables obtained from particle bank");
-
 
     lepton.m2pcal  = -1;
     lepton.m2ecin  = -1;
@@ -190,10 +191,10 @@ namespace iguana::clas12 {
     // Assigning variables from lepton_vars for TMVA method
     std::string weightsfile;
     switch(lepton_vars.pid) {
-    case 11:
+    case particle::PDG::electron:
       weightsfile = o_weightfile_electron->Load(key);
       break;
-    case -11:
+    case particle::PDG::positron:
       weightsfile = o_weightfile_positron->Load(key);
       break;
     default:
