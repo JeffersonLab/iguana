@@ -5,9 +5,10 @@ physics::DihadronKinematics:
   particle_bank: 'REC::Particle'
 
   # list of hadrons used to pair dihadrons
+  # - each hadron from `hadron_a_list` will be paired to each hadron from `hadron_b_list`
   hadron_a_list: [ 211 ]
   hadron_b_list: [ -211, 211, 2212 ]
 
-  # calculation methods
+  # calculation methods; see documentation and source code for details
   phi_r_method: RT_via_covariant_kT
   theta_method: hadron_a

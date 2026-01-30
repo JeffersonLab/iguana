@@ -14,13 +14,7 @@ namespace iguana::clas12::rga {
   ///   - `REC::Particle::Traj`, created by algorithm `iguana::clas12::TrajLinker`
   ///   - `REC::Particle::Calorimeter`, created by algorithm `iguana::clas12::CalorimeterLinker`
   ///
-  /// @begin_doc_config{clas12/rga/FiducialFilterPass1}
-  /// @config_param{pass | int | cook type to use for assigning fiducial cuts}
-  /// @config_param{pcal_electron_cut_level | string | cut level for PCAL homogeneous cuts for electrons and positrons, one of: loose, medium, tight}
-  /// @config_param{pcal_photon_cut_level | string | cut level for PCAL homogeneous cuts for photons, one of: loose, medium, tight}
-  /// @config_param{enable_pcal_cuts | int | enable (1) or disable (0) PCAL cuts }
-  /// @config_param{enable_dc_cuts | int | enable (1) or disable (0) DC cuts }
-  /// @end_doc
+  /// @doc_config{clas12/rga/FiducialFilterPass1}
   class FiducialFilterPass1 : public Algorithm
   {
 

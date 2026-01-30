@@ -25,18 +25,7 @@ namespace iguana::clas12::rga {
   /// be reading data which lack certain banks. If you use these functions, take a look at all them
   /// to decide which one best suits your use case.
   ///
-  /// @begin_doc_config{clas12/rga/FiducialFilterPass2}
-  /// @config_param{calorimeter.strictness      | int          | calorimeter cut strictness}
-  /// @config_param{forward_tagger.radius       | list[double] | FT allowed radial window (cm)}
-  /// @config_param{forward_tagger.holes_flat   | list[double] | FT circular holes (radius, x, y)}
-  /// @config_param{cvt.edge_layers             | list[int]    | layers to apply the edge>edge_min test to (all); missing layers are treated as pass}
-  /// @config_param{cvt.edge_min                | double       | edge > 0 to ensure tracks inside CVT}
-  /// @config_param{cvt.phi_forbidden_deg       | list[double] | forbidden phi wedges in degrees (open intervals)}
-  /// @config_param{dc.theta_small_deg          | double       | theta boundary (degrees) for the special inbending case}
-  /// @config_param{dc.thresholds_out           | list[double] | outbending thresholds [Region1, Region2, Region3] (cm)}
-  /// @config_param{dc.thresholds_in_smallTheta | list[double] | inbending thresholds when theta < theta_small_deg (cm)}
-  /// @config_param{dc.thresholds_in_largeTheta | list[double] | inbending thresholds when theta >= theta_small_deg (cm)}
-  /// @end_doc
+  /// @doc_config{clas12/rga/FiducialFilterPass2}
   class FiducialFilterPass2 : public Algorithm
   {
       DEFINE_IGUANA_ALGORITHM(FiducialFilterPass2, clas12::rga::FiducialFilterPass2)

@@ -6,10 +6,7 @@ namespace iguana::clas12 {
 
   /// @algo_brief{Simple particle matching by proximity, for example, MC truth-matching}
   /// @algo_type_creator
-  /// @begin_doc_config{clas12/MatchParticleProximity}
-  /// @config_param{bank_a | string | the particle bank to match from}
-  /// @config_param{bank_b | string | the particle bank to match to}
-  /// @end_doc
+  /// @doc_config{clas12/MatchParticleProximity}
   ///
   /// This algorithm matches one particle bank to another, by smallest proximity, where proximity
   /// is the Euclidean distance in (theta,phi) space.

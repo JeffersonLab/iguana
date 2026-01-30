@@ -3,6 +3,10 @@
 #   files from other algorithms
 # - See also the test configuration files in ../../tests/config and how they
 #   may be accessed in ../../tests/include/TestConfig.h
+# - Please add comments describing each configuration parameter, since this
+#   YAML file will be used in documentation
 example::ExampleAlgorithm:
+  # an example `integer` configuration parameter
   exampleInt: 8
+  # an example `double` configuration parameter
   exampleDouble: 7.5

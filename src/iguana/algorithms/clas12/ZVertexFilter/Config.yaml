@@ -5,6 +5,9 @@ clas12::ZVertexFilter:
   particle_bank: 'REC::Particle'
 
   # scattered electron cuts
+  # - lower and upper electron z-vertex cuts
+  # - run-range dependent
+  # - cuts are not applied to FT electrons (FD and CD only)
   electron:
 
     # default cuts

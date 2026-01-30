@@ -8,13 +8,7 @@ namespace iguana::physics {
 
   /// @algo_brief{Calculate inclusive kinematics quantities}
   /// @algo_type_creator
-  /// @begin_doc_config{physics/InclusiveKinematics}
-  /// @config_param{beam_direction | list[double] | beam direction vector}
-  /// @config_param{target_particle | string | target particle}
-  /// @config_param{beam_particle | string | beam particle}
-  /// @config_param{reconstruction | string | kinematics reconstruction method; only `scattered_lepton` is available at this time}
-  /// @config_param{lepton_finder | string | algorithm to find the scattered lepton}
-  /// @end_doc
+  /// @doc_config{physics/InclusiveKinematics}
   /// @rcdb_note
   class InclusiveKinematics : public Algorithm
   {

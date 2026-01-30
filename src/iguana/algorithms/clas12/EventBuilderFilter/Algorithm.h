@@ -7,9 +7,7 @@ namespace iguana::clas12 {
   /// @algo_brief{Filter the particle bank (`REC::Particle`, or similar) bank by PID from the Event Builder}
   /// @algo_type_filter
   ///
-  /// @begin_doc_config{clas12/EventBuilderFilter}
-  /// @config_param{pids | list[int] | list of PDG codes to filter}
-  /// @end_doc
+  /// @doc_config{clas12/EventBuilderFilter}
   class EventBuilderFilter : public Algorithm
   {
 
