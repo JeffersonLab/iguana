@@ -4,7 +4,7 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(PhotonGBTFilterValidator);
 
-  void PhotonGBTFilterValidator::Start(hipo::banklist& banks)
+  void PhotonGBTFilterValidator::StartHook(hipo::banklist& banks)
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
@@ -26,7 +26,7 @@ namespace iguana::clas12 {
     InitializeHistograms();
   }
 
-  bool PhotonGBTFilterValidator::Run(hipo::banklist& banks) const
+  bool PhotonGBTFilterValidator::RunHook(hipo::banklist& banks) const
   {
     // get the particle bank
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -113,7 +113,7 @@ namespace iguana::clas12 {
     }
   }
 
-  void PhotonGBTFilterValidator::Stop()
+  void PhotonGBTFilterValidator::StopHook()
   {
     if(GetOutputDirectory()) {
       int n_rows = 2;

@@ -8,13 +8,18 @@ namespace iguana::physics {
 
   REGISTER_IGUANA_ALGORITHM(SingleHadronKinematics, "physics::SingleHadronKinematics");
 
-  void SingleHadronKinematics::Start(hipo::banklist& banks)
-  {
-    // parse config file
-    ParseYAMLConfig();
-    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
-    o_hadron_pdgs   = GetOptionSet<int>("hadron_list");
+  ///////////////////////////////////////////////////////////////////////////////
 
+  void SingleHadronKinematics::ConfigHook()
+  {
+    o_particle_bank = GetOptionScalar<std::string>({"particle_bank"});
+    o_hadron_pdgs   = GetOptionSet<int>({"hadron_list"});
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void SingleHadronKinematics::StartHook(hipo::banklist& banks)
+  {
     // get bank indices
     b_particle = GetBankIndex(banks, o_particle_bank);
     b_inc_kin  = GetBankIndex(banks, "physics::InclusiveKinematics");
@@ -36,7 +41,7 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  bool SingleHadronKinematics::Run(hipo::banklist& banks) const
+  bool SingleHadronKinematics::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, o_particle_bank),
@@ -175,9 +180,5 @@ namespace iguana::physics {
   }
 
   ///////////////////////////////////////////////////////////////////////////////
-
-  void SingleHadronKinematics::Stop()
-  {
-  }
 
 }

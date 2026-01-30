@@ -8,15 +8,15 @@ namespace iguana::physics {
 
   REGISTER_IGUANA_ALGORITHM(DihadronKinematics, "physics::DihadronKinematics");
 
-  void DihadronKinematics::Start(hipo::banklist& banks)
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void DihadronKinematics::ConfigHook()
   {
-    // parse config file
-    ParseYAMLConfig();
-    o_particle_bank = GetOptionScalar<std::string>("particle_bank");
-    o_hadron_a_pdgs = GetOptionSet<int>("hadron_a_list");
-    o_hadron_b_pdgs = GetOptionSet<int>("hadron_b_list");
-    o_phi_r_method  = GetOptionScalar<std::string>("phi_r_method");
-    o_theta_method  = GetOptionScalar<std::string>("theta_method");
+    o_particle_bank = GetOptionScalar<std::string>({"particle_bank"});
+    o_hadron_a_pdgs = GetOptionSet<int>({"hadron_a_list"});
+    o_hadron_b_pdgs = GetOptionSet<int>({"hadron_b_list"});
+    o_phi_r_method  = GetOptionScalar<std::string>({"phi_r_method"});
+    o_theta_method  = GetOptionScalar<std::string>({"theta_method"});
 
     // check phiR method
     if(o_phi_r_method == "RT_via_covariant_kT")
@@ -29,7 +29,12 @@ namespace iguana::physics {
       m_theta_method = e_hadron_a;
     else
       throw std::runtime_error(fmt::format("unknown theta_method: {:?}", o_theta_method));
+  }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void DihadronKinematics::StartHook(hipo::banklist& banks)
+  {
     // get bank indices
     b_particle = GetBankIndex(banks, o_particle_bank);
     b_inc_kin  = GetBankIndex(banks, "physics::InclusiveKinematics");
@@ -53,7 +58,7 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  bool DihadronKinematics::Run(hipo::banklist& banks) const
+  bool DihadronKinematics::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, o_particle_bank),
@@ -247,9 +252,5 @@ namespace iguana::physics {
   }
 
   ///////////////////////////////////////////////////////////////////////////////
-
-  void DihadronKinematics::Stop()
-  {
-  }
 
 }

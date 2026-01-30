@@ -7,13 +7,11 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(ZVertexFilterValidator);
 
-  void ZVertexFilterValidator::Start(hipo::banklist& banks)
+  void ZVertexFilterValidator::StartHook(hipo::banklist& banks)
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::ZVertexFilter");
-    m_algo_seq->SetOption<std::vector<int>>("clas12::ZVertexFilter", "pids", u_pdgtocut_list);
-    m_algo_seq->SetOption<std::vector<double>>("clas12::ZVertexFilter", "cuts", u_cuts_list);
     m_algo_seq->Start(banks);
 
     // get bank indices
@@ -49,7 +47,7 @@ namespace iguana::clas12 {
   }
 
 
-  bool ZVertexFilterValidator::Run(hipo::banklist& banks) const
+  bool ZVertexFilterValidator::RunHook(hipo::banklist& banks) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
 
@@ -85,7 +83,7 @@ namespace iguana::clas12 {
     return true;
   }
 
-  void ZVertexFilterValidator::Stop()
+  void ZVertexFilterValidator::StopHook()
   {
     if(GetOutputDirectory()) {
       for(auto const& [pdg, plots] : u_zvertexplots) {

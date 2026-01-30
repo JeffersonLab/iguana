@@ -5,14 +5,20 @@ namespace iguana::clas12::rga {
 
   REGISTER_IGUANA_ALGORITHM(FiducialFilterPass1);
 
-  void FiducialFilterPass1::Start(hipo::banklist& banks)
-  {
-    ParseYAMLConfig();
-    o_pcal_electron_cut_level = ParseCutLevel(GetOptionScalar<std::string>("pcal_electron_cut_level"));
-    o_pcal_photon_cut_level   = ParseCutLevel(GetOptionScalar<std::string>("pcal_photon_cut_level"));
-    o_enable_pcal_cuts        = GetOptionScalar<int>("enable_pcal_cuts") == 1;
-    o_enable_dc_cuts          = GetOptionScalar<int>("enable_dc_cuts") == 1;
+  //////////////////////////////////////////////////////////////////////////////////
 
+  void FiducialFilterPass1::ConfigHook()
+  {
+    o_pcal_electron_cut_level = ParseCutLevel(GetOptionScalar<std::string>({"pcal_electron_cut_level"}));
+    o_pcal_photon_cut_level   = ParseCutLevel(GetOptionScalar<std::string>({"pcal_photon_cut_level"}));
+    o_enable_pcal_cuts        = GetOptionScalar<int>({"enable_pcal_cuts"}) == 1;
+    o_enable_dc_cuts          = GetOptionScalar<int>({"enable_dc_cuts"}) == 1;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////
+
+  void FiducialFilterPass1::StartHook(hipo::banklist& banks)
+  {
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
     b_traj     = GetBankIndex(banks, "REC::Particle::Traj");
@@ -21,7 +27,7 @@ namespace iguana::clas12::rga {
 
   //////////////////////////////////////////////////////////////////////////////////
 
-  bool FiducialFilterPass1::Run(hipo::banklist& banks) const
+  bool FiducialFilterPass1::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, "REC::Particle"),
@@ -74,12 +80,6 @@ namespace iguana::clas12::rga {
 
     ShowBank(particleBank, Logger::Header("OUTPUT PARTICLES"));
     return !particleBank.getRowList().empty();
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////
-
-  void FiducialFilterPass1::Stop()
-  {
   }
 
   //////////////////////////////////////////////////////////////////////////////////

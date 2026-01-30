@@ -5,11 +5,12 @@ This documentation shows how to use the Iguana algorithms. For more documentatio
 
 - **Tip:** To toggle between light and dark mode for this webpage, click the button in the top-right corner, next to the search box.
 
-| Quick Links ||
-| --- | --- |
-| @spacer [List of All Algorithms](#algo) @spacer | @spacer [List of Algorithms Organized by Run Group, <i>etc</i>.](#algo_namespaces) @spacer |
-| @spacer [List of Action Functions](#action) @spacer | @spacer [Configuring Algorithms](#mainpageConfiguring) @spacer |
-| @spacer [Banks Created by Iguana](#created_banks) @spacer | @spacer [Examples of Code](#mainpageExample) @spacer |
+| Quick Links                                               |                                                                                            |
+| ---                                                       | ---                                                                                        |
+| @spacer [List of All Algorithms](#algo) @spacer           | @spacer [List of Algorithms Organized by Run Group, <i>etc</i>.](#algo_namespaces) @spacer |
+| @spacer [List of Action Functions](#action) @spacer       | @spacer [How to Configure Algorithms](#mainpageConfiguring) @spacer                        |
+| @spacer [Banks Created by Iguana](#created_banks) @spacer | @spacer [How to Run Algorithms](#mainpageRunning) @spacer                                  |
+|                                                           | @spacer [Examples of Code](#mainpageExample) @spacer                                       |
 
 <br><hr>
 
@@ -243,7 +244,11 @@ Many algorithms are configurable. An algorithm's configuration parameters and th
 
 Iguana provides a few ways to configure algorithms; in general, you may either:
 - use YAML for configuration that gets applied at runtime, _i.e._, no need to recompile
-- use @link iguana::Algorithm::SetOption @endlink to configure an algorithm more directly, which may require recompilation, depending on how you use Iguana algorithms
+    - this is the preferred method for configuration
+- use @link iguana::Algorithm::SetOption @endlink to configure an algorithm more directly, however:
+    - this may require recompilation, depending on how you use Iguana algorithms
+    - some options cannot be set this way, in particular, options that depend on data, such as a run number-dependent vertex cut
+    - using the YAML file is preferred in general (whereas @link iguana::Algorithm::SetOption @endlink is useful for algorithm Validators)
 
 The default configuration YAML files are installed in the `etc/` subdirectory of the Iguana installation. If you have set the Iguana environment variables using, _e.g._ `source this_iguana.sh`, or if you are using the version of Iguana installed on `ifarm`, you will have the environment variable `$IGUANA_CONFIG_PATH` set to include this `etc/` directory.
 
@@ -276,13 +281,15 @@ physics::AlgorithmB
     reptileA: gecko
     reptileB: tuatara
 ```
-Custom YAML file, with some changes such as widening `AlgorithmA`'s `cuts`:
+Custom YAML file, with some changes such as widening `AlgorithmA`'s `cuts`, and controlling the log levels:
 ```yaml
 ### custom YAML file
 physics::AlgorithmA
+  log: info # set the log level for this algorithm
   cuts: [-2, 2]
 
 physics::AlgorithmB
+  log: debug # set the log level for this algorithm
   valueA: 5
   valueB: 0.14
   reptiles:

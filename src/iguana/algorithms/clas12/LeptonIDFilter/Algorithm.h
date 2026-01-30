@@ -32,30 +32,32 @@ struct LeptonIDVars {
     /// @return list of variable values, to pass to `TMVA::Reader::EvaluateMVA`
     std::vector<Double_t> GetValues()
     {
-      return { // NOTE: order must be consistent with `names`
-        P,
-        Theta,
-        Phi,
-        SFpcal,
-        SFecin,
-        SFecout,
-        m2pcal,
-        m2ecin,
-        m2ecout,
+      return {
+          // NOTE: order must be consistent with `names`
+          P,
+          Theta,
+          Phi,
+          SFpcal,
+          SFecin,
+          SFecout,
+          m2pcal,
+          m2ecin,
+          m2ecout,
       };
     }
 
     /// list of variable names, to pass to `TMVA::Reader` constructor
-    inline static std::vector<std::string> names = { // NOTE: order must be consistent with `GetValues`
-      "P",
-      "Theta",
-      "Phi",
-      "SFPCAL",
-      "SFECIN",
-      "SFECOUT",
-      "m2PCAL",
-      "m2ECIN",
-      "m2ECOUT",
+    inline static std::vector<std::string> names = {
+        // NOTE: order must be consistent with `GetValues`
+        "P",
+        "Theta",
+        "Phi",
+        "SFPCAL",
+        "SFECIN",
+        "SFECOUT",
+        "m2PCAL",
+        "m2ECIN",
+        "m2ECOUT",
     };
 };
 

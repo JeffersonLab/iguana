@@ -30,20 +30,20 @@ namespace iguana::clas12 {
       {{16042, 16772, 2}, [](std::vector<float> const& data) { return ApplyCatboostModel_RGC_Summer2022_pass1(data); }} // Summer2022 RGC Inbending (no pass2 currently)
   };
 
-  void PhotonGBTFilter::Start(hipo::banklist& banks)
+  void PhotonGBTFilter::ConfigHook()
   {
+    o_pass      = GetOptionScalar<int>({"pass"});
+    o_threshold = GetOptionScalar<double>({"threshold"});
+  }
 
-    ParseYAMLConfig();
-
+  void PhotonGBTFilter::StartHook(hipo::banklist& banks)
+  {
     b_particle    = GetBankIndex(banks, "REC::Particle");
     b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
     b_config      = GetBankIndex(banks, "RUN::config");
-
-    o_pass      = GetOptionScalar<int>("pass");
-    o_threshold = GetOptionScalar<double>("threshold");
   }
 
-  bool PhotonGBTFilter::Run(hipo::banklist& banks) const
+  bool PhotonGBTFilter::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, "REC::Particle"),
@@ -439,10 +439,6 @@ namespace iguana::clas12 {
     // Default to RGA inbending pass1 if no match found
     m_log->Warn("Run Number {} with pass {} has no matching PhotonGBT model...Defaulting to RGA inbending pass1...", runnum, o_pass);
     return [](std::vector<float> const& data) { return ApplyCatboostModel_RGA_inbending_pass1(data); };
-  }
-
-  void PhotonGBTFilter::Stop()
-  {
   }
 
 }

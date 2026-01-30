@@ -178,14 +178,14 @@ namespace iguana::clas12 {
     // Assigning variables from lepton_vars for TMVA method
     std::string weightsfile;
     switch(lepton_vars.pid) {
-      case 11:
-        weightsfile = o_weightfile_electron->Load(key);
-        break;
-      case -11:
-        weightsfile = o_weightfile_positron->Load(key);
-        break;
-      default:
-        throw std::runtime_error(fmt::format("unknown lepton PDG code {}", lepton_vars.pid));
+    case 11:
+      weightsfile = o_weightfile_electron->Load(key);
+      break;
+    case -11:
+      weightsfile = o_weightfile_positron->Load(key);
+      break;
+    default:
+      throw std::runtime_error(fmt::format("unknown lepton PDG code {}", lepton_vars.pid));
     }
     return readerTMVA->EvaluateMVA(lepton_vars.GetValues(), weightsfile);
   }

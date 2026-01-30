@@ -21,6 +21,19 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  void Algorithm::Start(hipo::banklist& banks)
+  {
+    ParseYAMLConfig();
+    m_log->Debug(fmt::format("/{}\\", Logger::Header("ConfigHook")));
+    ConfigHook();
+    m_log->Debug(fmt::format("\\{:=^50}/", ""));
+    m_log->Debug(fmt::format("/{}\\", Logger::Header("StartHook")));
+    StartHook(banks);
+    m_log->Debug(fmt::format("\\{:=^50}/", ""));
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   void Algorithm::Start()
   {
     m_rows_only             = true;
@@ -30,59 +43,76 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  template <typename OPTION_TYPE>
-  OPTION_TYPE Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const
+  bool Algorithm::Run(hipo::banklist& banks) const
   {
-    CompleteOptionNodePath(key, node_path);
+    m_log->Trace("=========== {}::RunHook ===========", m_class_name);
+    return RunHook(banks);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void Algorithm::Stop()
+  {
+    m_log->Trace(fmt::format("/{}\\", Logger::Header("StopHook")));
+    StopHook();
+    m_log->Trace(fmt::format("\\{:=^50}/", ""));
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  template <typename OPTION_TYPE>
+  OPTION_TYPE Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const
+  {
+    auto key = YAMLReader::NodePath2String(node_path);
     auto opt = GetCachedOption<OPTION_TYPE>(key);
+    node_path.push_front(m_class_name);
     if(!opt.has_value()) {
       opt = m_yaml_config->GetScalar<OPTION_TYPE>(node_path);
     }
     if(!opt.has_value()) {
-      m_log->Error("Failed to `GetOptionScalar` for key {:?}", key);
-      throw std::runtime_error("config file parsing issue");
+      throw std::runtime_error(fmt::format("Failed to get scalar option for parameter {:?} for algorithm {:?}", key, m_class_name));
     }
     PrintOptionValue(key, opt.value());
     return opt.value();
   }
-  template int Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template double Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::string Algorithm::GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template int Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const;
+  template double Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const;
+  template std::string Algorithm::GetOptionScalar(YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
-  std::vector<OPTION_TYPE> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const
+  std::vector<OPTION_TYPE> Algorithm::GetOptionVector(YAMLReader::node_path_t node_path) const
   {
-    CompleteOptionNodePath(key, node_path);
+    auto key = YAMLReader::NodePath2String(node_path);
     auto opt = GetCachedOption<std::vector<OPTION_TYPE>>(key);
+    node_path.push_front(m_class_name);
     if(!opt.has_value()) {
       opt = m_yaml_config->GetVector<OPTION_TYPE>(node_path);
     }
     if(!opt.has_value()) {
-      m_log->Error("Failed to `GetOptionVector` for key {:?}", key);
-      throw std::runtime_error("config file parsing issue");
+      throw std::runtime_error(fmt::format("Failed to get vector option for parameter {:?} for algorithm {:?}", key, m_class_name));
     }
     PrintOptionValue(key, opt.value());
     return opt.value();
   }
-  template std::vector<int> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::vector<double> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::vector<std::string> Algorithm::GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template std::vector<int> Algorithm::GetOptionVector(YAMLReader::node_path_t node_path) const;
+  template std::vector<double> Algorithm::GetOptionVector(YAMLReader::node_path_t node_path) const;
+  template std::vector<std::string> Algorithm::GetOptionVector(YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
 
   template <typename OPTION_TYPE>
-  std::set<OPTION_TYPE> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const
+  std::set<OPTION_TYPE> Algorithm::GetOptionSet(YAMLReader::node_path_t node_path) const
   {
-    auto val_vec = GetOptionVector<OPTION_TYPE>(key, node_path);
+    auto val_vec = GetOptionVector<OPTION_TYPE>(node_path);
     std::set<OPTION_TYPE> val_set;
     std::copy(val_vec.begin(), val_vec.end(), std::inserter(val_set, val_set.end()));
     return val_set;
   }
-  template std::set<int> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::set<double> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const;
-  template std::set<std::string> Algorithm::GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path) const;
+  template std::set<int> Algorithm::GetOptionSet(YAMLReader::node_path_t node_path) const;
+  template std::set<double> Algorithm::GetOptionSet(YAMLReader::node_path_t node_path) const;
+  template std::set<std::string> Algorithm::GetOptionSet(YAMLReader::node_path_t node_path) const;
 
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -159,7 +189,12 @@ namespace iguana {
       m_yaml_config = std::make_unique<YAMLReader>("config|" + m_name);
       m_yaml_config->SetLogLevel(m_log->GetLevel()); // synchronize log levels
       m_yaml_config->AddDirectory(o_user_config_dir);
-      m_yaml_config->AddFile(m_default_config_file);
+      try {
+        m_yaml_config->AddFile(m_default_config_file, false);
+      }
+      catch(std::runtime_error const& ex) {
+        m_log->Debug("this algorithm has no default configuration YAML file");
+      }
       m_yaml_config->AddFile(o_user_config_file);
     }
     else
@@ -168,15 +203,14 @@ namespace iguana {
     // parse the files
     m_yaml_config->LoadFiles();
 
-    // if "log" was not set by `SetOption` (i.e., not in `m_option_cache`)
-    // - NB: not using `GetCachedOption<T>` here, since `T` can be a few different types for key=='log'
-    if(m_option_cache.find("log") == m_option_cache.end()) {
-      // check if 'log' is set in the YAML node for this algorithm
-      auto log_level_from_yaml = m_yaml_config->GetScalar<std::string>({m_class_name, "log"});
-      if(log_level_from_yaml) {
-        m_log->SetLevel(log_level_from_yaml.value());
-        m_yaml_config->SetLogLevel(log_level_from_yaml.value());
-      }
+    // set log level
+    try {
+      auto log_level = GetOptionScalar<std::string>({"log"});
+      m_log->SetLevel(log_level);
+      m_yaml_config->SetLogLevel(log_level);
+    }
+    catch(std::runtime_error const& ex) {
+      PrintOptionValue("log", m_log->GetLevelName() + " (default)");
     }
   }
 
@@ -201,7 +235,7 @@ namespace iguana {
           banks,
           bank_name,
           created_by_iguana ? m_created_bank_variant : 0);
-      m_log->Debug("cached index of bank '{}' is {}", bank_name, idx);
+      m_log->Trace("cached index of bank '{}' is {}", bank_name, idx);
       return idx;
     }
     catch(std::runtime_error const& ex) {
@@ -454,12 +488,4 @@ namespace iguana {
     throw std::runtime_error("algorithm has been renamed");
   }
 
-  ///////////////////////////////////////////////////////////////////////////////
-
-  void Algorithm::CompleteOptionNodePath(std::string const& key, YAMLReader::node_path_t& node_path) const
-  {
-    if(node_path.empty())
-      node_path.push_front(key);
-    node_path.push_front(m_class_name);
-  }
 }

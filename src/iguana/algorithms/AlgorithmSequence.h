@@ -47,11 +47,12 @@ namespace iguana {
 
       DEFINE_IGUANA_ALGORITHM(AlgorithmSequence, seq)
 
-    public:
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
+      void StopHook() override;
 
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    public:
 
       /// Create and add an algorithm to the sequence, by name.
       ///
@@ -117,6 +118,15 @@ namespace iguana {
       void SetOption(std::string const& algo_instance_name, std::string const& key, const OPTION_TYPE val)
       {
         Get<Algorithm>(algo_instance_name)->SetOption(key, val);
+      }
+
+      /// @brief Set an algorithm log level
+      /// @see `Logger::Level` for available levels
+      /// @param algo_instance_name the algorithm instance name
+      /// @param lev the log level name
+      void SetLogLevel(std::string const& algo_instance_name, std::string const& lev)
+      {
+        Get<Algorithm>(algo_instance_name)->SetLogLevel(lev);
       }
 
       /// Set the name of this sequence

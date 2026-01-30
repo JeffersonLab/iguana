@@ -136,7 +136,7 @@ namespace iguana::clas12::rga {
     }
   }
 
-  void FiducialFilterPass2Validator::Start(hipo::banklist& banks)
+  void FiducialFilterPass2Validator::StartHook(hipo::banklist& banks)
   {
 
     if(gROOT)
@@ -190,7 +190,7 @@ namespace iguana::clas12::rga {
     gPad->SetTopMargin(0.08);
   }
 
-  bool FiducialFilterPass2Validator::Run(hipo::banklist& banks) const
+  bool FiducialFilterPass2Validator::RunHook(hipo::banklist& banks) const
   {
     auto& particle = GetBank(banks, b_particle, "REC::Particle");
     auto& config   = GetBank(banks, b_config, "RUN::config");
@@ -714,7 +714,7 @@ namespace iguana::clas12::rga {
     SaveAndDisposeCanvas(c, Form("%s_dc_%s_2x3.png", m_base.Data(), bend));
   }
 
-  void FiducialFilterPass2Validator::Stop()
+  void FiducialFilterPass2Validator::StopHook()
   {
     // PCAL canvases
     DrawCalCanvas(11, "PCAL lv & lw (Electrons): before solid, after dashed");

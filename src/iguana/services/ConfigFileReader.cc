@@ -47,11 +47,11 @@ namespace iguana {
     m_directories.push_front(dir);
   }
 
-  void ConfigFileReader::AddFile(std::string const& name)
+  void ConfigFileReader::AddFile(std::string const& name, bool verbose_errors)
   {
     if(name == "")
       return; // handle unset file name
-    auto full_name = FindFile(name);
+    auto full_name = FindFile(name, verbose_errors);
     m_log->Trace("  ===> Add file {}", full_name);
     m_files.push_front(full_name);
   }
@@ -67,7 +67,7 @@ namespace iguana {
     }
   }
 
-  std::string ConfigFileReader::FindFile(std::string name)
+  std::string ConfigFileReader::FindFile(std::string name, bool verbose_errors)
   {
     if(name == "")
       return ""; // handle unset file name
@@ -87,8 +87,10 @@ namespace iguana {
         return filename;
     }
     // throw exception if not found anywhere
-    m_log->Error("Cannot find configuration file named '{}'", name);
-    PrintDirectories(Logger::error);
+    if(verbose_errors) {
+      m_log->Error("Cannot find configuration file named '{}'", name);
+      PrintDirectories(Logger::error);
+    }
     throw std::runtime_error("configuration file not found");
   }
 

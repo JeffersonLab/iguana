@@ -25,6 +25,7 @@
 /// @param BASE_NAME the name of the base class
 #define IGUANA_ALGORITHM_PUBLIC_MEMBERS(ALGO_NAME, ALGO_FULL_NAME, BASE_NAME) \
   using BASE_NAME::Start;                                                     \
+  using BASE_NAME::Run;                                                       \
   static algo_t Creator() { return std::make_unique<ALGO_NAME>(); }           \
   static std::string GetClassName() { return #ALGO_FULL_NAME; }               \
   static std::string GetDefaultConfigFile()                                   \

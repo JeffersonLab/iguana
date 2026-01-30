@@ -4,7 +4,9 @@ namespace iguana::physics {
 
   REGISTER_IGUANA_ALGORITHM(Depolarization, "physics::Depolarization");
 
-  void Depolarization::Start(hipo::banklist& banks)
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void Depolarization::StartHook(hipo::banklist& banks)
   {
     b_inc_kin = GetBankIndex(banks, "physics::InclusiveKinematics");
 
@@ -20,7 +22,7 @@ namespace iguana::physics {
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  bool Depolarization::Run(hipo::banklist& banks) const
+  bool Depolarization::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_inc_kin, "physics::InclusiveKinematics"),
@@ -115,9 +117,5 @@ namespace iguana::physics {
   }
 
   ///////////////////////////////////////////////////////////////////////////////
-
-  void Depolarization::Stop()
-  {
-  }
 
 }

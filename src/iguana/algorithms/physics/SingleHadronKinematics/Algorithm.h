@@ -26,11 +26,12 @@ namespace iguana::physics {
 
       DEFINE_IGUANA_ALGORITHM(SingleHadronKinematics, physics::SingleHadronKinematics)
 
-    public:
+    private: // hooks
+      void ConfigHook() override;
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
 
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    public:
 
       /// @run_function
       /// @param [in] particle_bank particle bank (_e.g._, `REC::Particle`)

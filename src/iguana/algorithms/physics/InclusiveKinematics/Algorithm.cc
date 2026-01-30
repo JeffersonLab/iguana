@@ -9,18 +9,19 @@ namespace iguana::physics {
 
   REGISTER_IGUANA_ALGORITHM(InclusiveKinematics, "physics::InclusiveKinematics");
 
-  void InclusiveKinematics::Start(hipo::banklist& banks)
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void InclusiveKinematics::ConfigHook()
   {
     // parse config file
-    ParseYAMLConfig();
-    o_particle_bank           = GetOptionScalar<std::string>("particle_bank");
+    o_particle_bank           = GetOptionScalar<std::string>({"particle_bank"});
     o_runnum                  = ConcurrentParamFactory::Create<int>();
     o_target_PxPyPzM          = ConcurrentParamFactory::Create<std::vector<double>>();
     o_beam_PxPyPzM            = ConcurrentParamFactory::Create<std::vector<double>>();
-    o_theta_between_FD_and_FT = GetOptionScalar<double>("theta_between_FD_and_FT");
+    o_theta_between_FD_and_FT = GetOptionScalar<double>({"theta_between_FD_and_FT"});
 
     // get reconstruction method configuration
-    auto method_reconstruction_str = GetOptionScalar<std::string>("reconstruction", {"method", "reconstruction"});
+    auto method_reconstruction_str = GetOptionScalar<std::string>({"method", "reconstruction"});
     if(method_reconstruction_str == "scattered_lepton") {
       o_method_reconstruction = method_reconstruction::scattered_lepton;
     }
@@ -30,7 +31,7 @@ namespace iguana::physics {
     }
 
     // get scattered lepton finder configuration
-    auto method_lepton_finder_str = GetOptionScalar<std::string>("lepton_finder", {"method", "lepton_finder"});
+    auto method_lepton_finder_str = GetOptionScalar<std::string>({"method", "lepton_finder"});
     if(method_lepton_finder_str == "highest_energy_FD_trigger")
       o_method_lepton_finder = method_lepton_finder::highest_energy_FD_trigger;
     else if(method_lepton_finder_str == "lund_beam_daughter")
@@ -42,7 +43,7 @@ namespace iguana::physics {
 
     // get beam PDG and mass
     o_beam_pdg         = 0;
-    auto beam_particle = GetOptionScalar<std::string>("beam_particle", {"method", "beam_particle"});
+    auto beam_particle = GetOptionScalar<std::string>({"method", "beam_particle"});
     for(auto const& [pdg, name] : particle::name) {
       if(name == beam_particle) {
         o_beam_pdg  = pdg;
@@ -54,7 +55,12 @@ namespace iguana::physics {
       m_log->Error("Unknown beam particle {:?}", beam_particle);
       throw std::runtime_error("Start failed");
     }
+  }
 
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void InclusiveKinematics::StartHook(hipo::banklist& banks)
+  {
     // get bank indices
     b_particle = GetBankIndex(banks, o_particle_bank);
     b_config   = GetBankIndex(banks, "RUN::config");
@@ -76,14 +82,14 @@ namespace iguana::physics {
 
     // instantiate RCDB reader `m_rcdb`
     StartRCDBReader();
-    o_override_beam_energy = GetOptionScalar<double>("override_beam_energy");
+    o_override_beam_energy = GetOptionScalar<double>({"override_beam_energy"}); // FIXME: should go in `ConfigHook`?
     if(o_override_beam_energy > 0)
       m_rcdb->SetBeamEnergyOverride(o_override_beam_energy);
   }
 
   ///////////////////////////////////////////////////////////////////////////////
 
-  bool InclusiveKinematics::Run(hipo::banklist& banks) const
+  bool InclusiveKinematics::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, o_particle_bank),
@@ -256,8 +262,8 @@ namespace iguana::physics {
 
     // parse config params
     auto beam_energy     = user_beam_energy < 0 ? m_rcdb->GetBeamEnergy(runnum) : user_beam_energy;
-    auto beam_direction  = GetOptionVector<double>("beam_direction", {"initial_state", GetConfig()->InRange("runs", runnum), "beam_direction"});
-    auto target_particle = GetOptionScalar<std::string>("target_particle", {"initial_state", GetConfig()->InRange("runs", runnum), "target_particle"});
+    auto beam_direction  = GetOptionVector<double>({"initial_state", GetConfig()->InRange("runs", runnum), "beam_direction"});
+    auto target_particle = GetOptionScalar<std::string>({"initial_state", GetConfig()->InRange("runs", runnum), "target_particle"});
 
     // get the target mass and momentum
     double target_mass = -1;
@@ -342,9 +348,5 @@ namespace iguana::physics {
   }
 
   ///////////////////////////////////////////////////////////////////////////////
-
-  void InclusiveKinematics::Stop()
-  {
-  }
 
 }

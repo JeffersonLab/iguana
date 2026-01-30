@@ -39,9 +39,9 @@ foreach algo : algo_dict
 
       # single threaded tests
       test(
-        '-'.join(['algorithm', test_name_algo]),
+        '-'.join(['st', 'algorithm', test_name_algo]),
         test_exe,
-        suite: [ 'algorithm', 'single_threaded' ],
+        suite: [ 'algorithm', 'st' ],
         args: [ 'algorithm', '-n', get_option('test_num_events').to_string() ] + test_args,
         env: project_test_env,
         timeout: 0,
@@ -49,9 +49,9 @@ foreach algo : algo_dict
       )
       if not should_fail
         benchmark(
-          '-'.join(['benchmark', 'single_threaded', test_name_algo]),
+          '-'.join(['benchmark', 'st', test_name_algo]),
           test_exe,
-          suite: [ 'algorithm', 'single_threaded' ],
+          suite: [ 'algorithm', 'st' ],
           args: [ 'algorithm', '-n', '0' ] + test_args, # benchmark all the events
           env: project_test_env,
           timeout: 0,
@@ -60,34 +60,32 @@ foreach algo : algo_dict
 
       # multithreaded tests
       if get_option('z_test_multithreading')
-        foreach concurrency_model : [ 'memoize' ] # note: we used to have more, so leave this array in case we want more
-          multithreading_args = [
-            'multithreading',
-            '-j', get_option('test_num_threads').to_string(),
-            '-m', concurrency_model,
-            '-V', # vary run number
-          ]
-          test(
-            '-'.join(['multithreading', concurrency_model, test_name_algo]),
+        multithreading_args = [
+          'multithreading',
+          '-j', get_option('test_num_threads').to_string(),
+          '-m', 'memoize',
+          '-V', # vary run number
+        ]
+        test(
+          '-'.join(['mt', 'algorithm', test_name_algo]),
+          test_exe,
+          suite: [ 'algorithm', 'mt' ],
+          args: multithreading_args + [ '-n', get_option('test_num_events').to_string() ] + test_args,
+          is_parallel: false,
+          env: project_test_env,
+          timeout: 0,
+          should_fail: should_fail,
+        )
+        if not should_fail
+          benchmark(
+            '-'.join(['benchmark', 'mt', test_name_algo]),
             test_exe,
-            suite: [ 'algorithm', 'multithreading', concurrency_model ],
-            args: multithreading_args + [ '-n', get_option('test_num_events').to_string() ] + test_args,
-            is_parallel: false,
+            suite: [ 'algorithm', 'mt' ],
+            args: multithreading_args + [ '-n', '0' ] + test_args, # benchmark all the events
             env: project_test_env,
             timeout: 0,
-            should_fail: should_fail,
           )
-          if not should_fail
-            benchmark(
-              '-'.join(['benchmark', f'multithreading_@concurrency_model@', test_name_algo]),
-              test_exe,
-              suite: [ 'algorithm', 'multithreading', concurrency_model ],
-              args: multithreading_args + [ '-n', '0' ] + test_args, # benchmark all the events
-              env: project_test_env,
-              timeout: 0,
-            )
-          endif
-        endforeach
+        endif
       endif
 
     endif
@@ -110,7 +108,7 @@ foreach algo : algo_dict
         test(
           'validator-' + test_name_algo,
           test_exe,
-          suite: [ 'validator', 'single_threaded' ],
+          suite: [ 'validator' ],
           args: test_args,
           env: project_test_env,
           timeout: get_option('test_validator_all_stats') ? 0 : 120,
@@ -126,7 +124,7 @@ foreach command : [ '', 'unknown', 'algorithm', 'validator', 'unit', 'config' ]
   test(
     'iguana_test-usage-guide' + (command == '' ? '' : '-' + command),
     test_exe,
-    suite: [ 'misc', 'single_threaded' ],
+    suite: [ 'misc' ],
     args: command == '' ? [] : [ command ],
     env: project_test_env,
     should_fail: true,
@@ -140,7 +138,7 @@ foreach test_num : [ '1', '2', '3' ]
   test(
     'config-test_' + test_num,
     test_exe,
-    suite: [ 'misc', 'single_threaded' ],
+    suite: [ 'misc' ],
     args: [ 'config', '-t', test_num, '-v' ],
     env: project_test_env,
   )
@@ -150,7 +148,7 @@ endforeach
 test(
   'logger',
   test_exe,
-  suite: [ 'misc', 'single_threaded' ],
+  suite: [ 'misc' ],
   args: [ 'logger' ],
   env: project_test_env
 )
@@ -160,7 +158,7 @@ if fs.is_file(get_option('test_data_file'))
   test(
     'banklist',
     test_exe,
-    suite: [ 'misc', 'single_threaded' ],
+    suite: [ 'misc' ],
     args: [ 'banklist', '-f', get_option('test_data_file') ],
     env: project_test_env
   )

@@ -4,21 +4,21 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(SectorFinder, "REC::Particle::Sector");
 
-  void SectorFinder::Start(hipo::banklist& banks)
+  void SectorFinder::ConfigHook()
   {
-
-    // define options, their default values, and cache them
-    ParseYAMLConfig();
-    o_bankname_charged = GetOptionScalar<std::string>("bank_charged");
+    o_bankname_charged = GetOptionScalar<std::string>({"bank_charged"});
     try {
-      o_bankname_neutral = GetOptionScalar<std::string>("bank_neutral");
+      o_bankname_neutral = GetOptionScalar<std::string>({"bank_neutral"});
     }
     catch(std::runtime_error const& ex) {
       m_log->Warn("searching instead for configuration parameter named 'bank_uncharged'...");
-      o_bankname_neutral = GetOptionScalar<std::string>("bank_uncharged");
+      o_bankname_neutral = GetOptionScalar<std::string>({"bank_uncharged"});
       m_log->Warn("...found 'bank_uncharged' and using it; note that 'bank_uncharged' has been renamed to 'bank_neutral', please update your configuration");
     }
+  }
 
+  void SectorFinder::StartHook(hipo::banklist& banks)
+  {
     bool setDefaultBanks = false;
     // get expected bank indices
     b_particle = GetBankIndex(banks, "REC::Particle");
@@ -55,7 +55,7 @@ namespace iguana::clas12 {
     i_pindex           = result_schema.getEntryOrder("pindex");
   }
 
-  bool SectorFinder::Run(hipo::banklist& banks) const
+  bool SectorFinder::RunHook(hipo::banklist& banks) const
   {
     auto includeDefaultBanks = !(userSpecifiedBank_charged && userSpecifiedBank_neutral);
     return RunImpl(
@@ -248,10 +248,6 @@ namespace iguana::clas12 {
           pindices_scint,
           pindex));
     return sect_list;
-  }
-
-  void SectorFinder::Stop()
-  {
   }
 
 }

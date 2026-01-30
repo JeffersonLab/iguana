@@ -14,11 +14,10 @@ namespace iguana::clas12 {
 
       DEFINE_IGUANA_VALIDATOR(ZVertexFilterValidator, clas12::ZVertexFilterValidator)
 
-    public:
-
-      void Start(hipo::banklist& banks) override;
-      bool Run(hipo::banklist& banks) const override;
-      void Stop() override;
+    private: // hooks
+      void StartHook(hipo::banklist& banks) override;
+      bool RunHook(hipo::banklist& banks) const override;
+      void StopHook() override;
 
     private:
 
@@ -32,13 +31,6 @@ namespace iguana::clas12 {
           particle::PDG::pi_minus,
           particle::PDG::proton,
           particle::PDG::neutron};
-
-      std::vector<int> const u_pdgtocut_list = {
-          particle::PDG::electron};
-
-      std::vector<double> const u_cuts_list = {
-          -5,
-          5};
 
       TString m_output_file_basename;
       TFile* m_output_file;

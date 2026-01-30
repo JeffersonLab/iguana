@@ -27,15 +27,15 @@ namespace iguana::clas12::rga {
     return false;
   }
 
-  void FiducialFilterPass2::LoadConfig()
+  void FiducialFilterPass2::ConfigHook()
   {
-    m_cal_strictness = GetOptionScalar<int>("calorimeter.strictness", {"calorimeter", "strictness"});
+    m_cal_strictness = GetOptionScalar<int>({"calorimeter", "strictness"});
     if(m_cal_strictness < 1 || m_cal_strictness > 3) {
       throw std::runtime_error("[RGAFID] 'calorimeter.strictness' must be 1, 2, or 3");
     }
 
     {
-      auto radius = GetOptionVector<double>("forward_tagger.radius", {"forward_tagger", "radius"});
+      auto radius = GetOptionVector<double>({"forward_tagger", "radius"});
       if(radius.size() != 2) {
         throw std::runtime_error("[RGAFID] 'forward_tagger.radius' must be [rmin, rmax]");
       }
@@ -49,8 +49,7 @@ namespace iguana::clas12::rga {
       u_ft_params.holes.clear();
       std::vector<double> holes_flat;
       try {
-        holes_flat = GetOptionVector<double>("forward_tagger.holes_flat",
-                                             {"forward_tagger", "holes_flat"});
+        holes_flat = GetOptionVector<double>({"forward_tagger", "holes_flat"});
       }
       catch(std::exception const& e) {
         std::string const msg = e.what();
@@ -77,16 +76,15 @@ namespace iguana::clas12::rga {
     }
 
     {
-      m_cvt.edge_layers = GetOptionVector<int>("cvt.edge_layers", {"cvt", "edge_layers"});
+      m_cvt.edge_layers = GetOptionVector<int>({"cvt", "edge_layers"});
       if(m_cvt.edge_layers.empty()) {
         throw std::runtime_error("[RGAFID] 'cvt.edge_layers' must be non-empty");
       }
-      m_cvt.edge_min = GetOptionScalar<double>("cvt.edge_min", {"cvt", "edge_min"});
+      m_cvt.edge_min = GetOptionScalar<double>({"cvt", "edge_min"});
 
       m_cvt.phi_forbidden_deg.clear();
       try {
-        m_cvt.phi_forbidden_deg = GetOptionVector<double>("cvt.phi_forbidden_deg",
-                                                          {"cvt", "phi_forbidden_deg"});
+        m_cvt.phi_forbidden_deg = GetOptionVector<double>({"cvt", "phi_forbidden_deg"});
       }
       catch(std::exception const& e) {
         std::string const msg = e.what();
@@ -103,10 +101,10 @@ namespace iguana::clas12::rga {
 
     {
       m_dc.theta_small_deg =
-          GetOptionScalar<double>("dc.theta_small_deg", {"dc", "theta_small_deg"});
+          GetOptionScalar<double>({"dc", "theta_small_deg"});
 
       auto need3 = [&](char const* key) -> std::array<double, 3> {
-        auto v = GetOptionVector<double>(std::string("dc.") + key, {"dc", key});
+        auto v = GetOptionVector<double>({"dc", key});
         if(v.size() != 3) {
           throw std::runtime_error(std::string("[RGAFID] 'dc.") + key + "' must be [e1,e2,e3]");
         }
@@ -129,7 +127,7 @@ namespace iguana::clas12::rga {
     }
   }
 
-  void FiducialFilterPass2::Start(hipo::banklist& banks)
+  void FiducialFilterPass2::StartHook(hipo::banklist& banks)
   {
     b_particle = GetBankIndex(banks, "REC::Particle");
     b_config   = GetBankIndex(banks, "RUN::config");
@@ -145,12 +143,9 @@ namespace iguana::clas12::rga {
       b_traj      = GetBankIndex(banks, "REC::Traj");
       m_have_traj = true;
     }
-
-    ParseYAMLConfig();
-    LoadConfig();
   }
 
-  bool FiducialFilterPass2::Run(hipo::banklist& banks) const
+  bool FiducialFilterPass2::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, "REC::Particle"),

@@ -6,7 +6,7 @@ namespace iguana::clas12::rga {
 
   REGISTER_IGUANA_VALIDATOR(MomentumCorrectionValidator);
 
-  void MomentumCorrectionValidator::Start(hipo::banklist& banks)
+  void MomentumCorrectionValidator::StartHook(hipo::banklist& banks)
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
@@ -46,7 +46,7 @@ namespace iguana::clas12::rga {
   }
 
 
-  bool MomentumCorrectionValidator::Run(hipo::banklist& banks) const
+  bool MomentumCorrectionValidator::RunHook(hipo::banklist& banks) const
   {
     // get the momenta before
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -85,7 +85,7 @@ namespace iguana::clas12::rga {
   }
 
 
-  void MomentumCorrectionValidator::Stop()
+  void MomentumCorrectionValidator::StopHook()
   {
     if(GetOutputDirectory()) {
       for(auto const& [pdg, plots] : u_deltaPvsP) {

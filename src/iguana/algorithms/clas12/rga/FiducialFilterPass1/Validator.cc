@@ -6,7 +6,7 @@ namespace iguana::clas12::rga {
 
   REGISTER_IGUANA_VALIDATOR(FiducialFilterPass1Validator);
 
-  void FiducialFilterPass1Validator::Start(hipo::banklist& banks)
+  void FiducialFilterPass1Validator::StartHook(hipo::banklist& banks)
   {
     // set algorithm options
     m_algo_eb.SetOption<std::vector<int>>("pids", u_pdg_list);
@@ -77,7 +77,7 @@ namespace iguana::clas12::rga {
   }
 
 
-  bool FiducialFilterPass1Validator::Run(hipo::banklist& banks) const
+  bool FiducialFilterPass1Validator::RunHook(hipo::banklist& banks) const
   {
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
     auto& traj_bank     = GetBank(banks, b_traj, "REC::Particle::Traj");
@@ -119,7 +119,7 @@ namespace iguana::clas12::rga {
   }
 
 
-  void FiducialFilterPass1Validator::Stop()
+  void FiducialFilterPass1Validator::StopHook()
   {
     m_algo_eb.Stop();
     m_algo_traj.Stop();

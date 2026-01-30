@@ -33,6 +33,21 @@ namespace iguana {
 
   ///////////////////////////////////////////////////////////////////////////////
 
+  std::string YAMLReader::NodePath2String(node_path_t const& node_path)
+  {
+    if(node_path.empty())
+      return "";
+    std::vector<std::string> tokens;
+    for(auto const& node : node_path) {
+      if(auto const* str = std::get_if<std::string>(&node)) {
+        tokens.push_back(*str);
+      }
+    }
+    return fmt::format("{}", fmt::join(tokens, "/"));
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+
   template <typename SCALAR>
   std::optional<SCALAR> YAMLReader::GetScalar(YAML::Node node)
   {

@@ -9,6 +9,7 @@
 #include "AlgorithmBoilerplate.h"
 #include "iguana/bankdefs/BankDefs.h"
 #include "iguana/services/DataFileReader.h"
+#include "iguana/services/Deprecated.h"
 #include "iguana/services/GlobalParam.h"
 #include "iguana/services/RCDBReader.h"
 #include "iguana/services/YAMLReader.h"
@@ -79,31 +80,53 @@ namespace iguana {
       {}
       virtual ~Algorithm() {}
 
-      /// @brief Initialize this algorithm before any events are processed, with the intent to process _banks_
+      /// @brief **Start Function:** Initialize this algorithm before any events are processed, with the intent to process `hipo::banklist` objects
       ///
-      /// use this method if you intend to use `Algorithm::Run`.
+      /// Use this method if you intend to use:
+      ///
+      /// - `Algorithm::Run` with `hipo::banklist` objects
+      ///
       /// @param banks the list of banks this algorithm will use, so that `Algorithm::Run` can cache the indices
       ///        of the banks that it needs
-      virtual void Start(hipo::banklist& banks) = 0;
+      virtual void Start(hipo::banklist& banks) final;
 
-      /// @brief Initialize this algorithm before any events are processed, with the intent to process _bank rows_ rather than full banks;
+      /// @brief **Start Function:** Initialize this algorithm before any events are processed, with the intent to process either `hipo::bank` objects or _bank rows_, rather than full `hipo::banklist` objects
       ///
-      /// use this method if you intend to use "action functions" instead of `Algorithm::Run`.
-      void Start();
+      /// Use this method if you intend to use:
+      ///
+      /// - Specialized `%Run` functions with `hipo::bank` objects
+      /// - action functions, instead of `Algorithm::Run`.
+      virtual void Start() final;
 
       /// @brief **Run Function:** Process an event's `hipo::banklist`
       /// @param banks the list of banks to process
       /// @returns a boolean value, which is typically used to decide whether or not to continue analyzing an event, _i.e._, it can be used
-      /// as an _event-level_ filter; not all algorithms use or need this feature; see the algorithm's more specialized `Run` functions,
+      /// as an _event-level_ filter; not all algorithms use or need this feature; see the algorithm's more specialized `%Run` functions,
       /// which have `hipo::bank` parameters
       /// @see Specialized `%Run` function(s) above/below; they take individual `hipo::bank` objects as parameters, and their documentation explains which banks are used by this algorithm and how.
-      virtual bool Run(hipo::banklist& banks) const = 0;
+      virtual bool Run(hipo::banklist& banks) const final;
 
-      /// @brief Finalize this algorithm after all events are processed.
-      virtual void Stop() = 0;
+      /// @brief **Stop Function:** Finalize this algorithm after all events are processed.
+      ///
+      /// Call this when you are done with an algorithm.
+      virtual void Stop() final;
 
-      /// Set an option specified by the user. If the option name is `"log"`, the log level of the `Logger`
-      /// owned by this algorithm will be changed to the specified value.
+      /// @brief Set an option specified by the user.
+      ///
+      /// The `key` is the "path" within the YAML configuration file; for example, consider the following YAML file:
+      ///
+      /// ```yaml
+      /// clas12::Example:
+      ///   strictness: 1
+      ///   forward_tagger:
+      ///     radius: [8.5, 15.5]
+      /// ```
+      ///
+      /// - To set `strictness`, use `"strictness"`
+      /// - To set `radius`, which is nested under `forward_tagger`, use `"forward_tagger/radius"`
+      /// - see `YAMLReader::NodePath2String` for details on how a YAML node path is converted to such a string
+      ///
+      /// If the option name is `"log"`, the log level of the `Logger` owned by this algorithm will be changed to the specified value.
       /// @param key the name of the option
       /// @param val the value to set
       /// @returns the value that has been set (if needed, _e.g._, when `val` is an rvalue)
@@ -120,30 +143,30 @@ namespace iguana {
           else
             m_log->Error("Option '{}' must be a string or a Logger::Level", key);
         }
+        // make sure the key hasn't been renamed or deprecated
+        iguana::deprecated::CheckSetOptionKey(m_class_name, key);
+        // add it to the cache
         m_option_cache[key] = val;
         return val;
       }
 
       /// Get the value of a scalar option
-      /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
-      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the scalar option
       template <typename OPTION_TYPE>
-      OPTION_TYPE GetOptionScalar(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
+      OPTION_TYPE GetOptionScalar(YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the value of a vector option
-      /// @param key the unique key name of this option, for caching; if empty, the option will not be cached
-      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the vector option
       template <typename OPTION_TYPE>
-      std::vector<OPTION_TYPE> GetOptionVector(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
+      std::vector<OPTION_TYPE> GetOptionVector(YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the value of a vector option, and convert it to `std::set`
-      /// @param key the unique key name of this option
-      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files; if empty, it will just use `key`
+      /// @param node_path the `YAML::Node` identifier path to search for this option in the config files
       /// @returns the vector option converted to `std::set`
       template <typename OPTION_TYPE>
-      std::set<OPTION_TYPE> GetOptionSet(std::string const& key, YAMLReader::node_path_t node_path = {}) const;
+      std::set<OPTION_TYPE> GetOptionSet(YAMLReader::node_path_t node_path = {}) const;
 
       /// Get the `YAML::Node` for an option
       /// @param node_path the `YAML::Node` identifier path to search
@@ -224,9 +247,6 @@ namespace iguana {
 
     protected: // methods
 
-      /// Parse YAML configuration files. Sets `m_yaml_config`.
-      void ParseYAMLConfig();
-
       /// Instantiate the `RCDBReader` instance for this algorithm
       void StartRCDBReader();
 
@@ -259,12 +279,6 @@ namespace iguana {
       /// @param level the log level
       void ShowBank(hipo::bank const& bank, std::string_view message = "", Logger::Level const level = Logger::trace) const;
 
-      /// Get an option from the option cache
-      /// @param key the key name associated with this option
-      /// @returns the option value, if found (using `std::optional`)
-      template <typename OPTION_TYPE>
-      std::optional<OPTION_TYPE> GetCachedOption(std::string const& key) const;
-
       /// Throw a runtime exception since this algorithm has been renamed.
       /// Guidance will be printed for the user.
       /// @param new_name the new name of the algorithm
@@ -273,10 +287,32 @@ namespace iguana {
 
     private: // methods
 
-      /// Prepend `node_path` with the full algorithm name. If `node_path` is empty, set it to `{key}`.
-      /// @param key the key name for this option
-      /// @param node_path the `YAMLReader::node_path_t` to prepend
-      void CompleteOptionNodePath(std::string const& key, YAMLReader::node_path_t& node_path) const;
+      /// Hook called by user from `Algorithm::Start`, typically to load an algorithm's configuration parameters.
+      /// Override this method in algorithm implementations.
+      /// It is called before `Algorithm::StartHook`.
+      virtual void ConfigHook() {}
+
+      /// Hook called by user from `Algorithm::Start`.
+      /// Override this method in algorithm implementations.
+      /// It is called after `Algorithm::ConfigHook`.
+      virtual void StartHook(hipo::banklist& banks) {}
+
+      /// Hook called by user from `Algorithm::Run`.
+      /// Override this method in algorithm implementations.
+      virtual bool RunHook(hipo::banklist& banks) const { return true; }
+
+      /// Hook called by user from `Algorithm::Stop`
+      /// Override this method in algorithm implementations.
+      virtual void StopHook() {}
+
+      /// Parse YAML configuration files. Sets `m_yaml_config`.
+      void ParseYAMLConfig();
+
+      /// Get an option from the option cache
+      /// @param key the key name associated with this option
+      /// @returns the option value, if found (using `std::optional`)
+      template <typename OPTION_TYPE>
+      std::optional<OPTION_TYPE> GetCachedOption(std::string const& key) const;
 
       // PrintOptionValue: overloaded for different value types
       void PrintOptionValue(std::string const& key, int const& val, Logger::Level const level = Logger::debug, std::string_view prefix = "OPTION") const;

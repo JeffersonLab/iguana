@@ -6,7 +6,7 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_VALIDATOR(SectorFinderValidator);
 
-  void SectorFinderValidator::Start(hipo::banklist& banks)
+  void SectorFinderValidator::StartHook(hipo::banklist& banks)
   {
     // define the algorithm sequence
     m_algo_seq = std::make_unique<AlgorithmSequence>();
@@ -14,7 +14,7 @@ namespace iguana::clas12 {
     m_algo_seq->Add("clas12::SectorFinder");
     m_algo_seq->SetOption<std::vector<int>>("clas12::EventBuilderFilter", "pids", u_pdg_list);
     m_algo_seq->SetOption<std::string>("clas12::SectorFinder", "bank_charged", "REC::Track");
-    m_algo_seq->SetOption<std::string>("clas12::SectorFinder", "bank_uncharged", "default");
+    m_algo_seq->SetOption<std::string>("clas12::SectorFinder", "bank_neutral", "default");
     m_algo_seq->Start(banks);
 
 
@@ -51,7 +51,7 @@ namespace iguana::clas12 {
         7, -0.5, 6.5);
   }
 
-  bool SectorFinderValidator::Run(hipo::banklist& banks) const
+  bool SectorFinderValidator::RunHook(hipo::banklist& banks) const
   {
 
     auto& particle_bank = GetBank(banks, b_particle, "REC::Particle");
@@ -104,7 +104,7 @@ namespace iguana::clas12 {
   }
 
 
-  void SectorFinderValidator::Stop()
+  void SectorFinderValidator::StopHook()
   {
     if(GetOutputDirectory()) {
       for(auto const& [pdg, plots] : u_YvsX) {
