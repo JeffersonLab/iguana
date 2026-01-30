@@ -369,7 +369,10 @@ OPTIMIZE_OUTPUT_SLICE  = NO
 #
 # Note see also the list of default file extension mappings.
 
-EXTENSION_MAPPING      =
+# workaround: using Python syntax coloring for YAML files (viz. Config.yaml),
+# since there is no YAML syntax coloring support in Doxygen; this is good
+# enough in most cases
+EXTENSION_MAPPING      = yaml=Python
 
 # If the MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all comments
 # according to the Markdown format, which allows for more readable
