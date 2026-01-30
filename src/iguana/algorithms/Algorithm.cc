@@ -118,7 +118,7 @@ namespace iguana {
 
   YAML::Node Algorithm::GetOptionNode(YAMLReader::node_path_t node_path) const
   {
-    CompleteOptionNodePath("", node_path);
+    node_path.push_front(m_class_name);
     auto node = m_yaml_config->GetNode(node_path);
     if(!node.has_value()) {
       m_log->Error("Algorithm::GetOptionNode failed to find node");

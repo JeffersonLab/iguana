@@ -7,18 +7,24 @@ namespace iguana::clas12 {
 
   REGISTER_IGUANA_ALGORITHM(LeptonIDFilter, "clas12::LeptonIDFilter");
 
-  void LeptonIDFilter::Start(hipo::banklist& banks)
+  //////////////////////////////////////////////////////////////////////////////////
+
+  void LeptonIDFilter::ConfigHook()
   {
     // Get configuration
-    ParseYAMLConfig();
-    o_pids                = GetOptionSet<int>("pids");
-    o_cut                 = GetOptionScalar<double>("cut");
-    o_tmva_reader_options = GetOptionScalar<std::string>("tmva_reader_options");
-    o_particle_bank       = GetOptionScalar<std::string>("particle_bank");
+    o_pids                = GetOptionSet<int>({"pids"});
+    o_cut                 = GetOptionScalar<double>({"cut"});
+    o_tmva_reader_options = GetOptionScalar<std::string>({"tmva_reader_options"});
+    o_particle_bank       = GetOptionScalar<std::string>({"particle_bank"});
     o_runnum              = ConcurrentParamFactory::Create<int>();
     o_weightfile_electron = ConcurrentParamFactory::Create<std::string>();
     o_weightfile_positron = ConcurrentParamFactory::Create<std::string>();
+  }
 
+  //////////////////////////////////////////////////////////////////////////////////
+
+  void LeptonIDFilter::StartHook(hipo::banklist& banks)
+  {
     // Get Banks that we are going to use
     b_particle    = GetBankIndex(banks, o_particle_bank);
     b_calorimeter = GetBankIndex(banks, "REC::Calorimeter");
@@ -47,8 +53,9 @@ namespace iguana::clas12 {
     }
   }
 
+  //////////////////////////////////////////////////////////////////////////////////
 
-  bool LeptonIDFilter::Run(hipo::banklist& banks) const
+  bool LeptonIDFilter::RunHook(hipo::banklist& banks) const
   {
     return Run(
         GetBank(banks, b_particle, o_particle_bank),
@@ -56,6 +63,7 @@ namespace iguana::clas12 {
         GetBank(banks, b_config, "RUN::config"));
   }
 
+  //////////////////////////////////////////////////////////////////////////////////
 
   bool LeptonIDFilter::Run(hipo::bank& particleBank, hipo::bank const& calorimeterBank, hipo::bank const& configBank) const
   {
@@ -92,6 +100,7 @@ namespace iguana::clas12 {
     return !particleBank.getRowList().empty();
   }
 
+  //////////////////////////////////////////////////////////////////////////////////
 
   concurrent_key_t LeptonIDFilter::PrepareEvent(int const runnum) const
   {
@@ -110,16 +119,18 @@ namespace iguana::clas12 {
     }
   }
 
+  //////////////////////////////////////////////////////////////////////////////////
 
   void LeptonIDFilter::Reload(int const runnum, concurrent_key_t key) const
   {
     std::lock_guard<std::mutex> const lock(m_mutex); // NOTE: be sure to lock successive `ConcurrentParam::Save` calls !!!
     m_log->Trace("-> calling Reload({}, {})", runnum, key);
     o_runnum->Save(runnum, key);
-    o_weightfile_electron->Save(GetOptionScalar<std::string>("weightfile:electron", {"weightfile", GetConfig()->InRange("runs", runnum), "electron"}), key);
-    o_weightfile_positron->Save(GetOptionScalar<std::string>("weightfile:positron", {"weightfile", GetConfig()->InRange("runs", runnum), "positron"}), key);
+    o_weightfile_electron->Save(GetOptionScalar<std::string>({"weightfile", GetConfig()->InRange("runs", runnum), "electron"}), key);
+    o_weightfile_positron->Save(GetOptionScalar<std::string>({"weightfile", GetConfig()->InRange("runs", runnum), "positron"}), key);
   }
 
+  //////////////////////////////////////////////////////////////////////////////////
 
   LeptonIDVars LeptonIDFilter::GetLeptonIDVariables(int const plepton, hipo::bank const& particle_bank, hipo::bank const& calorimeter_bank) const
   {
@@ -172,6 +183,7 @@ namespace iguana::clas12 {
     return lepton;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////
 
   double LeptonIDFilter::CalculateScore(LeptonIDVars lepton_vars, concurrent_key_t const key) const
   {
@@ -190,6 +202,7 @@ namespace iguana::clas12 {
     return readerTMVA->EvaluateMVA(lepton_vars.GetValues(), weightsfile);
   }
 
+  //////////////////////////////////////////////////////////////////////////////////
 
   bool LeptonIDFilter::Filter(double score) const
   {
@@ -197,11 +210,6 @@ namespace iguana::clas12 {
       return true;
     else
       return false;
-  }
-
-
-  void LeptonIDFilter::Stop()
-  {
   }
 
 }
