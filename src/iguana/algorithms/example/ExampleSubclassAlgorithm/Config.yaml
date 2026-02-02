@@ -1,8 +1,6 @@
 example::ExampleSubclassAlgorithm:
 
-  ###################################################################################
   # NOTE: config is the same as `rga::FiducialFilterPass1`, but with value changes
-  ###################################################################################
 
   # cut levels for PCAL homogeneous cuts; one of 'loose', 'medium', or 'tight'
   pcal_electron_cut_level: tight # for electrons and positrons

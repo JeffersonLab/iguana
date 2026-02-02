@@ -8,9 +8,7 @@ namespace iguana::clas12 {
   /// @algo_brief{Filter a particle bank by cutting on Z Vertex}
   /// @algo_type_filter
   ///
-  /// @begin_doc_config{clas12/ZVertexFilter}
-  /// @config_param{electron_vz | list[double] | lower and upper electron @f$z@f$-vertex cuts; run-range dependent; cuts are not applied to FT electrons (FD and CD only)}
-  /// @end_doc
+  /// @doc_config{clas12/ZVertexFilter}
   class ZVertexFilter : public Algorithm
   {
 

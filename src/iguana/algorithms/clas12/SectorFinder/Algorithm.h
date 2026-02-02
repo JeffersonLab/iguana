@@ -8,10 +8,7 @@ namespace iguana::clas12 {
   /// @algo_brief{Find the sector for all rows in `REC::Particle`}
   /// @algo_type_creator
   ///
-  /// @begin_doc_config{clas12/SectorFinder}
-  /// @config_param{bank_charged | string | if not `default`, use this bank for sector finding of charged particles}
-  /// @config_param{bank_neutral | string | if not `default`, use this bank for sector finding of neutral particles}
-  /// @end_doc
+  /// @doc_config{clas12/SectorFinder}
   ///
   /// If `bank_charged` and/or `bank_neutral` is default, then all of the following banks are needed, in addition to `REC::Particle`:
   ///

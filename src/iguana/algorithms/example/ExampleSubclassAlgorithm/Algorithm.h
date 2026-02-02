@@ -6,6 +6,7 @@ namespace iguana::example {
 
   /// @algo_brief{example demonstrating inheritance from another algorithm}
   /// @algo_type_filter
+  /// @doc_config{example/ExampleSubclassAlgorithm}
   class ExampleSubclassAlgorithm : public clas12::rga::FiducialFilterPass1
   {
       // use `DEFINE_IGUANA_SUBALGORITHM` rather than the usual `DEFINE_IGUANA_ALGORITHM`;

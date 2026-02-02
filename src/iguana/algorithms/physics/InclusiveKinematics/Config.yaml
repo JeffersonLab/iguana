@@ -7,9 +7,9 @@ physics::InclusiveKinematics:
 
   # beam configuration
   initial_state:
-    - default:
-      beam_direction: [ 0.0, 0.0, 1.0 ]
-      target_particle: proton
+    - default:                          # default run range
+      beam_direction: [ 0.0, 0.0, 1.0 ] # beam direction vector
+      target_particle: proton           # target particle
 
   # kinematics reconstruction method
   method:

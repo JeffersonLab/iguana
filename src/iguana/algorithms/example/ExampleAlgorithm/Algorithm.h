@@ -31,10 +31,7 @@ namespace iguana::example {
   ///
   /// Provide a more detailed description of your algorithm here.
   ///
-  /// @begin_doc_config{example/ExampleAlgorithm}
-  /// @config_param{exampleInt | int | an example `integer` configuration parameter}
-  /// @config_param{exampleDouble | double | an example `double` configuration parameter}
-  /// @end_doc
+  /// @doc_config{example/ExampleAlgorithm}
   class ExampleAlgorithm : public Algorithm
   {
 
