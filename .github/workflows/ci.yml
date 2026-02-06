@@ -114,17 +114,11 @@ jobs:
           key: test_data_lfs
           path: test_data.hipo
       ### dependencies
-      ###### for iguana
-      - name: install packages for iguana
-        run: |
-          pacman -Sy --noconfirm
-          pacman -S --noconfirm \
-            fmt \
-            yaml-cpp
       ###### for coverage
       - name: install packages for coverage tests
         if: ${{ matrix.id == 'coverage' }}
         run: |
+          pacman -Sy --noconfirm
           pacman -S --noconfirm \
             python-colorlog \
             python-pygments \
@@ -355,12 +349,6 @@ jobs:
         with:
           name: install_cpp
           path: iguana
-      - name: install packages for iguana
-        run: |
-          pacman -Sy --noconfirm
-          pacman -S --noconfirm \
-            fmt \
-            yaml-cpp
       ### build clas12root
       - name: checkout clas12root
         uses: actions/checkout@v6
@@ -468,9 +456,7 @@ jobs:
           pacman -Sy --noconfirm
           pacman -S --noconfirm \
             doxygen \
-            fmt \
-            graphviz \
-            yaml-cpp
+            graphviz
       ### build
       - name: set latest version number to latest
         if: ${{ matrix.version == 'latest' }}
