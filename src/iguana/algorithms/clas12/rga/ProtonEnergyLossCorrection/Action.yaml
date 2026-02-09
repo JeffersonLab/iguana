@@ -1,0 +1,34 @@
+algorithm:
+  name: 'clas12::ProtonEnergyLossCorrection'
+
+actions:
+
+  - name: Transform
+    type: transformer
+    rank: scalar
+    inputs:
+      - name: pid
+        type: int
+      - name: status
+        type: int
+      - name: run
+        type: int
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
+    outputs:
+      - name: px
+        type: double
+        cast: float
+      - name: py
+        type: double
+        cast: float
+      - name: pz
+        type: double
+        cast: float
