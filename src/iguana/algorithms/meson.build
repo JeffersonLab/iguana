@@ -84,7 +84,8 @@ algo_dict = [
   },
   {
     'name': 'clas12::rga::ProtonEnergyLossCorrection',
-    'has_validator': false, 
+    'has_validator': true,
+    'validator_needs_ROOT': false,
     'test_args': {
       'banks': [ 'REC::Particle', 'RUN::config' ],
     },
