@@ -41,7 +41,6 @@ namespace iguana::clas12 {
     return (180.0 / M_PI) * std::acos(c);
   }
 
-  // This reproduces your Java phi_calculation(x,y) EXACTLY:
   //   phi = toDegrees(atan2(x, y));
   //   phi = phi - 90;
   //   if (phi < 0) phi = 360 + phi;
@@ -100,13 +99,9 @@ namespace iguana::clas12 {
   void ProtonEnergyLossCorrection::ConfigHook() {
     periods_.clear();
 
-    // The Algorithm base class provides config path machinery; most iguana algos
-    // load YAML from the standard algorithm config directory.
-    // We use the standard YAML-CPP loader on the resolved config file.
-    //
     // If your branch uses a helper like GetConfigYAML(), swap this accordingly.
     // For now we use the conventional path from Algorithm::GetConfigPath().
-    std::string cfg_path = GetConfigPath();
+    std::string cfg_path = GetConfig()->FindFile("Config.yaml");
 
     YAML::Node root = YAML::LoadFile(cfg_path);
 
