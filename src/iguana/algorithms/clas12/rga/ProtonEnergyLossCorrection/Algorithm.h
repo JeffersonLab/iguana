@@ -12,12 +12,12 @@ namespace iguana::clas12 {
 
   class ProtonEnergyLossCorrection : public Algorithm {
 
-    DEFINE_IGUANA_ALGORITHM(ProtonEnergyLossCorrection, clas12::ProtonEnergyLossCorrection)
+    DEFINE_IGUANA_ALGORITHM(ProtonEnergyLossCorrection, clas12::rga::ProtonEnergyLossCorrection)
 
     public:
-      /// @action_function{scalar transformer}
-      /// Transform a single particle row (px,py,pz) if it is a proton in FD or CD and within an RGA run range.
-      /// Returns corrected (px,py,pz).
+      // @action_function{scalar transformer}
+      // Transform a single particle row (px,py,pz) if it is an RGA proton 
+      // Returns corrected (px,py,pz).
       std::tuple<vector_element_t, vector_element_t, vector_element_t> Transform(
           int const pid,
           int const status,
