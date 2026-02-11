@@ -304,7 +304,7 @@ namespace iguana::clas12::rga {
     }
 
     double theta = ThetaDeg(px, py, pz);          // degrees
-    double phi   = PhiDegLikeJava(px, py);        // degrees in [0,360)
+    double phi   = PhiDeg(px, py);        // degrees in [0,360)
 
     // Choose FD vs CD coefficients.
     RegionCoeffs const& coeffs = is_fd ? period->fd : period->cd;
