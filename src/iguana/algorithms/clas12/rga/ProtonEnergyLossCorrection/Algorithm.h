@@ -119,15 +119,11 @@ namespace iguana::clas12::rga {
     static double PhiDeg(double px, double py);
 
     // Convert (p, theta_deg, phi_deg) back to (px,py,pz).
-    static void SphericalToCartesian(double p,
-                                    double theta_deg,
-                                    double phi_deg,
-                                    double& px,
-                                    double& py,
-                                    double& pz);
+    static void SphericalToCartesian(double p, double theta_deg, double phi_deg,
+      double& px, double& py, double& pz);
 
-    // Given a run number, return the matching PeriodDef or nullptr if none.
+    // Given a run number, return the matching run period (e.g. Fa18 Inb) or nullptr.
     PeriodDef const* FindPeriod(int run) const;
   };
 
-} // namespace iguana::clas12::rga
+}
