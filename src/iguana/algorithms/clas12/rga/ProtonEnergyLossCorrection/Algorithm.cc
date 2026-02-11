@@ -84,7 +84,7 @@ namespace iguana::clas12::rga {
   //   phi = 360 - phi;
   //
   // This yields phi in [0,360).
-  double ProtonEnergyLossCorrection::PhiDegLikeJava(double px, double py)
+  double ProtonEnergyLossCorrection::PhiDeg(double px, double py)
   {
     double phi = kRadToDeg * std::atan2(px, py);
     phi        = phi - 90.0;
@@ -358,7 +358,7 @@ namespace iguana::clas12::rga {
     }
 
     double theta = ThetaDeg(px, py, pz);      // degrees
-    double phi   = PhiDegLikeJava(px, py);    // degrees in [0,360)
+    double phi   = PhiDeg(px, py);    // degrees in [0,360)
 
     // Choose FD vs CD coefficients.
     RegionCoeffs const& coeffs = is_fd ? period->fd : period->cd;
