@@ -7,16 +7,31 @@
 
 namespace iguana::clas12::rga {
 
+  namespace {
+    static constexpr double kPi = 3.14159265358979323846;
+    static constexpr double kRadToDeg = 180.0 / kPi;
+  } // namespace
+
   REGISTER_IGUANA_VALIDATOR(ProtonEnergyLossCorrectionValidator);
 
+  // Compute theta (deg) from momentum components.
+  //
+  // theta = atan2(pt, pz)
+  // where pt = sqrt(px^2 + py^2)
+  //
+  // This is robust for pz near 0 and matches common CLAS usage.
   double ProtonEnergyLossCorrectionValidator::ThetaDegFromPxPyPz(double px, double py, double pz)
   {
-    // theta = atan2(pt, pz) in radians -> degrees
     double pt = std::sqrt(px * px + py * py);
     double th = std::atan2(pt, pz);
-    return th * (180.0 / 3.14159265358979323846);
+    return th * kRadToDeg;
   }
 
+  // Convert theta (deg) to a bin index.
+  //
+  // Returns:
+  //   -1 if theta is outside [kThetaMinDeg, kThetaMaxDeg]
+  //   otherwise an index in [0, kNBins-1].
   int ProtonEnergyLossCorrectionValidator::ThetaBinIndex(double theta_deg)
   {
     if(theta_deg < kThetaMinDeg) {
@@ -26,7 +41,7 @@ namespace iguana::clas12::rga {
       return -1;
     }
 
-    // Include theta == 70 in the last bin
+    // Include theta == kThetaMaxDeg in the final bin.
     if(theta_deg >= kThetaMaxDeg) {
       return kNBins - 1;
     }
@@ -40,14 +55,16 @@ namespace iguana::clas12::rga {
 
   void ProtonEnergyLossCorrectionValidator::StartHook(hipo::banklist& banks)
   {
-    b_particle = GetBankIndex(banks, "REC::Particle");
-    b_config   = GetBankIndex(banks, "RUN::config");
+    // Cache bank indices for fast access during RunHook().
+    m_b_particle = GetBankIndex(banks, "REC::Particle");
+    m_b_config   = GetBankIndex(banks, "RUN::config");
 
+    // Build and start an AlgorithmSequence containing only the algorithm under test.
     m_algo_seq = std::make_unique<AlgorithmSequence>();
     m_algo_seq->Add("clas12::rga::ProtonEnergyLossCorrection");
     m_algo_seq->Start(banks);
 
-    // Reset accumulators (safe here: StartHook is non-const)
+    // Reset counters/accumulators.
     for(auto& b : m_bins) {
       b.n = 0;
       b.sum_p_before = 0.0;
@@ -59,21 +76,25 @@ namespace iguana::clas12::rga {
 
   bool ProtonEnergyLossCorrectionValidator::RunHook(hipo::banklist& banks) const
   {
-    auto& particle = GetBank(banks, b_particle, "REC::Particle");
-    auto& config   = GetBank(banks, b_config, "RUN::config");
-    (void)config;
+    auto& particle = GetBank(banks, m_b_particle, "REC::Particle");
+    auto& config   = GetBank(banks, m_b_config, "RUN::config");
+    (void)config; // run number is not needed for this validator summary.
 
-    // Snapshot BEFORE for protons: store (row, bin, p_before)
+    // We must record BEFORE values, then run the algorithm, then compute AFTER.
+    // Store the particle row index and p_before so we can match exactly the same
+    // rows after the algorithm modifies the bank in place.
     struct Entry {
-        int row = -1;
-        int bin = -1;
-        double p_before = 0.0;
+      int row = -1;
+      int bin = -1;
+      double p_before = 0.0;
     };
 
     std::vector<Entry> entries;
     entries.reserve((size_t)particle.getRows());
 
     int const nrows = particle.getRows();
+
+    // Snapshot BEFORE for all protons.
     for(int i = 0; i < nrows; ++i) {
       int pid = particle.getInt("pid", i);
       if(pid != 2212) {
@@ -95,10 +116,11 @@ namespace iguana::clas12::rga {
       entries.push_back(e);
     }
 
-    // Run algorithm in place
+    // Run algorithm under test (in place on the same banks).
     m_algo_seq->Run(banks);
 
-    // AFTER: same rows; accumulate in shared state
+    // Accumulate AFTER values. Use a mutex since multiple events may be processed
+    // concurrently depending on Iguana configuration.
     std::scoped_lock<std::mutex> lock(m_mutex);
 
     for(auto const& e : entries) {
@@ -128,6 +150,7 @@ namespace iguana::clas12::rga {
 
   void ProtonEnergyLossCorrectionValidator::StopHook()
   {
+    // Print a compact, human-readable summary suitable for CI logs.
     std::cout << "\n";
     std::cout << "ProtonEnergyLossCorrectionValidator summary\n";
     std::cout << "  theta bins: " << kThetaMinDeg << " to " << kThetaMaxDeg
