@@ -111,7 +111,7 @@ namespace iguana::clas12::rga {
     // This uses the algorithm's YAMLReader search paths:
     // - ./, any AddDirectory paths, then install prefix.
     // It will locate the installed Config.yaml for this algorithm unless overridden.
-    std::string cfg_path = GetConfig()->FindFile("Config.yaml");
+    std::string cfg_path = GetConfig()->FindFile("algorithms/clas12/rga/ProtonEnergyLossCorrection/Config.yaml");
 
     YAML::Node root = YAML::LoadFile(cfg_path);
 
