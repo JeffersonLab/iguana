@@ -2,13 +2,6 @@
 
 // ProtonEnergyLossCorrectionValidator
 //
-// Purpose
-// -------
-// Provide a simple, ROOT-free validation summary for the proton energy loss
-// correction algorithm.
-//
-// What it does
-// ------------
 // For each processed event:
 //   1) Find all protons (pid==2212) in REC::Particle.
 //   2) Compute their theta before correction, place them into theta bins.
@@ -21,12 +14,6 @@
 // In StopHook(), print a table:
 //   theta bin range, N, <p_before>, <p_after>, <delta>
 //
-// Threading model
-// ---------------
-// Iguana may run validators in multi-threaded contexts, so accumulation is
-// protected by a mutex. The accumulators are marked "mutable" because Iguana's
-// validator API uses RunHook(...) const, but validators naturally accumulate
-// per-run state.
 
 #include "iguana/algorithms/Validator.h"
 #include "iguana/algorithms/AlgorithmSequence.h"
@@ -37,8 +24,7 @@
 
 namespace iguana::clas12::rga {
 
-  class ProtonEnergyLossCorrectionValidator : public Validator
-  {
+  class ProtonEnergyLossCorrectionValidator : public Validator {
     DEFINE_IGUANA_VALIDATOR(ProtonEnergyLossCorrectionValidator, clas12::rga::ProtonEnergyLossCorrectionValidator)
 
   private:
@@ -51,16 +37,14 @@ namespace iguana::clas12::rga {
     hipo::banklist::size_type m_b_particle{};
     hipo::banklist::size_type m_b_config{};
 
-    // We run the algorithm under test via an AlgorithmSequence so the validator
-    // does not need to know algorithm internals.
     std::unique_ptr<AlgorithmSequence> m_algo_seq;
 
     // Theta binning configuration (degrees).
-    // Bins: [5,10), [10,15), ..., [65,70] with 70 included in last bin.
+    // Bins: [5,10), [10,15), ...
     static constexpr double kThetaMinDeg  = 5.0;
     static constexpr double kThetaMaxDeg  = 70.0;
     static constexpr double kThetaStepDeg = 5.0;
-    static constexpr int kNBins = (int)((kThetaMaxDeg - kThetaMinDeg) / kThetaStepDeg); // 13
+    static constexpr int kNBins = (int)((kThetaMaxDeg - kThetaMinDeg) / kThetaStepDeg); 
 
     // Simple per-bin accumulators.
     struct BinAccum {
@@ -69,7 +53,7 @@ namespace iguana::clas12::rga {
       double sum_p_after  = 0.0;
     };
 
-    // RunHook is const, but we accumulate over events -> these must be mutable.
+    // accumulate over events -> these must be mutable.
     mutable std::array<BinAccum, kNBins> m_bins{};
     mutable long long m_total_protons_in_range = 0;
     mutable long long m_total_protons_all      = 0;
@@ -85,4 +69,4 @@ namespace iguana::clas12::rga {
     static double ThetaDegFromPxPyPz(double px, double py, double pz);
   };
 
-} // namespace iguana::clas12::rga
+} 

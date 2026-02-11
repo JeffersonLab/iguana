@@ -5,7 +5,7 @@
 // Apply momentum and angular corrections to reconstructed protons in CLAS12 RGA
 // data; runs event-by-event and modifies REC::Particle in place.
 // For each row in REC::Particle:
-//   - If pid == 2212 (proton) AND status indicates FD or CD,
+//   - If pid == 2212 (proton) AND status indicates FD or CD (should always),
 //     compute p, theta, phi from (px,py,pz), apply period-dependent corrections,
 //     then write back corrected (px,py,pz).
 //
@@ -30,17 +30,16 @@
 
 namespace iguana::clas12::rga {
 
-  class ProtonEnergyLossCorrection : public Algorithm
-  {
+  class ProtonEnergyLossCorrection : public Algorithm {
     DEFINE_IGUANA_ALGORITHM(ProtonEnergyLossCorrection, clas12::rga::ProtonEnergyLossCorrection)
 
   public:
     // @action_function{scalar transformer}
     //
     // Inputs:
-    //   pid    : PDG ID (we correct only protons: 2212)
-    //   status : REC::Particle status code (used to identify FD vs CD)
-    //   run    : run number (selects the period / coefficients)
+    //   pid    : PDG ID (correct only protons: 2212)
+    //   status : REC::Particle status code (used to identify detector)
+    //   run    : run number (selects the period and coefficients)
     //   px,py,pz : momentum components (GeV)
     //
     // Output:
@@ -54,8 +53,6 @@ namespace iguana::clas12::rga {
         vector_element_t const pz) const;
 
   private:
-    // Iguana hook API
-    // ---------------
     void ConfigHook() override;
     void StartHook(hipo::banklist& banks) override;
     bool RunHook(hipo::banklist& banks) const override;
@@ -65,20 +62,13 @@ namespace iguana::clas12::rga {
     hipo::banklist::size_type m_b_rec_particle{};
     hipo::banklist::size_type m_b_run_config{};
 
-    // Internal configuration representation
-    // -------------------------------------
-    // We read YAML coefficients into these structs for fast lookup.
-
     // Simple polynomial container: c0 + c1*x + c2*x^2 + ...
     struct Poly {
       std::vector<double> c;
     };
 
     // Coefficients for a single detector region (FD or CD).
-    //
-    // For each of p, theta, phi we store (A,B,C) polynomials in theta:
-    //   A(theta), B(theta), C(theta)
-    //
+    // For each of p, theta, phi store (A,B,C) polynomials in theta: A(theta), B(theta), C(theta)
     // Then the correction formula uses those A,B,C values.
     struct RegionCoeffs {
       Poly A_p;
@@ -106,7 +96,7 @@ namespace iguana::clas12::rga {
     // Map period key -> period definition (loaded from YAML)
     std::map<std::string, PeriodDef> m_periods{};
 
-    // Helper functions (pure utilities)
+    // Helper functions 
     static bool IsFD(int status);
     static bool IsCD(int status);
 
@@ -114,8 +104,6 @@ namespace iguana::clas12::rga {
 
     static double Pmag(double px, double py, double pz);
     static double ThetaDeg(double px, double py, double pz);
-
-    // phi convention that matches the Java implementation (see header comment).
     static double PhiDeg(double px, double py);
 
     // Convert (p, theta_deg, phi_deg) back to (px,py,pz).

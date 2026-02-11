@@ -10,22 +10,13 @@ namespace iguana::clas12::rga {
   REGISTER_IGUANA_ALGORITHM(ProtonEnergyLossCorrection);
 
   namespace {
-
     // Keep an angle in degrees within [0, 360).
-    //
-    // We keep this helper because:
-    double WrapDeg360(double x)
-    {
-      while(x >= 360.0) {
-        x -= 360.0;
-      }
-      while(x < 0.0) {
-        x += 360.0;
-      }
+    double WrapDeg360(double x) {
+      while(x >= 360.0) { x -= 360.0; }
+      while(x < 0.0) { x += 360.0; }
       return x;
     }
-
-  } // namespace
+  } 
 
   // -----------------------------------------------------------------------------
   // Detector-region helpers (based on REC::Particle status)
@@ -35,14 +26,12 @@ namespace iguana::clas12::rga {
   //   - FD tracks: abs(status) in [2000, 4000)
   //   - CD tracks: abs(status) in [4000, 5000)
   //
-  bool ProtonEnergyLossCorrection::IsFD(int status)
-  {
+  bool ProtonEnergyLossCorrection::IsFD(int status) {
     int s = std::abs(status);
     return (s >= 2000 && s < 4000);
   }
 
-  bool ProtonEnergyLossCorrection::IsCD(int status)
-  {
+  bool ProtonEnergyLossCorrection::IsCD(int status) {
     int s = std::abs(status);
     return (s >= 4000 && s < 5000);
   }
@@ -50,15 +39,13 @@ namespace iguana::clas12::rga {
   // -----------------------------------------------------------------------------
   // math helpers (p, theta, phi)
   // -----------------------------------------------------------------------------
-  double ProtonEnergyLossCorrection::Pmag(double px, double py, double pz)
-  {
+  double ProtonEnergyLossCorrection::Pmag(double px, double py, double pz) {
     return std::sqrt(px * px + py * py + pz * pz);
   }
 
   // theta from momentum vector, in degrees.
-  // We compute: cos(theta) = pz / |p|
-  double ProtonEnergyLossCorrection::ThetaDeg(double px, double py, double pz)
-  {
+  // cos(theta) = pz / |p|
+  double ProtonEnergyLossCorrection::ThetaDeg(double px, double py, double pz) {
     double r = Pmag(px, py, pz);
     if(r <= 0.0) {
       return 0.0;
@@ -75,16 +62,11 @@ namespace iguana::clas12::rga {
     return (180.0 / M_PI) * std::acos(c);
   }
 
-  //   phi = toDegrees(atan2(px, py));
-  //   phi = phi - 90;
-  //   if (phi < 0) phi = 360 + phi;
-  //   phi = 360 - phi;
-  //
+
   // Returns phi in [0,360).
-  double ProtonEnergyLossCorrection::PhiDeg(double px, double py)
-  {
+  double ProtonEnergyLossCorrection::PhiDeg(double px, double py) {
     double phi = (180.0 / M_PI) * std::atan2(px, py);
-    phi        = phi - 90.0;
+    phi = phi - 90.0;
     if(phi < 0.0) {
       phi = 360.0 + phi;
     }
@@ -157,6 +139,7 @@ namespace iguana::clas12::rga {
   //
   // For each period, load FD and CD RegionCoeffs. Each RegionCoeffs holds
   // polynomial parameterizations in theta for A/B/C of p/theta/phi corrections.
+  // many A/B/C may be zero!!
   void ProtonEnergyLossCorrection::ConfigHook() {
     m_periods.clear();
 
@@ -302,9 +285,8 @@ namespace iguana::clas12::rga {
     if(p <= 0.0) {
       return {px_in, py_in, pz_in};
     }
-
-    double theta = ThetaDeg(px, py, pz);          // degrees
-    double phi   = PhiDeg(px, py);        // degrees in [0,360)
+    double theta = ThetaDeg(px, py, pz); // degrees
+    double phi   = PhiDeg(px, py); // degrees in [0,360)
 
     // Choose FD vs CD coefficients.
     RegionCoeffs const& coeffs = is_fd ? period->fd : period->cd;
@@ -339,7 +321,6 @@ namespace iguana::clas12::rga {
     if(is_fd) {
       p_new += A_p + (B_p / p) + (C_p / (p * p));
 
-      // Avoid divide-by-zero 
       if(theta != 0.0) {
         theta_new += A_theta + (B_theta / theta) + (C_theta / (theta * theta));
       }
