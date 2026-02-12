@@ -1,5 +1,5 @@
 # install config files
-example_config_files_prefix = project_etcdir / 'examples'
+example_config_files_prefix = project_etc_dir / 'examples'
 install_subdir('config' / 'examples', install_dir: example_config_files_prefix, strip_directory: true)
 
 # compiled examples

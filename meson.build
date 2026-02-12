@@ -9,6 +9,7 @@ project(
     'cpp_std': 'c++17',
     'buildtype': 'release',
     'libdir': 'lib',
+    'datadir': 'share',
     'licensedir': 'share/licenses/iguana',
     'pkgconfig.relocatable': 'true',
     'force_fallback_for': ['rcdb'],
@@ -19,6 +20,14 @@ project_description = 'Implementation Guardian of Analysis Algorithms'
 # initialize binding languanges
 add_languages('fortran', native: false, required: get_option('bind_fortran'))
 use_chameleon = get_option('bind_fortran')
+
+# check built-in build options
+if get_option('libdir') != 'lib'
+  warning('build option "libdir" = "' + get_option('libdir') + '", which is not "lib"; if you experience any issues, please report them')
+endif
+if get_option('datadir') != 'share'
+  error('build option "datadir" must be "share", but it is set to "' + get_option('datadir') + '"')
+endif
 
 # warn that macOS is no longer tested
 if host_machine.system() == 'darwin'
@@ -70,6 +79,7 @@ ROOT_dep = dependency(
     'ROOT::RIO',
     'ROOT::ROOTDataFrame',
     'ROOT::ROOTVecOps',
+    'ROOT::TMVA',
     'ROOT::TreePlayer',
   ],
 )
@@ -159,7 +169,8 @@ hipo_dep_dataframes_found = hipo_dep.get_variable(
 project_inc = include_directories('src')
 project_libs = []
 project_deps = declare_dependency(dependencies: dep_list)
-project_etcdir = get_option('sysconfdir') / meson.project_name()
+project_etc_dir = get_option('sysconfdir') / meson.project_name()
+project_data_dir = get_option('datadir') / meson.project_name()
 project_test_env = environment()
 project_pythondir = 'python'
 
@@ -195,9 +206,14 @@ project_test_env.prepend(
 )
 
 # set preprocessor macros
-add_project_arguments('-DIGUANA_ETCDIR="' + get_option('prefix') / project_etcdir + '"', language: [ 'cpp' ])
+add_project_arguments(
+  '-D IGUANA_PREFIX="' + get_option('prefix') + '"',
+  '-D IGUANA_ETCDIR="' + project_etc_dir + '"',
+  '-D IGUANA_DATADIR="' + project_data_dir + '"',
+  language: ['cpp'],
+)
 if ROOT_dep.found()
-  add_project_arguments('-DIGUANA_ROOT_FOUND', language: [ 'cpp' ]) # currently only used for Validator plot styles
+  add_project_arguments('-D IGUANA_ROOT_FOUND', language: [ 'cpp' ]) # currently only used for Validator plot styles
 endif
 
 # start chameleon
@@ -251,7 +267,7 @@ if get_option('z_install_envfile')
       'libdir':            get_option('libdir'),
       'includedir':        get_option('includedir'),
       'bindir':            get_option('bindir'),
-      'etcdir':            project_etcdir,
+      'etcdir':            project_etc_dir,
       'pythondir':         project_pythondir,
       'dep_pkgconfigdirs': ':'.join(dep_pkgconfig_dirs),
       'dep_libdirs':       ':'.join(dep_lib_dirs),

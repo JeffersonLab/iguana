@@ -7,6 +7,7 @@ services_sources = [
   'GlobalParam.cc',
   'RCDBReader.cc',
   'Tools.cc',
+  'DataFileReader.cc',
   'Deprecated.cc',
 ]
 services_headers = [
@@ -18,6 +19,7 @@ services_headers = [
   'GlobalParam.h',
   'RCDBReader.h',
   'Tools.h',
+  'DataFileReader.h',
   'Deprecated.h',
 ]
 

@@ -1,0 +1,48 @@
+clas12::LeptonIDFilter:
+
+  # choose which lepton PDG codes to filter
+  pids: [-11, 11]
+
+  # weight file, one for each lepton and dataset
+  weightfile:
+    #
+    #
+    # FIXME: double check these run number ranges
+    # FIXME: use the correct weights files for each
+    # FIXME: warn the user if run number falls in 'default' data set
+    #
+    #
+    - default: # run number is not in any other data set below
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [3211, 3293] # RG-A Spring 2018 Outbending Part 1
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [3306, 3817] # RG-A Spring 2018 Inbending Part 1
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [3863, 3987] # RG-A Spring 2018 Outbending Part 2
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [4003, 4325] # RG-A Spring 2018 Inbending Part 2
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [5032, 5419] # RG-A Fall 2018 Inbending
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [5422, 5666] # RG-A Fall 2018 Outbending
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+    - runs: [6616, 6783] # RG-A Spring 2019 Inbending
+      electron: 'weights/9_BDT_positrons_S19.weights.xml'
+      positron: 'weights/9_BDT_positrons_S19.weights.xml'
+
+  # value of the score to apply the cut; the algorithm will keep all particles that have a score grater than ths value
+  cut: 0.0
+
+  # option string to pass to `TMVA::Reader` constructor,
+  # e.g., "V" to set the "Verbose flag"
+  tmva_reader_options: ''
+
+  # the name of the particle bank, only needed for users of `hipo::banklist`
+  particle_bank: 'REC::Particle'
