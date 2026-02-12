@@ -83,6 +83,14 @@ algo_dict = [
     'test_args': {'banks': [ 'RECFT::Particle' ]},
   },
   {
+    'name': 'clas12::rga::ProtonEnergyLossCorrection',
+    'has_validator': true,
+    'validator_needs_ROOT': false,
+    'test_args': {
+      'banks': [ 'REC::Particle', 'RUN::config' ],
+    },
+  },
+  {
     'name': 'clas12::rga::MomentumCorrection',
     'has_config': false,
     'test_args': {
